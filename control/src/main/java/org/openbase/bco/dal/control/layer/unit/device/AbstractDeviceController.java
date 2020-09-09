@@ -31,7 +31,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -46,15 +46,13 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
     }
 
-    private final SyncObject configUpdateLock = new SyncObject("ApplyConfigUpdateLock");
-
     public AbstractDeviceController() throws InstantiationException {
         super(DeviceData.newBuilder());
     }
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        synchronized (configUpdateLock) {
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
             UnitConfig unitConfig = super.applyConfigUpdate(config);
 
             // update unit controller registry if device is active.

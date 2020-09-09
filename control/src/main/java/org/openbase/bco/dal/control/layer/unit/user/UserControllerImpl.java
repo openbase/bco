@@ -37,9 +37,7 @@ import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.ObservableImpl;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalScheduledExecutorService;
-import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
@@ -95,45 +93,47 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider(LabelProcessor.getBestMatch(config.getLabel()), config.getMetaConfig());
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider(LabelProcessor.getBestMatch(config.getLabel()), config.getMetaConfig());
 
-        synchronized (netDeviceDetectorMapLock) {
+            synchronized (netDeviceDetectorMapLock) {
 
-            // shutdown and remove all existing detectors
-            for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
-                detector.shutdown();
-            }
-            netDeviceDetectorMap.clear();
-            try {
-                for (String netDevice : variableProvider.getValues(NET_DEVICE_VARIABLE_IDENTIFIER).values()) {
-                    if (!netDeviceDetectorMap.containsKey(netDevice)) {
-                        NetDeviceDetector netDeviceDetector = new NetDeviceDetector();
-                        netDeviceDetector.init(netDevice);
-                        netDeviceDetectorMap.put(netDevice, netDeviceDetector);
-                        netDeviceDetector.addObserver((NetDeviceDetector source, Boolean reachable) -> {
-                            synchronized (netDeviceDetectorMapLock) {
-                                final PresenceState.Builder presenceState = TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder(), logger);
+                // shutdown and remove all existing detectors
+                for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
+                    detector.shutdown();
+                }
+                netDeviceDetectorMap.clear();
+                try {
+                    for (String netDevice : variableProvider.getValues(NET_DEVICE_VARIABLE_IDENTIFIER).values()) {
+                        if (!netDeviceDetectorMap.containsKey(netDevice)) {
+                            NetDeviceDetector netDeviceDetector = new NetDeviceDetector();
+                            netDeviceDetector.init(netDevice);
+                            netDeviceDetectorMap.put(netDevice, netDeviceDetector);
+                            netDeviceDetector.addObserver((NetDeviceDetector source, Boolean reachable) -> {
+                                synchronized (netDeviceDetectorMapLock) {
+                                    final PresenceState.Builder presenceState = TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder(), logger);
 
-                                PresenceState.Builder serviceStateBuilder = null;
-                                for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
-                                    if (detector.isReachable()) {
-                                        serviceStateBuilder = presenceState.setValue(State.PRESENT);
-                                        break;
+                                    PresenceState.Builder serviceStateBuilder = null;
+                                    for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
+                                        if (detector.isReachable()) {
+                                            serviceStateBuilder = presenceState.setValue(State.PRESENT);
+                                            break;
+                                        }
                                     }
+                                    applyServiceState((serviceStateBuilder == null ? presenceState.setValue(State.ABSENT) : serviceStateBuilder), ServiceType.PRESENCE_STATE_SERVICE);
                                 }
-                                applyServiceState((serviceStateBuilder == null ? presenceState.setValue(State.ABSENT) : serviceStateBuilder), ServiceType.PRESENCE_STATE_SERVICE);
+                            });
+                            if (isActive()) {
+                                netDeviceDetector.activate();
                             }
-                        });
-                        if (isActive()) {
-                            netDeviceDetector.activate();
                         }
                     }
+                } catch (NotAvailableException ex) {
+                    logger.debug("No net devices found for " + this);
                 }
-            } catch (NotAvailableException ex) {
-                logger.debug("No net devices found for " + this);
             }
+            return super.applyConfigUpdate(config);
         }
-        return super.applyConfigUpdate(config);
     }
 
 

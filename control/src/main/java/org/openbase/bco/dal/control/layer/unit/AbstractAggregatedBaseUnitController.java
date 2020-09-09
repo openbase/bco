@@ -39,6 +39,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.BuilderSyncSetup.NotificationStrategy;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -97,14 +98,16 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
     }
 
     @Override
-    public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(getAggregatedUnitConfigList());
-        // if already active than update the current state.
-        if (isActive()) {
-            updateUnitData();
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            final UnitConfig unitConfig = super.applyConfigUpdate(config);
+            serviceRemoteManager.applyConfigUpdate(getAggregatedUnitConfigList());
+            // if already active than update the current state.
+            if (isActive()) {
+                updateUnitData();
+            }
+            return unitConfig;
         }
-        return unitConfig;
     }
 
     @Override
