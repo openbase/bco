@@ -77,10 +77,7 @@ import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
-import org.openbase.jul.schedule.Timeout;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
@@ -373,77 +370,80 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
 
-        if (config == null) {
-            throw new NotAvailableException("UnitConfig");
-        }
+        try(final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
 
-        // non change filter
-        try {
-            if (getConfig().equals(config)) {
-                logger.debug("Skip config update because no config change detected!");
-                return config;
+            if (config == null) {
+                throw new NotAvailableException("UnitConfig");
             }
-        } catch (NotAvailableException ex) {
-            logger.trace("Unit config change check failed because config is not available yet.");
-        }
 
-        try {
-            classDescription = getClass().getSimpleName() + "[" + config.getUnitType() + "[" + LabelProcessor.getBestMatch(config.getLabel()) + "]]";
-        } catch (NullPointerException | NotAvailableException ex) {
-            classDescription = getClass().getSimpleName() + "[?]";
-        }
-
-        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(config.getUnitType());
-
-        // register service observable which are not handled yet.
-        for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
-            unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
-
-            if (serviceTempus == ServiceTempus.UNKNOWN) {
-                continue;
-            }
-            for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
-
-                // create observable if new
-                if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(), serviceTempus, this)));
+            // non change filter
+            try {
+                if (getConfig().equals(config)) {
+                    logger.debug("Skip config update because no config change detected!");
+                    return config;
                 }
+            } catch (NotAvailableException ex) {
+                logger.trace("Unit config change check failed because config is not available yet.");
             }
-        }
 
-        for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
-            if (serviceTempus == ServiceTempus.UNKNOWN) {
-                continue;
+            try {
+                classDescription = getClass().getSimpleName() + "[" + config.getUnitType() + "[" + LabelProcessor.getBestMatch(config.getLabel()) + "]]";
+            } catch (NullPointerException | NotAvailableException ex) {
+                classDescription = getClass().getSimpleName() + "[?]";
             }
-            // cleanup service observable related to new unit template
-            outer:
-            for (final ServiceType serviceType : serviceTempusServiceTypeObservableMap.get(serviceTempus).keySet()) {
+
+            template = Registries.getTemplateRegistry(true).getUnitTemplateByType(config.getUnitType());
+
+            // register service observable which are not handled yet.
+            for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
+                unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
+
+                if (serviceTempus == ServiceTempus.UNKNOWN) {
+                    continue;
+                }
                 for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
 
-                    // verify if service type is still valid.
-                    if (serviceType == serviceDescription.getServiceType()) {
-                        // continue because service type is still valid
-                        continue outer;
+                    // create observable if new
+                    if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
+                        serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable<>(new ServiceStateProvider<>(serviceDescription.getServiceType(), serviceTempus, this)));
                     }
                 }
-
-                // remove and shutdown service observable because its not valid
-                serviceTempusServiceTypeObservableMap.get(serviceTempus).remove(serviceType).shutdown();
             }
+
+            for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
+                if (serviceTempus == ServiceTempus.UNKNOWN) {
+                    continue;
+                }
+                // cleanup service observable related to new unit template
+                outer:
+                for (final ServiceType serviceType : serviceTempusServiceTypeObservableMap.get(serviceTempus).keySet()) {
+                    for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+
+                        // verify if service type is still valid.
+                        if (serviceType == serviceDescription.getServiceType()) {
+                            // continue because service type is still valid
+                            continue outer;
+                        }
+                    }
+
+                    // remove and shutdown service observable because its not valid
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).remove(serviceType).shutdown();
+                }
+            }
+
+            final UnitConfig result = super.applyConfigUpdate(config);
+
+            // Note: this block has to be executed after the super call because generating the variable pool uses
+            // the internal unit config which is set in the super call
+            try {
+                infrastructure = Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG));
+            } catch (NotAvailableException ex) {
+                // pool or flag not available so set infrastructure to false
+                infrastructure = false;
+            }
+
+            return result;
         }
-
-        final UnitConfig result = super.applyConfigUpdate(config);
-
-        // Note: this block has to be executed after the super call because generating the variable pool uses
-        // the internal unit config which is set in the super call
-        try {
-            infrastructure = Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG));
-        } catch (NotAvailableException ex) {
-            // pool or flag not available so set infrastructure to false
-            infrastructure = false;
-        }
-
-        return result;
     }
 
     @Override
@@ -985,7 +985,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             }
                         } else {
                             if (!action.isValid()) {
-                                new FatalImplementationErrorException("Found invalid action which has not been removed from list!", this);
+                                new FatalImplementationErrorException("Found invalid "+action+" which has not been removed from list!", this);
                             }
                             atLeastOneActionToSchedule = true;
                         }

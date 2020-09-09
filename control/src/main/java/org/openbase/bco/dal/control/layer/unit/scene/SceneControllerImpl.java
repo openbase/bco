@@ -37,24 +37,21 @@ import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.MultiFuture;
-import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
@@ -67,8 +64,8 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,7 +97,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         public void update(ServiceStateProvider<Message> source, Message data) throws Exception {
 
             // filter non active state
-            if(!SceneControllerImpl.this.getActivationState().getValue().equals(Activation.ACTIVE)) {
+            if (!SceneControllerImpl.this.getActivationState().getValue().equals(Activation.ACTIVE)) {
                 return;
             }
 
@@ -182,49 +179,51 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        config = super.applyConfigUpdate(config);
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            config = super.applyConfigUpdate(config);
 
-        try {
-            synchronized (buttonObserverLock) {
-                for (final ButtonRemote button : buttonRemoteSet) {
-                    try {
-                        logger.debug("update: remove " + LabelProcessor.getBestMatch(getConfig().getLabel()) + " for button  " + button.getLabel());
-                    } catch (NotAvailableException ex) {
-                        Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                    button.removeDataObserver(buttonObserver);
-                }
-
-                buttonRemoteSet.clear();
-                ButtonRemote buttonRemote;
-
-                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(LabelProcessor.getBestMatch(config.getLabel()), UnitType.BUTTON)) {
-                    try {
-                        buttonRemote = Units.getUnit(unitConfig, false, Units.BUTTON);
-                        buttonRemoteSet.add(buttonRemote);
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]!", ex), logger);
-                    }
-                }
-                if (isActive()) {
+            try {
+                synchronized (buttonObserverLock) {
                     for (final ButtonRemote button : buttonRemoteSet) {
                         try {
-                            logger.debug("update: register " + LabelProcessor.getBestMatch(getConfig().getLabel()) + " for button  " + button.getLabel());
+                            logger.debug("update: remove " + LabelProcessor.getBestMatch(getConfig().getLabel()) + " for button  " + button.getLabel());
                         } catch (NotAvailableException ex) {
                             Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        button.addDataObserver(buttonObserver);
+                        button.removeDataObserver(buttonObserver);
+                    }
+
+                    buttonRemoteSet.clear();
+                    ButtonRemote buttonRemote;
+
+                    for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(LabelProcessor.getBestMatch(config.getLabel()), UnitType.BUTTON)) {
+                        try {
+                            buttonRemote = Units.getUnit(unitConfig, false, Units.BUTTON);
+                            buttonRemoteSet.add(buttonRemote);
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]!", ex), logger);
+                        }
+                    }
+                    if (isActive()) {
+                        for (final ButtonRemote button : buttonRemoteSet) {
+                            try {
+                                logger.debug("update: register " + LabelProcessor.getBestMatch(getConfig().getLabel()) + " for button  " + button.getLabel());
+                            } catch (NotAvailableException ex) {
+                                Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                            button.addDataObserver(buttonObserver);
+                        }
                     }
                 }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
             }
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
-        }
 
-        final ActionParameter actionParameterPrototype = ActionParameter.newBuilder().setInterruptible(true).setSchedulable(true).setExecutionTimePeriod(Long.MAX_VALUE).build();
-        requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
-        optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
-        return config;
+            final ActionParameter actionParameterPrototype = ActionParameter.newBuilder().setInterruptible(true).setSchedulable(true).setExecutionTimePeriod(Long.MAX_VALUE).build();
+            requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
+            optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
+            return config;
+        }
     }
 
     @Override
@@ -273,7 +272,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     }
 
                     if (!getActivationState().getResponsibleAction().getActionId().equals(actionDescriptionBuilder.getActionId())) {
-                        logger.warn("Skip scene cancellation because current action["+getActivationState().getResponsibleAction()+"] is not the one which should be canceled("+actionDescriptionBuilder+")!");
+                        logger.warn("Skip scene cancellation because current action[" + getActivationState().getResponsibleAction() + "] is not the one which should be canceled(" + actionDescriptionBuilder + ")!");
                         // return successful because scene do cache outdated actions so if the action is not the currently executing one, everything is fine.
                         return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
                     }
@@ -289,7 +288,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
             // handle action execution time extension
             if (actionDescriptionBuilder.getExtend()) {
-               // skip because scene action do not expire anyway.
+                // skip because scene action do not expire anyway.
                 return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
             }
 
@@ -343,7 +342,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         try {
             RemoteActionPool.observeCancellation(remoteActionActionDescriptionFutureMap, this, 5, TimeUnit.SECONDS);
         } catch (MultiException ex) {
-            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(ex, logger);
             }
         }

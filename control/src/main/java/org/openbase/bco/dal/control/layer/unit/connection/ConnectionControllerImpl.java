@@ -22,13 +22,10 @@ package org.openbase.bco.dal.control.layer.unit.connection;
  * #L%
  */
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
-import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.connection.ConnectionController;
@@ -41,14 +38,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ContactStateType.ContactState;
 import org.openbase.type.domotic.state.DoorStateType.DoorState;
@@ -57,6 +51,11 @@ import org.openbase.type.domotic.state.WindowStateType.WindowState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -159,46 +158,48 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
     }
 
     @Override
-    public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConnectionConfig = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(getAggregatedUnitConfigList());
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            UnitConfig unitConnectionConfig = super.applyConfigUpdate(config);
+            serviceRemoteManager.applyConfigUpdate(getAggregatedUnitConfigList());
 
-        contactDoorPositionMap.clear();
-        contactWindowPositionMap.clear();
-        for (String unitId : unitConnectionConfig.getConnectionConfig().getUnitIdList()) {
-            final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+            contactDoorPositionMap.clear();
+            contactWindowPositionMap.clear();
+            for (String unitId : unitConnectionConfig.getConnectionConfig().getUnitIdList()) {
+                final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
 
-            switch (unitConnectionConfig.getConnectionConfig().getConnectionType()) {
-                case DOOR:
-                    ContactDoorPosition contactDoorPosition;
-                    try {
-                        MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("doorPositionMetaConfigProvider", unitConfig.getMetaConfig());
-                        contactDoorPosition = ContactDoorPosition.valueOf(variableProvider.getValue(META_CONFIG_DOOR_POSITION_KEY));
-                    } catch (NotAvailableException | IllegalArgumentException ex) {
-                        contactDoorPosition = DEFAULT_CONTACT_DOOR_POSITION;
-                    }
-                    contactDoorPositionMap.put(unitConfig.getId(), contactDoorPosition);
-                    break;
-                case WINDOW:
-                    ContactWindowPosition contactWindowPosition;
-                    try {
-                        MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("windowPositionVariableProvider", unitConfig.getMetaConfig());
-                        contactWindowPosition = ContactWindowPosition.valueOf(variableProvider.getValue(META_CONFIG_WINDOW_POSITION_KEY));
-                    } catch (NotAvailableException | IllegalArgumentException ex) {
-                        contactWindowPosition = DEFAULT_CONTACT_WINDOW_POSITION;
-                    }
-                    contactWindowPositionMap.put(unitConfig.getId(), contactWindowPosition);
-                    break;
-                default:
-                    break;
+                switch (unitConnectionConfig.getConnectionConfig().getConnectionType()) {
+                    case DOOR:
+                        ContactDoorPosition contactDoorPosition;
+                        try {
+                            MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("doorPositionMetaConfigProvider", unitConfig.getMetaConfig());
+                            contactDoorPosition = ContactDoorPosition.valueOf(variableProvider.getValue(META_CONFIG_DOOR_POSITION_KEY));
+                        } catch (NotAvailableException | IllegalArgumentException ex) {
+                            contactDoorPosition = DEFAULT_CONTACT_DOOR_POSITION;
+                        }
+                        contactDoorPositionMap.put(unitConfig.getId(), contactDoorPosition);
+                        break;
+                    case WINDOW:
+                        ContactWindowPosition contactWindowPosition;
+                        try {
+                            MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("windowPositionVariableProvider", unitConfig.getMetaConfig());
+                            contactWindowPosition = ContactWindowPosition.valueOf(variableProvider.getValue(META_CONFIG_WINDOW_POSITION_KEY));
+                        } catch (NotAvailableException | IllegalArgumentException ex) {
+                            contactWindowPosition = DEFAULT_CONTACT_WINDOW_POSITION;
+                        }
+                        contactWindowPositionMap.put(unitConfig.getId(), contactWindowPosition);
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
 
-        // if already active than update the current connection state.
-        if (isActive()) {
-            updateCurrentState();
+            // if already active than update the current connection state.
+            if (isActive()) {
+                updateCurrentState();
+            }
+            return unitConnectionConfig;
         }
-        return unitConnectionConfig;
     }
 
     @Override

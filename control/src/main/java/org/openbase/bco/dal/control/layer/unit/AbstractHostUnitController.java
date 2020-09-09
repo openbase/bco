@@ -30,12 +30,13 @@ import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -200,56 +201,58 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = super.applyConfigUpdate(config);
-        Registries.waitForData();
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            UnitConfig unitConfig = super.applyConfigUpdate(config);
+            Registries.waitForData();
 
-        try {
-            synchronized (unitMapLock) {
-                hostedUnitDiff.diffMessages(getHostedUnitConfigList());
-                MultiException.ExceptionStack removeExceptionStack = null;
-                hostedUnitDiff.getRemovedMessageMap().getMessages().forEach((removedUnitConfig) -> {
-                    unitMap.remove(removedUnitConfig.getId()).shutdown();
-                });
+            try {
+                synchronized (unitMapLock) {
+                    hostedUnitDiff.diffMessages(getHostedUnitConfigList());
+                    MultiException.ExceptionStack removeExceptionStack = null;
+                    hostedUnitDiff.getRemovedMessageMap().getMessages().forEach((removedUnitConfig) -> {
+                        unitMap.remove(removedUnitConfig.getId()).shutdown();
+                    });
 
-                /*
-                 * unitController handle their update themselves
-                 */
-                MultiException.ExceptionStack registerExceptionStack = null;
-                for (UnitConfig newUnitConfig : hostedUnitDiff.getNewMessageMap().getMessages()) {
+                    /*
+                     * unitController handle their update themselves
+                     */
+                    MultiException.ExceptionStack registerExceptionStack = null;
+                    for (UnitConfig newUnitConfig : hostedUnitDiff.getNewMessageMap().getMessages()) {
+                        try {
+                            registerUnit(newUnitConfig);
+                        } catch (CouldNotPerformException ex) {
+                            registerExceptionStack = MultiException.push(this, ex, registerExceptionStack);
+                        }
+                    }
+
+                    MultiException.ExceptionStack exceptionStack = null;
+                    int counter;
                     try {
-                        registerUnit(newUnitConfig);
-                    } catch (CouldNotPerformException ex) {
-                        registerExceptionStack = MultiException.push(this, ex, registerExceptionStack);
-                    }
-                }
-
-                MultiException.ExceptionStack exceptionStack = null;
-                int counter;
-                try {
-                    counter = 0;
-                    final int internalCounter = counter;
-                    MultiException.checkAndThrow(() -> "Could not remove " + internalCounter + " unitController!", removeExceptionStack);
-                } catch (CouldNotPerformException ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
-                }
-                try {
-                    if (registerExceptionStack != null) {
-                        counter = registerExceptionStack.size();
-                    } else {
                         counter = 0;
+                        final int internalCounter = counter;
+                        MultiException.checkAndThrow(() -> "Could not remove " + internalCounter + " unitController!", removeExceptionStack);
+                    } catch (CouldNotPerformException ex) {
+                        exceptionStack = MultiException.push(this, ex, exceptionStack);
                     }
-                    final int internalCounter = counter;
-                    MultiException.checkAndThrow(() -> "Could not register " + internalCounter + " unitController!", registerExceptionStack);
-                } catch (CouldNotPerformException ex) {
-                    exceptionStack = MultiException.push(this, ex, exceptionStack);
+                    try {
+                        if (registerExceptionStack != null) {
+                            counter = registerExceptionStack.size();
+                        } else {
+                            counter = 0;
+                        }
+                        final int internalCounter = counter;
+                        MultiException.checkAndThrow(() -> "Could not register " + internalCounter + " unitController!", registerExceptionStack);
+                    } catch (CouldNotPerformException ex) {
+                        exceptionStack = MultiException.push(this, ex, exceptionStack);
+                    }
+                    MultiException.checkAndThrow(() -> "Could not update unitHostController!", exceptionStack);
                 }
-                MultiException.checkAndThrow(() -> "Could not update unitHostController!", exceptionStack);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]", ex);
             }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]", ex);
-        }
 
-        return unitConfig;
+            return unitConfig;
+        }
     }
 
     protected Set<String> getRemovedUnitIds() {
