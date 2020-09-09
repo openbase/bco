@@ -78,7 +78,7 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         UnitStateAwaiter.waitForState((AgentData data) -> data.getActivationState().getValue() == ActivationState.State.ACTIVE);
 
         // It can take some time until the execute() method of the agent has finished
-        // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
+        // TODO: enable to access controller instances via remoteRegistry to check and wait for the execution of the agent
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
