@@ -1390,8 +1390,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
 
             } finally {
-                // skip notification because it has already be performed by the internal builder setup
-                builderSetup.unlockWrite(NotificationStrategy.SKIP);
+                builderSetup.unlockWrite(NotificationStrategy.AFTER_LAST_RELEASE);
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
