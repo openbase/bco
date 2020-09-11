@@ -38,8 +38,6 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.configuration.MetaConfigType.MetaConfig;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
@@ -49,6 +47,8 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -62,11 +62,13 @@ public class SynchronizationProcessor {
 
     public static final String ZWAVE_DEVICE_TYPE_KEY = "zwave_devicetype";
     public static final String HUE_MODEL_ID_KEY = "modelId";
+    public static final String OPENHAB_PROPERTIES_UNIQUE_ID_KEY = "uniqueId";
 
     public static final String OPENHAB_THING_UID_KEY = "OPENHAB_THING_UID";
     public static final String OPENHAB_THING_CLASS_KEY = "OPENHAB_THING_CLASS";
     public static final String OPENHAB_THING_CHANNEL_TYPE_UID_KEY = "OPENHAB_THING_CHANNEL_TYPE_UID";
     public static final String OPENHAB_ITEM_TYPE_KEY = "OPENHAB_ITEM_TYPE";
+    public static final String OPENHAB_UNIQUE_ID_KEY = "OPENHAB_UNIQUE_ID";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SynchronizationProcessor.class);
 
@@ -75,9 +77,7 @@ public class SynchronizationProcessor {
      * config where the id of the thing is referenced.
      *
      * @param thingDTO the thing for which a device should be retrieved
-     *
      * @return a device unit config for the thing as described above
-     *
      * @throws NotAvailableException if no device could be found
      */
     public static UnitConfig getDeviceForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
@@ -86,6 +86,18 @@ public class SynchronizationProcessor {
             // get the most global meta config
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
             metaConfigPool.register(new MetaConfigVariableProvider("UnitMetaConfig", deviceUnitConfig.getMetaConfig()));
+
+            // bypass mapping by thing uid in case multiple things map to a single device unit
+            if (thingDTO.properties.containsKey(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY)) {
+                try {
+                    final String uniquePrefix = getUniquePrefix(metaConfigPool.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY));
+                    if (thingDTO.properties.get(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY).startsWith(uniquePrefix)) {
+                        return deviceUnitConfig;
+                    }
+                } catch (NotAvailableException ex) {
+                    // value not available so continue with the next check
+                }
+            }
 
             try {
                 // get the value for the thing uid key
@@ -101,6 +113,22 @@ public class SynchronizationProcessor {
 
         // throw exception because device for thing could not be found
         throw new NotAvailableException("Device for thing[" + thingDTO.UID + "]");
+    }
+
+    /**
+     * Extract a prefix for a unique id by removing everything after the last minus.
+     *
+     * @param uniqueId the unique id
+     * @return a prefix for this unique id
+     */
+    public static String getUniquePrefix(final String uniqueId) {
+        final String[] split = uniqueId.split("-");
+        final StringBuilder uniquePrefix = new StringBuilder(split[0]);
+        for (int i = 1; i < split.length - 1; i++) {
+            uniquePrefix.append("-");
+            uniquePrefix.append(split[i]);
+        }
+        return uniquePrefix.toString();
     }
 
     public static UnitConfig getLocationForThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
@@ -335,7 +363,7 @@ public class SynchronizationProcessor {
             itemDTO = OpenHABRestCommunicator.getInstance().registerItem(itemDTO);
             LOGGER.info("Successfully registered item[" + itemDTO.name + "] for dal unit");
 
-            if(!labelBefore.equals(itemDTO.label)) {
+            if (!labelBefore.equals(itemDTO.label)) {
                 LOGGER.warn("Item label {} changed label from {} to {}", itemDTO.name, labelBefore, itemDTO.label);
             }
             if (deviceClass.getCompany().equalsIgnoreCase("homematic")) {
@@ -359,9 +387,7 @@ public class SynchronizationProcessor {
      *
      * @param deviceUnitConfig the device from which the label and location is taken
      * @param thing            the thing which is updated
-     *
      * @return if the thing has been updated meaning that the label or location changed
-     *
      * @throws CouldNotPerformException if the update could not be performed
      */
     public static boolean updateThingToUnit(final UnitConfig deviceUnitConfig, final EnrichedThingDTO thing) throws CouldNotPerformException {
@@ -387,9 +413,7 @@ public class SynchronizationProcessor {
      *
      * @param thing      the thing which has changed
      * @param unitConfig the unit which is updated
-     *
      * @return if the thing has been updated meaning that the label or location changed
-     *
      * @throws CouldNotPerformException if the update could not be performed
      */
     public static boolean updateUnitToThing(final EnrichedThingDTO thing, final UnitConfig.Builder unitConfig) throws CouldNotPerformException, InterruptedException {
@@ -426,7 +450,6 @@ public class SynchronizationProcessor {
      * to the thing.
      *
      * @param thingDTO the thing to be removed.
-     *
      * @throws CouldNotPerformException if removing the thing fails.
      */
     public static void deleteThing(final ThingDTO thingDTO) throws CouldNotPerformException {

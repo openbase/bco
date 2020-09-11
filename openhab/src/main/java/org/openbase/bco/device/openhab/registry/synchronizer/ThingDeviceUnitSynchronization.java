@@ -229,6 +229,11 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
         // add thing uid to meta config to have a mapping between thing and device
         unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
+        // if available also set the unique id which allows to bypass things if multiple things need to be mapped to a single device unit
+        if (thingDTO.properties.containsKey(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY)) {
+            final String uniqueId = thingDTO.properties.get(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY);
+            unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_UNIQUE_ID_KEY).setValue(SynchronizationProcessor.getUniquePrefix(uniqueId));
+        }
 
         try {
             final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
