@@ -84,12 +84,6 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
 
             if (SynchronizationProcessor.updateUnitToThing(updatedThing, deviceUnitConfig)) {
                 Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get(30, TimeUnit.SECONDS);
-                // disabled because it seems to cause an deadlock
-                //try {
-                //    Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.build()).get();
-                //} catch (ExecutionException ex) {
-                //    throw new CouldNotPerformException("Could not update device[" + deviceUnitConfig.getLabel() + "] for thing[" + identifiableEnrichedThingDTO.getId() + "]", ex);
-                //}
             }
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory("Unit for thing " + identifiableEnrichedThingDTO.getDTO().UID + " not available", ex, logger, LogLevel.WARN);
@@ -103,28 +97,16 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         logger.debug("Synchronize {} ...", identifiableEnrichedThingDTO.getDTO().UID);
         final ThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
 
-        // handle initial sync
-//        if (isInitialSync()) {
         try {
             final UnitConfig deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(thingDTO);
             // create items for dal units of the device
             for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
                 SynchronizationProcessor.registerAndValidateItems(Registries.getUnitRegistry().getUnitConfigById(unitId), thingDTO);
             }
-//            return;
         } catch (NotAvailableException ex) {
             // go on to register a device for thing
             registerDevice(thingDTO);
         }
-//        }
-
-//        try {
-//            SynchronizationProcessor.getDeviceForThing(thingDTO);
-//        } catch (NotAvailableException ex) {
-//            GlobalCachedExecutorService.submit(() -> {
-//                return null;
-//            });
-//        }
     }
 
     private void registerDevice(ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {

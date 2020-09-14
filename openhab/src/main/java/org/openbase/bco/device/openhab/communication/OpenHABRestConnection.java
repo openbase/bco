@@ -51,12 +51,15 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.sse.InboundSseEvent;
 import javax.ws.rs.sse.SseEventSource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 public abstract class OpenHABRestConnection implements Shutdownable {
 
@@ -73,7 +76,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
 
     private final SyncObject topicObservableMapLock = new SyncObject("topicObservableMapLock");
     private final SyncObject connectionStateSyncLock = new SyncObject("connectionStateSyncLock");
-    private final Map<String, Observable<Object, JsonObject>> topicObservableMap;
+    private final Map<String, ObservableImpl<Object, JsonObject>> topicObservableMap;
 
     private final Client restClient;
     private final WebTarget restTarget;
@@ -94,9 +97,6 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             this.gson = new GsonBuilder().create();
             this.jsonParser = new JsonParser();
             this.restClient = ClientBuilder.newClient();
-            //RestTarget: http://scummbar:8080/rest
-            //RestTarget: http://scummbar:8080/rest
-            System.out.println("RestTarget: "+JPService.getProperty(JPOpenHABURI.class).getValue().resolve(SEPARATOR + REST_TARGET));
             this.restTarget = restClient.target(JPService.getProperty(JPOpenHABURI.class).getValue().resolve(SEPARATOR + REST_TARGET));
             this.setConnectState(State.CONNECTING);
         } catch (JPNotAvailableException ex) {
@@ -140,6 +140,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             if (connectState == this.openhabConnectionState) {
                 return;
             }
+            LOGGER.trace("Openhab Connection State changed to: "+connectState);
 
             // update state
             this.openhabConnectionState = connectState;
@@ -160,11 +161,13 @@ public abstract class OpenHABRestConnection implements Shutdownable {
                         }, 0, 15, TimeUnit.SECONDS);
                     } catch (NotAvailableException | RejectedExecutionException ex) {
                         // if global executor service is not available we have no chance to connect.
+                        LOGGER.warn("Wait for openHAB...", ex);
                         setConnectState(State.DISCONNECTED);
                     }
                     break;
                 case CONNECTED:
                     LOGGER.info("Connection to OpenHAB established.");
+                    initSSE();
                     break;
                 case RECONNECTING:
                     LOGGER.warn("Connection to OpenHAB lost!");
@@ -187,6 +190,47 @@ public abstract class OpenHABRestConnection implements Shutdownable {
                     break;
             }
         }
+    }
+
+    private void initSSE() {
+        // activate sse source if not already done
+        if (sseSource != null) {
+            LOGGER.warn("SSE already initialized!");
+            return;
+        }
+
+        final WebTarget webTarget = restTarget.path(EVENTS_TARGET);
+        sseSource = SseEventSource.target(webTarget).reconnectingEvery(15, TimeUnit.SECONDS).build();
+        sseSource.open();
+
+        final Consumer<InboundSseEvent> evenConsumer = inboundSseEvent -> {
+            // dispatch event
+            try {
+                final JsonObject payload = jsonParser.parse(inboundSseEvent.readData()).getAsJsonObject();
+                for (Entry<String, ObservableImpl<Object, JsonObject>> topicObserverEntry : topicObservableMap.entrySet()) {
+                    try {
+                        if (payload.get(TOPIC_KEY).getAsString().matches(topicObserverEntry.getKey())) {
+                            topicObserverEntry.getValue().notifyObservers(payload);
+                        }
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify listeners on topic[" + topicObserverEntry.getKey() + "]", ex), LOGGER);
+                    }
+                }
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not handle SSE payload!", ex), LOGGER);
+            }
+        };
+
+        final Consumer<Throwable> errorHandler = ex -> {
+            ExceptionPrinter.printHistory("Openhab connection error detected!", ex, LOGGER, LogLevel.DEBUG);
+            checkConnectionState();
+        };
+
+        final Runnable reconnectHandler = () -> {
+            checkConnectionState();
+        };
+
+        sseSource.register(evenConsumer, errorHandler, reconnectHandler);
     }
 
     public State getOpenhabConnectionState() {
@@ -222,29 +266,9 @@ public abstract class OpenHABRestConnection implements Shutdownable {
                 return;
             }
 
-            // activate sse source if not already done
-            if (sseSource == null) {
-                final WebTarget webTarget = restTarget.path(EVENTS_TARGET);
-                sseSource = SseEventSource.target(webTarget).reconnectingEvery(15, TimeUnit.SECONDS).build();
-                sseSource.open();
-            }
-
             final ObservableImpl<Object, JsonObject> observable = new ObservableImpl<>(this);
             observable.addObserver(observer);
             topicObservableMap.put(topicRegex, observable);
-            sseSource.register(inboundSseEvent -> {
-                try {
-                    final JsonObject payload = jsonParser.parse(inboundSseEvent.readData()).getAsJsonObject();
-                    if (payload.get(TOPIC_KEY).getAsString().matches(topicRegex)) {
-                        observable.notifyObservers(payload);
-                    }
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify listeners on topic[" + topicRegex + "]", ex), LOGGER);
-                }
-            }, ex -> {
-                ExceptionPrinter.printHistory("Openhab connection error detected!", ex, LOGGER, LogLevel.WARN);
-                checkConnectionState();
-            });
         }
     }
 
@@ -265,6 +289,12 @@ public abstract class OpenHABRestConnection implements Shutdownable {
         if (!connectionTask.isDone()) {
             connectionTask.cancel(false);
         }
+
+        // close sse
+        if (sseSource != null) {
+            sseSource.close();
+            sseSource = null;
+        }
     }
 
     public void validateConnection() throws CouldNotPerformException {
@@ -274,19 +304,27 @@ public abstract class OpenHABRestConnection implements Shutdownable {
     }
 
     private String validateResponse(final Response response) throws CouldNotPerformException, ProcessingException {
+        return validateResponse(response, false);
+    }
+
+    private String validateResponse(final Response response, final boolean skipConnectionValidation) throws CouldNotPerformException, ProcessingException {
         final String result = response.readEntity(String.class);
 
         if (response.getStatus() == 200 || response.getStatus() == 201 || response.getStatus() == 202) {
             return result;
         } else if (response.getStatus() == 404) {
-            checkConnectionState();
+            if (!skipConnectionValidation) {
+                checkConnectionState();
+            }
             throw new NotAvailableException("URL");
         } else if (response.getStatus() == 503) {
-            checkConnectionState();
+            if (!skipConnectionValidation) {
+                checkConnectionState();
+            }
             // throw a processing exception to indicate that openHAB is still not fully started, this is used to wait for openHAB
             throw new ProcessingException("OpenHAB server not ready");
         } else {
-            throw new CouldNotPerformException("Response returned with ErrorCode[" + response.getStatus() + "], Result["+result+"] and ErrorMessage[" + response.getStatusInfo().getReasonPhrase() + "]");
+            throw new CouldNotPerformException("Response returned with ErrorCode[" + response.getStatus() + "], Result[" + result + "] and ErrorMessage[" + response.getStatusInfo().getReasonPhrase() + "]");
         }
     }
 
@@ -305,7 +343,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             final WebTarget webTarget = restTarget.path(target);
             final Response response = webTarget.request().get();
 
-            return validateResponse(response);
+            return validateResponse(response, skipValidation);
         } catch (CouldNotPerformException | ProcessingException ex) {
             if (isShutdownInitiated()) {
                 ExceptionProcessor.setInitialCause(ex, new ShutdownInProgressException(this));
@@ -363,7 +401,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             if (isShutdownInitiated()) {
                 ExceptionProcessor.setInitialCause(ex, new ShutdownInProgressException(this));
             }
-            throw new CouldNotPerformException("Could not post Value[" + value + "] of MediaType["+mediaType+"] on sub-URL[" + target + "]", ex);
+            throw new CouldNotPerformException("Could not post Value[" + value + "] of MediaType[" + mediaType + "] on sub-URL[" + target + "]", ex);
         }
     }
 
@@ -388,9 +426,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             }
 
             topicObservableMap.clear();
-            if (sseSource != null) {
-                sseSource.close();
-            }
+            resetConnection();
         }
     }
 }
