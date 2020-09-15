@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -68,8 +69,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        neutralWhiteColor = ColorableLight.detectNeutralWhiteColor(config, logger);
-        return super.applyConfigUpdate(config);
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            neutralWhiteColor = ColorableLight.detectNeutralWhiteColor(config, logger);
+            return super.applyConfigUpdate(config);
+        }
     }
 
     @Override

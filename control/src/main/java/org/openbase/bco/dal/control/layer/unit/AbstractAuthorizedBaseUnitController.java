@@ -42,6 +42,7 @@ import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Pair;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -75,17 +76,19 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        // update default action parameter
-        if (authToken == null) {
-            authToken = requestAuthToken(config);
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            // update default action parameter
+            if (authToken == null) {
+                authToken = requestAuthToken(config);
+            }
+
+            defaultActionParameter = getActionParameterTemplate(config)
+                    .setAuthToken(authToken)
+                    .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(config.getId()))
+                    .build();
+
+            return super.applyConfigUpdate(config);
         }
-
-        defaultActionParameter = getActionParameterTemplate(config)
-                .setAuthToken(authToken)
-                .setActionInitiator(ActionInitiator.newBuilder().setInitiatorId(config.getId()))
-                .build();
-
-        return super.applyConfigUpdate(config);
     }
 
     protected abstract ActionParameter.Builder getActionParameterTemplate(final UnitConfig config) throws InterruptedException, CouldNotPerformException;
