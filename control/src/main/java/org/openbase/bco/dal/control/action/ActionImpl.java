@@ -343,7 +343,7 @@ public class ActionImpl implements SchedulableAction {
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
     public void waitUntilDone(final long timeout, final TimeUnit timeUnit) throws InterruptedException, TimeoutException {
-        TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
+        final TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
         synchronized (executionStateChangeSync) {
             while (!isDone()) {
                 executionStateChangeSync.wait(timeoutSplitter.getTime());
@@ -352,7 +352,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void waitForActionTaskFinalization(final long timeout, final TimeUnit timeUnit) throws InterruptedException, TimeoutException {
-        TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
+        final TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
         synchronized (actionTaskLock) {
             while (!isActionTaskFinish()) {
                 actionTaskLock.wait(timeoutSplitter.getTime());
