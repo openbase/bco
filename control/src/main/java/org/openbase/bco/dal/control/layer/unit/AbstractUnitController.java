@@ -138,9 +138,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     /**
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
-    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
+    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
 
-    private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
+    private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = TimeUnit.SECONDS.toMillis(20);
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
 
     private static final String LOCK_CONSUMER_NOTIFICATION = AbstractUnitController.class.getSimpleName() + ".notifyScheduledActionList(..)";
@@ -316,6 +316,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
             super.init(config);
+
+            // init terminating action if not yet done
+            registerTerminatingAction();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -560,35 +563,48 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     private String terminatingActionId;
 
-    public void registerTerminatingAction() {
-
+    public void registerTerminatingAction() throws InterruptedException {
         // this is just a workaround to avoid duplicated registration.
         if (terminatingActionId != null) {
             return;
         }
-        terminatingActionId = "n/a";
 
+        builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULEING);
         try {
-            // auto switch of unused dal units
-            if (isDalUnit() && !isInfrastructure() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE) && !JPService.testMode()) {
+            terminatingActionId = "n/a";
 
-                // generate action parameter
-                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(Power.OFF, ServiceType.POWER_STATE_SERVICE, this);
-                actionParameter.setInterruptible(true);
-                actionParameter.setSchedulable(true);
-                actionParameter.setPriority(Priority.NO);
-                actionParameter.addCategory(Category.ECONOMY);
-                actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
+            try {
+                // auto switch of unused dal units
+                if (isDalUnit() && !isInfrastructure() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE) && !JPService.testMode()) {
 
-                // register remote for auto extension support.
-                final RemoteAction terminationAction = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
-                terminationAction.waitForRegistration(5, TimeUnit.SECONDS);
-                this.terminatingActionId = terminationAction.getId();
+                    // generate action parameter
+                    final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(Power.OFF, ServiceType.POWER_STATE_SERVICE, this);
+                    actionParameter.setInterruptible(true);
+                    actionParameter.setSchedulable(true);
+                    actionParameter.setPriority(Priority.TERMINATION);
+                    actionParameter.addCategory(Category.ECONOMY);
+                    actionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+                    actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
+
+                    final ActionImpl action = new ActionImpl(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build(), this);
+                    action.schedule();
+
+                    this.scheduledActionList.add(action);
+                    syncActionList(builderSetup.getBuilder());
+
+                    new RemoteAction(action.getActionDescription());
+                    // register remote for auto extension support.
+                    // final RemoteAction terminationAction = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
+                    // terminationAction.waitForRegistration(5, TimeUnit.SECONDS);
+                    this.terminatingActionId = action.getId();
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);
             }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);
+        } finally {
+            builderSetup.unlockWrite(NotificationStrategy.SKIP);
         }
     }
 
@@ -885,11 +901,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
 
                 if (actionToSchedule != null) {
-
-                    // init terminating action if not yet done
-                    if (terminatingActionId == null) {
-                        registerTerminatingAction();
-                    }
 
                     // test if there is another action already in the list by the same initiator
                     try {
