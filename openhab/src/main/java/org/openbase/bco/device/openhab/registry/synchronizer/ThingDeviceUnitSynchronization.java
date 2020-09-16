@@ -30,6 +30,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -114,7 +115,10 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         // get device class for thing
         DeviceClass deviceClass;
         try {
-            deviceClass = SynchronizationProcessor.getDeviceClassByIdentifier(thingDTO);
+            deviceClass = SynchronizationProcessor.getDeviceClassForThing(thingDTO);
+        } catch (NotSupportedException ex) {
+            logger.debug("Ignore thing {} because: {}", thingDTO.UID, ex.getMessage());
+            return;
         } catch (NotAvailableException ex) {
             logger.warn("Ignore thing {} because: {}", thingDTO.UID, ex.getMessage());
             return;
@@ -212,8 +216,8 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         // add thing uid to meta config to have a mapping between thing and device
         unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
         // if available also set the unique id which allows to bypass things if multiple things need to be mapped to a single device unit
-        if (thingDTO.properties.containsKey(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY)) {
-            final String uniqueId = thingDTO.properties.get(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY);
+        if (thingDTO.properties.containsKey(SynchronizationProcessor.OPENHAB_THING_PROPERTY_KEY_UNIQUE_ID)) {
+            final String uniqueId = thingDTO.properties.get(SynchronizationProcessor.OPENHAB_THING_PROPERTY_KEY_UNIQUE_ID);
             unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(SynchronizationProcessor.OPENHAB_UNIQUE_ID_KEY).setValue(SynchronizationProcessor.getUniquePrefix(uniqueId));
         }
 

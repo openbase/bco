@@ -23,11 +23,13 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  */
 
 
+import org.eclipse.smarthome.config.discovery.DiscoveryResultFlag;
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Activatable;
@@ -53,6 +55,12 @@ public class InboxApprover implements Activatable {
         this.inboxAddedObservable = new InboxAddedObservable();
         this.inboxUpdatedObservable = new InboxUpdatedObservable();
         observer = (source, discoveryResultDTO) -> {
+
+            // just ignore things that should be ignored.
+            if(discoveryResultDTO.flag == DiscoveryResultFlag.IGNORED) {
+                return;
+            }
+
             try {
                 // approve everything from the bco binding
                 if (discoveryResultDTO.thingUID.startsWith("bco")) {
@@ -64,6 +72,8 @@ public class InboxApprover implements Activatable {
                 SynchronizationProcessor.getDeviceClassByDiscoveryResult(discoveryResultDTO);
                 // device class could be found so approve
                 OpenHABRestCommunicator.getInstance().approve(discoveryResultDTO.thingUID, discoveryResultDTO.label);
+            } catch (NotSupportedException ex) {
+                // ignore not supported things
             } catch (NotAvailableException ex) {
                 // no matching device class found so ignore it for now
                 ExceptionPrinter.printHistory("Ignore discovered thing[" + discoveryResultDTO.thingUID + "].", ex, LOGGER, LogLevel.WARN);

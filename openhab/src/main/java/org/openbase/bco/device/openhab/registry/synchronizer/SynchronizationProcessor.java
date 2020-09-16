@@ -34,10 +34,13 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.configuration.MetaConfigType.MetaConfig;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
@@ -60,9 +63,8 @@ import java.util.Map.Entry;
  */
 public class SynchronizationProcessor {
 
-    public static final String ZWAVE_DEVICE_TYPE_KEY = "zwave_devicetype";
-    public static final String HUE_MODEL_ID_KEY = "modelId";
-    public static final String OPENHAB_PROPERTIES_UNIQUE_ID_KEY = "uniqueId";
+    public static final String OPENHAB_THING_PROPERTY_KEY_MODEL_ID = "modelId";
+    public static final String OPENHAB_THING_PROPERTY_KEY_UNIQUE_ID = "uniqueId";
 
     public static final String OPENHAB_THING_UID_KEY = "OPENHAB_THING_UID";
     public static final String OPENHAB_THING_CLASS_KEY = "OPENHAB_THING_CLASS";
@@ -88,10 +90,10 @@ public class SynchronizationProcessor {
             metaConfigPool.register(new MetaConfigVariableProvider("UnitMetaConfig", deviceUnitConfig.getMetaConfig()));
 
             // bypass mapping by thing uid in case multiple things map to a single device unit
-            if (thingDTO.properties.containsKey(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY)) {
+            if (thingDTO.properties.containsKey(SynchronizationProcessor.OPENHAB_THING_PROPERTY_KEY_UNIQUE_ID)) {
                 try {
                     final String uniquePrefix = getUniquePrefix(metaConfigPool.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY));
-                    if (thingDTO.properties.get(SynchronizationProcessor.OPENHAB_PROPERTIES_UNIQUE_ID_KEY).startsWith(uniquePrefix)) {
+                    if (thingDTO.properties.get(SynchronizationProcessor.OPENHAB_THING_PROPERTY_KEY_UNIQUE_ID).startsWith(uniquePrefix)) {
                         return deviceUnitConfig;
                     }
                 } catch (NotAvailableException ex) {
@@ -165,46 +167,73 @@ public class SynchronizationProcessor {
     }
 
     public static DeviceClass getDeviceClassByDiscoveryResult(final DiscoveryResultDTO discoveryResult) throws CouldNotPerformException {
-        return getDeviceClassByIdentifier(getClassIdentifierForBinding(discoveryResult.thingTypeUID, discoveryResult.properties));
-    }
-
-    public static DeviceClass getDeviceClassByIdentifier(final ThingDTO thingDTO) throws CouldNotPerformException {
-        return getDeviceClassByIdentifier(getClassIdentifierForBinding(thingDTO.thingTypeUID, thingDTO.properties));
-    }
-
-    private static String getClassIdentifierForBinding(final String thingTypeUID, final Map<String, ?> properties) throws NotAvailableException {
-        if (thingTypeUID.startsWith("zwave")) {
-            final String deviceType = (String) properties.get(ZWAVE_DEVICE_TYPE_KEY);
-            if (deviceType == null) {
-                throw new NotAvailableException("ZWave deviceType");
-            }
-            return ZWAVE_DEVICE_TYPE_KEY + ":" + deviceType;
-        } else if (thingTypeUID.startsWith("hue")) {
-            final String modelId = (String) properties.get(HUE_MODEL_ID_KEY);
-            if (modelId == null) {
-                throw new NotAvailableException("Hue modelId");
-            }
-            return HUE_MODEL_ID_KEY + ":" + modelId;
+        // transform to key value map
+        final Map<String, String> properties = new HashMap<>();
+        for (Entry<String, Object> stringObjectEntry : discoveryResult.properties.entrySet()) {
+            properties.put(stringObjectEntry.getKey(), stringObjectEntry.getValue().toString());
         }
-        String[] split = thingTypeUID.split(":");
-        if (split.length >= 2) {
-            return split[1];
-        }
-        return thingTypeUID;
+        // resolve
+        return resolveDeviceClass(discoveryResult.label, discoveryResult.thingTypeUID, properties);
     }
 
-    private static DeviceClass getDeviceClassByIdentifier(final String classIdentifier) throws CouldNotPerformException {
+    public static DeviceClass getDeviceClassForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+        return resolveDeviceClass(thingDTO.label, thingDTO.thingTypeUID, thingDTO.properties);
+    }
+
+// outdated and can later be removed.
+//    private static String getClassIdentifierForBinding(final String thingTypeUID, final Map<String, ?> properties) throws NotAvailableException {
+//        if (thingTypeUID.startsWith("zwave")) {
+//            final String deviceType = (String) properties.get(ZWAVE_DEVICE_TYPE_KEY);
+//            if (deviceType == null) {
+//                throw new NotAvailableException("ZWave deviceType");
+//            }
+//            return ZWAVE_DEVICE_TYPE_KEY + ":" + deviceType;
+//        } else if (thingTypeUID.startsWith("hue")) {
+//            final String modelId = (String) properties.get(HUE_MODEL_ID_KEY);
+//            if (modelId == null) {
+//                throw new NotAvailableException("Hue modelId");
+//            }
+//            return HUE_MODEL_ID_KEY + ":" + modelId;
+//        }
+//        String[] split = thingTypeUID.split(":");
+//        if (split.length >= 2) {
+//            return split[1];
+//        }
+//        return thingTypeUID;
+//    }
+
+
+    private static DeviceClass resolveDeviceClass(final String thingLabel, final String thingTypeUID, final Map<String, String> properties) throws CouldNotPerformException {
+
+        // filter some things that are not supported yet
+        switch (thingTypeUID) {
+            case "hue:bridge":
+            case "hue:group":
+            case "zwave:serial_zstick":
+                throw new NotSupportedException(thingLabel, "bco");
+            default:
+                // just continue
+        }
+
         // iterate over all device classes
         for (final DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
+
+            // check if the product number already matches
+            final String modelId = properties.get(OPENHAB_THING_PROPERTY_KEY_MODEL_ID);
+            if(modelId != null && modelId.equalsIgnoreCase(deviceClass.getProductNumber())) {
+                return deviceClass;
+            }
+
             // get the most global meta config
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
+            metaConfigPool.register(new ProtobufVariableProvider(deviceClass));
             metaConfigPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
 
             try {
                 // get the value for the openHAB thing class key
                 final String[] thingClassKeys = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY).split(",");
                 for (final String thingClassKey : thingClassKeys) {
-                    if (classIdentifier.equalsIgnoreCase(thingClassKey)) {
+                    if (match(thingClassKey.trim(), properties, deviceClass)) {
                         return deviceClass;
                     }
                 }
@@ -213,7 +242,29 @@ public class SynchronizationProcessor {
             }
         }
         // throw exception because device class could not be found
-        throw new NotAvailableException("DeviceClass for identifier[" + classIdentifier + "]");
+        throw new NotAvailableException("Could not resolve any DeviceClass for Thing[" + thingTypeUID + "] with Label[" + thingLabel + "] given the following Properties["+ StringProcessor.transformCollectionToString(properties.entrySet(), stringStringEntry -> stringStringEntry.getKey() + ":" + stringStringEntry.getValue(),", ") +"]");
+    }
+
+    private static boolean match(final String thingClassKey, final Map<String, String> properties, final DeviceClass deviceClass) {
+
+        final String[] thingKeyVaulePair = thingClassKey.split(":");
+        if (thingKeyVaulePair.length != 2) {
+            LOGGER.warn("Invalid thing class key found for "+LabelProcessor.getBestMatch(deviceClass.getLabel(), "?")+ "! Device will be ignored.");
+            return false;
+        }
+
+        // check for matches
+        for (Entry<String, String> keyValueEntry : properties.entrySet()) {
+            // if key matches than check entry
+            if(keyValueEntry.getKey().equalsIgnoreCase(thingKeyVaulePair[0])) {
+                if (keyValueEntry.getValue().equalsIgnoreCase(thingKeyVaulePair[1])) {
+                    return true;
+                }
+            }
+        }
+
+        // no matches found
+        return false;
     }
 
     public static Map<ServiceType, ServicePattern> generateServiceMap(final UnitConfig unitConfig) {
