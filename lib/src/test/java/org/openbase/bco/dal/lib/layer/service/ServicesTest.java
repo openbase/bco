@@ -83,7 +83,7 @@ public class ServicesTest {
 
         for (int i = 0; i < localPositionStateList.size(); i++) {
             for (int j = 1; j < localPositionStateList.size(); j++) {
-                assertEquals("Comparision between position states " + i + " and " + j + " yields unexpected result", (i == j || (i != 3 && j != 3)), Services.equalServiceStates(localPositionStateList.get(i), localPositionStateList.get(j)));
+                assertEquals("Comparison between position states " + i + " and " + j + " yields unexpected result", (i == j || (i != 3 && j != 3)), Services.equalServiceStates(localPositionStateList.get(i), localPositionStateList.get(j)));
             }
             assertFalse("PowerState should never match a local position state", Services.equalServiceStates(localPositionStateList.get(i), powerState));
         }
