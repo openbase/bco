@@ -101,62 +101,86 @@
             <version>2.31</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.6.2</version>
+<!--        <dependency>-->
+<!--            <groupId>com.google.code.gson</groupId>-->
+<!--            <artifactId>gson</artifactId>-->
 <!--            <version>2.8.5</version>-->
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>19.0</version>
-<!--            <version>23.0</version>-->
-        </dependency>
+<!--&lt;!&ndash;            <version>2.8.5</version>&ndash;&gt;-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.google.guava</groupId>-->
+<!--            <artifactId>guava</artifactId>-->
+<!--            <version>26.0-jre</version>-->
+<!--&lt;!&ndash;            <version>23.0</version>&ndash;&gt;-->
+<!--        </dependency>-->
 
+        <!-- https://mvnrepository.com/artifact/org.openhab.core.bundles/org.openhab.core.io.rest.core -->
         <dependency>
-            <groupId>org.eclipse.smarthome.io</groupId>
-            <artifactId>org.eclipse.smarthome.io.rest.core</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
+            <groupId>org.openhab.core.bundles</groupId>
+            <artifactId>org.openhab.core.io.rest.core</artifactId>
+            <version>${dependency.openhab.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.smarthome.core</groupId>
-            <artifactId>org.eclipse.smarthome.core</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.smarthome.core</groupId>
-            <artifactId>org.eclipse.smarthome.core.thing</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.smarthome.config</groupId>
-            <artifactId>org.eclipse.smarthome.config.core</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.smarthome.config</groupId>
-            <artifactId>org.eclipse.smarthome.config.discovery</artifactId>
-            <version>${dependency.eclipse.smarthome.version}</version>
-        </dependency>
+        <!-- <dependency>
+            <groupId>org.openhab.core.bundles</groupId>
+            <artifactId>org.openhab.core</artifactId>
+            <version>${dependency.openhab.version}</version>
+        </dependency> -->
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.dal.control</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
+        <!-- <dependency>
+            <groupId>org.openhab.core.bom</groupId>
+            <artifactId>org.openhab.core.bom.compile</artifactId>
+            <version>2.5.0</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openhab.core.bom</groupId>
+            <artifactId>org.openhab.core.bom.openhab-core</artifactId>
+            <version>2.5.0</version>
+            <type>pom</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openhab.core.bom</groupId>
+            <artifactId>org.openhab.core.bom.test</artifactId>
+            <version>2.5.0</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency> -->
     </dependencies>
 
     <properties>
-<!--        <dependency.eclipse.smarthome.version>0.10.0</dependency.eclipse.smarthome.version>-->
-        <dependency.eclipse.smarthome.version>0.9.0</dependency.eclipse.smarthome.version>
+        <dependency.openhab.version>2.5.0</dependency.openhab.version>
     </properties>
-
 
     <repositories>
         <repository>
-            <id>eclipse</id>
-            <name>Eclipse Repository</name>
-            <url>https://repo.eclipse.org/content/repositories/smarthome-releases</url>
+            <id>jcenter</id>
+            <name>JCenter Repository</name>
+            <url>https://jcenter.bintray.com</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>openhab-artifactory-release</id>
+            <name>JFrog Artifactory Repository</name>
+            <url>https://openhab.jfrog.io/openhab/libs-release</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 </project>

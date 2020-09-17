@@ -22,10 +22,12 @@ package org.openbase.bco.device.openhab.communication;
  * #L%
  */
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
+import org.eclipse.smarthome.core.internal.service.CommandDescriptionServiceImpl;
+import org.eclipse.smarthome.core.internal.types.CommandDescriptionImpl;
+import org.eclipse.smarthome.core.types.CommandDescription;
+import org.eclipse.smarthome.core.types.CommandDescriptionBuilder;
+import org.eclipse.smarthome.core.types.CommandOption;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -53,7 +55,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.sse.InboundSseEvent;
 import javax.ws.rs.sse.SseEventSource;
+import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.RejectedExecutionException;
@@ -94,7 +98,21 @@ public abstract class OpenHABRestConnection implements Shutdownable {
     public OpenHABRestConnection() throws InstantiationException {
         try {
             this.topicObservableMap = new HashMap<>();
-            this.gson = new GsonBuilder().create();
+            this.gson = new GsonBuilder().setExclusionStrategies(new ExclusionStrategy() {
+                @Override
+                public boolean shouldSkipField(FieldAttributes fieldAttributes) {
+                    return false;
+                }
+
+                @Override
+                public boolean shouldSkipClass(Class<?> aClass) {
+                    // ignore Command Description because its an interface and can not be serialized without any instance creator.
+                    if(aClass.equals(CommandDescription.class)) {
+                        return true;
+                    }
+                    return false;
+                }
+            }).create();
             this.jsonParser = new JsonParser();
             this.restClient = ClientBuilder.newClient();
             this.restTarget = restClient.target(JPService.getProperty(JPOpenHABURI.class).getValue().resolve(SEPARATOR + REST_TARGET));

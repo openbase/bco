@@ -36,7 +36,6 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
-import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.slf4j.Logger;
