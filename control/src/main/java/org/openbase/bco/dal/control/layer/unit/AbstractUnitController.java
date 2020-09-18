@@ -589,10 +589,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     final ActionImpl action = new ActionImpl(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build(), this);
                     action.schedule();
 
+                    // add action to action list and sync it back into the data builder
                     this.scheduledActionList.add(action);
                     syncActionList(builderSetup.getBuilder());
 
-                    new RemoteAction(action.getActionDescription());
+                    // create new remothe that automatically extents the action.
+                    new RemoteAction(action.getActionDescription(), () -> true);
                     // register remote for auto extension support.
                     // final RemoteAction terminationAction = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
                     // terminationAction.waitForRegistration(5, TimeUnit.SECONDS);
