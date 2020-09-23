@@ -31,7 +31,6 @@ import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.Build
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
-import org.slf4j.LoggerFactory;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
 
@@ -84,5 +83,11 @@ public interface BrightnessStateProviderService extends ProviderService {
             default:
                 return false;
         }
+    }
+
+    static Boolean equalServiceStates(final BrightnessState brightnessStateA, final BrightnessState brightnessStateB) {
+        //TODO: explain this (required because of openhab) and put margins into constants
+
+        return OperationService.equals(brightnessStateA.getBrightness(), brightnessStateB.getBrightness(), BRIGHTNESS_MARGIN);
     }
 }

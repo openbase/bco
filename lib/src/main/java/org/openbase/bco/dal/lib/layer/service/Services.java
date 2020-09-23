@@ -31,6 +31,7 @@ import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.registry.remote.Registries;
@@ -47,6 +48,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.BrightnessStateType;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +80,6 @@ public class Services extends ServiceStateProcessor {
      * e.g. the base name of service PowerStateService is PowerState.
      *
      * @param serviceType the service type to extract the base name.
-     *
      * @return the service base name.
      */
     public static String getServiceBaseName(ServiceType serviceType) {
@@ -102,9 +103,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns the state name of the appurtenant service.
      *
      * @param serviceType the service type which is used to generate the service name.
-     *
      * @return The state type name as string.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given serviceType is null.
      */
     public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
@@ -123,9 +122,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns the state name of the appurtenant service.
      *
      * @param template The service template.
-     *
      * @return The state type name as string.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
      */
     public static String getServiceStateName(final ServiceTemplate template) throws NotAvailableException {
@@ -144,9 +141,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns a collection of service state values.
      *
      * @param serviceType the service type to identify the service state class.
-     *
      * @return a collection of enum values of the service state.
-     *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
     public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final ServiceType serviceType) throws NotAvailableException {
@@ -161,9 +156,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns a collection of service state values.
      *
      * @param communicationType the communication type to identify the service state class.
-     *
      * @return a collection of enum values of the service state.
-     *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
     public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final CommunicationType communicationType) throws NotAvailableException {
@@ -178,9 +171,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns a collection of service state values.
      *
      * @param serviceStateClass the service state class to resolve the values.
-     *
      * @return a collection of enum values of the service state.
-     *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
     public static Collection<ProtocolMessageEnum> getServiceStateEnumValues(final Class<? extends Message> serviceStateClass) throws NotAvailableException {
@@ -204,7 +195,6 @@ public class Services extends ServiceStateProcessor {
      * Method generates a new service state builder related to the given {@code comman}.
      *
      * @param communicationType the communication type of the service state.
-     *
      * @throws CouldNotPerformException is thrown if something went wrong during the generation.
      */
     public static Message.Builder generateServiceStateBuilder(final CommunicationType communicationType) throws CouldNotPerformException {
@@ -220,7 +210,6 @@ public class Services extends ServiceStateProcessor {
      * Method generates a new service state builder related to the given {@code serviceType}.
      *
      * @param serviceType the service type of the service state.
-     *
      * @throws CouldNotPerformException is thrown if something went wrong during the generation.
      */
     public static Message.Builder generateServiceStateBuilder(final ServiceType serviceType) throws CouldNotPerformException {
@@ -239,9 +228,7 @@ public class Services extends ServiceStateProcessor {
      * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
      * @param stateValue  a compatible state value related to the given service state.
-     *
      * @return a new service state initialized with the state value.
-     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends Message.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -266,9 +253,7 @@ public class Services extends ServiceStateProcessor {
      * @param <SV>              the state enum of the service.
      * @param communicationType the communication type of the service state.
      * @param stateValue        a compatible state value related to the given service state.
-     *
      * @return a new service state initialized with the state value.
-     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends Message.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final CommunicationType communicationType, SV stateValue) throws CouldNotPerformException {
@@ -294,9 +279,7 @@ public class Services extends ServiceStateProcessor {
      * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
      * @param stateValue  a compatible state value related to the given service state.
-     *
      * @return a new service state initialized with the state value.
-     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends Message, SV extends ProtocolMessageEnum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -320,9 +303,7 @@ public class Services extends ServiceStateProcessor {
      * Method detects and returns the service state class.
      *
      * @param serviceType the given service type to resolve the class.
-     *
      * @return the service state class.
-     *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends Message> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
@@ -337,9 +318,7 @@ public class Services extends ServiceStateProcessor {
      * Method detects and returns the service state class.
      *
      * @param communicationType the communication type to resolve the service state class.
-     *
      * @return the service state class.
-     *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends Message> getServiceStateClass(final CommunicationType communicationType) throws NotAvailableException {
@@ -418,7 +397,7 @@ public class Services extends ServiceStateProcessor {
             case PROVIDER: // make sure service state is available
                 try {
                     boolean serviceStateAvailable = (boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance);
-                    if(!serviceStateAvailable) {
+                    if (!serviceStateAvailable) {
                         throw new NotAvailableException(serviceType.name(), instance);
                     }
                 } catch (CouldNotPerformException ex) {
@@ -535,9 +514,7 @@ public class Services extends ServiceStateProcessor {
      * Note: be aware that the passed builder instance is currently not updated, instead an updated builder instance is returned.
      *
      * @param serviceStateBuilder the state type builder to validate.
-     *
      * @return the given state builder instance updated version of it.
-     *
      * @throws VerificationFailedException is thrown if the state is invalid and no repair functions are available.
      */
     public static <MB extends Message.Builder> MB verifyAndRevalidateServiceState(final MB serviceStateBuilder) throws VerificationFailedException {
@@ -550,9 +527,7 @@ public class Services extends ServiceStateProcessor {
      * This means field are recalculated in case they are not consistent against each other.
      *
      * @param serviceState the state type to validate.
-     *
      * @return the given state or an updated version of it.
-     *
      * @throws VerificationFailedException is thrown if the state is invalid and no repair functions are available.
      */
     public static <M extends Message> M verifyAndRevalidateServiceState(final M serviceState) throws VerificationFailedException {
@@ -608,9 +583,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns the action which is responsible for the given state.
      *
      * @param serviceState the state used to resolve the responsible action.
-     *
      * @return the responsible action.
-     *
      * @throws NotAvailableException is thrown if the related action can not be determine.
      */
     public static ActionDescription getResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
@@ -636,9 +609,7 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleActionBuilder the action to setup.
      * @param serviceState             the message which is updated with the given responsible action.
      * @param <M>                      the type of the service state message.
-     *
      * @return the modified message instance.
-     *
      * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      */
     public static <M extends Message> M setResponsibleAction(final ActionDescription.Builder responsibleActionBuilder, final M serviceState) throws NotAvailableException {
@@ -651,9 +622,7 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleActionBuilder the action to setup.
      * @param serviceStateBuilder      the builder which is updated with the given responsible action.
      * @param <B>                      the type of the service state builder.
-     *
      * @return the modified builder instance.
-     *
      * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription.Builder responsibleActionBuilder, final B serviceStateBuilder) throws NotAvailableException {
@@ -666,9 +635,7 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction the action to setup.
      * @param serviceState      the message which is updated with the given responsible action.
      * @param <M>               the type of the service state message.
-     *
      * @return the modified message instance.
-     *
      * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      */
     public static <M extends Message> M setResponsibleAction(final ActionDescription responsibleAction, final M serviceState) throws NotAvailableException {
@@ -681,9 +648,7 @@ public class Services extends ServiceStateProcessor {
      * @param responsibleAction   the action to setup.
      * @param serviceStateBuilder the builder which is updated with the given responsible action.
      * @param <B>                 the type of the service state builder.
-     *
      * @return the modified builder instance.
-     *
      * @throws NotAvailableException is thrown if the builder does not provide a responsible action.
      */
     public static <B extends Message.Builder> B setResponsibleAction(final ActionDescription responsibleAction, final B serviceStateBuilder) throws NotAvailableException {
@@ -920,7 +885,6 @@ public class Services extends ServiceStateProcessor {
      *
      * @param serviceState1 the first state compared.
      * @param serviceState2 the second state compared.
-     *
      * @return if all fields except the fields mentioned above are equal.
      */
     public static boolean equalServiceStates(final Message serviceState1, final Message serviceState2) {
@@ -941,6 +905,8 @@ public class Services extends ServiceStateProcessor {
         //TODO resolve generically for all service states
         if (serviceState1.getClass().equals(ColorState.class)) {
             return ColorStateProviderService.equalServiceStates((ColorState) serviceState1, (ColorState) serviceState2);
+        } else if (serviceState1.getClass().equals(BrightnessStateType.BrightnessState.class)) {
+            return BrightnessStateProviderService.equalServiceStates((BrightnessStateType.BrightnessState) serviceState1, (BrightnessStateType.BrightnessState) serviceState2);
         }
 
         // make sure total equals or both empty messages pass the check
@@ -991,12 +957,12 @@ public class Services extends ServiceStateProcessor {
 
             // compare primitives
             if (field.getJavaType() != JavaType.MESSAGE) {
-                if(serviceState1.hasField(field) && serviceState2.hasField(field)) {
+                if (serviceState1.hasField(field) && serviceState2.hasField(field)) {
                     if (field.getJavaType() == JavaType.DOUBLE) {
                         double value1 = (double) serviceState1.getField(field);
                         double value2 = (double) serviceState2.getField(field);
 
-                        if(!OperationService.equals(value1, value2, DOUBLE_MARGIN)) {
+                        if (!OperationService.equals(value1, value2, DOUBLE_MARGIN)) {
                             return false;
                         }
                     } else {
@@ -1019,9 +985,7 @@ public class Services extends ServiceStateProcessor {
      * @param serviceType      the service type of the service state.
      * @param serviceState     the service state to be converted.
      * @param superServiceType the super service type describing the state into which to convert.
-     *
      * @return a state matching the super service type.
-     *
      * @throws CouldNotPerformException if the conversion fails because of invalid arguments or because conversion methods
      *                                  are not available.
      */
@@ -1042,7 +1006,6 @@ public class Services extends ServiceStateProcessor {
     }
 
     public static boolean isCompatible(final Message serviceStateA, final ServiceType serviceTypeA, final Message serviceStateB) {
-
         // check if equals
         if (equalServiceStates(serviceStateA, serviceStateB)) {
             return true;
