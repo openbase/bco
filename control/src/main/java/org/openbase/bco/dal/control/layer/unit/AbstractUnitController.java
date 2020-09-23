@@ -126,7 +126,6 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -373,7 +372,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
 
-        try(final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
 
             if (config == null) {
                 throw new NotAvailableException("UnitConfig");
@@ -667,9 +666,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
-     *
      * @return the action identified by the provided id as described above.
-     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -701,7 +698,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
-     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -867,7 +863,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
-     *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
     public Action reschedule() throws CouldNotPerformException {
@@ -879,10 +874,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
-     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
-     *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
     private Action reschedule(final SchedulableAction actionToSchedule) throws CouldNotPerformException {
@@ -998,7 +991,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             }
                         } else {
                             if (!action.isValid()) {
-                                new FatalImplementationErrorException("Found invalid "+action+" which has not been removed from list!", this);
+                                new FatalImplementationErrorException("Found invalid " + action + " which has not been removed from list!", this);
                             }
                             atLeastOneActionToSchedule = true;
                         }
@@ -1131,7 +1124,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
-     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1360,7 +1352,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
                     DB internalBuilder = dataBuilder.getInternalBuilder();
 
-                    // compute new state my resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
+                    // compute new state by resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
                     try {
                         newState = computeNewState(newState, serviceType, internalBuilder);
                     } catch (RejectedException ex) {
@@ -1448,14 +1440,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param serviceState    the prototype of the new state.
      * @param serviceType     the service type of the new state.
      * @param internalBuilder the builder object used to access the currently applied state.
-     *
      * @return the computed state.
-     *
      * @throws RejectedException        in case the state would not change anything compared to the current one.
      * @throws CouldNotPerformException if the state could not be computed.
      */
     private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, RejectedException {
-
         try {
             // if the given state is a provider service, than no further steps have to be performed
             // because only operation service actions can be remapped
@@ -1499,15 +1488,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // requested state is not available so obviously it does not match
             }
 
-            int executing = 0;
-            int notAvail = 0;
             // if a lot of actions are executed over a short time period it can happen that the requested
             // state currently does not match the external update from openHAB
             // thus, match the service state to all actions of the same service that were submitted in the last
             // three seconds
-            final FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Action.TYPE_FIELD_NAME_ACTION);
-            final List<ActionDescription> actionDescriptionList = (List<ActionDescription>) internalBuilder.getField(actionFieldDescriptor);
-
             for (final SchedulableAction action : scheduledActionList) {
                 final ServiceStateDescriptionType.ServiceStateDescription serviceStateDescription = action.getActionDescription().getServiceStateDescription();
 
@@ -1519,12 +1503,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // do not consider actions which were not executing in the last three seconds
                 try {
                     final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.SUBMISSION, action.getActionDescription().getActionState());
-                    if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) < TimeUnit.SECONDS.toMillis(SUBMISSION_ACTION_MATCHING_TIMEOUT)) {
-                        executing++;
+
+                    if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) > TimeUnit.SECONDS.toMillis(SUBMISSION_ACTION_MATCHING_TIMEOUT)) {
                         continue;
                     }
                 } catch (NotAvailableException ex) {
-                    notAvail++;
                     // it the last executing time is not available skip comparison
                     continue;
                 }
@@ -1813,9 +1796,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
-     *
      * @return a location remote instance.
-     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1863,7 +1844,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
-     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1897,7 +1877,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
