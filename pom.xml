@@ -187,6 +187,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <dependency.jul.version>2.0-SNAPSHOT</dependency.jul.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
+        <dependency.org.junit.jupiter.version>[5.6,5.7-alpha)</dependency.org.junit.jupiter.version>
     </properties>
 
     <dependencies>
@@ -194,7 +195,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.6.2</version>
+            <version>${dependency.org.junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -202,7 +203,7 @@
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
-            <version>5.6.2</version>
+            <version>${dependency.org.junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
