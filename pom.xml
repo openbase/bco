@@ -207,6 +207,7 @@
         <dependency.rct.version>2.0-SNAPSHOT</dependency.rct.version>
         <dependency.apache-math.version>[3.6,3.7-alpha)</dependency.apache-math.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.17</dependency.org.codehaus.mojo.license-maven-plugin.version>
+        <dependency.org.junit.jupiter.version>[5.6,5.7-alpha)</dependency.org.junit.jupiter.version>
     </properties>
     
     <dependencies>
