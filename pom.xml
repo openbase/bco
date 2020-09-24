@@ -202,6 +202,7 @@
         <dependency.bco.authentication.version>${dependency.bco.version}</dependency.bco.authentication.version>
         <dependency.bco.ontology.version>${dependency.bco.version}</dependency.bco.ontology.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
+        <dependency.org.junit.jupiter.version>[5.6,5.7-alpha)</dependency.org.junit.jupiter.version>
     </properties>
     
     <distributionManagement>
