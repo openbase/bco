@@ -1727,8 +1727,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param internalBuilder The data builder of this unit which already contains the updated state.
      * @param serviceType     The service type which has been updated.
+     *
+     * @throws InterruptedException is thrown if the thread is externally interrupted.
      */
-    protected void applyCustomDataUpdate(DB internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(DB internalBuilder, ServiceType serviceType) throws InterruptedException {
         // overwrite in sub classes if a change in one service also results in a change of another
     }
 
