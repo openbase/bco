@@ -73,7 +73,7 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
     }
 
     @Override
-    protected void applyCustomDataUpdate(ButtonData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyCustomDataUpdate(ButtonData.Builder internalBuilder, ServiceType serviceType) throws InterruptedException {
         switch (serviceType) {
             case BUTTON_STATE_SERVICE:
 

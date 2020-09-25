@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
@@ -31,7 +32,6 @@ import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState.Build
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
-import org.slf4j.LoggerFactory;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
 
@@ -40,7 +40,7 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  */
 public interface BrightnessStateProviderService extends ProviderService {
 
-    double BRIGHTNESS_MARGIN = 0.1;
+    double BRIGHTNESS_MARGIN = Services.DOUBLE_MARGIN;
 
     @RPCMethod(legacy = true)
     default BrightnessState getBrightnessState() throws NotAvailableException {
@@ -84,5 +84,11 @@ public interface BrightnessStateProviderService extends ProviderService {
             default:
                 return false;
         }
+    }
+
+    static Boolean equalServiceStates(final BrightnessState brightnessStateA, final BrightnessState brightnessStateB) {
+        //TODO: explain this (required because of openhab) and put margins into constants
+
+        return OperationService.equals(brightnessStateA.getBrightness(), brightnessStateB.getBrightness(), BRIGHTNESS_MARGIN);
     }
 }

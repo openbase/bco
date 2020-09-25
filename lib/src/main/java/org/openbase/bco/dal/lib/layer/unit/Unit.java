@@ -52,7 +52,6 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType;
 import org.openbase.type.domotic.database.QueryType;
 import org.openbase.type.domotic.database.RecordCollectionType;
-import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -60,7 +59,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -472,6 +470,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      *
      * @param serviceType The service type on which the observer is added.
      * @param observer    The observer which is added.
+     *
      * @throws CouldNotPerformException method throws an InvalidStateException if the requested service type is not supported by this unit.
      */
     @Override
@@ -520,7 +519,7 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * Add a data observer which is only notified if data for the given
      * service tempus changes.
      * The value unknown is equivalent to listening on all changes.
-     *
+     * <p>
      * Note: Use Tempus.UNKNOWN to get informed about any action state changes.
      *
      * @param serviceTempus The service tempus on which the observer is added.
@@ -569,9 +568,10 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      *
      * @return a key - value pair pool providing all related variable of this unit including the service variables.
      *
-     * @throws NotAvailableException is thrown if the variable pool is not available e.g. because the unit is not compatible with the given service type..
+     * @throws NotAvailableException is thrown if the variable pool is not available e.g. because the unit is not compatible with the given service type.
+     * @throws InterruptedException  is thrown if the thread is externally interrupted.
      */
-    default VariableProvider generateVariablePool(final ServiceType serviceType) throws NotAvailableException {
+    default VariableProvider generateVariablePool(final ServiceType serviceType) throws NotAvailableException, InterruptedException {
         for (ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
             if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
                 return generateVariablePool(serviceConfig);
@@ -590,8 +590,9 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @return a key - value pair pool providing all related variable of this unit including the service variables.
      *
      * @throws NotAvailableException is thrown if the variable pool is not available.
+     * @throws InterruptedException  is thrown if the thread is externally interrupted.
      */
-    default VariableProvider generateVariablePool(final ServiceConfig serviceConfig) throws NotAvailableException {
+    default VariableProvider generateVariablePool(final ServiceConfig serviceConfig) throws NotAvailableException, InterruptedException {
         final MetaConfigPool configPool = (MetaConfigPool) generateVariablePool();
         if (serviceConfig.hasBindingConfig()) {
             configPool.register(new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingConfig().getMetaConfig()));
@@ -632,13 +633,13 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * * UnitLocationMetaConfig (if available)
      * * UnitMetaConfig
      * * LocationUnitConfig (protobuf fields)
-     * *
      *
      * @return a key - value pair pool providing all related variable of this unit.
      *
      * @throws NotAvailableException is thrown if the variable pool is not available.
+     * @throws InterruptedException  is thrown in case the thread was externally interrupted.
      */
-    default VariableProvider generateVariablePool() throws NotAvailableException {
+    default VariableProvider generateVariablePool() throws NotAvailableException, InterruptedException {
         try {
             final UnitConfig unitConfig = getConfig();
             final MetaConfigPool configPool = new MetaConfigPool();
@@ -651,7 +652,9 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                 UnitConfig locationUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
                 configPool.register(new MetaConfigVariableProvider("UnitLocationMetaConfig", locationUnitConfig.getMetaConfig()));
                 configPool.register(new ProtobufVariableProvider(locationUnitConfig));
-            } catch (NullPointerException | CouldNotPerformException | InterruptedException ex) {
+            } catch (InterruptedException ex) {
+                throw ex;
+            } catch (NullPointerException | CouldNotPerformException ex) {
                 // location not available so skip those
             }
 

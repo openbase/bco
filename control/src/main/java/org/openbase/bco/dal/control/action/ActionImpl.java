@@ -91,6 +91,9 @@ public class ActionImpl implements SchedulableAction {
         try {
             this.unit = unit;
             this.init(actionDescription);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new InstantiationException(this, ex);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -109,6 +112,9 @@ public class ActionImpl implements SchedulableAction {
         try {
             this.unit = unit;
             this.init(serviceState);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new InstantiationException(this, ex);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -116,13 +122,13 @@ public class ActionImpl implements SchedulableAction {
 
 
     @Override
-    public void init(final ActionDescription actionDescription) throws InitializationException {
+    public void init(final ActionDescription actionDescription) throws InitializationException, InterruptedException {
         init(actionDescription, true);
     }
 
-    private void init(final ActionDescription actionDescription, final boolean prepare) throws InitializationException {
+    private void init(final ActionDescription actionDescription, final boolean prepare) throws InitializationException, InterruptedException {
         LOGGER.trace("================================================================================");
-        actionDescriptionBuilderLock.writeLock().lock();
+        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
@@ -150,9 +156,9 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    private void init(final Message serviceState) throws InitializationException {
+    private void init(final Message serviceState) throws InitializationException, InterruptedException {
         LOGGER.trace("================================================================================");
-        actionDescriptionBuilderLock.writeLock().lock();
+        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         try {
 
             this.serviceState = serviceState;
@@ -208,6 +214,7 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
         try {
@@ -231,8 +238,14 @@ public class ActionImpl implements SchedulableAction {
                 }
 
                 // Initiate
-                updateActionState(ActionState.State.INITIATING);
+                try {
+                    updateActionState(ActionState.State.INITIATING);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+                }
 
+                assert actionTask == null;
                 actionTask = GlobalCachedExecutorService.submit(() -> {
                     try {
 
@@ -301,7 +314,6 @@ public class ActionImpl implements SchedulableAction {
                             }
                         }
                     } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
                         throw ex;
                     } catch (Exception ex) {
                         ExceptionPrinter.printHistory("Action task crashed!", new FatalImplementationErrorException(this, ex), LOGGER);
@@ -430,13 +442,14 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
         try {
             // if action is not executing, set to canceled if not already done and finish
             if (!isProcessing()) {
                 if (!isDone()) {
-                    updateActionState(State.CANCELED);
+                    updateActionStateWhileHoldingWriteLock(State.CANCELED);
                 }
 
                 // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
@@ -448,12 +461,13 @@ public class ActionImpl implements SchedulableAction {
 
                 // notify transaction id change
                 try {
-                    if(!unit.isDataBuilderWriteLockedByCurrentThread()) {
+                    if (!unit.isDataBuilderWriteLockedByCurrentThread()) {
                         unit.notifyChange();
                     }
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not notify transaction id update", ex, LOGGER);
                 } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
                     return FutureProcessor.canceledFuture(ActionDescription.class, ex);
                 }
 
@@ -461,7 +475,7 @@ public class ActionImpl implements SchedulableAction {
             }
 
             // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
-            updateActionState(State.CANCELING);
+            updateActionStateWhileHoldingWriteLock(State.CANCELING);
             try {
                 return GlobalCachedExecutorService.submit(() -> {
 
@@ -497,6 +511,7 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
         try {
@@ -506,7 +521,7 @@ public class ActionImpl implements SchedulableAction {
                 return FutureProcessor.completedFuture(getActionDescription());
             }
 
-            updateActionState(State.ABORTING);
+            updateActionStateWhileHoldingWriteLock(State.ABORTING);
             return GlobalCachedExecutorService.submit(() -> {
 
                 // cancel action task
@@ -552,7 +567,7 @@ public class ActionImpl implements SchedulableAction {
                     } catch (Exception ex) {
                         // in case of internal interruption just interrupt thread and return
                         // handle recursive interruption as well because interruption can be encapsulated in ExecutionException.
-                        if(ExceptionProcessor.isCausedByInterruption(ex)) {
+                        if (ExceptionProcessor.isCausedByInterruption(ex)) {
                             Thread.currentThread().interrupt();
                             return;
                         }
@@ -563,7 +578,7 @@ public class ActionImpl implements SchedulableAction {
 
             // if not already finished then we force the state.
             if (!isDone() && getActionState() != State.CANCELING) {
-                updateActionState(State.SCHEDULED);
+                updateActionStateWhileHoldingWriteLock(State.SCHEDULED);
             }
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
@@ -592,7 +607,7 @@ public class ActionImpl implements SchedulableAction {
                     } catch (Exception ex) {
                         // in case of internal interruption just interrupt thread and return
                         // handle recursive interruption as well because interruption can be encapsulated in ExecutionException.
-                        if(ExceptionProcessor.isCausedByInterruption(ex)) {
+                        if (ExceptionProcessor.isCausedByInterruption(ex)) {
                             Thread.currentThread().interrupt();
                             return;
                         }
@@ -603,7 +618,7 @@ public class ActionImpl implements SchedulableAction {
 
             // if not already finished then we force the state.
             if (!isDone() && getActionState() != State.CANCELING) {
-                updateActionState(State.REJECTED);
+                updateActionStateWhileHoldingWriteLock(State.REJECTED);
             }
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
@@ -624,7 +639,7 @@ public class ActionImpl implements SchedulableAction {
 
             // if not already finished then we force the state.
             if (!isDone() && getActionState() != State.CANCELING) {
-                updateActionState(State.FINISHED);
+                updateActionStateWhileHoldingWriteLock(State.FINISHED);
             }
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
@@ -639,25 +654,18 @@ public class ActionImpl implements SchedulableAction {
 
         // finalize if still running
         if (!isActionTaskFinish()) {
-            // try to speedup cancellation by forcing the thread by interruption if this is working, cleanup the following disabled code:
-            //            // try a smooth finishing if not already failed.
-            //            actionTask.cancel(getActionState() == State.SUBMISSION_FAILED);
-            //
-            //            try {
-            //                waitForActionTaskFinalization(1000);
-            //            } catch (InterruptedException e) {
-            //                Thread.currentThread().interrupt();
-            //            }
-            //
-            //            // check if finished yet
-            //            if (!isActionTaskFinish()) {
-            //                LOGGER.warn("Execution of " + this + " can not be finished smoothly! Force finalization...");
-            actionTask.cancel(true);
-            //            }
+
+            //create a ref copy
+            final Future<ActionDescription> actionTask = this.actionTask;
+
+            // cancel if exist
+            if (actionTask != null) {
+                actionTask.cancel(true);
+            }
 
             try {
                 waitForActionTaskFinalization(5, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 return;
             } catch (TimeoutException ex) {
@@ -682,9 +690,21 @@ public class ActionImpl implements SchedulableAction {
         updateActionState(state);
     }
 
-    private void updateActionState(final ActionState.State state) {
+    private void updateActionStateWhileHoldingWriteLock(final ActionState.State state) {
+        if (!actionDescriptionBuilderLock.isWriteLockedByCurrentThread()) {
+            new FatalImplementationErrorException("Update Action description while not holding the action description write lock!", this);
+        }
+        try {
+            updateActionState(state);
+        } catch (InterruptedException ex) {
+            // can not happen because we already own the action description builder lock.
+            new FatalImplementationErrorException(this, ex);
+        }
+    }
 
-        actionDescriptionBuilderLock.writeLock().lock();
+    private void updateActionState(final ActionState.State state) throws InterruptedException {
+
+        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         try {
 
             // duplicated state confirmation should be ok to simplify the code, but than skip the update.
@@ -855,6 +875,7 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
         try {

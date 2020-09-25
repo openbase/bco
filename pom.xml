@@ -190,7 +190,6 @@
         <skipTests>true</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <dependency.org.junit.jupiter.version>[5.5,5.6)</dependency.org.junit.jupiter.version>
         <dependency.rta.lib.version>[1.5,1.6-alpha)</dependency.rta.lib.version>
         <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
         <dependency.jul.version>2.0-SNAPSHOT</dependency.jul.version>
@@ -198,6 +197,7 @@
         <dependency.bco.registry.version>${dependency.bco.version}</dependency.bco.registry.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
         <dependency.com.influxdb.influxdb-client-java.version>[1.0,1.1-alpha)</dependency.com.influxdb.influxdb-client-java.version>
+        <dependency.org.junit.jupiter.version>[5.6,5.7-alpha)</dependency.org.junit.jupiter.version>
     </properties>
     
     <repositories>
