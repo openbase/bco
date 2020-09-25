@@ -62,7 +62,7 @@
                   <padding>
                       <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                   </padding>
-                  <Label alignment="CENTER" contentDisplay="TOP" text="Action Chain of Selected Unit">
+                  <Label alignment="CENTER" contentDisplay="TOP" text="Action Chain of Selected Action">
                       <font>
                           <Font name="System Bold" size="18.0" />
                       </font>
