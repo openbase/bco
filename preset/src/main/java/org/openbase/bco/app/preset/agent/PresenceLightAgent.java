@@ -89,26 +89,31 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
     protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                // handle colorable lights
-//                observe(locationRemote.setNeutralWhite(getDefaultActionParameter(Long.MAX_VALUE)));
-//                observe(locationRemote.setPowerState(State.ON, UnitType.COLORABLE_LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
-                observe(locationRemote.setColorState(Color.WHITE, getDefaultActionParameter(Long.MAX_VALUE)));
-
-                // handle dimmable lights
-                for (DimmableLightRemote light : locationRemote.getUnits(UnitType.DIMMABLE_LIGHT, false, Units.DIMMABLE_LIGHT)) {
-                    // make sure colorable lights are filtered
-                    if(light.getUnitType() == UnitType.DIMMABLE_LIGHT) {
-                        observe(light.setBrightnessState(Brightness.MAX, getDefaultActionParameter(Long.MAX_VALUE)));
-                    }
-                }
-
-                // handle lights
                 for (LightRemote light : locationRemote.getUnits(UnitType.LIGHT, false, Units.LIGHT)) {
-                    // make sure dimmable and colorable lights are filtered
-                    if(light.getUnitType() == UnitType.LIGHT) {
-                        observe(light.setPowerState(State.ON, getDefaultActionParameter(Long.MAX_VALUE)));
-                    }
+                    observe(light.setPowerState(State.ON, getDefaultActionParameter(Long.MAX_VALUE)));
                 }
+
+//
+//                // handle colorable lights
+//  //              observe(locationRemote.setNeutralWhite(getDefaultActionParameter(Long.MAX_VALUE)));
+////                observe(locationRemote.setPowerState(State.ON, UnitType.COLORABLE_LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
+//                observe(locationRemote.setColorState(Color.WHITE, getDefaultActionParameter(Long.MAX_VALUE)));
+//
+//                // handle dimmable lights
+//                for (DimmableLightRemote light : locationRemote.getUnits(UnitType.DIMMABLE_LIGHT, false, Units.DIMMABLE_LIGHT)) {
+//                    // make sure colorable lights are filtered
+//                    if(light.getUnitType() == UnitType.DIMMABLE_LIGHT) {
+//                        observe(light.setBrightnessState(Brightness.MAX, getDefaultActionParameter(Long.MAX_VALUE)));
+//                    }
+//                }
+//
+//                // handle lights
+//                for (LightRemote light : locationRemote.getUnits(UnitType.LIGHT, false, Units.LIGHT)) {
+//                    // make sure dimmable and colorable lights are filtered
+//                    if(light.getUnitType() == UnitType.LIGHT) {
+//                        observe(light.setPowerState(State.ON, getDefaultActionParameter(Long.MAX_VALUE)));
+//                    }
+//                }
                 break;
             case DEACTIVE:
                 cancelAllObservedActions();
