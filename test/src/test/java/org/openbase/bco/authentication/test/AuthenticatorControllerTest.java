@@ -60,14 +60,6 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
     public AuthenticatorControllerTest() {
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of communication between ClientRemote and AuthenticatorController.
      *

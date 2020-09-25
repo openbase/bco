@@ -92,22 +92,6 @@ public class AuthorizationHelperTest {
         LabelProcessor.addLabel(unitConfig4.getLabelBuilder(), Locale.ENGLISH, LOCATION_ROOT);
     }
 
-    @BeforeClass
-    public static void setUpClass() {
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Tests all possible permission combinations for the owner, while keeping the "other" permissions false.
      *

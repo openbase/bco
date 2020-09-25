@@ -54,18 +54,6 @@ public class CredentialStoreTest {
         JPService.registerProperty(JPCredentialsDirectory.class);
     }
 
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * @throws Exception
      */

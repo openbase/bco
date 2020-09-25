@@ -42,14 +42,6 @@ public class ServiceServerManagerTest extends AuthenticationTest {
     public ServiceServerManagerTest() {
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test if the service server can validate client server tickets.
      *

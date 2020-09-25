@@ -46,14 +46,6 @@ public class InitialRegistrationTest extends AuthenticationTest {
     public InitialRegistrationTest() {
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * @throws java.lang.Exception
      */
