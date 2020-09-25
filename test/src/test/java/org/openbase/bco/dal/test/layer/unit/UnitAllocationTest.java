@@ -39,6 +39,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
@@ -61,6 +62,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -164,6 +166,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         final Future<ActionDescription> cancelFuture = remoteAction.cancel();
         System.out.println("wait for cancel");
         cancelFuture.get();
+        colorableLightRemote.requestData().get();
 
         // validate that the action is cancelled
         assertEquals("ActionState is not canceled", ActionState.State.CANCELED, remoteAction.getActionState());
@@ -185,6 +188,8 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         private final ActionState.State[] actionStates;
 
+
+        private final SyncObject actionIdStateMapLock = new SyncObject("ActionIdStateMapLock");
         private final HashMap<String, ArrayList<ActionState.State>> actionIdStateMap;
 
         ActionStateObserver(final ActionState.State[] actionStates) {
@@ -202,35 +207,41 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
                 return;
             }
 
-            for (ActionDescription actionDescription : data.getActionList()) {
+            synchronized (actionIdStateMapLock) {
+                for (ActionDescription actionDescription : data.getActionList()) {
 
-                // filter non observed states
-                if (!Arrays.stream(actionStates).anyMatch(actionDescription.getActionState().getValue()::equals)) {
-                    return;
+                    // filter non observed states
+                    if (!Arrays.stream(actionStates).anyMatch(actionDescription.getActionState().getValue()::equals)) {
+                        return;
+                    }
+
+                    // create missing units
+                    if (!actionIdStateMap.containsKey(actionDescription.getActionId())) {
+                        actionIdStateMap.put(actionDescription.getActionId(), new ArrayList<>());
+                    }
+
+                    final ArrayList<ActionState.State> stateList = actionIdStateMap.get(actionDescription.getActionId());
+
+                    // do nothing if the action state has not been updated
+                    if (!stateList.isEmpty() && stateList.get(stateList.size() - 1) == actionDescription.getActionState().getValue()) {
+                        return;
+                    }
+
+                    stateList.add(actionDescription.getActionState().getValue());
                 }
-
-                // create missing units
-                if (!actionIdStateMap.containsKey(actionDescription.getActionId())) {
-                    actionIdStateMap.put(actionDescription.getActionId(), new ArrayList<>());
-                }
-
-                final ArrayList<ActionState.State> stateList = actionIdStateMap.get(actionDescription.getActionId());
-
-                // do nothing if the action state has not been updated
-                if (!stateList.isEmpty() && stateList.get(stateList.size() - 1) == actionDescription.getActionState().getValue()) {
-                    return;
-                }
-
-                stateList.add(actionDescription.getActionState().getValue());
             }
         }
 
         public int getReceivedActionStateCounter(final String actionId) {
-            return actionIdStateMap.size();
+            synchronized (actionIdStateMapLock) {
+                return actionIdStateMap.get(actionId).size();
+            }
         }
 
         void validateActionStates(final String actionId) {
-            assertEquals("Unexpected action state order.", StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionIdStateMap.get(actionId), ", "));
+            synchronized (actionIdStateMapLock) {
+                assertEquals("Unexpected action state order.", StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionIdStateMap.get(actionId), ", "));
+            }
         }
     }
 
