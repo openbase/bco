@@ -50,16 +50,7 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
-
         handleRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.HANDLE), true, HandleRemote.class);
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**

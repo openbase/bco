@@ -49,17 +49,6 @@ public class ServiceJSonProcessorTest {
         JPService.setupJUnitTestMode();
     }
 
-    @AfterClass
-    public static void tearDownClass() {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
 
     /**
      * Test of getServiceStateClassName method, of class ServiceJSonProcessor.

@@ -22,10 +22,8 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
@@ -36,6 +34,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -43,10 +42,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -66,14 +65,6 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         AbstractBCODeviceManagerTest.setUpClass();
 
         powerSwitchRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, PowerSwitchRemote.class);
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -96,23 +87,25 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetPowerState() throws Exception {
         System.out.println("testGetPowerState");
+
         // apply service state
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId()).applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
+        final UnitController<?, ?> unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId());
+        unitController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
 
         // force sync
         powerSwitchRemote.requestData().get();
 
         // validate service state
-        assertEquals("Switch has not been set in time!", Power.OFF.getValue(), powerSwitchRemote.getPowerState().getValue());
+        assertEquals("Switch has not been set in time.", Power.OFF.getValue(), powerSwitchRemote.getPowerState().getValue());
 
         // apply service state
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId()).applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
+        unitController.applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
 
         // force sync
         powerSwitchRemote.requestData().get();
 
         // validate service state
-        assertEquals("Switch has not been set in time!", Power.ON.getValue(), powerSwitchRemote.getPowerState().getValue());
+        assertEquals("Switch has not been set in time.", Power.ON.getValue(), powerSwitchRemote.getPowerState().getValue());
     }
 
     /**
@@ -149,7 +142,13 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         // invert state
         powerState = powerState == Power.ON ? Power.OFF : Power.ON;
 
-        waitForExecution(powerSwitchRemote.setPowerState(powerState));
+        final RemoteAction testAction = observe(powerSwitchRemote.setPowerState(powerState), true);
+
+        try {
+            testAction.waitForActionState(State.EXECUTING);
+        } catch (CancellationException ex) {
+            Assert.fail("Power action is not executing and instead: "+testAction.getActionState().name());
+        }
 
         // make sure the final state is correctly applied.
         try {

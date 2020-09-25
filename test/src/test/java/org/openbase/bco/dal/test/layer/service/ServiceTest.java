@@ -66,14 +66,6 @@ public class ServiceTest extends AbstractBCOTest {
         AbstractBCOTest.tearDownClass();
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getServiceStateClass method, of class Service.
      */

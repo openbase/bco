@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.controller.MessageController;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -114,7 +115,7 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
      * @throws CouldNotPerformException is thrown if the update could not be applied. Check the cause chain for more details.
      */
     default <MB extends Message.Builder> MB applyServiceState(final MB serviceStateBuilder, final ServiceType serviceType, final String actionInitiatorId) throws CouldNotPerformException {
-        ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MILLISECONDS, false, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorId((actionInitiatorId != null ? actionInitiatorId : getId())).build());
+        ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, Timeout.INFINITY_TIMEOUT, TimeUnit.MILLISECONDS, false, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorId((actionInitiatorId != null ? actionInitiatorId : getId())).build());
         applyDataUpdate(serviceStateBuilder, serviceType);
         return serviceStateBuilder;
     }

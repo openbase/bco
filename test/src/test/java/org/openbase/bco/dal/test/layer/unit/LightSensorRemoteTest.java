@@ -49,16 +49,7 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
-
         lightSensorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT_SENSOR), true, LightSensorRemote.class);
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**

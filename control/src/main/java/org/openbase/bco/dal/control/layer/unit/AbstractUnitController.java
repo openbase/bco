@@ -126,6 +126,7 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -134,9 +135,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     /**
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
-    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = TimeUnit.SECONDS.toMillis(30);
+    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(10) : TimeUnit.SECONDS.toMillis(30);
 
-    private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = TimeUnit.SECONDS.toMillis(20);
+    private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(1) : TimeUnit.SECONDS.toMillis(20);
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
 
     private static final String LOCK_CONSUMER_NOTIFICATION = AbstractUnitController.class.getSimpleName() + ".notifyScheduledActionList(..)";
@@ -666,7 +667,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
+     *
      * @return the action identified by the provided id as described above.
+     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
@@ -698,6 +701,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
+     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -863,6 +867,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
+     *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
     public Action reschedule() throws CouldNotPerformException {
@@ -874,8 +879,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
+     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
+     *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
     private Action reschedule(final SchedulableAction actionToSchedule) throws CouldNotPerformException {
@@ -991,7 +998,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             }
                         } else {
                             if (!action.isValid()) {
-                                new FatalImplementationErrorException("Found invalid " + action + " which has not been removed from list!", this);
+                                new FatalImplementationErrorException("Found invalid " + action + " which has not been removed from list! ", this);
                             }
                             atLeastOneActionToSchedule = true;
                         }
@@ -1124,6 +1131,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
+     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1350,13 +1358,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // builder write unlock  block
             try {
                 try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
-                    DB internalBuilder = dataBuilder.getInternalBuilder();
+                    final DB internalBuilder = dataBuilder.getInternalBuilder();
 
                     // compute new state by resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
                     try {
                         newState = computeNewState(newState, serviceType, internalBuilder);
                     } catch (RejectedException ex) {
                         // update not required since its compatible with the currently applied state, therefore we just skip the update.
+                        ExceptionPrinter.printHistory("update not required since its compatible with the currently applied state, therefore we just skip the update", ex, logger, LogLevel.DEBUG);
                         return;
                     }
 
@@ -1440,7 +1449,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param serviceState    the prototype of the new state.
      * @param serviceType     the service type of the new state.
      * @param internalBuilder the builder object used to access the currently applied state.
+     *
      * @return the computed state.
+     *
      * @throws RejectedException        in case the state would not change anything compared to the current one.
      * @throws CouldNotPerformException if the state could not be computed.
      */
@@ -1475,7 +1486,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             }
                         } finally {
                             // remove requested state since it will be applied now and is no longer requested.
-                            //System.out.println("use requested state");
                             resetRequestedServiceState(serviceType, internalBuilder);
                         }
                     } else {
@@ -1515,11 +1525,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // compare service states
                 final Message actionServiceState = SERVICE_JSON_PROCESSOR.deserialize(serviceStateDescription.getServiceState(), serviceStateDescription.getServiceStateClassName());
                 if (Services.equalServiceStates(serviceState, actionServiceState)) {
+                    System.out.println(serviceState + " is equals " + actionServiceState);
                     throw new RejectedException("New state has already been scheduled!");
                 }
             }
-
-            //logger.warn(executing + " actions for service " + serviceType + " were executing in the last three seconds and " + notAvail + " had not latest value occurrence for the state executing!");
 
             // because the requested action does not match this action was triggered outside BCO e.g. via openHAB or is just a state sync.
 
@@ -1547,30 +1556,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // 1. The incoming state update is just an update of an further affected state..
                     // 2. Its just an additional synchronization update
                     // in case we are compatible with the current state we don't care about the update.
-                    //System.out.println("just apply state.");
-                    //throw new VerificationFailedException("Incoming state already applied!");
                     return serviceState;
                 }
-
-//                System.out.println("request super service types for " + serviceType.name());
-//                for (final ServiceType relatedServiceType : Registries.getTemplateRegistry().getRelatedServiceTypes(serviceType)) {
-//                    System.out.println("found " + relatedServiceType.name());
-//                    if (!requestedStateCache.containsKey(relatedServiceType)) {
-//                        continue;
-//                    }
-//
-//                    final Message superServiceState = Services.convertToSuperState(serviceType, serviceState, relatedServiceType);
-//                    final Message superServiceState = Services.convertToSuperState(serviceType, serviceState, relatedServiceType);
-//
-//                    if (Services.equalServiceStates(superServiceState, requestedStateCache.get(relatedServiceType))) {
-//                        throw new VerificationFailedException("Incoming state already applied!");
-//                    }
-//                }
             }
 
             // clear requested state if set but not compatible any more with the incoming one.
             if (requestedState != null && !Services.isCompatible(serviceState, serviceType, requestedState)) {
-                //System.out.println("clear requested field because its not compatible");
                 resetRequestedServiceState(serviceType, internalBuilder);
             }
 
@@ -1618,25 +1609,20 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             // compute responsible action if not exist
             if (!Services.hasResponsibleAction(serviceStateBuilder)) {
-                // outdated:
-                // @ do not complain in test mode since simple state updates makes writing tests much more comfortable.
-                // @ if(!JPService.testMode()) {
                 logger.warn("Incoming data update does not provide its responsible action! Recover responsible action and continue...");
                 StackTracePrinter.printStackTrace(logger);
-                // @ }
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, 1, TimeUnit.MINUTES, false, false, false, Priority.LOW, null);
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, Timeout.INFINITY_TIMEOUT, TimeUnit.MILLISECONDS, false, false, false, Priority.NO, null);
             }
 
-            scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this));
+            // locking this lock skips the notification by calling reject or abort below
+            // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
+            // if the applyDataUpdate method finished these new states are notified anyway
+            actionListNotificationLock.writeLock().lock();
+            try {
 
-            // if there was another action executing before, abort it
-            if (scheduledActionList.size() > 1) {
-                // locking this lock skips the notification by calling reject or abort below
-                // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
-                // if the applyDataUpdate method finished these new states are notified anyway
-                actionListNotificationLock.writeLock().lock();
-                try {
-                    final SchedulableAction schedulableAction = scheduledActionList.get(1);
+                // if there was another action executing before, abort it because its anyway outdated and if it is important, than it gets executed after rescheduling anyway.
+                if (!scheduledActionList.isEmpty()) {
+                    final SchedulableAction schedulableAction = scheduledActionList.get(0);
                     if (schedulableAction.isProcessing()) {
                         // only abort/reject action if the action is processing
                         if (schedulableAction.getActionDescription().getInterruptible()) {
@@ -1645,20 +1631,60 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             schedulableAction.reject();
                         }
                     }
-
-                    // trigger a reschedule which can trigger the action with a higher priority again
-                    reschedule();
-
-                    // update action list in builder
-                    syncActionList(internalBuilder);
-                } finally {
-                    actionListNotificationLock.writeLock().unlock();
                 }
+
+                // add action to force
+                scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this));
+
+                // trigger a reschedule which can trigger the action with a higher priority again
+                reschedule();
+
+                // update action list in builder
+                syncActionList(internalBuilder);
+            } finally {
+                actionListNotificationLock.writeLock().unlock();
             }
 
             return serviceStateBuilder.build();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not force action execution!", ex);
+        }
+    }
+
+    /**
+     * Method is only for unit tests where one has to make sure that all actions are removed from the action stack in order to minimize influence of other tests.
+     * Note: This method does nothing if the unit test mode is not enabled.
+     *
+     * @throws InterruptedException     is thrown if the thread was externally interrupted
+     * @throws CouldNotPerformException is thrown if no all actions could be canceled.
+     */
+    public void cancelAllActions() throws InterruptedException, CouldNotPerformException {
+
+        // skip when not in test mode
+        if (!JPService.testMode()) {
+            return;
+        }
+
+        builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULEING);
+        try {
+            actionListNotificationLock.writeLock().lockInterruptibly();
+            try {
+
+                // cancel requested action cache
+                requestedStateCache.clear();
+
+                // cancel all actions
+                for (int i = scheduledActionList.size() - 1; i >= 0; i--) {
+                    scheduledActionList.remove(i).cancel();
+                }
+
+                // final reschedule for cleanup
+                reschedule();
+            } finally {
+                actionListNotificationLock.writeLock().unlock();
+            }
+        } finally {
+            builderSetup.unlockWrite(NotificationStrategy.AFTER_LAST_RELEASE);
         }
     }
 
@@ -1798,7 +1824,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1846,6 +1874,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
+     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1879,6 +1908,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

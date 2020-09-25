@@ -51,16 +51,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
-
         buttonRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BUTTON), true, ButtonRemote.class);
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
