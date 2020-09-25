@@ -43,6 +43,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
@@ -131,7 +132,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             // update the responsible action to show that it was triggered by openHAB and add other parameters
             // note that the responsible action is overwritten if it matches a requested state in the unit controller and thus was triggered by a different user through BCO
             if (systemSync) {
-                serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 5, TimeUnit.MINUTES, false, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM).build());
+                serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, Timeout.INFINITY_TIMEOUT, TimeUnit.MINUTES, false, false, false, Priority.NO, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM).build());
             } else {
                 serviceStateBuilder = ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, metaData.getServiceType(), unitController, 30, TimeUnit.MINUTES, false, false, true, Priority.HIGH, ActionInitiator.newBuilder().setInitiatorType(InitiatorType.HUMAN).build());
             }
