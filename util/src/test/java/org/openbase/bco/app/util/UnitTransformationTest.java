@@ -58,14 +58,6 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
         AbstractBCOManagerTest.tearDownClass();
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     @Test(timeout = 30000)
     public void testUnitTransformation() throws Exception {
         System.out.println("testUnitTransformation");

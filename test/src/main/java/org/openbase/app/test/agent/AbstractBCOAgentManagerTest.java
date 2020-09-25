@@ -79,9 +79,5 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
         }
     }
 
-    @After
-    public void tearDown() {
-    }
-
     public abstract UnitConfig getAgentConfig() throws CouldNotPerformException;
 }

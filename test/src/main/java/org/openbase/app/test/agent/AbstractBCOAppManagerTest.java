@@ -92,10 +92,6 @@ public abstract class AbstractBCOAppManagerTest extends BCOAppTest {
         }
     }
 
-    @After
-    public void tearDown() {
-    }
-
     public abstract Class getAppClass();
 
     public abstract UnitConfig.Builder getAppConfig() throws CouldNotPerformException;
