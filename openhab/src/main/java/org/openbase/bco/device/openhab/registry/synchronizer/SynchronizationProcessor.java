@@ -92,7 +92,7 @@ public class SynchronizationProcessor {
             // bypass mapping by thing uid in case multiple things map to a single device unit
             if (thingDTO.properties.containsKey(SynchronizationProcessor.OPENHAB_THING_PROPERTY_KEY_UNIQUE_ID)) {
                 try {
-                    final String uniquePrefix = getUniquePrefix(metaConfigPool.getValue(SynchronizationProcessor.OPENHAB_THING_UID_KEY));
+                    final String uniquePrefix = metaConfigPool.getValue(SynchronizationProcessor.OPENHAB_UNIQUE_ID_KEY);
                     if (thingDTO.properties.get(SynchronizationProcessor.OPENHAB_THING_PROPERTY_KEY_UNIQUE_ID).startsWith(uniquePrefix)) {
                         return deviceUnitConfig;
                     }
