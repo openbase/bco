@@ -38,7 +38,9 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.jul.extension.type.transform.ColorStateToLabelTransformer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
@@ -47,16 +49,21 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.BrightnessStateType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessStateOrBuilder;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.ColorStateType.ColorStateOrBuilder;
+import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
+import org.openbase.type.domotic.state.PowerStateType.PowerStateOrBuilder;
+import org.openbase.type.language.LabelType.Label;
+import org.openbase.type.vision.ColorType.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
@@ -75,14 +82,35 @@ public class Services extends ServiceStateProcessor {
      * This method returns the service base name of the given service type.
      * <p>
      * The base name is the service name without service suffix.
-     * e.g. the base name of service PowerStateService is PowerState.
+     * e.g. the base name of service PowerStateService is Power.
+     *
+     * @param serviceType the service type to extract the base name.
+     * @param alternative string is returned in case the service name could not be resolved.
+     *
+     * @return the service base name.
+     */
+    public static String getServiceBaseName(final ServiceType serviceType, final String alternative) {
+        try {
+            return getServiceStateName(serviceType).replaceAll("State", "");
+        } catch (NotAvailableException e) {
+            return alternative;
+        }
+    }
+
+    /**
+     * This method returns the service base name of the given service type.
+     * <p>
+     * The base name is the service name without service suffix.
+     * e.g. the base name of service PowerStateService is Power.
      *
      * @param serviceType the service type to extract the base name.
      *
      * @return the service base name.
+     *
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given service type is null.
      */
-    public static String getServiceBaseName(ServiceType serviceType) {
-        return StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replaceAll(Service.SERVICE_LABEL, "");
+    public static String getServiceBaseName(final ServiceType serviceType) throws NotAvailableException {
+        return getServiceStateName(serviceType).replaceAll("State", "");
     }
 
     public static String getServiceMethodPrefix(final ServicePattern pattern) throws CouldNotPerformException {
@@ -99,13 +127,37 @@ public class Services extends ServiceStateProcessor {
     }
 
     /**
-     * Method returns the state name of the appurtenant service.
+     * This method returns the service base name of the given service type.
+     * <p>
+     * The base name is the service name without service suffix.
+     * e.g. the base name of service PowerStateService is PowerState.
      *
-     * @param serviceType the service type which is used to generate the service name.
+     * @param serviceType the service type used to extract the base name.
+     * @param alternative string is returned in case the service name could not be resolved.
      *
-     * @return The state type name as string.
+     * @return the service name.
      *
-     * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given serviceType is null.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
+     */
+    public static String getServiceStateName(final ServiceType serviceType, final String alternative) {
+        try {
+            return getServiceStateName(serviceType);
+        } catch (CouldNotPerformException ex) {
+            return alternative;
+        }
+    }
+
+    /**
+     * This method returns the service base name of the given service type.
+     * <p>
+     * The base name is the service name without service suffix.
+     * e.g. the base name of service PowerStateService is PowerState.
+     *
+     * @param serviceType the service type used to extract the base name.
+     *
+     * @return the service name.
+     *
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given service type is null.
      */
     public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
         try {
@@ -113,18 +165,21 @@ public class Services extends ServiceStateProcessor {
                 assert false;
                 throw new NotAvailableException("ServiceState");
             }
-            return StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replaceAll("Service", "");
+            return StringProcessor.transformUpperCaseToPascalCase(serviceType.name()).replaceAll(Service.SERVICE_LABEL, "");
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceStateName", ex);
         }
     }
 
     /**
-     * Method returns the state name of the appurtenant service.
+     * This method returns the service base name of the given service template.
+     * <p>
+     * The base name is the service name without service suffix.
+     * e.g. the base name of service PowerStateService is PowerState.
      *
-     * @param template The service template.
+     * @param template the service template used to extract the base name.
      *
-     * @return The state type name as string.
+     * @return the service name.
      *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
      */
@@ -153,7 +208,7 @@ public class Services extends ServiceStateProcessor {
         try {
             return getServiceStateEnumValues(getServiceStateClass(serviceType));
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException(getServiceBaseName(serviceType), "ServiceStateValues", ex);
+            throw new NotAvailableException(getServiceStateName(serviceType, "?"), "ServiceStateValues", ex);
         }
     }
 
@@ -418,7 +473,7 @@ public class Services extends ServiceStateProcessor {
             case PROVIDER: // make sure service state is available
                 try {
                     boolean serviceStateAvailable = (boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance);
-                    if(!serviceStateAvailable) {
+                    if (!serviceStateAvailable) {
                         throw new NotAvailableException(serviceType.name(), instance);
                     }
                 } catch (CouldNotPerformException ex) {
@@ -827,6 +882,48 @@ public class Services extends ServiceStateProcessor {
         return dataTypes;
     }
 
+    public static Label generateServiceStateLabel(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType) {
+        try {
+            final Label.Builder labelBuilder = Label.newBuilder();
+            switch (serviceType) {
+                case POWER_STATE_SERVICE:
+                    final State value = ((PowerStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, value.name().toLowerCase());
+                    switch (value) {
+                        case OFF:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "aus").build();
+                        case ON:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "an").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
+                case BRIGHTNESS_STATE_SERVICE:
+                    final String brightness = ((int) (((BrightnessStateOrBuilder) serviceStateOrBuilder).getBrightness() * 100d)) + " %";
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, brightness).build();
+                    LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, brightness).build();
+                    return labelBuilder.build();
+
+                case COLOR_STATE_SERVICE:
+                    final Color color = ((ColorStateOrBuilder) serviceStateOrBuilder).getColor();
+                    return ColorStateToLabelTransformer.computeColorLabelFromColor(color);
+                case UNKNOWN:
+                default:
+                    return LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceStateOrBuilder, serviceType), " ")).build();
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not generate label of " + serviceType.name() + " and use fallback.", ex, LOGGER);
+        }
+
+        // fallback
+        try {
+            return LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceStateOrBuilder, serviceType), " ")).build();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not generate fallback label of " + serviceType.name() + ".", ex, LOGGER);
+            return LabelProcessor.UNKNOWN_LABEL;
+        }
+    }
+
     public static List<String> generateServiceStateStringRepresentation(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType) throws CouldNotPerformException {
         final List<String> values = new ArrayList<>();
         String timestamp;
@@ -991,12 +1088,12 @@ public class Services extends ServiceStateProcessor {
 
             // compare primitives
             if (field.getJavaType() != JavaType.MESSAGE) {
-                if(serviceState1.hasField(field) && serviceState2.hasField(field)) {
+                if (serviceState1.hasField(field) && serviceState2.hasField(field)) {
                     if (field.getJavaType() == JavaType.DOUBLE) {
                         double value1 = (double) serviceState1.getField(field);
                         double value2 = (double) serviceState2.getField(field);
 
-                        if(!OperationService.equals(value1, value2, DOUBLE_MARGIN)) {
+                        if (!OperationService.equals(value1, value2, DOUBLE_MARGIN)) {
                             return false;
                         }
                     } else {

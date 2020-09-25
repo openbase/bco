@@ -19,6 +19,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -37,6 +38,7 @@ import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStat
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText;
 import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 import org.slf4j.Logger;
@@ -79,12 +81,12 @@ public class ActionDescriptionProcessor {
     public static final String SERVICE_STATE_KEY = "SERVICE_STATE";
     public static final String GENERIC_ACTION_LABEL = UNIT_LABEL_KEY + "[" + SERVICE_STATE_KEY + "]";
 
-    public static final Map<String, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
+    public static final Map<Locale, String> GENERIC_ACTION_DESCRIPTION_MAP = new HashMap<>();
     public static final ActionIdGenerator ACTION_ID_GENERATOR = new ActionIdGenerator();
 
     static {
-        GENERIC_ACTION_DESCRIPTION_MAP.put("en", INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of " + UNIT_LABEL_KEY + " to " + SERVICE_STATE_KEY + ".");
-        GENERIC_ACTION_DESCRIPTION_MAP.put("de", INITIATOR_KEY + " hat " + SERVICE_TYPE_KEY + "  von " + UNIT_LABEL_KEY + " zu " + SERVICE_STATE_KEY + " geändert.");
+        GENERIC_ACTION_DESCRIPTION_MAP.put(Locale.ENGLISH, INITIATOR_KEY + " changed " + SERVICE_TYPE_KEY + " of " + UNIT_LABEL_KEY + " to " + SERVICE_STATE_KEY + ".");
+        GENERIC_ACTION_DESCRIPTION_MAP.put(Locale.GERMAN, INITIATOR_KEY + " hat " + SERVICE_TYPE_KEY + "  von " + UNIT_LABEL_KEY + " zu " + SERVICE_STATE_KEY + " geändert.");
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionDescriptionProcessor.class);
@@ -923,30 +925,33 @@ public class ActionDescriptionProcessor {
      * @param serviceStateOrBuilder    the de-serialized service state as contained in the action description.
      * @param unitConfig               the config of the unit on which the action is applied.
      */
-    private static void generateDescription(final ActionDescription.Builder actionDescriptionBuilder, final MessageOrBuilder serviceStateOrBuilder, final UnitConfig unitConfig) {
+    public static void generateDescription(final ActionDescription.Builder actionDescriptionBuilder, final MessageOrBuilder serviceStateOrBuilder, final UnitConfig unitConfig) {
         final MultiLanguageText.Builder multiLanguageTextBuilder = MultiLanguageText.newBuilder();
-        for (Entry<String, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
+
+        final Label serviceStateLabel = Services.generateServiceStateLabel(serviceStateOrBuilder, actionDescriptionBuilder.getServiceStateDescription().getServiceType());
+        final String initiatorName = getInitiatorName(getInitialInitiator(actionDescriptionBuilder), "?");
+        final String serviceBaseName = Services.getServiceBaseName(actionDescriptionBuilder.getServiceStateDescription().getServiceType(), "?");
+
+        for (Entry<Locale, String> languageDescriptionEntry : GENERIC_ACTION_DESCRIPTION_MAP.entrySet()) {
             String description = languageDescriptionEntry.getValue();
             try {
                 // setup unit label
                 description = description.replace(UNIT_LABEL_KEY, LabelProcessor.getBestMatch(languageDescriptionEntry.getKey(), unitConfig.getLabel()));
 
                 // setup service type
-                description = description.replace(SERVICE_TYPE_KEY,
-                        StringProcessor.transformToPascalCase(actionDescriptionBuilder.getServiceStateDescription().getServiceType().name()));
+                description = description.replace(SERVICE_TYPE_KEY, serviceBaseName);
 
                 // setup initiator
-                description = description.replace(INITIATOR_KEY, getInitiatorName(getInitialInitiator(actionDescriptionBuilder)));
+                description = description.replace(INITIATOR_KEY, initiatorName);
 
                 // setup service attribute
-                description = description.replace(SERVICE_STATE_KEY,
-                        StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceStateOrBuilder, actionDescriptionBuilder.getServiceStateDescription().getServiceType()), " "));
+                description = description.replace(SERVICE_STATE_KEY, LabelProcessor.getBestMatch(languageDescriptionEntry.getKey(), serviceStateLabel));
 
                 // format
                 description = StringProcessor.formatHumanReadable(description);
 
                 // generate
-                multiLanguageTextBuilder.addEntry(MapFieldEntry.newBuilder().setKey(languageDescriptionEntry.getKey()).setValue(description).build());
+                MultiLanguageTextProcessor.addMultiLanguageText(multiLanguageTextBuilder, languageDescriptionEntry.getKey(), description);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not generate action description!", ex, LOGGER);
             }
@@ -974,6 +979,23 @@ public class ActionDescriptionProcessor {
             }
         } else {
             return User.OTHER;
+        }
+    }
+
+    /**
+     * Returns the name of the initiator of the action.
+     * In case the initiator is a user than its username is used, otherwise the best match of the unit label is used.
+     *
+     * @param initialInitiator the initiator..
+     * @param alternative the alternative string to use in case the initiator could not be resolved.
+     *
+     * @return the label or username.
+     */
+    public static String getInitiatorName(final ActionInitiator initialInitiator, final String alternative) {
+        try {
+            return getInitiatorName(initialInitiator);
+        } catch (NotAvailableException e) {
+            return alternative;
         }
     }
 
