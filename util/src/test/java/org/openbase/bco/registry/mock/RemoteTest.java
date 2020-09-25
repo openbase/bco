@@ -61,14 +61,6 @@ public class RemoteTest {
         }
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test shutting down a device registry remote several times while another
      * one stays active to test remote interference.
