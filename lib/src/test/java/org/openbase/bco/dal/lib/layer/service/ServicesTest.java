@@ -108,11 +108,11 @@ public class ServicesTest {
         double saturation = 0.5;
         double brightness = 0.7;
 
-        ColorStateType.ColorState.Builder builder = ColorStateType.ColorState.newBuilder();
-        builder.getColorBuilder().getHsbColorBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness);
-        ColorStateType.ColorState.Builder builder1 = ColorStateType.ColorState.newBuilder();
-        builder1.getColorBuilder().getHsbColorBuilder().setHue(hue + 0.9).setSaturation(saturation + 0.009).setBrightness(brightness - 0.009);
+        ColorStateType.ColorState.Builder baseColor = ColorStateType.ColorState.newBuilder();
+        baseColor.getColorBuilder().getHsbColorBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness);
+        ColorStateType.ColorState.Builder variatedColor = ColorStateType.ColorState.newBuilder();
+        variatedColor.getColorBuilder().getHsbColorBuilder().setHue(hue + 0.9).setSaturation(saturation + 0.009).setBrightness(brightness - 0.009);
 
-        assertTrue(Services.equalServiceStates(builder.build(), builder1.build()));
+        assertTrue(Services.equalServiceStates(baseColor.build(), variatedColor.build()));
     }
 }

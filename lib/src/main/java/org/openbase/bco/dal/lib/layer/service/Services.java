@@ -51,6 +51,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.BrightnessStateType;
+import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessStateOrBuilder;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.ColorStateType.ColorStateOrBuilder;
@@ -76,7 +77,7 @@ public class Services extends ServiceStateProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Services.class);
 
-    public static final double DOUBLE_MARGIN = 0.001;
+    public static final double DOUBLE_MARGIN = 0.01;
 
     /**
      * This method returns the service base name of the given service type.
@@ -1005,8 +1006,9 @@ public class Services extends ServiceStateProcessor {
         //TODO resolve generically for all service states
         if (serviceState1.getClass().equals(ColorState.class)) {
             return ColorStateProviderService.equalServiceStates((ColorState) serviceState1, (ColorState) serviceState2);
-        } else if (serviceState1.getClass().equals(BrightnessStateType.BrightnessState.class)) {
-            return BrightnessStateProviderService.equalServiceStates((BrightnessStateType.BrightnessState) serviceState1, (BrightnessStateType.BrightnessState) serviceState2);
+//        }
+        } else if (serviceState1.getClass().equals(BrightnessState.class)) {
+            return BrightnessStateProviderService.equalServiceStates((BrightnessState) serviceState1, (BrightnessState) serviceState2);
         }
 
         // make sure total equals or both empty messages pass the check

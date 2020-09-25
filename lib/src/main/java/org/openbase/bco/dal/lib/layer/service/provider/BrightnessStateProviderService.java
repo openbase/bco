@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,7 +40,7 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
  */
 public interface BrightnessStateProviderService extends ProviderService {
 
-    double BRIGHTNESS_MARGIN = 0.1;
+    double BRIGHTNESS_MARGIN = Services.DOUBLE_MARGIN;
 
     @RPCMethod(legacy = true)
     default BrightnessState getBrightnessState() throws NotAvailableException {
