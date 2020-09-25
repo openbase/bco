@@ -71,10 +71,6 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
     public void setUp() throws InitializationException, InstantiationException {
     }
 
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test registering a new device while the device test is running.
      *

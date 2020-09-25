@@ -45,14 +45,6 @@ public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
         AbstractBCODeviceManagerTest.setUpClass();
     }
 
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of getBatteryLevel method, of class BatteryRemote.
      *

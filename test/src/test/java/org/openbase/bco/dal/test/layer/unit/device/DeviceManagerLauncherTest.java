@@ -61,10 +61,6 @@ public class DeviceManagerLauncherTest extends AbstractBCOTest {
     public void setUp() throws InitializationException, org.openbase.jul.exception.InstantiationException {
     }
 
-    @After
-    public void tearDown() {
-    }
-
     /**
      * Test of deactivate method, of class DeviceManagerLauncher.
      *
