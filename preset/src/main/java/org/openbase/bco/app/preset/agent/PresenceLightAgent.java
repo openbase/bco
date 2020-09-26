@@ -89,9 +89,12 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
     protected void delayedTrigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                for (LightRemote light : locationRemote.getUnits(UnitType.LIGHT, false, Units.LIGHT)) {
-                    observe(light.setPowerState(State.ON, getDefaultActionParameter(Long.MAX_VALUE)));
-                }
+                observe(locationRemote.setPowerState(State.ON, UnitType.LIGHT, getDefaultActionParameter(Long.MAX_VALUE)));
+
+                // todo: why is this not switching on colorable lights as well?
+//                for (LightRemote light : locationRemote.getUnits(UnitType.LIGHT, false, Units.LIGHT)) {
+//                    observe(light.setPowerState(State.ON, getDefaultActionParameter(Long.MAX_VALUE)));
+//                }
 
 //
 //                // handle colorable lights

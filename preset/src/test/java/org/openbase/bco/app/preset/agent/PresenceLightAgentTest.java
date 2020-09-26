@@ -87,7 +87,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 20000)
+    @Test(timeout = 30000)
     public void testPreseceLightAgent() throws Exception {
         System.out.println("testPreseceLightAgent");
 
