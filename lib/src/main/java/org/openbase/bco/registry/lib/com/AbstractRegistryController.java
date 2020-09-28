@@ -193,7 +193,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
 
             performInitialConsistencyCheck();
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate location registry!", ex);
+            throw new CouldNotPerformException("Could not activate "+this+" registry!", ex);
         }
     }
 
