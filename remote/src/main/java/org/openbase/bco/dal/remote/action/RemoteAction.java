@@ -23,7 +23,6 @@ package org.openbase.bco.dal.remote.action;
  */
 
 import com.google.protobuf.Message;
-import com.google.protobuf.Timestamp;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
@@ -562,7 +561,9 @@ public class RemoteAction implements Action {
      */
     @Override
     public boolean isValid() {
-        return (actionParameterBuilder != null || futureObservationTask != null) && actionDescription != null && Action.super.isValid();
+        return (actionDescription != null && Action.super.isValid());
+        // seems to be outdated ?
+        //return (actionParameterBuilder != null || futureObservationTask != null) && actionDescription != null && Action.super.isValid();
     }
 
     /**
