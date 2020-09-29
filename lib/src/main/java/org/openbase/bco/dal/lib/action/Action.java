@@ -29,8 +29,10 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Identifiable;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
@@ -140,7 +142,17 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
             timeSinceStartOrLastExtention = getCreationTime();
         }
 
-        final long extensionTimeout = (Action.MAX_EXECUTION_TIME_PERIOD - (System.currentTimeMillis() - timeSinceStartOrLastExtention));
+        final long extensionTimeout;
+
+        // the termination action and action with minimal priority that can be replaced any time, such as hardware sync actions that can not be
+        // remapped do not need any further extensions and are therefore valid until infinity.
+        if(getActionDescription().getPriority() == Priority.TERMINATION
+                || (getActionDescription().getPriority() == Priority.NO && !getActionDescription().getInterruptible() && !getActionDescription().getSchedulable()) ) {
+            extensionTimeout = Timeout.getInfinityTimeout(TimeUnit.MILLISECONDS);
+        } else {
+            // default extension time computation
+            extensionTimeout = Action.MAX_EXECUTION_TIME_PERIOD - (System.currentTimeMillis() - timeSinceStartOrLastExtention);
+        }
         return timeUnit.convert(Math.max(0, Math.min(getExecutionTime(), extensionTimeout)), TimeUnit.MILLISECONDS);
     }
 
