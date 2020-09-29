@@ -354,7 +354,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     }
 
     private void waitForRemoteDependencies() throws CouldNotPerformException, InterruptedException {
-        for (ProtoBufFileSynchronizedRegistry registry : this.registryList) {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             registry.waitForRemoteDependencies();
         }
     }
@@ -392,14 +392,15 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
         }
     }
 
-    protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
+    protected void registerDependency(final Registry dependency, final Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             if (messageClass.equals(registry.getMessageClass())) {
                 registry.registerDependency(dependency);
             } else {
                 logger.debug("Registration of dependency " + dependency + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
             }
-            registry.registerDependency(dependency);
+            // disabled because this can not be right over here. Remove it if everything works fine afterwards.
+//            registry.registerDependency(dependency);
         }
     }
 

@@ -83,7 +83,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends AbstractMessage, MB exten
      * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final AbstractRemoteClient remoteService, final int... protobufFieldNumbers) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final AbstractRegistryRemote remoteService, final int... protobufFieldNumbers) throws InstantiationException {
+        super(remoteService);
         try {
             this.observable = null;
             this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
@@ -101,7 +102,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends AbstractMessage, MB exten
      * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final AbstractRemoteClient remoteService, final AbstractFilter<M> filter, final int... protobufFieldNumbers) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final AbstractRegistryRemote remoteService, final AbstractFilter<M> filter, final int... protobufFieldNumbers) throws InstantiationException {
+        super(remoteService);
         try {
             this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
             this.remoteService = remoteService;
@@ -119,7 +121,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends AbstractMessage, MB exten
      * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization..
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRemoteClient remoteService, final int... protobufFieldNumbers) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRegistryRemote remoteService, final int... protobufFieldNumbers) throws InstantiationException {
+        super(remoteService);
         try {
             this.observable = observable;
             this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
@@ -138,7 +141,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends AbstractMessage, MB exten
      * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRemoteClient remoteService, final AbstractFilter<M> filter, final int... protobufFieldNumbers) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRegistryRemote remoteService, final AbstractFilter<M> filter, final int... protobufFieldNumbers) throws InstantiationException {
+        super(remoteService);
         try {
             this.observable = observable;
             this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
@@ -157,7 +161,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends AbstractMessage, MB exten
      * @param fieldDescriptors The field descriptors which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRemoteClient<M> remoteService, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRegistryRemote<M> remoteService, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
+        super(remoteService);
         this.observable = observable;
         this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
@@ -172,8 +177,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends AbstractMessage, MB exten
      * @param fieldDescriptors The field descriptors which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRemoteClient<M> remoteService, final Map<KEY, IdentifiableMessage<KEY, M, MB>> internalMap, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
-        super(internalMap);
+    public SynchronizedRemoteRegistry(final Observable observable, final AbstractRegistryRemote<M> remoteService, final Map<KEY, IdentifiableMessage<KEY, M, MB>> internalMap, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
+        super(remoteService, internalMap);
         this.observable = observable;
         this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
