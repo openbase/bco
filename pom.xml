@@ -187,7 +187,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <skipTests>true</skipTests>
+        <skipTests>false</skipTests>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <dependency.rta.lib.version>[1.5,1.6-alpha)</dependency.rta.lib.version>
