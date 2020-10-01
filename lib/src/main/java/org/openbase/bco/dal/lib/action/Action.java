@@ -116,6 +116,14 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      *                               if a remote action is not yet fully synchronized and the related action description is not available.
      */
     default long getLastExtensionTime(final TimeUnit timeUnit) throws NotAvailableException {
+
+        // the termination action and action with minimal priority that can be replaced any time, such as hardware sync actions that can not be
+        // remapped do not need any further extensions and are therefore valid until infinity.
+        if(getActionDescription().getPriority() == Priority.TERMINATION
+                || (getActionDescription().getPriority() == Priority.NO && !getActionDescription().getInterruptible() && !getActionDescription().getSchedulable()) ) {
+            return System.currentTimeMillis() + Timeout.INFINITY_TIMEOUT;
+        }
+
         if (!getActionDescription().hasLastExtensionTimestamp() || !getActionDescription().getLastExtensionTimestamp().hasTime() || getActionDescription().getLastExtensionTimestamp().getTime() == 0) {
             throw new NotAvailableException("LastExtentionTime", new InvalidStateException(this + " has never been extended!"));
         }
@@ -142,17 +150,7 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
             timeSinceStartOrLastExtention = getCreationTime();
         }
 
-        final long extensionTimeout;
-
-        // the termination action and action with minimal priority that can be replaced any time, such as hardware sync actions that can not be
-        // remapped do not need any further extensions and are therefore valid until infinity.
-        if(getActionDescription().getPriority() == Priority.TERMINATION
-                || (getActionDescription().getPriority() == Priority.NO && !getActionDescription().getInterruptible() && !getActionDescription().getSchedulable()) ) {
-            extensionTimeout = Timeout.getInfinityTimeout(TimeUnit.MILLISECONDS);
-        } else {
-            // default extension time computation
-            extensionTimeout = Action.MAX_EXECUTION_TIME_PERIOD - (System.currentTimeMillis() - timeSinceStartOrLastExtention);
-        }
+        final long extensionTimeout = Action.MAX_EXECUTION_TIME_PERIOD - (System.currentTimeMillis() - timeSinceStartOrLastExtention);
         return timeUnit.convert(Math.max(0, Math.min(getExecutionTime(), extensionTimeout)), TimeUnit.MILLISECONDS);
     }
 
