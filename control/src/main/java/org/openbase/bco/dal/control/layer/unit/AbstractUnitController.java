@@ -593,15 +593,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     this.scheduledActionList.add(action);
                     syncActionList(builderSetup.getBuilder());
 
-                    // create new remothe that automatically extents the action.
-                    new RemoteAction(action.getActionDescription(), () -> true);
-                    // register remote for auto extension support.
-                    // final RemoteAction terminationAction = new RemoteAction(applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter)), () -> isActive());
-                    // terminationAction.waitForRegistration(5, TimeUnit.SECONDS);
                     this.terminatingActionId = action.getId();
                 }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);
             }
@@ -1514,7 +1507,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 try {
                     final Timestamp lastTimeExecuting = ServiceStateProcessor.getLatestValueOccurrence(State.SUBMISSION, action.getActionDescription().getActionState());
 
-                    if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) > TimeUnit.SECONDS.toMillis(SUBMISSION_ACTION_MATCHING_TIMEOUT)) {
+                    if ((System.currentTimeMillis() - TimestampJavaTimeTransform.transform(lastTimeExecuting)) > SUBMISSION_ACTION_MATCHING_TIMEOUT) {
                         continue;
                     }
                 } catch (NotAvailableException ex) {
@@ -1525,7 +1518,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // compare service states
                 final Message actionServiceState = SERVICE_JSON_PROCESSOR.deserialize(serviceStateDescription.getServiceState(), serviceStateDescription.getServiceStateClassName());
                 if (Services.equalServiceStates(serviceState, actionServiceState)) {
-                    System.out.println(serviceState + " is equals " + actionServiceState);
                     throw new RejectedException("New state has already been scheduled!");
                 }
             }
