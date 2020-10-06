@@ -283,7 +283,8 @@ public class RemoteAction implements Action {
                         throw new FatalImplementationErrorException(this, new InvalidStateException("ActionDescriptionOrBuilder does not match expected type!"));
                     }
                 }
-                return setActionDescriptionAndStartObservation(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build()));
+
+                return FutureProcessor.allOfInclusiveResultFuture(setActionDescriptionAndStartObservation(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build())), targetUnit.getDataFuture());
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not execute " + this + "!", ex));
