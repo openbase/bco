@@ -39,13 +39,13 @@ import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryService;
-import org.slf4j.LoggerFactory;
+import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
@@ -63,7 +63,7 @@ import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig
 import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.math.Vec3DDoubleType;
 import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
-import org.openbase.type.communication.ScopeType.Scope;
+import org.slf4j.LoggerFactory;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
@@ -322,6 +322,29 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         validateData();
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
+            if (unitType == UnitType.UNKNOWN || unitConfig.getUnitType() == unitType || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitConfig.getUnitType())) {
+                unitConfigs.add(unitConfig);
+            }
+        }
+        return unitConfigs;
+    }
+
+    /**
+     * Method returns a list of all globally registered units of the given {@code type}.
+     * <p>
+     * Note: The type {@code UnitType.UNKNOWN} is used as wildcard and will return a list of all registered units.
+     *
+     * @param unitType            the unit type to filter.
+     * @param filterDisabledUnits if flag is true only enabled units are returned, otherwise all unit are returned.
+     *
+     * @return a list of unit configurations.
+     *
+     * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
+     */
+    default List<UnitConfig> getUnitConfigsByUnitTypeFiltered(final UnitType unitType, final boolean filterDisabledUnits) throws CouldNotPerformException {
+        validateData();
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigsFiltered(filterDisabledUnits)) {
             if (unitType == UnitType.UNKNOWN || unitConfig.getUnitType() == unitType || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitConfig.getUnitType())) {
                 unitConfigs.add(unitConfig);
             }
@@ -1238,7 +1261,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all unit configurations which are direct related to the given location id and an
      * instance of the given unit type. If the unit type is unknown or location, all child locations of the provided
      * locations are resolved. In case the {@code recursive} flag is set to true than recursive related units are included as well.
-     *
+     * <p>
      * Note: Unit super types are returned as well. For example if you query a Light you will also get Dimmable and Colorable Lights.
      *
      * @param unitType   the unit type after which unit configs are filtered.
