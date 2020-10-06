@@ -84,7 +84,7 @@ public class SynchronizationProcessor {
      */
     public static UnitConfig getDeviceForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
         // iterate over all devices
-        for (final UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.DEVICE)) {
+        for (final UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitTypeFiltered(UnitType.DEVICE, false)) {
             // get the most global meta config
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
             metaConfigPool.register(new MetaConfigVariableProvider("UnitMetaConfig", deviceUnitConfig.getMetaConfig()));
