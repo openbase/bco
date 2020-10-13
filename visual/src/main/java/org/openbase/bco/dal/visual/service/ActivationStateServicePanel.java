@@ -25,6 +25,8 @@ import java.awt.Color;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
+import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Activation;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -36,9 +38,6 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ActivationStateServicePanel extends AbstractServicePanel<ActivationStateProviderService, ConsumerService, ActivationStateOperationService> {
-
-    private static final ActivationState ACTIVE = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
-    private static final ActivationState DEACTIVE = ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE).build();
 
     /**
      * Creates new form BrightnessService
@@ -110,11 +109,11 @@ public class ActivationStateServicePanel extends AbstractServicePanel<Activation
         try {
             switch (getOperationService().getActivationState().getValue()) {
                 case ACTIVE:
-                    notifyActionProcessing(getOperationService().setActivationState(DEACTIVE));
+                    notifyActionProcessing(getOperationService().setActivationState(Activation.INACTIVE));
                     break;
-                case DEACTIVE:
+                case INACTIVE:
                 case UNKNOWN:
-                    notifyActionProcessing(getOperationService().setActivationState(ACTIVE));
+                    notifyActionProcessing(getOperationService().setActivationState(Activation.ACTIVE));
                     break;
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getActivationState().getValue() + "] is unknown.");
@@ -140,7 +139,7 @@ public class ActivationStateServicePanel extends AbstractServicePanel<Activation
                     activationStatePanel.setBackground(Color.GREEN.darker());
                     activationButton.setText("Deactivate");
                     break;
-                case DEACTIVE:
+                case INACTIVE:
                     activationStatusLabel.setForeground(Color.LIGHT_GRAY);
                     activationStatePanel.setBackground(Color.GRAY.darker());
                     activationButton.setText("Activate");

@@ -364,7 +364,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             final ActionDescription.Builder responsibleActionBuilder = activationState.getResponsibleAction().toBuilder();
 
             switch (activationState.getValue()) {
-                case DEACTIVE:
+                case INACTIVE:
                     stop();
                     break;
                 case ACTIVE:
