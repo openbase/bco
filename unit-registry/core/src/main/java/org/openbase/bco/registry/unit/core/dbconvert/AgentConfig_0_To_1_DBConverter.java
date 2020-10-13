@@ -53,7 +53,7 @@ public class AgentConfig_0_To_1_DBConverter extends AbstractDBVersionConverter {
                     case ACTIVE:
                         enablingValue = EnablingState.State.ENABLED;
                         break;
-                    case DEACTIVE:
+                    case INACTIVE:
                         enablingValue = EnablingState.State.DISABLED;
                         break;
                     case UNKNOWN:
