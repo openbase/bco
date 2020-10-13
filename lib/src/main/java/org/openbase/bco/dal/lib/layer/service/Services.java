@@ -50,11 +50,14 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationStateOrBuilder;
 import org.openbase.type.domotic.state.BrightnessStateType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessStateOrBuilder;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.ColorStateType.ColorStateOrBuilder;
+import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerStateOrBuilder;
 import org.openbase.type.language.LabelType.Label;
@@ -856,13 +859,25 @@ public class Services extends ServiceStateProcessor {
             final Label.Builder labelBuilder = Label.newBuilder();
             switch (serviceType) {
                 case POWER_STATE_SERVICE:
-                    final State value = ((PowerStateOrBuilder) serviceStateOrBuilder).getValue();
-                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, value.name().toLowerCase());
-                    switch (value) {
+                    final PowerState.State powerStateValue = ((PowerStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, powerStateValue.name().toLowerCase());
+                    switch (powerStateValue) {
                         case OFF:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "aus").build();
                         case ON:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "an").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
+                case ACTIVATION_STATE_SERVICE:
+                    final ActivationState.State activationStateValue = ((ActivationStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, activationStateValue.name().toLowerCase());
+                    switch (activationStateValue) {
+                        case INACTIVE:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "inaktiv").build();
+                        case ACTIVE:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "aktiv").build();
                         case UNKNOWN:
                         default:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
