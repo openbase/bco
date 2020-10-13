@@ -66,7 +66,7 @@ public class ActivationStateSceneMapper extends AbstractServiceStateTraitMapper<
     @Override
     public void map(ActivationState activationState, JsonObject jsonObject) throws CouldNotPerformException {
         switch (activationState.getValue()) {
-            case DEACTIVE:
+            case INACTIVE:
                 jsonObject.addProperty(DEACTIVATE_PARAM_KEY, true);
                 break;
             case ACTIVE:

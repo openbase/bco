@@ -100,12 +100,12 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
                                 return;
                             }
 
-                            if (data.getValue() == State.DEACTIVE) {
+                            if (data.getValue() == State.INACTIVE) {
                                 triggerInternal(data);
                             }
                             break;
 
-                        case DEACTIVE:
+                        case INACTIVE:
                             if (data.getValue() == State.ACTIVE) {
                                 triggerInternal(data);
                             }
@@ -133,7 +133,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
                         case UNKNOWN:
                             // if the deactivation pool is active we need to send a deactivation trigger
                             if (data.getValue() == State.ACTIVE) {
-                                triggerInternal(data.toBuilder().setValue(State.DEACTIVE).build());
+                                triggerInternal(data.toBuilder().setValue(State.INACTIVE).build());
                             }
                             break;
                         default:

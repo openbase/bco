@@ -76,7 +76,7 @@ public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
             case ACTIVE:
                 lastAction = observe(locationRemote.setPowerState(State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
-            case DEACTIVE:
+            case INACTIVE:
                 cancelAllObservedActions();
                 break;
         }

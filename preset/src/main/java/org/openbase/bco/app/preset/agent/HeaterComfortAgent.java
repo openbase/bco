@@ -69,7 +69,7 @@ public class HeaterComfortAgent extends AbstractTriggerableAgent{
                         ServiceType.TEMPERATURE_STATE_SERVICE,
                         TemperatureStateType.TemperatureState.newBuilder().setTemperature(comfortTemperature)).setExecutionTimePeriod(Long.MAX_VALUE).build()).get();
                 break;
-            case DEACTIVE:
+            case INACTIVE:
                 if(taskActionDescription != null) {
                     taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
                 }

@@ -118,7 +118,7 @@ public class PresenceLightAgent extends AbstractDelayedTriggerableAgent {
 //                    }
 //                }
                 break;
-            case DEACTIVE:
+            case INACTIVE:
                 cancelAllObservedActions();
                 break;
         }

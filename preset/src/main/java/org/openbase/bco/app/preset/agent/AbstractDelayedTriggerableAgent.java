@@ -148,7 +148,7 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
                             timeout.start(delay);
                         }
                         break;
-                    case DEACTIVE:
+                    case INACTIVE:
                         timeout.cancel();
                         delayedTrigger(activationState);
                         break;
@@ -160,7 +160,7 @@ public abstract class AbstractDelayedTriggerableAgent extends AbstractTriggerabl
                         timeout.cancel();
                         delayedTrigger(activationState);
                         break;
-                    case DEACTIVE:
+                    case INACTIVE:
                         this.lastActivationState = activationState;
                         long delay = computeDelay();
 

@@ -81,7 +81,7 @@ public class FireAlarmAgent extends AbstractTriggerableAgent {
                 observe(locationRemote.setColorState(States.Color.WHITE, getDefaultActionParameter(Long.MAX_VALUE)));
                 observe(locationRemote.setBlindState(BlindState.newBuilder().setOpeningRatio(1d).setValue(State.UP).build(), getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
-            case DEACTIVE:
+            case INACTIVE:
                 cancelAllObservedActions();
                 break;
         }

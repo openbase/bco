@@ -85,7 +85,7 @@ public class StandbyAgent extends AbstractDelayedTriggerableAgent {
             case ACTIVE:
                 lastAction = observe(locationRemote.setPowerState(PowerStateType.PowerState.State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
-            case DEACTIVE:
+            case INACTIVE:
                 if (lastAction != null && !lastAction.isDone()) {
                     lastAction.cancel();
                 }

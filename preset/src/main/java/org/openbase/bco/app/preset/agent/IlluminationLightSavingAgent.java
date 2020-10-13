@@ -128,7 +128,7 @@ public class IlluminationLightSavingAgent extends AbstractTriggerableAgent {
             case ACTIVE:
                 regulateLightIntensity();
               break;
-            case DEACTIVE:
+            case INACTIVE:
                 if(taskActionDescription != null) {
                     taskActionDescription = locationRemote.cancelAction(taskActionDescription).get();
                 }
