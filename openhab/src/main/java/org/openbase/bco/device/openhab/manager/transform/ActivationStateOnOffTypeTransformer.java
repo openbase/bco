@@ -47,7 +47,7 @@ public class ActivationStateOnOffTypeTransformer implements ServiceStateCommandT
     @Override
     public OnOffType transform(final ActivationState activationState) throws TypeNotSupportedException, CouldNotTransformException {
         switch (activationState.getValue()) {
-            case DEACTIVE:
+            case INACTIVE:
                 return OnOffType.OFF;
             case ACTIVE:
                 return OnOffType.ON;
