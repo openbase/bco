@@ -24,6 +24,8 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
+
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -31,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.pattern.AbstractObservable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -48,6 +52,11 @@ import org.slf4j.LoggerFactory;
 public class UnitDataFilteredObservable<M extends Message> extends AbstractObservable<DataProvider<M>, M> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitDataFilteredObservable.class);
+
+    private static final String FIELD_NAME_ALIAS = "alias";
+    private static final String FIELD_NAME_ID = "id";
+    private static final String FIELD_NAME_TRANSACTION_ID = "transaction_id";
+    private static final String FIELD_NAME_AGGREGATED_VALUE_COVERAGE = "aggregated_value_coverage";
 
     private final DataProvider<M> unit;
     private final ServiceTempus serviceTempus;
@@ -70,6 +79,10 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
         if (unitTemplate != null) {
             updateFieldsToKeep();
         }
+    }
+
+    public Set<String> getFieldsToKeep() {
+        return Collections.unmodifiableSet(fieldsToKeep);
     }
 
     @Override
@@ -121,11 +134,30 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
 
         // filter tempus
         Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
-        descriptorForType.getFields().stream()
-                .filter((field) -> (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE))
-                .filter((field) -> (!fieldsToKeep.contains(field.getName()))).forEachOrdered((field) -> {
-            builder.clearField(field);
-        });
+        for (FieldDescriptor field : descriptorForType.getFields()) {
+            if (field.getType() == FieldDescriptor.Type.MESSAGE) {
+                if (!fieldsToKeep.contains(field.getName())) {
+                    builder.clearField(field);
+                } else {
+                    Message.Builder fieldBuilder = builder.getFieldBuilder(field);
+                    for (FieldDescriptor fieldDescriptor : fieldBuilder.getDescriptorForType().getFields()) {
+                        if (fieldDescriptor.getName().equals(FIELD_NAME_AGGREGATED_VALUE_COVERAGE)) {
+                            fieldBuilder.clearField(fieldDescriptor);
+                        }
+                    }
+                }
+            } else {
+                switch (field.getName()) {
+                    case FIELD_NAME_ALIAS:
+                    case FIELD_NAME_ID:
+                        builder.clearField(field);
+                        break;
+                    case FIELD_NAME_TRANSACTION_ID:
+                        if (serviceTempus != ServiceTempus.CURRENT) builder.clearField(field);
+                        break;
+                }
+            }
+        }
         LOGGER.trace("For {} let pass Fields[{}]: {}", serviceTempus.name(), fieldsToKeep.toString(), builder.build());
         return builder;
     }

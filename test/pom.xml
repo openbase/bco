@@ -64,6 +64,11 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.util</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
             <artifactId>bco.dal.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
