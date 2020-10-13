@@ -915,9 +915,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                 continue;
                             }
 
-                            // workaround hack - do not cancel termination
-                            // todo: remove me if termination is done by app or agent
-                            if (schedulableAction.getId().equals(terminatingActionId)) {
+                            // do not cancel the termination action.
+                            if (schedulableAction.getActionDescription().getPriority() == Priority.TERMINATION) {
                                 continue;
                             }
 
