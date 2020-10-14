@@ -50,6 +50,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
+import org.openbase.bco.dal.lib.state.States.Activation;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -562,6 +563,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     private String terminatingActionId;
+    private static final Map<ServiceType, Message> SERVICE_TYPE_TERMINATION_MAPPING = new HashMap<>();
+    static {
+        SERVICE_TYPE_TERMINATION_MAPPING.put(ServiceType.POWER_STATE_SERVICE, Power.OFF);
+        SERVICE_TYPE_TERMINATION_MAPPING.put(ServiceType.ACTIVATION_STATE_SERVICE, Activation.INACTIVE);
+    }
 
     public void registerTerminatingAction() throws InterruptedException {
         // this is just a workaround to avoid duplicated registration.
@@ -574,27 +580,65 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             terminatingActionId = "n/a";
 
             try {
-                // auto switch of unused dal units
-                if (isDalUnit() && !isInfrastructure() && getSupportedServiceTypes().contains(ServiceType.POWER_STATE_SERVICE) && !JPService.testMode()) {
-
-                    // generate action parameter
-                    final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(Power.OFF, ServiceType.POWER_STATE_SERVICE, this);
-                    actionParameter.setInterruptible(true);
-                    actionParameter.setSchedulable(true);
-                    actionParameter.setPriority(Priority.TERMINATION);
-                    actionParameter.addCategory(Category.ECONOMY);
-                    actionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
-                    actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
-
-                    final ActionImpl action = new ActionImpl(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build(), this);
-                    action.schedule();
-
-                    // add action to action list and sync it back into the data builder
-                    this.scheduledActionList.add(action);
-                    syncActionList(builderSetup.getBuilder());
-
-                    this.terminatingActionId = action.getId();
+                // do not register any termination action for infrastructure units, since they should only be modified in especially requested.
+                if(isInfrastructure()) {
+                    return;
                 }
+
+                // resolve supported service types
+                final HashSet<ServiceType> serviceTypes = new HashSet<>();
+                for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+
+                    // termination actions make only sense for operation services, so skip the rest.
+                    if(serviceDescription.getPattern() != OPERATION) {
+                        continue;
+                    }
+
+                    // ignore aggregated services since actions would affect downstream units.
+                    if(serviceDescription.getAggregated()) {
+                        continue;
+                    }
+
+                    // skip not supported services
+                    if (!SERVICE_TYPE_TERMINATION_MAPPING.containsKey(serviceDescription.getServiceType())) {
+                        continue;
+                    }
+
+                    // store all supported ones that are left
+                    serviceTypes.add(serviceDescription.getServiceType());
+                }
+
+                // no termination required if none of the services the unit offers are supported.
+                if(serviceTypes.isEmpty()) {
+                    return;
+                }
+
+                // warn if too many services need to be terminated.
+                if(serviceTypes.size() > 2) {
+                    // this is an issue because there can only be one termination action be active at a time.
+                    logger.warn("Unit does support more than one service that has to be terminated. This is not supported until the scheduling is done on service level.");
+                }
+
+                // generate action parameter for service to terminate
+                final ServiceType serviceToTerminate = serviceTypes.iterator().next();
+
+                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(SERVICE_TYPE_TERMINATION_MAPPING.get(serviceToTerminate), serviceToTerminate, this);
+                actionParameter.setInterruptible(true);
+                actionParameter.setSchedulable(true);
+                actionParameter.setPriority(Priority.TERMINATION);
+                actionParameter.addCategory(Category.ECONOMY);
+                actionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+                actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
+
+                final ActionImpl action = new ActionImpl(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build(), this);
+                action.schedule();
+
+                // add action to action list and sync it back into the data builder
+                this.scheduledActionList.add(action);
+                syncActionList(builderSetup.getBuilder());
+
+                this.terminatingActionId = action.getId();
+
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not register state termination!", ex, logger);
             }
@@ -1664,8 +1708,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // cancel requested action cache
                 requestedStateCache.clear();
 
-                // cancel all actions
+                // cancel all actions except the service termination
                 for (int i = scheduledActionList.size() - 1; i >= 0; i--) {
+
+                    // do not cancel the termination action
+                    if (scheduledActionList.get(i).getActionDescription().getPriority() == Priority.TERMINATION) {
+                        continue;
+                    }
+
+                    // cancel all other actions on the stack
                     scheduledActionList.remove(i).cancel();
                 }
 
