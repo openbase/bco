@@ -62,7 +62,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class ActionImpl implements SchedulableAction {
 
     /**
-     * Timeout how long it is waited on execution failure until a rescheduling process is triggered.
+     * Timeout in ms how long it is waited on execution failure until a rescheduling process is triggered.
      */
     private static final long EXECUTION_FAILURE_TIMEOUT = TimeUnit.SECONDS.toMillis(15);
 
@@ -291,7 +291,7 @@ public class ActionImpl implements SchedulableAction {
                                     setRequestedState();
                                 }
 
-                                unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.SECONDS);
+                                unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
                                 updateActionStateIfNotCanceled(State.EXECUTING);
 
                                 // action can be finished if not done yet and time has expired or execution time was never required.
