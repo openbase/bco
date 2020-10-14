@@ -157,7 +157,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
         // TODO: validate that according flags are set by the agent
-        dimmerRemote.getData().getPowerState().getResponsibleAction().getActionInitiator().
+        //dimmerRemote.getData().getPowerState().getResponsibleAction().getActionInitiator().
 
         Thread.sleep(1000);
         System.out.println("\n\n\n");
