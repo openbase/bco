@@ -42,6 +42,7 @@ import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState.State;
 import org.openbase.type.domotic.unit.dal.LightSensorDataType.LightSensorData;
@@ -207,6 +208,13 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
         // test if all task are done.
         for (ActionDescription actionDescription : colorableLightRemote.requestData().get().getActionList()) {
+
+            // ignore termination action because its always on the stack
+            if(actionDescription.getPriority() == Priority.TERMINATION) {
+                continue;
+            }
+
+            // make sure all other actions are done
             final RemoteAction remoteAction = new RemoteAction(actionDescription);
             remoteAction.waitForRegistration();
             assertEquals("There is still the running Action[" + MultiLanguageTextProcessor.getBestMatch(remoteAction.getActionDescription().getDescription(), "?") + "] found which should actually be terminated!", true, remoteAction.isDone());
