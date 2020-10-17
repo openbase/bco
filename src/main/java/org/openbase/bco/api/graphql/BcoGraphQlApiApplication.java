@@ -28,6 +28,7 @@ import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -145,6 +146,9 @@ public class BcoGraphQlApiApplication {
         BCO.printLogo();
         LOGGER.info("Connect to bco...");
         Registries.waitUntilReady();
+
+        LOGGER.info("Login to bco...");
+        BCOLogin.getSession().autoLogin(true);
 
         LOGGER.info("Start webserver...");
         SpringApplication.run(BcoGraphQlApiApplication.class, args);
