@@ -33,6 +33,7 @@ import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -101,6 +102,12 @@ public class BCOConsole {
                     try {
                         sessionManager.loginUser(Registries.getUnitRegistry().getUserUnitIdByUserName(console.readLine("user: ")), new String(console.readPassword("password: ")), false);
                     } catch (CouldNotPerformException ex) {
+
+                        // skip
+                        if(ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                            return;
+                        }
+
                         ExceptionPrinter.printHistory("Login not possible!", ex, System.err);
                         System.out.println("Please try again...");
                         System.out.println();
@@ -123,8 +130,6 @@ public class BCOConsole {
                 System.out.println("l: logout - logout the current user");
                 System.out.println("q: exit, quit - close this console");
                 System.out.println();
-
-                boolean success = false;
 
                 mainloop:
                 while (!Thread.interrupted()) {
@@ -339,8 +344,6 @@ public class BCOConsole {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LoggerFactory.getLogger(BCOConsole.class), LogLevel.ERROR);
         } catch (InterruptedException ex) {
             // just exit
-            System.out.println();
-            System.out.println("killed");
         }
     }
 }
