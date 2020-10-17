@@ -1,3 +1,0 @@
-# BCO GraphQL API OpenAPI
-
-
