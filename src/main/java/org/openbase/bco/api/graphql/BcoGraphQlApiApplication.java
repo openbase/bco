@@ -3,53 +3,43 @@ package org.openbase.bco.api.graphql;
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
 import com.google.api.graphql.rejoiner.Schema;
 import com.google.api.graphql.rejoiner.SchemaProviderModule;
-import com.google.common.io.Resources;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import graphql.ExecutionResult;
-import graphql.GraphQL;
-import graphql.servlet.context.GraphQLContext;
-import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.*;
-import graphql.schema.GraphQLSchema.Builder;
-import graphql.schema.idl.*;
 import graphql.servlet.config.DefaultGraphQLSchemaProvider;
 import graphql.servlet.config.GraphQLSchemaProvider;
-import graphql.servlet.context.DefaultGraphQLContext;
-import graphql.servlet.context.DefaultGraphQLServletContext;
-import graphql.servlet.context.DefaultGraphQLWebSocketContext;
-import graphql.servlet.context.GraphQLContextBuilder;
-import io.grpc.protobuf.ProtoUtils;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.IOExceptionList;
+import graphql.servlet.context.*;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
+import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
+import org.openbase.bco.api.graphql.schema.LocationConfigSchemaModule;
+import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
+import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
-import java.io.IOException;
-import java.net.URL;
 
 @SpringBootApplication
 public class BcoGraphQlApiApplication {
+
+    /**
+     * Debug via: https://altair.sirmuel.design/
+     */
 
     private static Logger LOGGER = LoggerFactory.getLogger(BcoGraphQlApiApplication.class);
 
@@ -58,11 +48,11 @@ public class BcoGraphQlApiApplication {
     {
         injector = Guice.createInjector(
                 new SchemaProviderModule(),
-                new RegistrySchemaModule()
+                new LocationConfigSchemaModule(),
+                new RegistrySchemaModule(),
+                new UnitSchemaModule()
         );
     }
-
-
 
     @Bean
     public GraphQLSchemaProvider schemaProvider() {
@@ -70,10 +60,10 @@ public class BcoGraphQlApiApplication {
         return new DefaultGraphQLSchemaProvider(schema);
     }
 
-//    @Bean
-//    public Instrumentation instrumentation() {
-//        return GuavaListenableFutureSupport.listenableFutureInstrumentation();
-//    }
+    @Bean
+    public Instrumentation instrumentation() {
+        return GuavaListenableFutureSupport.listenableFutureInstrumentation();
+    }
 
     @Bean
     public UnitRegistry unitRegistry() {

@@ -1,4 +1,4 @@
-package org.openbase.bco.api.graphql;
+package org.openbase.bco.api.graphql.batchloader;
 
 import org.dataloader.BatchLoader;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -27,7 +27,7 @@ public class BCOUnitBatchLoader implements BatchLoader<String, UnitConfig> {
 
         for (String id : ids) {
             try {
-                unitRegistry.getUnitConfigById(id);
+                unitConfigList.add(unitRegistry.getUnitConfigById(id));
             } catch (NotAvailableException e) {
                 e.printStackTrace();
             }
