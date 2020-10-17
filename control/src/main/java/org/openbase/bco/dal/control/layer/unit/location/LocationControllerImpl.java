@@ -221,7 +221,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
                 }
 
                 try {
-                    applyDataUpdate(standbyState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.STANDBY_STATE_SERVICE);
+                    applyServiceState(standbyState, ServiceType.STANDBY_STATE_SERVICE);
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not update standby state of " + this + " to " + standbyState.getValue().name(), ex);
                 }
