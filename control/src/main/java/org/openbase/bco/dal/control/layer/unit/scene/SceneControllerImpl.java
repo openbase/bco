@@ -26,6 +26,8 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthPair;
 import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.dal.control.layer.unit.AbstractExecutableBaseUnitController.ActivationStateOperationServiceImpl;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
@@ -45,11 +47,14 @@ import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.*;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -58,6 +63,7 @@ import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
+import org.openbase.type.domotic.unit.scene.SceneConfigType.SceneConfig;
 import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData;
 import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData.Builder;
 import rsb.converter.DefaultConverterRepository;
@@ -75,6 +81,7 @@ import java.util.logging.Logger;
 public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, Builder> implements SceneController {
 
 
+    // Action execution timeout in ms.
     public static final long ACTION_EXECUTION_TIMEOUT = 15000;
 
     static {
@@ -127,7 +134,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     return;
                 }
 
-                if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
+                if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED) && data.getButtonStateLast().getValue() != ButtonState.State.PRESSED) {
                     ActivationState.Builder activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE);
                     activationState = TimestampProcessor.updateTimestampWithCurrentTime(activationState, logger);
                     ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState.build(), ServiceType.ACTIVATION_STATE_SERVICE, this);
@@ -135,7 +142,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     applyAction(actionParameter);
                 }
 
-                if (data.getButtonState().getValue().equals(State.RELEASED)) {
+                if (data.getButtonState().getValue().equals(State.RELEASED) && data.getButtonStateLast().getValue() != State.RELEASED) {
                     ActivationState.Builder activationState = ActivationState.newBuilder().setValue(ActivationState.State.INACTIVE);
                     activationState = TimestampProcessor.updateTimestampWithCurrentTime(activationState, logger);
                     ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(activationState.build(), ServiceType.ACTIVATION_STATE_SERVICE, this);
@@ -177,6 +184,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         super.init(config);
     }
 
+    final List<ActionDescription> impactActionList = new ArrayList<>();
+
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
@@ -204,6 +213,20 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]!", ex), logger);
                         }
                     }
+
+                    // clear old impact
+                    impactActionList.clear();
+
+                    // register required action impact
+                    for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getRequiredServiceStateDescriptionList()) {
+                        impactActionList.addAll(Registries.getUnitRegistry().computeActionImpact(serviceStateDescription));
+                    }
+
+                    // register optional action impact
+                    for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getOptionalServiceStateDescriptionList()) {
+                        impactActionList.addAll(Registries.getUnitRegistry().computeActionImpact(serviceStateDescription));
+                    }
+
                     if (isActive()) {
                         for (final ButtonRemote button : buttonRemoteSet) {
                             try {
@@ -237,6 +260,9 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         // make sure all required actions are validated as soon as the scene gets active.
         this.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.ACTIVATION_STATE_SERVICE, activationStateObserver);
+
+        // trigger startup reschedule to apply termination state
+        reschedule();
     }
 
     @Override
@@ -255,79 +281,88 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     @Override
     protected Future<ActionDescription> internalApplyActionAuthenticated(final AuthenticatedValue authenticatedValue, ActionDescription.Builder actionDescriptionBuilder, final AuthenticationBaseData authenticationBaseData, final AuthPair authPair) {
 
-        // todo: remove this method to avoid bypassing the action scheduling of this unit after openbase/bco.dal#159 has been solved.
-
-        try {
-
-            // verify that the service type matches
-            if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
-                throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
-            }
-
-            // handle action cancellation
-            if (actionDescriptionBuilder.getCancel()) {
-                try {
-                    if (!actionDescriptionBuilder.hasActionId() || actionDescriptionBuilder.getActionId().isEmpty()) {
-                        throw new NotAvailableException("ActionId");
-                    }
-
-                    if (!getActivationState().getResponsibleAction().getActionId().equals(actionDescriptionBuilder.getActionId())) {
-                        logger.warn("Skip scene cancellation because current action[" + getActivationState().getResponsibleAction() + "] is not the one which should be canceled(" + actionDescriptionBuilder + ")!");
-                        // return successful because scene do cache outdated actions so if the action is not the currently executing one, everything is fine.
-                        return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
-                    }
-
-                    optionalActionPool.cancel();
-                    requiredActionPool.cancel();
-
-                    return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
-                }
-            }
-
-            // handle action execution time extension
-            if (actionDescriptionBuilder.getExtend()) {
-                // skip because scene action do not expire anyway.
-                return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
-            }
-
-            // mark this action as intermediary because its bypassing the action scheduling and therefore not directly requestable via the scene unit.
-            actionDescriptionBuilder.setIntermediary(true);
-
-            // verify and prepare action description and retrieve the service state
-            final ActivationState.Builder activationStateBuilder = ((ActivationState.Builder) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true));
-
-            // needs to be set before calling "setActivationState" because cause is used
-            activationStateBuilder.setResponsibleAction(actionDescriptionBuilder);
-
-            return FutureProcessor.postProcess((result, time, timeUnit) -> {
-
-                // update builder with updated action impact
-                final ActionDescription.Builder actionDescriptionBuilderNew = result.toBuilder();
-
-                // needs to be updated again to update the action impact in the responsible action as well.
-                // This has be done before calling "applyDataUpdate" because action is recovered via the responsible action.
-                activationStateBuilder.setResponsibleAction(actionDescriptionBuilderNew);
-
-                // publish new state as requested
-                try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-                    dataBuilder.getInternalBuilder().setActivationStateRequested(activationStateBuilder);
-                }
-
-                // update transition id
-                updateTransactionId();
-
-                // update the internal data model
-                applyDataUpdate(activationStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
-
-                // return the generated action description
-                return actionDescriptionBuilderNew.build();
-
-            }, activationStateOperationService.setActivationState(activationStateBuilder.build()));
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        // register action impact
+        for (ActionDescription action : impactActionList) {
+            ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, action);
         }
+
+        // forward to action scheduling
+        return super.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
+
+
+//        // todo: remove this method to avoid bypassing the action scheduling of this unit after openbase/bco.dal#159 has been solved.
+//
+//        try {
+//
+//            // verify that the service type matches
+//            if (actionDescriptionBuilder.getServiceStateDescription().getServiceType() != ServiceType.ACTIVATION_STATE_SERVICE) {
+//                throw new NotAvailableException("Service[" + actionDescriptionBuilder.getServiceStateDescription().getServiceType().name() + "] is not available for scenes!");
+//            }
+//
+//            // handle action cancellation
+//            if (actionDescriptionBuilder.getCancel()) {
+//                try {
+//                    if (!actionDescriptionBuilder.hasActionId() || actionDescriptionBuilder.getActionId().isEmpty()) {
+//                        throw new NotAvailableException("ActionId");
+//                    }
+//
+//                    if (!getActivationState().getResponsibleAction().getActionId().equals(actionDescriptionBuilder.getActionId())) {
+//                        logger.warn("Skip scene cancellation because current action[" + getActivationState().getResponsibleAction() + "] is not the one which should be canceled(" + actionDescriptionBuilder + ")!");
+//                        // return successful because scene do cache outdated actions so if the action is not the currently executing one, everything is fine.
+//                        return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+//                    }
+//
+//                    optionalActionPool.cancel();
+//                    requiredActionPool.cancel();
+//
+//                    return cancelAction(actionDescriptionBuilder.build(), authPair.getAuthenticatedBy());
+//                } catch (CouldNotPerformException ex) {
+//                    throw new CouldNotPerformException("Could not cancel authenticated action!", ex);
+//                }
+//            }
+//
+//            // handle action execution time extension
+//            if (actionDescriptionBuilder.getExtend()) {
+//                // skip because scene action do not expire anyway.
+//                return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
+//            }
+//
+//            // mark this action as intermediary because its bypassing the action scheduling and therefore not directly requestable via the scene unit.
+//            actionDescriptionBuilder.setIntermediary(true);
+//
+//            // verify and prepare action description and retrieve the service state
+//            final ActivationState.Builder activationStateBuilder = ((ActivationState.Builder) ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, this, true));
+//
+//            // needs to be set before calling "setActivationState" because cause is used
+//            activationStateBuilder.setResponsibleAction(actionDescriptionBuilder);
+//
+//            return FutureProcessor.postProcess((result, time, timeUnit) -> {
+//
+//                // update builder with updated action impact
+//                final ActionDescription.Builder actionDescriptionBuilderNew = result.toBuilder();
+//
+//                // needs to be updated again to update the action impact in the responsible action as well.
+//                // This has be done before calling "applyDataUpdate" because action is recovered via the responsible action.
+//                activationStateBuilder.setResponsibleAction(actionDescriptionBuilderNew);
+//
+//                // publish new state as requested
+//                try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
+//                    dataBuilder.getInternalBuilder().setActivationStateRequested(activationStateBuilder);
+//                }
+//
+//                // update transaction id
+//                updateTransactionId();
+//
+//                // update the internal data model
+//                applyDataUpdate(activationStateBuilder, ServiceType.ACTIVATION_STATE_SERVICE);
+//
+//                // return the generated action description
+//                return actionDescriptionBuilderNew.build();
+//
+//            }, activationStateOperationService.setActivationState(activationStateBuilder.build()));
+//        } catch (CouldNotPerformException ex) {
+//            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+//        }
     }
 
     private void stop() {
@@ -363,6 +398,13 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
             final ActionDescription.Builder responsibleActionBuilder = activationState.getResponsibleAction().toBuilder();
 
+            try {
+                logger.trace("inform about " + activationState.getValue().name());
+                applyServiceState(activationState, ServiceType.ACTIVATION_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToPascalCase(activationState.getValue().name()) + " " + this, ex));
+            }
+
             switch (activationState.getValue()) {
                 case INACTIVE:
                     stop();
@@ -372,18 +414,13 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     final MultiFuture<ActionDescription> optionalActionsFuture = optionalActionPool.execute(responsibleActionBuilder);
 
                     final List<ActionDescription> actionList = new ArrayList<>();
-                    final long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
-                    long timeout;
+
+                    final TimeoutSplitter timeout = new TimeoutSplitter(ACTION_EXECUTION_TIMEOUT, TimeUnit.MILLISECONDS);
                     try {
                         // wait for all required actions with a timeout, it at least one fails cancel all actions and leave with an exception
                         try {
                             for (final Future<ActionDescription> actionFuture : requiredActionsFuture.getFutureList()) {
-                                timeout = checkStart - System.currentTimeMillis();
-                                if (timeout <= 0) {
-                                    throw new CouldNotPerformException("Timeout on submitting required actions.");
-                                }
-
-                                actionList.add(actionFuture.get(timeout, TimeUnit.MILLISECONDS));
+                                actionList.add(actionFuture.get(timeout.getTime(), TimeUnit.MILLISECONDS));
                             }
                         } catch (TimeoutException | ExecutionException | CancellationException | CouldNotPerformException ex) {
                             // stop disabled, so scene can be reactivated because it will never be active but still possilble required actions are executed.
@@ -394,8 +431,9 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                         // wait for all optional actions with a timeout, if one fails ignore its result and cancel the according action
                         for (final Future<ActionDescription> actionFuture : optionalActionsFuture.getFutureList()) {
                             try {
-                                timeout = checkStart - System.currentTimeMillis();
-                                if (timeout <= 0) {
+                                try {
+                                    actionList.add(actionFuture.get(timeout.getTime(), TimeUnit.MILLISECONDS));
+                                } catch (org.openbase.jul.exception.TimeoutException | TimeoutException e) {
                                     // if the timeout is exhausted cancel all actions that are not yet done
                                     if (actionFuture.isDone()) {
                                         actionList.add(actionFuture.get());
@@ -404,9 +442,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                     }
                                     continue;
                                 }
-
-                                actionList.add(actionFuture.get(timeout, TimeUnit.MILLISECONDS));
-                            } catch (TimeoutException | ExecutionException ex) {
+                            } catch (ExecutionException ex) {
                                 actionFuture.cancel(true);
                             } catch (CancellationException ex) {
                                 // action already canceled just continue with next one...
@@ -418,10 +454,10 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                         return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Scene execution interrupted", ex));
                     }
 
-                    // add all action impacts
-                    for (final ActionDescription actionDescription : actionList) {
-                        ActionDescriptionProcessor.updateActionImpacts(responsibleActionBuilder, actionDescription);
-                    }
+//                    // add all action impacts
+//                    for (final ActionDescription actionDescription : actionList) {
+//                        ActionDescriptionProcessor.updateActionImpacts(responsibleActionBuilder, actionDescription);
+//                    }
 
                     // register an observer which will deactivate the scene if one required action is now longer running
                     requiredActionPool.addActionDescriptionObserver(requiredActionPoolObserver);
