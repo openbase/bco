@@ -43,10 +43,7 @@ import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
-import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
+import org.openbase.bco.dal.lib.layer.unit.*;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
@@ -948,19 +945,30 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         logger.debug("schedule new incoming action: {}", MultiLanguageTextProcessor.getBestMatch(actionToSchedule.getActionDescription().getDescription(), "?"));
 
                         for (final SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
+
                             if (schedulableAction.isDone()) {
                                 // skip actions which are done and remain on the stack for notification purposes
                                 continue;
                             }
 
-                            final ActionInitiator currentInitiator = ActionDescriptionProcessor.getInitialInitiator(schedulableAction.getActionDescription());
-                            if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId())) {
+                            // preload same states
+                            final ActionDescription scheduledActionDescription = schedulableAction.getActionDescription();
+                            final ActionInitiator currentInitiator = ActionDescriptionProcessor.getInitialInitiator(scheduledActionDescription);
+
+                            // if both initiators are not the same and there is not more than one human action on the stack than we can skip the rejection
+                            if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId()) &&
+                                    !(currentInitiator.getInitiatorType() == InitiatorType.HUMAN  && newInitiator.getInitiatorType() == InitiatorType.HUMAN)) {
                                 // actions do not have the same initiator
                                 continue;
                             }
 
                             // do not cancel the termination action.
-                            if (schedulableAction.getActionDescription().getPriority() == Priority.TERMINATION) {
+                            if (scheduledActionDescription.getPriority() == Priority.TERMINATION) {
+                                continue;
+                            }
+
+                            // handle if action is not replaceable
+                            if(!scheduledActionDescription.getReplaceable()) {
                                 continue;
                             }
 
@@ -987,9 +995,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     boolean atLeastOneActionToSchedule = false;
                     // save if there is at least one action which is done but remains on the list
                     boolean atLeastOneDoneActionOnList = false;
-
-                    //logger.debug("stack size: "+scheduledActionList.size());
-
 
                     // reject outdated and finish completed actions
                     for (final SchedulableAction action : scheduledActionList) {

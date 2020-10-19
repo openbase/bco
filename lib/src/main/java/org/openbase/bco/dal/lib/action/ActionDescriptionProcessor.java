@@ -149,6 +149,7 @@ public class ActionDescriptionProcessor {
         actionReference.setInterruptible(actionDescription.getInterruptible());
         actionReference.setPriority(actionDescription.getPriority());
         actionReference.setSchedulable(actionDescription.getSchedulable());
+        actionReference.setReplaceable(actionDescription.getReplaceable());
         actionReference.setTimestamp(actionDescription.getTimestamp());
         actionReference.addAllCategory(actionDescription.getCategoryList());
         actionReference.setIntermediary(actionDescription.getIntermediary());
@@ -374,6 +375,9 @@ public class ActionDescriptionProcessor {
         if (actionParameter.hasSchedulable()) {
             actionDescriptionBuilder.setSchedulable(actionParameter.getSchedulable());
         }
+        if (actionParameter.hasReplaceable()) {
+            actionDescriptionBuilder.setReplaceable(actionParameter.getReplaceable());
+        }
         if (actionParameter.hasAutoContinueWithLowPriority()) {
             actionDescriptionBuilder.setAutoContinueWithLowPriority(actionParameter.getAutoContinueWithLowPriority());
         }
@@ -559,8 +563,9 @@ public class ActionDescriptionProcessor {
         // prepare execution time period from cause if not available
         actionDescriptionBuilder.setExecutionTimePeriod(getExecutionTimePeriod(actionDescriptionBuilder));
         actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(getInitiatorId(actionDescriptionBuilder));
-        actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
         actionDescriptionBuilder.setInterruptible(getInterruptible(actionDescriptionBuilder));
+        actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
+        actionDescriptionBuilder.setReplaceable(getReplaceable(actionDescriptionBuilder));
         actionDescriptionBuilder.addAllCategory(getCategoryList(actionDescriptionBuilder));
 
         // update initiator type
@@ -602,6 +607,11 @@ public class ActionDescriptionProcessor {
             if (!actionDescriptionBuilder.hasAutoContinueWithLowPriority()) {
                 actionDescriptionBuilder.setAutoContinueWithLowPriority(true);
             }
+        }
+
+        // in case the action was initiated by the system, that the action has to be replaceable.
+        if(getInitialInitiator(actionDescriptionBuilder).getInitiatorType() != InitiatorType.HUMAN && !actionDescriptionBuilder.getReplaceable()){
+            actionDescriptionBuilder.clearReplaceable();
         }
 
         // validate priority
@@ -757,6 +767,28 @@ public class ActionDescriptionProcessor {
         }
 
         return ActionDescription.getDefaultInstance().getSchedulable();
+    }
+
+    /**
+     * Get the replaceable flag of an action. If the action description itself does not contain one its
+     * causes are queried.
+     *
+     * @param actionDescription the action description of which the replaceable flag is retrieved.
+     *
+     * @return the replaceable flag. If the action and none of its causes have one, the default value is returned.
+     */
+    public static boolean getReplaceable(final ActionDescriptionOrBuilder actionDescription) {
+        if (actionDescription.hasReplaceable()) {
+            return actionDescription.getReplaceable();
+        }
+
+        for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+            if (actionReference.hasReplaceable()) {
+                return actionReference.getReplaceable();
+            }
+        }
+
+        return ActionDescription.getDefaultInstance().getReplaceable();
     }
 
     /**

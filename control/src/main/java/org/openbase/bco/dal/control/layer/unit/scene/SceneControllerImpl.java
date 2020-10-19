@@ -242,7 +242,11 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
             }
 
-            final ActionParameter actionParameterPrototype = ActionParameter.newBuilder().setInterruptible(true).setSchedulable(true).setExecutionTimePeriod(Long.MAX_VALUE).build();
+            final ActionParameter actionParameterPrototype = ActionParameter.newBuilder()
+                    .setInterruptible(true)
+                    .setSchedulable(true)
+                    .setReplaceable(false)
+                    .setExecutionTimePeriod(Long.MAX_VALUE).build();
             requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             return config;
