@@ -186,7 +186,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         return remoteAction;
     }
 
-    private boolean isValid() {
+    protected boolean isValid() {
         try {
             return isEnabled() && isActive() && getActivationState().getValue() == State.ACTIVE;
         } catch (NotAvailableException e) {
