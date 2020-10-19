@@ -967,8 +967,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                 continue;
                             }
 
-                            // handle if action is not replaceable
-                            if(!scheduledActionDescription.getReplaceable()) {
+                            // do not cancel the action if it is not replaceable
+                            if(!scheduledActionDescription.getReplaceable() &&
+                                    // we have to make sure that external units can only put one non replaceable action on this stack.
+                                    // therefore, we check if the unit chain suffix till the non replaceable flag is not the same, otherwise we still reject the action.
+                                    ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(scheduledActionDescription) != ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(actionToSchedule.getActionDescription())) {
                                 continue;
                             }
 
