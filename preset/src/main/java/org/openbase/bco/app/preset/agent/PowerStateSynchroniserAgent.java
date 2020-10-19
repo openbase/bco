@@ -22,46 +22,46 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
-import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
+import org.openbase.bco.dal.lib.action.Action;
+import org.openbase.bco.dal.lib.action.ActionComparator;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.provider.PowerStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
-import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.state.ActionStateType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
-import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
-import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.BrightnessStateType;
+import org.openbase.type.domotic.state.ColorStateType;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 
 /**
@@ -75,85 +75,18 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     public static final String SOURCE_KEY = "SOURCE";
     public static final String TARGET_KEY = "TARGET";
 
+    private final ProtoBufJSonProcessor PROTO_BUF_JSON_PROCESSOR = new ProtoBufJSonProcessor();
+
     private final Object AGENT_LOCK = new SyncObject("PowerStateSynchroniserAgentLock");
     private final List<UnitRemote> targetRemotes = new ArrayList<>();
-    private final Map<ServiceType, Observer<ServiceStateProvider<Message>, Message>> serviceTypeRequestedObserverMap;
-    private final Map<ServiceType, Observer<ServiceStateProvider<Message>, Message>> serviceTypeCurrentObserverMap;
+    private final Observer<DataProvider, Object> targetRemoteObserver;
 
     private String sourceId;
-    private RemoteAction remoteAction;
+    private ActionComparator actionComparator;
+    private RemoteAction sourceAction;
 
     public PowerStateSynchroniserAgent() throws CouldNotPerformException {
-
-        serviceTypeRequestedObserverMap = new HashMap<>();
-        serviceTypeCurrentObserverMap = new HashMap<>();
-
-        final Observer<ServiceStateProvider<Message>, Message> requestedPowerStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate((PowerState) data);
-        final Observer<ServiceStateProvider<Message>, Message> requestedBrightnessStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate(BrightnessStateProviderService.toPowerState((BrightnessState) data));
-        final Observer<ServiceStateProvider<Message>, Message> requestedColorStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleRequestedPowerStateUpdate(ColorStateProviderService.toPowerState((ColorState) data));
-
-        final Observer<ServiceStateProvider<Message>, Message> currentPowerStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate((PowerState) data);
-        final Observer<ServiceStateProvider<Message>, Message> currentBrightnessStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate(BrightnessStateProviderService.toPowerState((BrightnessState) data));
-        final Observer<ServiceStateProvider<Message>, Message> currentColorStateObserver = (final ServiceStateProvider<Message> source, final Message data) -> handleCurrentPowerStateUpdate(ColorStateProviderService.toPowerState((ColorState) data));
-
-        serviceTypeRequestedObserverMap.put(ServiceType.POWER_STATE_SERVICE, requestedPowerStateObserver);
-        serviceTypeRequestedObserverMap.put(ServiceType.BRIGHTNESS_STATE_SERVICE, requestedBrightnessStateObserver);
-        serviceTypeRequestedObserverMap.put(ServiceType.COLOR_STATE_SERVICE, requestedColorStateObserver);
-
-        serviceTypeCurrentObserverMap.put(ServiceType.POWER_STATE_SERVICE, currentPowerStateObserver);
-        serviceTypeCurrentObserverMap.put(ServiceType.BRIGHTNESS_STATE_SERVICE, currentBrightnessStateObserver);
-        serviceTypeCurrentObserverMap.put(ServiceType.COLOR_STATE_SERVICE, currentColorStateObserver);
-    }
-
-    private void handleRequestedPowerStateUpdate(final PowerState powerState) {
-        try {
-            logger.trace("handle requested state: {}", powerState.getValue().name());
-            synchronized (AGENT_LOCK) {
-                if (powerState.getValue() != PowerState.State.ON) {
-                    // do nothing because target was not turned on
-                    logger.trace("do nothing because target was not turned on");
-                    return;
-                }
-
-                // create action, copy priority and execute with responsible action as cause
-                final ActionParameter.Builder actionParameter = generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.ON)).setPriority(powerState.getResponsibleAction().getPriority());
-                actionParameter.getServiceStateDescriptionBuilder().setUnitId(sourceId);
-                logger.trace("switch on by handleRequestedPowerStateUpdate");
-                executeAction(actionParameter.build(), powerState.getResponsibleAction());
-            }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-    }
-
-    private void handleCurrentPowerStateUpdate(final PowerState powerState) {
-        try {
-            logger.trace("handle current state: {}", powerState.getValue().name());
-            synchronized (AGENT_LOCK) {
-                if (powerState.getValue() != PowerState.State.OFF) {
-                    // do nothing because target was not turned off
-                    logger.trace("do nothing because target was not turned off");
-                    return;
-                }
-
-                // create action, set priority to low and execute with responsible action as cause
-                final ActionParameter.Builder actionParameter = generateAction(UnitType.UNKNOWN, ServiceType.POWER_STATE_SERVICE, PowerState.newBuilder().setValue(PowerState.State.OFF)).setPriority(Priority.LOW);
-                actionParameter.getServiceStateDescriptionBuilder().setUnitId(sourceId);
-                logger.trace("switch off by handleCurrentPowerStateUpdate");
-                executeAction(actionParameter.build(), powerState.getResponsibleAction());
-            }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-        }
-    }
-
-    private void executeAction(final ActionParameter actionParameter, final ActionDescription responsibleAction) throws InterruptedException, InstantiationException {
-        remoteAction = new RemoteAction(this, actionParameter, getToken());
-        if (responsibleAction.getActionId().isEmpty()) {
-            remoteAction.execute();
-        } else {
-            remoteAction.execute(responsibleAction);
-        }
+        this.targetRemoteObserver = (source, data) -> handleTargetUpdate();
     }
 
     @Override
@@ -172,6 +105,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             try {
                 logger.trace("ApplyConfigUpdate for PowerStateSynchroniserAgent[{}]", LabelProcessor.getBestMatch(config.getLabel()));
                 Registries.waitForData();
+
+                this.actionComparator = new ActionComparator(() -> getParentLocationRemote(false).getEmphasisState());
 
                 MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 
@@ -216,44 +151,106 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         }
     }
 
+    private List<ActionDescription> filterActions(final List<ActionDescription> actionDescriptions, final PowerState powerState) throws CouldNotPerformException {
+        final List<ActionDescription> result = new ArrayList<>();
+        for (ActionDescription actionDescription : actionDescriptions) {
+            ActionStateType.ActionState.State actionState = actionDescription.getActionState().getValue();
+            if (actionState != ActionStateType.ActionState.State.SUBMISSION
+                    && actionState != ActionStateType.ActionState.State.EXECUTING
+                    && actionState != ActionStateType.ActionState.State.INITIATING) {
+                continue;
+            }
+
+
+            switch (actionDescription.getServiceStateDescription().getServiceType()) {
+                case POWER_STATE_SERVICE:
+                    final PowerState actionPowerState = PROTO_BUF_JSON_PROCESSOR.deserialize(actionDescription.getServiceStateDescription().getServiceState(), PowerState.class);
+                    if (actionPowerState.getValue() != powerState.getValue()) {
+                        continue;
+                    }
+                    break;
+                case BRIGHTNESS_STATE_SERVICE:
+                    BrightnessStateType.BrightnessState actionBrightnessState = PROTO_BUF_JSON_PROCESSOR.deserialize(actionDescription.getServiceStateDescription().getServiceState(), BrightnessStateType.BrightnessState.class);
+                    if (!PowerStateProviderService.isCompatible(powerState, actionBrightnessState)) {
+                        continue;
+                    }
+                    break;
+                case COLOR_STATE_SERVICE:
+                    ColorStateType.ColorState actionColorState = PROTO_BUF_JSON_PROCESSOR.deserialize(actionDescription.getServiceStateDescription().getServiceState(), ColorStateType.ColorState.class);
+                    if (!PowerStateProviderService.isCompatible(powerState, actionColorState)) {
+                        continue;
+                    }
+                    break;
+                default:
+                    throw new CouldNotPerformException("Unexpected service type " + actionDescription.getServiceStateDescription().getServiceType().name());
+            }
+
+            result.add(actionDescription);
+        }
+        return result;
+    }
+
+    private void handleTargetUpdate() throws CouldNotPerformException, InterruptedException {
+        synchronized (AGENT_LOCK) {
+            final List<ActionDescription> allTargetAction = new ArrayList<>();
+
+            logger.debug("Aggregate all target actions");
+            for (UnitRemote targetRemote : targetRemotes) {
+                final Message msg = (Message) targetRemote.getData();
+                final Descriptors.FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(msg, Action.TYPE_FIELD_NAME_ACTION);
+                allTargetAction.addAll((List<ActionDescription>) msg.getField(actionFieldDescriptor));
+            }
+
+            logger.debug("Filter for on actions");
+            List<ActionDescription> actionDescriptions = filterActions(allTargetAction, States.Power.ON);
+
+            ServiceStateDescriptionType.ServiceStateDescription.Builder builder1;
+            if (actionDescriptions.isEmpty()) {
+                logger.debug("No on actions, so filter for off...");
+                actionDescriptions = filterActions(allTargetAction, States.Power.OFF);
+                builder1 = ActionDescriptionProcessor.generateServiceStateDescription(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
+            } else {
+                builder1 = ActionDescriptionProcessor.generateServiceStateDescription(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
+            }
+            builder1.setUnitId(sourceId);
+
+            if (actionDescriptions.isEmpty()) {
+                logger.error("No on or off actions... how can this happen?");
+                //TODO: print a warning, this should not happen
+                return;
+            }
+
+            logger.debug("Create remote actions");
+            List<RemoteAction> remoteActions = new ArrayList<>();
+            for (ActionDescription actionDescription : actionDescriptions) {
+                remoteActions.add(new RemoteAction(actionDescription));
+            }
+            logger.debug("Sort remote actions");
+            remoteActions.sort(actionComparator);
+
+            final ActionDescription actionDescription = remoteActions.get(0).getActionDescription();
+            logger.debug("On top is: {}", MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
+            ActionParameter.Builder builder = getDefaultActionParameter().toBuilder();
+            builder.setCause(actionDescription);
+            builder.setExecutionTimePeriod(actionDescription.getExecutionTimePeriod());
+            builder.setPriority(actionDescription.getPriority());
+            builder.setServiceStateDescription(builder1);
+
+            this.sourceAction = new RemoteAction(Units.getUnit(sourceId, false).applyAction(builder), getToken(), () -> isValid());
+        }
+    }
+
     @Override
     protected ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         logger.trace("Executing PowerStateSynchroniser agent");
 
-        PowerState powerState = null;
-        for (final UnitRemote targetRemote : targetRemotes) {
-            try {
-                for (final Entry<ServiceType, Observer<ServiceStateProvider<Message>, Message>> entry : serviceTypeRequestedObserverMap.entrySet()) {
-                    if (!targetRemote.getAvailableServiceTypes().contains(entry.getKey())) {
-                        continue;
-                    }
-                    // register observer
-                    targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, entry.getKey(), entry.getValue());
-                    targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), entry.getValue());
-                    targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), serviceTypeCurrentObserverMap.get(entry.getKey()));
-                }
-            } catch (NotAvailableException ex) {
-                logger.warn("Could not add observers to remote " + targetRemote, ex);
-            }
-
-            if (targetRemote.isDataAvailable()) {
-                PowerState tmpPowerState = (PowerState) Services.invokeProviderServiceMethod(ServiceType.POWER_STATE_SERVICE, targetRemote);
-                if (powerState == null || powerState.getValue() != PowerState.State.ON) {
-                    powerState = tmpPowerState;
-                }
-            }
-        }
-
-        if (powerState != null) {
-            if (powerState.getValue() == PowerState.State.ON) {
-                handleRequestedPowerStateUpdate(powerState);
-            } else {
-                handleCurrentPowerStateUpdate(powerState);
-            }
+        for (UnitRemote targetRemote : targetRemotes) {
+            targetRemote.addDataObserver(this.targetRemoteObserver);
         }
 
         return activationState.getResponsibleAction();
     }
+
 
     @Override
     protected void stop(final ActivationState activationState) throws InterruptedException, CouldNotPerformException {
@@ -263,26 +260,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             logger.trace("Stopping PowerStateSynchroniserAgent");
         }
 
-
-        targetRemotes.forEach((targetRemote) -> {
-            try {
-                for (final Entry<ServiceType, Observer<ServiceStateProvider<Message>, Message>> entry : serviceTypeRequestedObserverMap.entrySet()) {
-                    if (!targetRemote.getAvailableServiceTypes().contains(entry.getKey())) {
-                        continue;
-                    }
-                    targetRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, entry.getKey(), entry.getValue());
-                    targetRemote.removeServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), entry.getValue());
-                    targetRemote.removeServiceStateObserver(ServiceTempus.CURRENT, entry.getKey(), serviceTypeCurrentObserverMap.get(entry.getKey()));
-                }
-            } catch (NotAvailableException ex) {
-                logger.warn("Could not remove observers from remote " + targetRemote, ex);
-            }
-        });
-
-        if (remoteAction != null) {
-            remoteAction.cancel();
-            remoteAction = null;
+        for (UnitRemote targetRemote : this.targetRemotes) {
+            targetRemote.removeDataObserver(this.targetRemoteObserver);
         }
-        super.stop(activationState);
+
+        if (this.sourceAction != null) {
+            this.sourceAction.cancel();
+        }
     }
+
 }
