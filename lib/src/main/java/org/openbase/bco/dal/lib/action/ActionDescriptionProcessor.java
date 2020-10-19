@@ -462,9 +462,7 @@ public class ActionDescriptionProcessor {
      *
      * @return the updated actionInitiator.
      */
-    @Experimental
     public static ActionInitiator detectActionInitiatorId(final boolean authorized) {
-        // todo pleminoq: can this be performed at the controller via the discovered authentication data?
         return detectActionInitiatorId(ActionInitiator.newBuilder(), authorized).build();
     }
 
@@ -476,9 +474,7 @@ public class ActionDescriptionProcessor {
      *
      * @return the given actionInitiatorBuilder.
      */
-    @Experimental
     public static ActionInitiator.Builder detectActionInitiatorId(final ActionInitiator.Builder actionInitiatorBuilder, final boolean authorized) {
-        // todo pleminoq: can this be performed at the controller via the discovered authentication data?
         if (authorized && SessionManager.getInstance().isLoggedIn()) {
             if (!SessionManager.getInstance().getUserClientPair().getUserId().isEmpty()) {
                 actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserClientPair().getUserId());
@@ -486,7 +482,7 @@ public class ActionDescriptionProcessor {
                 actionInitiatorBuilder.setInitiatorId(SessionManager.getInstance().getUserClientPair().getClientId());
             }
         } else {
-            actionInitiatorBuilder.clearInitiatorId();
+            actionInitiatorBuilder.setInitiatorId(User.OTHER);
         }
         return actionInitiatorBuilder;
     }

@@ -528,7 +528,6 @@ public class RemoteAction implements Action {
 
         try {
             if (targetUnit.getUnitType() == UnitType.LOCATION
-                    || targetUnit.getUnitType() == UnitType.SCENE
                     || targetUnit.getUnitType() == UnitType.UNIT_GROUP) {
                 LOGGER.warn("Intermediary flag not properly synchronized! Recover state for " + targetUnit.getLabel());
                 return true;
