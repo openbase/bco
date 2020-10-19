@@ -1125,6 +1125,34 @@ public class ActionDescriptionProcessor {
         }
     }
 
+    /**
+     * Method can be used to compute the unit chain suffix for nen replaceable action.
+     * In order to handle performance and scalability issues, the action scheduling process has to take that for each unit only one action for each system user can take place plus one additional one that represents human actions.
+     * However, sometimes its useful to guarantee persistent states e.g. in case a scene is executed. In this case the replaceable flag can be set that keeps an additional human action on the stack.
+     * But the scheduling has to take care of that multi action of the same initiating unit are not kept on the stack. This is where this method comes into play which computes the suffix from the end point action till the action that has the replaceable flag set.
+     * The action scheduling can than compare those suffixes in order to decide if two action were initiated by the same user.
+     *
+     * @param actionDescription the action description used to compute the suffix
+     * @return the suffix, which is a list of unit ids concatenated with "_".
+     */
+    public static String getUnitChainSuffixForNonReplaceableAction(final ActionDescription actionDescription) {
+
+        String suffix = actionDescription.getServiceStateDescription().getUnitId();
+
+        if (!actionDescription.getReplaceable()) {
+            return suffix;
+        }
+
+        // build action suffix until replaceable flag
+        for (ActionReference causeActionReference : actionDescription.getActionCauseList()) {
+            suffix += suffix + "_" + causeActionReference.getServiceStateDescription().getUnitId();
+            if (!causeActionReference.getReplaceable()) {
+                return suffix;
+            }
+        }
+
+        return suffix;
+    }
 
     public static String toString(final ActionParameterOrBuilder actionParameter) {
         if (actionParameter == null) {
