@@ -39,8 +39,11 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.type.configuration.EntryType.Entry;
 import org.openbase.type.configuration.MetaConfigType.MetaConfig;
+import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
@@ -78,7 +81,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
      *
      * @throws java.lang.Exception
      */
-    //@Test(timeout = 15000)
+    @Test(timeout = 15000)
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
@@ -145,6 +148,15 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
                 LOGGER.error("Incoming requested state via unit is unknown! ["+ data+"]");
                 deliveredUnknownRequestedState[0] = true;
             }*/
+        });
+        powerSwitchRemote.addDataObserver(new Observer<DataProvider<PowerSwitchData>, PowerSwitchData>() {
+            @Override
+            public void update(DataProvider<PowerSwitchData> source, PowerSwitchData data) throws Exception {
+                System.out.println("Actions: ");
+                for (ActionDescriptionType.ActionDescription actionDescription : data.getActionList()) {
+                    System.out.println(actionDescription.getActionId() + ": " + actionDescription.getActionState().getValue().name());
+                }
+            }
         });
 
         // Turn on a target which should make the agent turn on the source
