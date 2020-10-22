@@ -136,8 +136,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 }
 
                 // apply action
-                if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED) && data.getButtonStateLast().getValue() != ButtonState.State.PRESSED ||
-                        data.getButtonState().getValue().equals(State.RELEASED) && data.getButtonStateLast().getValue() != State.RELEASED) {
+                if ((data.getButtonState().getValue().equals(ButtonState.State.PRESSED) && data.getButtonStateLast().getValue() != ButtonState.State.PRESSED) ||
+                        (data.getButtonState().getValue().equals(State.RELEASED) && data.getButtonStateLast().getValue() != State.RELEASED)) {
 
                     ActivationState.Builder activationState;
 
