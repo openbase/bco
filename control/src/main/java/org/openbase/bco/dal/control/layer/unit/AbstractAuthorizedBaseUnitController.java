@@ -31,7 +31,6 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UnitUserCreationPlugin;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InstantiationException;
@@ -39,8 +38,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufJSonProcessor;
-import org.openbase.jul.extension.type.processing.MetaConfigPool;
-import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Pair;
 import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -95,25 +92,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
     private AuthToken requestAuthToken(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         try {
-            UnitConfig userUnitConfig = null;
-            for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.USER)) {
-                MetaConfigPool metaConfigPool = new MetaConfigPool();
-                metaConfigPool.register(new MetaConfigVariableProvider(UnitConfigProcessor.getDefaultAlias(config, config.getId()), config.getMetaConfig()));
-                try {
-                    String unitId = metaConfigPool.getValue(UnitUserCreationPlugin.UNIT_ID_KEY);
-                    if (unitId.equalsIgnoreCase(unitConfig.getId())) {
-                        userUnitConfig = config;
-                        break;
-                    }
-                } catch (NotAvailableException ex) {
-                    // do nothing
-                }
-            }
-
-            if (userUnitConfig == null) {
-                throw new NotAvailableException("User for " + this + " " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()));
-            }
-
+            final UnitConfig userUnitConfig = UnitUserCreationPlugin.findUser(unitConfig.getId(), Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.USER));
             final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(userUnitConfig.getId()).build();
             final SessionManager sessionManager = new SessionManager();
             sessionManager.loginUser(userUnitConfig.getId(), true);
@@ -158,7 +137,6 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
      * Additionally, the auth token of this controller is passed to the remote action and the action auto extension routine is enabled.
      *
      * @param futureAction used to identify the action to observe.
-     *
      * @return a ready to use action remote instance.
      */
     protected RemoteAction observe(final Future<ActionDescription> futureAction) {
@@ -205,7 +183,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         eventsPerHour++;
         lastActionTimestamp = System.currentTimeMillis();
 
-        if(JPService.verboseMode()) {
+        if (JPService.verboseMode()) {
             logger.info("Analyze " + this + " which currently generates " + eventsPerHour + " events per hour which is " + (int) (eventsPerHour / MAX_ACTIN_SUBMITTION_PER_MINUTE) * 100d + "% of the totally allowed ones.");
         }
 
