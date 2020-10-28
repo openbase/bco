@@ -48,6 +48,7 @@ import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -135,7 +136,11 @@ public class UnitUserCreationPlugin extends ProtobufRegistryPluginAdapter<String
     }
 
     public static UnitConfig findUser(final String unitId, final ProtoBufRegistry<String, UnitConfig, Builder> userRegistry) throws CouldNotPerformException {
-        for (final UnitConfig userUnitConfig : userRegistry.getMessages()) {
+        return findUser(unitId, userRegistry.getMessages());
+    }
+
+    public static UnitConfig findUser(final String unitId, final List<UnitConfig> userUnitConfigs) throws CouldNotPerformException {
+        for (final UnitConfig userUnitConfig : userUnitConfigs) {
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
             metaConfigPool.register(new MetaConfigVariableProvider(userUnitConfig.getUserConfig().getUserName() + MetaConfig.class.getSimpleName(), userUnitConfig.getMetaConfig()));
             try {
