@@ -45,6 +45,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
@@ -94,17 +95,24 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     @Before
     public void setUp() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         for (ActionDescription actionDescription : colorableLightController.getActionList()) {
+
+            // filter termination action
+            if (actionDescription.getPriority() == Priority.TERMINATION) {
+                continue;
+            }
+
             final RemoteAction remoteAction = new RemoteAction(actionDescription);
             Assert.assertTrue("Found ongoing " + remoteAction + " on stack which could interfere with test execution!", remoteAction.isDone());
         }
     }
 
     @After
-    public void tearDown() throws NotAvailableException, InterruptedException, InstantiationException, TimeoutException, ExecutionException {
+    public void tearDown() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         // cleanup leftover actions which were manually submitted to the controller.
         for (ActionDescription actionDescription : colorableLightController.getActionList()) {
             new RemoteAction(actionDescription, adminToken).cancel().get(5, TimeUnit.SECONDS);
         }
+        colorableLightController.cancelAllActions();
     }
 
     @Test
@@ -114,9 +122,8 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             Assert.assertEquals("Power state updated was not applied!", State.ON, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Power state updated was not applied to remote instance!", State.ON, colorableLightRemote.getData().getPowerState().getValue());
-
             colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
-            Assert.assertEquals("Power state updated was not applied!", State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
+            Assert.assertEquals("Power state updated was not applied because of: "+ MultiLanguageTextProcessor.getBestMatch(((ColorableLightData) colorableLightController.getData()).getPowerState().getResponsibleAction().getDescription(), "?"), State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue());
             colorableLightRemote.requestData().get();
             Assert.assertEquals("Power state updated was not applied to remote instance!", State.OFF, colorableLightRemote.getData().getPowerState().getValue());
 

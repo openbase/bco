@@ -45,6 +45,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
@@ -192,6 +193,13 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
         colorableLightRemote.requestData().get();
         for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
+
+            // filter termination action
+            if (actionDescription.getPriority() == Priority.TERMINATION) {
+                continue;
+            }
+
+            // validate if done
             final RemoteAction remoteAction = new RemoteAction(actionDescription);
             Assert.assertTrue(remoteAction + " is not done!", remoteAction.isDone());
         }
@@ -227,6 +235,12 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         action.cancel().get();
         colorableLightRemote.requestData().get();
         for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
+
+            // filter termination action
+            if (actionDescription.getPriority() == Priority.TERMINATION) {
+                continue;
+            }
+
             final RemoteAction remoteAction = new RemoteAction(actionDescription);
             Assert.assertTrue(remoteAction + " is not done!", remoteAction.isDone());
         }

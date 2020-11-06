@@ -35,7 +35,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.TokenGenerator;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
@@ -62,7 +61,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -121,7 +119,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @After
-    public void tearDown() throws CouldNotPerformException {
+    public void tearDown() {
         sessionManager.logout();
     }
 
@@ -166,6 +164,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         final Future<ActionDescription> cancelFuture = remoteAction.cancel();
         System.out.println("wait for cancel");
         cancelFuture.get();
+        System.out.println("canceled");
         colorableLightRemote.requestData().get();
 
         // validate that the action is cancelled
@@ -184,7 +183,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     /**
      * Observer which makes sure that all of a set of action states were notified in their specified order.
      */
-    private class ActionStateObserver implements Observer<DataProvider<ColorableLightData>, ColorableLightData> {
+    private static class ActionStateObserver implements Observer<DataProvider<ColorableLightData>, ColorableLightData> {
 
         private final ActionState.State[] actionStates;
 
@@ -211,8 +210,8 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
                 for (ActionDescription actionDescription : data.getActionList()) {
 
                     // filter non observed states
-                    if (!Arrays.stream(actionStates).anyMatch(actionDescription.getActionState().getValue()::equals)) {
-                        return;
+                    if (Arrays.stream(actionStates).noneMatch(actionDescription.getActionState().getValue()::equals)) {
+                        continue;
                     }
 
                     // create missing units
@@ -224,7 +223,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
                     // do nothing if the action state has not been updated
                     if (!stateList.isEmpty() && stateList.get(stateList.size() - 1) == actionDescription.getActionState().getValue()) {
-                        return;
+                        continue;
                     }
 
                     stateList.add(actionDescription.getActionState().getValue());
@@ -288,7 +287,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     public void testRescheduling() throws Exception {
         LOGGER.info("testRescheduling");
 
-        // set the power state of the colorable lightue with the bco user
+        // set the power state of the colorable light hue with the bco user
         final RemoteAction firstAction = observe(colorableLightRemote.setPowerState(State.ON, ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build()));
         firstAction.waitForActionState(ActionState.State.EXECUTING);
 
@@ -332,7 +331,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test priorized action execution and low priorized rescheduling afterwards.
+     * Test prioritize action execution and low prioritized rescheduling afterwards.
      *
      * @throws Exception if an error occurs.
      */

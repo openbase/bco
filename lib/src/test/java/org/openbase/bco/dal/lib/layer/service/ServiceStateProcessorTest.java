@@ -171,13 +171,13 @@ public class ServiceStateProcessorTest {
         }
 
         @Override
-        public M getData() throws NotAvailableException {
+        public M getData() {
             return null;
         }
 
         @Override
         public Future<M> getDataFuture() {
-            return FutureProcessor.completedFuture(null);
+            return FutureProcessor.completedFuture(getData());
         }
 
         @Override

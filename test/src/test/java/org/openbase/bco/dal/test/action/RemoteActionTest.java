@@ -274,6 +274,12 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
             for (ActionDescription actionDescription : unit.getActionList()) {
+
+                // filter termination action
+                if (actionDescription.getPriority() == Priority.TERMINATION) {
+                    continue;
+                }
+
                 Assert.assertEquals("Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
             }
         }
@@ -285,6 +291,12 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         System.out.println("validate if still everything is done");
         for (ColorableLightRemote unit : units) {
             for (ActionDescription actionDescription : unit.getActionList()) {
+
+                // filter termination action
+                if (actionDescription.getPriority() == Priority.TERMINATION) {
+                    continue;
+                }
+
                 Assert.assertEquals("Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
             }
         }
