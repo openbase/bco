@@ -33,10 +33,13 @@ import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -391,6 +394,32 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @return the updated action description when the future was completed.
      */
     Future<ActionDescription> extend();
+
+    /**
+     * Returns a list of actions that has been recursive executed because of this action.
+     *
+     * @param inclusive defines if this action is included in the list in case its an intermediate one.
+     *
+     * @return a list of actions as action references.
+     *
+     * @throws NotAvailableException thrown in case the action was not initialized yet.
+     */
+    default List<ActionReference> getActionImpact(boolean inclusive) throws NotAvailableException {
+        try {
+            final ActionDescription actionDescription = getActionDescription();
+            final List<ActionReference> actionImpactList = new ArrayList<>();
+
+            if (actionDescription.getIntermediary()) {
+                actionImpactList.addAll(actionDescription.getActionImpactList());
+            } else if (inclusive) {
+                actionImpactList.add(ActionDescriptionProcessor.generateActionReference(actionDescription));
+            }
+
+            return actionImpactList;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ActionImpactReferences");
+        }
+    }
 
     /**
      * Method return a string representation of the given action instance.
