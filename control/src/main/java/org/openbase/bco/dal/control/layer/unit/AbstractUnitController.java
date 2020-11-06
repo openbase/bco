@@ -967,11 +967,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                 continue;
                             }
 
-                            // do not cancel the action if it is not replaceable
-                            if(!scheduledActionDescription.getReplaceable() &&
+                            // do not cancel the action if any action of it is non replaceable
+                            if(!ActionDescriptionProcessor.getReplaceable(scheduledActionDescription) &&
                                     // we have to make sure that external units can only put one non replaceable action on this stack.
                                     // therefore, we check if the unit chain suffix till the non replaceable flag is not the same, otherwise we still reject the action.
-                                    ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(scheduledActionDescription) != ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(actionToSchedule.getActionDescription())) {
+                                    !ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(scheduledActionDescription).equals(ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(actionToSchedule.getActionDescription()))) {
                                 continue;
                             }
 
@@ -1429,7 +1429,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // log state transition
-                    logger.info("Update [{}] of {}", StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(newState, serviceType), " "), this);
+                    logger.info("{} is updated from {} to {}.",
+                            getLabel("?"),
+                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder),serviceType)),
+                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType)));
+
                     if (!Services.hasResponsibleAction(newState)) {
                         StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
                     }
@@ -1962,22 +1966,22 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @return {@inheritDoc}
      */
     @Override
-    public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
+    public Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType) {
         try {
             if (!operationServiceMap.containsKey(serviceType)) {
                 if (JPService.getProperty(JPProviderControlMode.class).getValue()) {
                     applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
-                    return FutureProcessor.completedFuture(null);
+                    return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
                 } else {
-                    return FutureProcessor.canceledFuture(Void.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
+                    return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
                 }
             }
-            return (Future<Void>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
+            return (Future<ActionDescription>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(Void.class, ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Unexpected exception while performing operation service!", ex, logger);
-            return FutureProcessor.canceledFuture(Void.class, ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
