@@ -570,18 +570,18 @@ public class FulfillmentHandler {
         // if there is more than one command ignore infrastructure units
         final boolean filterInfrastructureUnits = idCommandMap.size() > 1;
 
-        final Map<String, Future> idFutureMap = new HashMap<>();
+        final Map<String, Future<Void>> idFutureMap = new HashMap<>();
         // iterate over all entries, start according tasks to execute the given commands and save futures of these tasks
         for (final Entry<String, List<JsonObject>> idCommand : idCommandMap.entrySet()) {
             try {
                 final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(idCommand.getKey());
-                final Future future;
+                final Future<Void> future;
 
                 if (unitConfig.getUnitType() == UnitType.DEVICE) {
                     // device was used to group some dal units together so create a task which will handle all internal
                     // dal unit tasks
                     future = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                        final Set<Future> internalFutureSet = new HashSet<>();
+                        final Set<Future<Void>> internalFutureSet = new HashSet<>();
                         try {
                             // create tasks for all grouped dal units
                             for (final UnitConfig hostedUnitConfig : getUnitConfigsHandledByDevice(unitConfig)) {
@@ -596,7 +596,7 @@ public class FulfillmentHandler {
 
                             // wait for all tasks and gather exceptions
                             ExceptionStack exceptionStack = null;
-                            for (final Future internalFuture : internalFutureSet) {
+                            for (final Future<Void> internalFuture : internalFutureSet) {
                                 try {
                                     // timeout is not needed because the created tasks are implemented in a way that
                                     // they will no block forever
@@ -616,7 +616,7 @@ public class FulfillmentHandler {
                             MultiException.checkAndThrow(() -> "Could not execute one command for internal units of device[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "]", exceptionStack);
                         } catch (InterruptedException ex) {
                             // interrupted, so cancel all internal tasks and finish normally
-                            for (final Future internalFuture : internalFutureSet) {
+                            for (final Future<Void> internalFuture : internalFutureSet) {
                                 if (!internalFuture.isDone()) {
                                     internalFuture.cancel(true);
                                 }
@@ -653,7 +653,7 @@ public class FulfillmentHandler {
         Set<String> error = new HashSet<>();
         try {
             // iterate and wait for every task to validate its execution
-            for (Entry<String, Future> entry : idFutureMap.entrySet()) {
+            for (Entry<String, Future<Void>> entry : idFutureMap.entrySet()) {
                 try {
                     // wait without timeout because internal tasks should only be able to run for a limited amount of time
                     entry.getValue().get();
@@ -704,7 +704,7 @@ public class FulfillmentHandler {
      *
      * @return a future of the task created that will execute all actions for the given unit remote
      */
-    private static Future createExecutionTask(final UnitRemote<?> unitRemote, final List<JsonObject> executionList, final String authenticationToken, final String authorizationToken) {
+    private static Future<Void> createExecutionTask(final UnitRemote<?> unitRemote, final List<JsonObject> executionList, final String authenticationToken, final String authorizationToken) {
         return GlobalCachedExecutorService.submit((Callable<Void>) () -> {
             try {
                 // wait for data
