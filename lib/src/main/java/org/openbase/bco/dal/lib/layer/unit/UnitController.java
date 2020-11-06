@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.controller.MessageController;
 import org.openbase.jul.schedule.Timeout;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -168,5 +169,5 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
      *
      * @return a future object representing the progress of the service state transition.
      */
-    Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType);
+    Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType);
 }

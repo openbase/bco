@@ -24,8 +24,11 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.util.concurrent.Future;
@@ -47,12 +50,12 @@ public interface BaseUnitController<D extends AbstractMessage, DB extends D.Buil
      * @return {@inheritDoc}
      */
     @Override
-    default Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
+    default Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType) {
         try {
             applyDataUpdate(serviceState, serviceType);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(Void.class, ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
-        return FutureProcessor.completedFuture(null);
+        return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
     }
 }

@@ -23,10 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.mock;
  */
 
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
-import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -259,10 +256,10 @@ public class OperationServiceFactoryMock implements OperationServiceFactory {
         }
     }
 
-    private static Future<ActionDescription> update(final Message argument, final UnitController<?, ?> unit, final ServiceType serviceType) {
+    private static Future<ActionDescription> update(final Message serviceState, final UnitController<?, ?> unit, final ServiceType serviceType) {
         try {
-            unit.applyServiceState(argument, serviceType);
-            return FutureProcessor.completedFuture(null);
+            unit.applyServiceState(serviceState, serviceType);
+            return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not call remote Message[]", ex));
         }

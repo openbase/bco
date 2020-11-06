@@ -24,11 +24,13 @@ package org.openbase.bco.dal.control.layer.unit;
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.io.Serializable;
@@ -46,15 +48,15 @@ public abstract class AbstractBaseUnitController<D extends AbstractMessage & Ser
     }
 
     @Override
-    public Future<Void> performOperationService(final Message serviceState, final ServiceType serviceType) {
+    public Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType) {
         if (getOperationServiceMap().containsKey(serviceType)) {
             return super.performOperationService(serviceState, serviceType);
         }
         try {
             super.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
-            return FutureProcessor.completedFuture(null);
+            return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(Void.class, ex);
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 }

@@ -25,6 +25,7 @@ package org.openbase.bco.dal.control.layer.unit;
 import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -154,7 +155,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
                     // filter events that do not change anything
                     if (activationStateBuilder.getValue() == getActivationState().getValue()) {
                         logger.trace("skip already applied state: {}", activationStateBuilder.getValue().name());
-                        return FutureProcessor.completedFuture(null);
+                        return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(activationState, () -> ActionDescription.getDefaultInstance()));
                     }
 
                     final ActivationState fallbackActivationState = getActivationState();

@@ -339,7 +339,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
                 logger.info("Apply activity data update with {}", activityMultiState.getActivityIdCount());
                 applyDataUpdate(activityMultiState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVITY_MULTI_STATE_SERVICE);
-                return FutureProcessor.completedFuture(null);
+                return FutureProcessor.completedFuture(activityMultiState.getResponsibleAction());
             } catch (Exception ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not update activity state of " + this, ex));
             }
