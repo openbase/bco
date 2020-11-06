@@ -33,6 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -62,7 +63,6 @@ import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescripti
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import org.openbase.type.domotic.state.AggregatedServiceStateType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -353,7 +353,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         }
 
         // update unit templates
-        unitTemplate = Registries.getTemplateRegistry(true).getUnitTemplateByType(Units.getUnitTypeByRemoteClass((Class<? extends UnitRemote<D>>)getClass()));
+        unitTemplate = Registries.getTemplateRegistry(true).getUnitTemplateByType(Units.getUnitTypeByRemoteClass((Class<? extends UnitRemote<D>>) getClass()));
 
         // register service observable which are not handled yet.
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
@@ -675,6 +675,22 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceState", ex);
         }
+    }
+
+    /**
+     * Method resolves the action that is in any kind related to the given action id.
+     * Related in this case mean any action where the id is directly on the action stack of the unit or its an cause or impact of one of the actions on the stack.
+     *
+     * @param actionId the id of the action to check.
+     *
+     * @return the related action that was found on the stack.
+     *
+     * @throws NotAvailableException    is thrown in case the unit is not available or no relation could be found.
+     * @throws CouldNotPerformException is thrown in case the remote instance could not be build.
+     * @throws InterruptedException     in case the thread is externally interrupted while establishing a connection to the unit controller.
+     */
+    public RemoteAction resolveRelatedActionRemote(String actionId) throws CouldNotPerformException, InterruptedException {
+        return new RemoteAction(resolveRelatedActionDescription(actionId));
     }
 
     /**
