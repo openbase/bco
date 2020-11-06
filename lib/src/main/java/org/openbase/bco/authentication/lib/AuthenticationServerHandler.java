@@ -206,8 +206,7 @@ public class AuthenticationServerHandler {
             throw new RejectedException("Authenticator does not contain a valid user client pair");
         }
         if (!authenticator.getUserClientPair().equals(ticket.getUserClientPair())) {
-            System.err.println("Received an erroneous request. Expected[" + ticket.getUserClientPair() + "] but was[" + authenticator.getUserClientPair() + "]");
-            throw new RejectedException("UserClientIdPairs do not match");
+            throw new RejectedException("UserClientIdPairs do not match! Expected[" + ticket.getUserClientPair() + "] but was[" + authenticator.getUserClientPair() + "]");
         }
 
         // validate that the timestamp from the client request is inside the validation interval of the ticket
