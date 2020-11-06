@@ -54,13 +54,6 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
     }
 
     /**
-     * Test of notifyUpdated method, of class TemperatureSensorRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
-    }
-
-    /**
      * Test of getTemperature method, of class TemperatureSensorRemote.
      *
      * @throws java.lang.Exception
