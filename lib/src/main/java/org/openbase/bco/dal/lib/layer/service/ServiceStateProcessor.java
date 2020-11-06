@@ -28,11 +28,15 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.timing.TimestampType.Timestamp;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 public class ServiceStateProcessor {
 
@@ -47,7 +51,9 @@ public class ServiceStateProcessor {
      *
      * @param enumStateValue the value to identify the state.
      * @param serviceState   the service state type which provides the occurrence list.
+     *
      * @return the timestamp of the last occurrence.
+     *
      * @throws NotAvailableException is thrown if the timestamp is not available.
      */
     public static Timestamp getLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, MessageOrBuilder serviceState) throws NotAvailableException {
@@ -59,7 +65,9 @@ public class ServiceStateProcessor {
      *
      * @param enumValueDescriptor the enum value descriptor of the value to identify the state.
      * @param serviceState        the service state type which provides the occurrence list.
+     *
      * @return the timestamp of the last occurrence.
+     *
      * @throws NotAvailableException is thrown if the timestamp is not available.
      */
     public static Timestamp getLatestValueOccurrence(final EnumValueDescriptor enumValueDescriptor, MessageOrBuilder serviceState) throws NotAvailableException {
@@ -78,6 +86,7 @@ public class ServiceStateProcessor {
      * @param enumStateValue the state value which as been occurred.
      * @param timestamp      the timestamp of the occurrence.
      * @param serviceState   the service state message which holds the service value.
+     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, long timestamp, Message.Builder serviceState) throws CouldNotPerformException {
@@ -92,6 +101,7 @@ public class ServiceStateProcessor {
      * @param enumStateValue the state value which as been occurred.
      * @param timestamp      the timestamp of the occurrence.
      * @param serviceState   the service state message which holds the service value.
+     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, final Timestamp timestamp, Message.Builder serviceState) throws CouldNotPerformException {
@@ -106,6 +116,7 @@ public class ServiceStateProcessor {
      * @param enumValueDescriptor the enum value descriptor of the state value which as been occurred.
      * @param timestamp           the timestamp of the occurrence.
      * @param serviceState        the service state message which holds the service value.
+     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateLatestValueOccurrence(final EnumValueDescriptor enumValueDescriptor, long timestamp, Message.Builder serviceState) throws CouldNotPerformException {
@@ -120,6 +131,7 @@ public class ServiceStateProcessor {
      * @param enumValueDescriptor the enum value descriptor of the value which as been occurred.
      * @param timestamp           the timestamp of the occurrence.
      * @param serviceState        the service state message which holds the service value.
+     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateLatestValueOccurrence(final EnumValueDescriptor enumValueDescriptor, final Timestamp timestamp, Message.Builder serviceState) throws CouldNotPerformException {
@@ -167,6 +179,7 @@ public class ServiceStateProcessor {
      *
      * @param entryMessage the entry containing the service state value and the timestamp.
      * @param serviceState the service state message which holds the service value.
+     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateValueOccurrence(final Message entryMessage, final Message.Builder serviceState) throws CouldNotPerformException {
@@ -175,5 +188,49 @@ public class ServiceStateProcessor {
             throw new NotAvailableException("Field[last_value_occurrence] does not exist for type " + serviceState.getClass().getName());
         }
         ProtoBufFieldProcessor.putMapEntry(entryMessage, mapFieldDescriptor, serviceState);
+    }
+
+    /**
+     * Returns the responsible action of the given service state.
+     *
+     * @param serviceState the service state that provides the responsible action
+     *
+     * @return the responsible action.
+     * throws {@link NotAvailableException in case the state dose not provide any responsible action or if the message is not a valid service state.
+     */
+    public static ActionDescription getResponsibleAction(final Message serviceState) throws NotAvailableException {
+        final FieldDescriptor responsibleActionFieldDescriptor;
+
+        // resolve field
+        try {
+            responsibleActionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, "responsible_action");
+        } catch (NotAvailableException ex) {
+            new FatalImplementationErrorException("Given service state message does not provide the responsible action field!", serviceState, ex);
+            throw new NotAvailableException("ActionDescription", ex);
+        }
+
+        // handle if responsible action is not set
+        if (!serviceState.hasField(responsibleActionFieldDescriptor)) {
+            throw new NotAvailableException("ActionDescription");
+        }
+
+        // resolve value
+        return (ActionDescription) serviceState.getField(responsibleActionFieldDescriptor);
+    }
+
+    /**
+     * Returns the responsible action of the given service state.
+     *
+     * @param serviceState the service state that provides the responsible action
+     * @param alternative  a supplier that provides an alternative in case the action description is not available.
+     *
+     * @return the responsible action or its alternative.
+     */
+    public static ActionDescription getResponsibleAction(final Message serviceState, final Supplier<ActionDescription> alternative) {
+        try {
+            return getResponsibleAction(serviceState);
+        } catch (NotAvailableException e) {
+            return alternative.get();
+        }
     }
 }
