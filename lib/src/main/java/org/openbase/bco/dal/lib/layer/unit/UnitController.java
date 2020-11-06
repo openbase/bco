@@ -170,4 +170,13 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
      * @return a future object representing the progress of the service state transition.
      */
     Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType);
+
+    /**
+     * Method is only for unit tests where one has to make sure that all actions are removed from the action stack in order to minimize influence of other tests.
+     * Note: This method does nothing if the unit test mode is not enabled.
+     *
+     * @throws InterruptedException     is thrown if the thread was externally interrupted
+     * @throws CouldNotPerformException is thrown if no all actions could be canceled.
+     */
+    void cancelAllActions() throws InterruptedException, CouldNotPerformException;
 }
