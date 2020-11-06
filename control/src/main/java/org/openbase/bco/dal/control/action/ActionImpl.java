@@ -291,7 +291,9 @@ public class ActionImpl implements SchedulableAction {
                                     setRequestedState();
                                 }
 
-                                unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
+                                final ActionDescription actionDescription = unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
+                                // todo: should we use this action description to update the one stored in the action builder? For example we could update the action impact...
+
                                 updateActionStateIfNotCanceled(State.EXECUTING);
 
                                 // action can be finished if not done yet and time has expired or execution time was never required.
@@ -299,16 +301,25 @@ public class ActionImpl implements SchedulableAction {
                                     updateActionStateIfNotCanceled(State.FINISHED);
                                 }
                                 break;
-                            } catch (CouldNotPerformException | ExecutionException | RuntimeException ex) {
+
+                            } catch (CouldNotPerformException | ExecutionException | java.util.concurrent.TimeoutException | RuntimeException ex) {
+
+                                if (!isDone()) {
+                                    updateActionStateIfNotCanceled(State.SUBMISSION_FAILED);
+                                }
+
+                                // handle if action was rejected by the unit itself
+                                if (ex.getCause() instanceof RejectedException) {
+                                    updateActionStateIfNotCanceled(State.REJECTED);
+                                    break;
+                                }
+
                                 // avoid execution in case unit is shutting down
                                 if (unit.isShutdownInProgress() || ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                                     updateActionStateIfNotCanceled(State.REJECTED);
                                     break;
                                 }
 
-                                if (!isDone()) {
-                                    updateActionStateIfNotCanceled(State.SUBMISSION_FAILED);
-                                }
                                 ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
                                 Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
                             }
