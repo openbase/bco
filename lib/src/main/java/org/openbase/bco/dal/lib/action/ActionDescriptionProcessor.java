@@ -1,17 +1,13 @@
 package org.openbase.bco.dal.lib.action;
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jul.annotation.Experimental;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -40,7 +36,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText;
-import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText.MapFieldEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,19 +136,58 @@ public class ActionDescriptionProcessor {
      * @return an ActionReference for the given ActionDescription.
      */
     public static ActionReference generateActionReference(final ActionDescriptionOrBuilder actionDescription) {
-        ActionReference.Builder actionReference = ActionReference.newBuilder();
-        actionReference.setActionId(actionDescription.getActionId());
-        actionReference.setActionInitiator(actionDescription.getActionInitiator());
-        actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
-        actionReference.setExecutionTimePeriod(actionDescription.getExecutionTimePeriod());
-        actionReference.setInterruptible(actionDescription.getInterruptible());
-        actionReference.setPriority(actionDescription.getPriority());
-        actionReference.setSchedulable(actionDescription.getSchedulable());
-        actionReference.setReplaceable(actionDescription.getReplaceable());
-        actionReference.setTimestamp(actionDescription.getTimestamp());
-        actionReference.addAllCategory(actionDescription.getCategoryList());
-        actionReference.setIntermediary(actionDescription.getIntermediary());
-        actionReference.setAutoContinueWithLowPriority(actionDescription.getAutoContinueWithLowPriority());
+        final ActionReference.Builder actionReference = ActionReference.newBuilder();
+
+        // copy all fields that are provided the prototype
+
+        if (!actionDescription.getCategoryList().isEmpty()) {
+            actionReference.addAllCategory(actionDescription.getCategoryList());
+        }
+
+        if (actionDescription.hasActionId()) {
+            actionReference.setActionId(actionDescription.getActionId());
+        }
+
+        if (actionDescription.hasActionInitiator()) {
+            actionReference.setActionInitiator(actionDescription.getActionInitiator());
+        }
+
+        if (actionDescription.hasServiceStateDescription()) {
+            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+        }
+
+        if (actionDescription.hasExecutionTimePeriod()) {
+            actionReference.setExecutionTimePeriod(actionDescription.getExecutionTimePeriod());
+        }
+
+        if (actionDescription.hasInterruptible()) {
+            actionReference.setInterruptible(actionDescription.getInterruptible());
+        }
+
+        if (actionDescription.hasPriority()) {
+            actionReference.setPriority(actionDescription.getPriority());
+        }
+
+        if (actionDescription.hasSchedulable()) {
+            actionReference.setSchedulable(actionDescription.getSchedulable());
+        }
+
+        if (actionDescription.hasReplaceable()) {
+            actionReference.setReplaceable(actionDescription.getReplaceable());
+        }
+
+        if (actionDescription.hasTimestamp()) {
+            actionReference.setTimestamp(actionDescription.getTimestamp());
+        }
+
+        if (actionDescription.hasIntermediary()) {
+            actionReference.setIntermediary(actionDescription.getIntermediary());
+        }
+
+        if (actionDescription.hasAutoContinueWithLowPriority()) {
+            actionReference.setAutoContinueWithLowPriority(actionDescription.getAutoContinueWithLowPriority());
+        }
+
         return actionReference.build();
     }
 
@@ -351,9 +385,11 @@ public class ActionDescriptionProcessor {
         // validate
         actionParameter = verifyActionParameter(actionParameter);
 
-        // add values from ActionParameter
-        actionDescriptionBuilder.addAllCategory(actionParameter.getCategoryList());
+        // copy all fields that are provided the action parameter prototype
 
+        if (!actionParameter.getCategoryList().isEmpty()) {
+            actionDescriptionBuilder.addAllCategory(actionParameter.getCategoryList());
+        }
         if (actionParameter.hasLabel()) {
             actionDescriptionBuilder.setLabel(actionParameter.getLabel());
         }
@@ -561,11 +597,11 @@ public class ActionDescriptionProcessor {
         actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(getInitiatorId(actionDescriptionBuilder));
         actionDescriptionBuilder.setInterruptible(getInterruptible(actionDescriptionBuilder));
         actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
-        actionDescriptionBuilder.setReplaceable(getReplaceable(actionDescriptionBuilder));
+        // note: do not recover the replaceable flag from the other flags because then we loose the information where it comes from but this important to know when building the chain prefix.
         actionDescriptionBuilder.addAllCategory(getCategoryList(actionDescriptionBuilder));
 
         // update initiator type
-        if(!actionDescriptionBuilder.getActionInitiator().hasInitiatorType()) {
+        if (!actionDescriptionBuilder.getActionInitiator().hasInitiatorType()) {
             if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty() && actionDescriptionBuilder.getActionInitiator().getInitiatorId() != User.OTHER) {
                 // resolve type via registry
                 final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId());
@@ -606,7 +642,7 @@ public class ActionDescriptionProcessor {
         }
 
         // in case the action was initiated by the system, that the action has to be replaceable.
-        if(getInitialInitiator(actionDescriptionBuilder).getInitiatorType() != InitiatorType.HUMAN && !actionDescriptionBuilder.getReplaceable()){
+        if (getInitialInitiator(actionDescriptionBuilder).getInitiatorType() != InitiatorType.HUMAN && !actionDescriptionBuilder.getReplaceable()) {
             actionDescriptionBuilder.clearReplaceable();
         }
 
@@ -853,7 +889,7 @@ public class ActionDescriptionProcessor {
     }
 
     /**
-     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message.Builder)} 
+     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message.Builder)}
      * is called to update the action description. Therefore, this method only allows to verify a builder.
      * In addition, this method returns a de-serialized and updated service state contained in the action description.
      * The reason for this is to minimize de-serializing operations because verifying a service state also updates it.
@@ -910,11 +946,11 @@ public class ActionDescriptionProcessor {
                 throw new InvalidStateException("Action initiator id missing!");
             }
 
-            if(!actionDescriptionBuilder.getServiceStateDescription().hasServiceState() && actionDescriptionBuilder.getServiceStateDescription().getServiceState().isEmpty()) {
+            if (!actionDescriptionBuilder.getServiceStateDescription().hasServiceState() && actionDescriptionBuilder.getServiceStateDescription().getServiceState().isEmpty()) {
                 throw new NotAvailableException("ActionDescription.ServiceStateDescription.ServiceState");
             }
 
-            if(!actionDescriptionBuilder.getServiceStateDescription().hasServiceStateClassName() && actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName().isEmpty()) {
+            if (!actionDescriptionBuilder.getServiceStateDescription().hasServiceStateClassName() && actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName().isEmpty()) {
                 throw new NotAvailableException("ActionDescription.ServiceStateDescription.ServiceStateClassName");
             }
 
@@ -967,7 +1003,7 @@ public class ActionDescriptionProcessor {
                 description = description.replace(UNIT_LABEL_KEY, LabelProcessor.getBestMatch(languageDescriptionEntry.getKey(), unitConfig.getLabel()));
 
                 // setup service type
-                description = description.replace(SERVICE_TYPE_KEY, serviceBaseName);
+                description = description.replace(SERVICE_TYPE_KEY, serviceBaseName.toLowerCase());
 
                 // setup initiator
                 description = description.replace(INITIATOR_KEY, initiatorName);
@@ -1015,7 +1051,7 @@ public class ActionDescriptionProcessor {
      * In case the initiator is a user than its username is used, otherwise the best match of the unit label is used.
      *
      * @param initialInitiator the initiator..
-     * @param alternative the alternative string to use in case the initiator could not be resolved.
+     * @param alternative      the alternative string to use in case the initiator could not be resolved.
      *
      * @return the label or username.
      */
@@ -1133,23 +1169,34 @@ public class ActionDescriptionProcessor {
      * The action scheduling can than compare those suffixes in order to decide if two action were initiated by the same user.
      *
      * @param actionDescription the action description used to compute the suffix
+     *
      * @return the suffix, which is a list of unit ids concatenated with "_".
      */
     public static String getUnitChainSuffixForNonReplaceableAction(final ActionDescription actionDescription) {
 
-        String suffix = actionDescription.getServiceStateDescription().getUnitId();
-
+        // if the action itself is not replaceable we are already done.
         if (!actionDescription.getReplaceable()) {
-            return suffix;
+            return actionDescription.getServiceStateDescription().getUnitId();
         }
 
-        // build action suffix until replaceable flag
-        for (ActionReference causeActionReference : actionDescription.getActionCauseList()) {
-            suffix += suffix + "_" + causeActionReference.getServiceStateDescription().getUnitId();
-            if (!causeActionReference.getReplaceable()) {
-                return suffix;
+        // otherwise we have to inspect and build the chain
+        String suffix = "";
+        boolean foundNonReplaceable = false;
+
+        // build action suffix until last replaceable flag
+        for (int i = actionDescription.getActionCauseList().size() - 1; i >= 0; i--) {
+            final ActionReference actionReference = actionDescription.getActionCauseList().get(i);
+            suffix += actionReference.getServiceStateDescription().getUnitId() + "_";
+
+            // set unit of non replaceable action as new root cause
+            if (!actionReference.getReplaceable()) {
+                foundNonReplaceable = true;
+                suffix = actionReference.getServiceStateDescription().getUnitId() + "_";
             }
         }
+
+        // finally we have to add the leaf action
+        suffix += actionDescription.getServiceStateDescription().getUnitId();
 
         return suffix;
     }
