@@ -24,6 +24,7 @@ package org.openbase.bco.device.openhab.manager.service;
 
 import com.google.protobuf.Message;
 import org.eclipse.smarthome.core.types.Command;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.device.openhab.manager.transform.ServiceStateCommandTransformerPool;
 import org.openbase.bco.device.openhab.manager.transform.ServiceTypeCommandMapping;
@@ -106,12 +107,12 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         return itemName;
     }
 
-    public Future<ActionDescription> setState(final Message state) {
+    public Future<ActionDescription> setState(final Message serviceState) {
         try {
             boolean success = false;
             MultiException.ExceptionStack exceptionStack = null;
             for (final Class<? extends Command> commandClass : ServiceTypeCommandMapping.getCommandClasses(serviceType)) {
-                Command command = ServiceStateCommandTransformerPool.getInstance().getTransformer(state.getClass(), commandClass).transform(state);
+                Command command = ServiceStateCommandTransformerPool.getInstance().getTransformer(serviceState.getClass(), commandClass).transform(serviceState);
                 try {
                     OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
                     success = true;
@@ -134,8 +135,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
                 }
             }
 
-            // todo build proper action description instead returning null.
-            return FutureProcessor.completedFuture(null);
+            return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
