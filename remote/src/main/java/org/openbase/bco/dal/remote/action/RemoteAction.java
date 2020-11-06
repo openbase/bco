@@ -55,7 +55,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -69,7 +68,7 @@ public class RemoteAction implements Action {
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
     private final SyncObject executionSync = new SyncObject("ExecutionSync");
     private final SyncObject extensionSync = new SyncObject("ExtensionSync");
-    private final ActionParameter.Builder actionParameterBuilder;
+    private final ActionParameter actionParameter;
     private final ObservableImpl<RemoteAction, ActionDescription> actionDescriptionObservable;
     private final AuthToken authToken;
     private final List<RemoteAction> impactedRemoteActions = new ArrayList<>();
@@ -160,7 +159,7 @@ public class RemoteAction implements Action {
 
     public RemoteAction(final ActionDescription actionDescription, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) throws InstantiationException, InterruptedException {
         try {
-            this.actionParameterBuilder = null;
+            this.actionParameter = null;
             this.actionDescriptionObservable = new ObservableImpl<>();
             this.autoExtendCheckCallback = autoExtendCheckCallback;
             this.authToken = authToken;
@@ -178,7 +177,7 @@ public class RemoteAction implements Action {
      * @param autoExtendCheckCallback
      */
     public RemoteAction(final Future<ActionDescription> actionFuture, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) {
-        this.actionParameterBuilder = null;
+        this.actionParameter = null;
         this.actionDescriptionObservable = new ObservableImpl<>();
         this.autoExtendCheckCallback = autoExtendCheckCallback;
         this.authToken = authToken;
@@ -198,7 +197,13 @@ public class RemoteAction implements Action {
      */
     public RemoteAction(final Unit<?> initiatingUnit, final ActionParameter actionParameter, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) throws InstantiationException, InterruptedException {
         try {
-            this.actionParameterBuilder = actionParameter.toBuilder();
+            // setup initiator
+            final ActionParameter.Builder actionParameterBuilder = actionParameter.toBuilder();
+            if (initiatingUnit != null) {
+                actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(initiatingUnit.getId());
+            }
+
+            this.actionParameter = actionParameterBuilder.build();
             this.autoExtendCheckCallback = autoExtendCheckCallback;
 
             // resolve auth token 1. via Argument 2. via action parameter.
@@ -211,11 +216,6 @@ public class RemoteAction implements Action {
             }
             this.actionDescriptionObservable = new ObservableImpl<>(this);
 
-            // setup initiator
-            if (initiatingUnit != null) {
-                this.actionParameterBuilder.getActionInitiatorBuilder().setInitiatorId(initiatingUnit.getId());
-            }
-
             // prepare target unit
             this.targetUnit = Units.getUnit(actionParameter.getServiceStateDescription().getUnitId(), false);
         } catch (CouldNotPerformException ex) {
@@ -225,7 +225,7 @@ public class RemoteAction implements Action {
 
     public RemoteAction(final ActionReference actionReference, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) throws InstantiationException {
         try {
-            this.actionParameterBuilder = null;
+            this.actionParameter = null;
             this.actionDescriptionObservable = new ObservableImpl<>();
             this.autoExtendCheckCallback = autoExtendCheckCallback;
             this.authToken = authToken;
@@ -252,7 +252,7 @@ public class RemoteAction implements Action {
     public Future<ActionDescription> execute(final ActionDescriptionOrBuilder causeActionDescription, final boolean force) {
         try {
             // check if action remote was instantiated via action parameter.
-            if (actionParameterBuilder == null) {
+            if (actionParameter == null) {
                 throw new NotAvailableException("ActionParameter");
             }
 
@@ -265,11 +265,9 @@ public class RemoteAction implements Action {
                 throw new InvalidStateException("Action is still running and can not be executed twice! Use the force flag to continue the execution.");
             }
 
+            final ActionParameter.Builder actionParameterBuilder = actionParameter.toBuilder();
             synchronized (executionSync) {
-                if (causeActionDescription == null) {
-                    // clear any previously used cause.
-                    actionParameterBuilder.clearCause();
-                } else {
+                if (causeActionDescription != null) {
                     // validate cause
                     if (!causeActionDescription.hasActionId() || causeActionDescription.getActionId().isEmpty()) {
                         throw new InvalidStateException("Given action cause is not initialized!");
@@ -562,8 +560,6 @@ public class RemoteAction implements Action {
     @Override
     public boolean isValid() {
         return (actionDescription != null && Action.super.isValid());
-        // seems to be outdated ?
-        //return (actionParameterBuilder != null || futureObservationTask != null) && actionDescription != null && Action.super.isValid();
     }
 
     /**
@@ -581,11 +577,11 @@ public class RemoteAction implements Action {
             try {
                 if (getActionDescription().getIntermediary()) {
                     for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                        if (!impactedRemoteAction.isRunning()) {
-                            return false;
+                        if (impactedRemoteAction.isRunning()) {
+                            return true;
                         }
                     }
-                    return true;
+                    return false;
                 } else {
                     return Action.super.isRunning();
                 }
@@ -792,6 +788,7 @@ public class RemoteAction implements Action {
         for (RemoteAction impactedRemoteAction : impactedRemoteActions) {
             impactedRemoteAction.removeActionDescriptionObserver(impactActionObserver);
         }
+        impactedRemoteActions.clear();
 
         // cancel the auto extension task
         cancelAutoExtension();
@@ -1130,8 +1127,19 @@ public class RemoteAction implements Action {
         return targetUnit;
     }
 
-    public List<RemoteAction> getImpactedRemoteActions() {
-        return Collections.unmodifiableList(impactedRemoteActions);
+    /**
+     * Method returns the action parameter used to execute the remote action in case it was initialized via action parameters.
+     *
+     * @return the action parameters used to build the action
+     *
+     * @throws NotAvailableException is thrown in case the action remote was not initialized via the action parameters.
+     */
+    public ActionParameter getActionParameter() throws NotAvailableException {
+        if (actionParameter == null) {
+            // can happen in case the remote was not initialized by using the action parameter.
+            throw new NotAvailableException("ActionParameter");
+        }
+        return actionParameter;
     }
 
     /**
@@ -1153,8 +1161,8 @@ public class RemoteAction implements Action {
             }
 
             // resolve via parameter
-            if (actionParameterBuilder != null) {
-                return ActionDescriptionProcessor.toString(actionParameterBuilder);
+            if (actionParameter != null) {
+                return ActionDescriptionProcessor.toString(actionParameter);
             }
         }
 
