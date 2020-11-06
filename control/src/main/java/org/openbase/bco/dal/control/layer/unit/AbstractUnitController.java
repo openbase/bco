@@ -43,13 +43,15 @@ import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
-import org.openbase.bco.dal.lib.layer.unit.*;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
+import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.app.AppController;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.lib.state.States.Activation;
 import org.openbase.bco.dal.lib.state.States.Power;
-import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -561,6 +563,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     private String terminatingActionId;
     private static final Map<ServiceType, Message> SERVICE_TYPE_TERMINATION_MAPPING = new HashMap<>();
+
     static {
         SERVICE_TYPE_TERMINATION_MAPPING.put(ServiceType.POWER_STATE_SERVICE, Power.OFF);
         SERVICE_TYPE_TERMINATION_MAPPING.put(ServiceType.ACTIVATION_STATE_SERVICE, Activation.INACTIVE);
@@ -578,7 +581,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
             try {
                 // do not register any termination action for infrastructure units, since they should only be modified in especially requested.
-                if(isInfrastructure()) {
+                if (isInfrastructure()) {
                     return;
                 }
 
@@ -587,12 +590,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 
                     // termination actions make only sense for operation services, so skip the rest.
-                    if(serviceDescription.getPattern() != OPERATION) {
+                    if (serviceDescription.getPattern() != OPERATION) {
                         continue;
                     }
 
                     // ignore aggregated services since actions would affect downstream units.
-                    if(serviceDescription.getAggregated()) {
+                    if (serviceDescription.getAggregated()) {
                         continue;
                     }
 
@@ -606,12 +609,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
 
                 // no termination required if none of the services the unit offers are supported.
-                if(serviceTypes.isEmpty()) {
+                if (serviceTypes.isEmpty()) {
                     return;
                 }
 
                 // warn if too many services need to be terminated.
-                if(serviceTypes.size() > 2) {
+                if (serviceTypes.size() > 2) {
                     // this is an issue because there can only be one termination action be active at a time.
                     logger.warn("Unit does support more than one service that has to be terminated. This is not supported until the scheduling is done on service level.");
                 }
@@ -957,7 +960,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                             // if both initiators are not the same and there is not more than one human action on the stack than we can skip the rejection
                             if (!newInitiator.getInitiatorId().equals(currentInitiator.getInitiatorId()) &&
-                                    !(currentInitiator.getInitiatorType() == InitiatorType.HUMAN  && newInitiator.getInitiatorType() == InitiatorType.HUMAN)) {
+                                    !(currentInitiator.getInitiatorType() == InitiatorType.HUMAN && newInitiator.getInitiatorType() == InitiatorType.HUMAN)) {
                                 // actions do not have the same initiator
                                 continue;
                             }
@@ -968,7 +971,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                             }
 
                             // do not cancel the action if any action of it is non replaceable
-                            if(!ActionDescriptionProcessor.getReplaceable(scheduledActionDescription) &&
+                            if (!ActionDescriptionProcessor.getReplaceable(scheduledActionDescription) &&
                                     // we have to make sure that external units can only put one non replaceable action on this stack.
                                     // therefore, we check if the unit chain suffix till the non replaceable flag is not the same, otherwise we still reject the action.
                                     !ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(scheduledActionDescription).equals(ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(actionToSchedule.getActionDescription()))) {
@@ -1431,7 +1434,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // log state transition
                     logger.info("{} is updated from {} to {}.",
                             getLabel("?"),
-                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder),serviceType)),
+                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder), serviceType)),
                             LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType)));
 
                     if (!Services.hasResponsibleAction(newState)) {
@@ -1570,8 +1573,17 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     continue;
                 }
 
+                // when priorities are both available but they do not match, than it can not be the same action.
+                final ActionDescription responsibleAction = ServiceStateProcessor.getResponsibleAction(serviceState);
+                if (action.getActionDescription().hasPriority() &&
+                        responsibleAction.hasPriority() &&
+                        action.getActionDescription().getPriority() != responsibleAction.getPriority()) {
+                    continue;
+                }
+
                 // compare service states
                 final Message actionServiceState = SERVICE_JSON_PROCESSOR.deserialize(serviceStateDescription.getServiceState(), serviceStateDescription.getServiceStateClassName());
+
                 if (Services.equalServiceStates(serviceState, actionServiceState)) {
                     throw new RejectedException("New state has already been scheduled!");
                 }
@@ -1699,16 +1711,17 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     /**
-     * Method is only for unit tests where one has to make sure that all actions are removed from the action stack in order to minimize influence of other tests.
-     * Note: This method does nothing if the unit test mode is not enabled.
+     * {@inheritDoc}
      *
-     * @throws InterruptedException     is thrown if the thread was externally interrupted
-     * @throws CouldNotPerformException is thrown if no all actions could be canceled.
+     * @throws InterruptedException     {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
+    @Override
     public void cancelAllActions() throws InterruptedException, CouldNotPerformException {
 
         // skip when not in test mode
         if (!JPService.testMode()) {
+            new FatalImplementationErrorException("Method only supported in test mode!", "this");
             return;
         }
 
