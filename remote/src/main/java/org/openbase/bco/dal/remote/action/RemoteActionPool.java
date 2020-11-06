@@ -23,14 +23,14 @@ package org.openbase.bco.dal.remote.action;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.MultiFuture;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.TimeoutSplitter;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
@@ -44,11 +44,12 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class RemoteActionPool {
-
-    public static final long ACTION_EXECUTION_TIMEOUT = 3000;
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
@@ -78,20 +79,42 @@ public class RemoteActionPool {
     public void init(final List<ActionParameter> actionParameters, Callable<Boolean> autoExtendCheckCallback) throws CouldNotPerformException, InterruptedException {
 
         MultiException.ExceptionStack exceptionStack = null;
-
-        // todo: handle more robust by list diff and cancel removed actions
-
         synchronized (actionListSync) {
-            remoteActionList.clear();
-            RemoteAction action;
+
+            // rebuild list
+            final List<RemoteAction> newRemoteActionList = new ArrayList<>();
             for (ActionParameter actionParameter : actionParameters) {
                 try {
-                    action = new RemoteAction(unit, actionParameter, autoExtendCheckCallback);
-                    remoteActionList.add(action);
+                    boolean newAction = true;
+
+                    // lookup from existing remotes
+                    for (RemoteAction remoteAction : new ArrayList<>(remoteActionList)) {
+
+                        // if match with existing one then recover it
+                        if (remoteAction.getActionParameter().getServiceStateDescription().equals(actionParameter.getServiceStateDescription())) {
+                            newRemoteActionList.add(remoteAction);
+                            remoteActionList.remove(remoteAction);
+                            newAction = false;
+                        }
+                    }
+
+                    // create new actions
+                    if (newAction) {
+                        newRemoteActionList.add(new RemoteAction(unit, actionParameter, autoExtendCheckCallback));
+                    }
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
+
+            // cancel still ongoing actions that could not be remapped.
+            for (RemoteAction remoteAction : remoteActionList) {
+                remoteAction.cancel();
+            }
+
+            // update list
+            remoteActionList.clear();
+            remoteActionList.addAll(newRemoteActionList);
         }
 
         try {
@@ -104,10 +127,10 @@ public class RemoteActionPool {
     /**
      * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
      *
-     * @return a future object referring the submission state.
+     * @return the entire list of remote actions that has been executed.
      */
-    public MultiFuture<ActionDescription> execute() {
-        return execute(null, false);
+    public List<RemoteAction> execute() {
+        return execute(null);
     }
 
     /**
@@ -115,22 +138,9 @@ public class RemoteActionPool {
      *
      * @param causeActionDescription refers the causing action of this execution.
      *
-     * @return a future object referring the submission state.
+     * @return the entire list of remote actions that has been executed.
      */
-    public MultiFuture<ActionDescription> execute(final ActionDescriptionOrBuilder causeActionDescription) {
-        return execute(causeActionDescription, false);
-    }
-
-    /**
-     * Executes all previously registered actions within this pool while the given {@code causeActionDescription} is used as cause for each action.
-     *
-     * @param causeActionDescription       refers the causing action of this execution.
-     * @param cancelSubmissionAfterTimeout If true, the submission of each action is verified and canceled after a timeout of {@code RemoteActionPool.ACTION_EXECUTION_TIMEOUT}.
-     *
-     * @return a future object referring the submission state.
-     */
-    public MultiFuture<ActionDescription> execute(final ActionDescriptionOrBuilder causeActionDescription, final boolean cancelSubmissionAfterTimeout) {
-        final List<Future<ActionDescription>> submissionFutureList = new ArrayList<>();
+    public List<RemoteAction> execute(final ActionDescriptionOrBuilder causeActionDescription) {
 
         synchronized (actionListSync) {
             if (remoteActionList.isEmpty()) {
@@ -138,49 +148,11 @@ public class RemoteActionPool {
             }
 
             for (final RemoteAction action : remoteActionList) {
-                submissionFutureList.add(action.execute(causeActionDescription, true));
+                action.execute(causeActionDescription, true);
             }
+
+            return new ArrayList<>(remoteActionList);
         }
-
-        // handle auto cancellation after timeout
-        if (cancelSubmissionAfterTimeout) {
-            GlobalCachedExecutorService.submit(() -> {
-                try {
-                    LOGGER.info("Waiting for action submission...");
-
-                    long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
-                    long timeout;
-                    for (final RemoteAction action : remoteActionList) {
-                        if (action.isDone()) {
-                            continue;
-                        }
-                        LOGGER.info("Waiting for action registration[" + action + "]");
-                        try {
-                            timeout = checkStart - System.currentTimeMillis();
-                            if (timeout <= 0) {
-                                throw new RejectedException("Rejected because of scene timeout.");
-                            }
-
-                            action.waitForRegistration(timeout, TimeUnit.MILLISECONDS);
-                        } catch (TimeoutException ex) {
-                            // will be handled anyway
-                        }
-                    }
-                } catch (CouldNotPerformException | CancellationException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Remote pool action execution failed!", ex), LOGGER);
-                } finally {
-                    // cancel all actions which could not be registered
-                    for (final RemoteAction action : remoteActionList) {
-                        if (!action.isRegistrationDone()) {
-                            action.cancel();
-                        }
-                    }
-                }
-                return null;
-            });
-        }
-
-        return new MultiFuture<>(submissionFutureList);
     }
 
     public List<RemoteAction> getRemoteActionList() {
@@ -192,18 +164,22 @@ public class RemoteActionPool {
      */
     @Deprecated
     public void stop() {
-        for (final RemoteAction action : remoteActionList) {
-            if (action.isRunning()) {
-                action.cancel();
+        synchronized (actionListSync) {
+            for (final RemoteAction action : remoteActionList) {
+                if (action.isRunning()) {
+                    action.cancel();
+                }
             }
         }
     }
 
     public Map<RemoteAction, Future<ActionDescription>> cancel() {
         final HashMap<RemoteAction, Future<ActionDescription>> remoteActionActionDescriptionFutureMap = new HashMap<>();
-        for (final RemoteAction action : remoteActionList) {
-            if (action.isRunning()) {
-                remoteActionActionDescriptionFutureMap.put(action, action.cancel());
+        synchronized (actionListSync) {
+            for (final RemoteAction action : remoteActionList) {
+                if (action.isRunning()) {
+                    remoteActionActionDescriptionFutureMap.put(action, action.cancel());
+                }
             }
         }
         return remoteActionActionDescriptionFutureMap;
@@ -236,21 +212,23 @@ public class RemoteActionPool {
 
     public static void observeCancellation(final Map<RemoteAction, Future<ActionDescription>> remoteActionActionDescriptionFutureMap, final Object responsibleInstance, final long timeout, final TimeUnit timeUnit) throws MultiException {
 
+        final TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
+
         // validate cancellation
         MultiException.ExceptionStack exceptionStack = null;
         for (Map.Entry<RemoteAction, Future<ActionDescription>> remoteActionFutureEntry : remoteActionActionDescriptionFutureMap.entrySet()) {
 
             try {
-                remoteActionFutureEntry.getValue().get(timeout, timeUnit);
+                remoteActionFutureEntry.getValue().get(timeoutSplitter.getTime(), TimeUnit.MILLISECONDS);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 return;
-            } catch (ExecutionException | java.util.concurrent.TimeoutException ex) {
+            } catch (ExecutionException | TimeoutException | java.util.concurrent.TimeoutException ex) {
                 exceptionStack = MultiException.push(responsibleInstance, ex, exceptionStack);
             }
         }
 
         // check if something went wrong
-        MultiException.checkAndThrow(() -> "Could not cancel all action of "+ responsibleInstance, exceptionStack);
+        MultiException.checkAndThrow(() -> "Could not cancel all action of " + responsibleInstance, exceptionStack);
     }
 }
