@@ -107,7 +107,9 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             try {
                 cancelTask.get(10, TimeUnit.SECONDS);
             } catch (ExecutionException | TimeoutException ex) {
-                ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
+                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory("Could not cancel action!", ex, logger);
+                }
             }
         }
         super.stop(activationState);
