@@ -1904,33 +1904,38 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @SuppressWarnings("unchecked")
     protected D filterDataForUser(DB dataBuilder, UserClientPair userClientPair) throws CouldNotPerformException {
         try {
-            // test if user or client is inside the admin group, if yes return the unfiltered data builder
-            try {
-                final UnitConfig adminGroup = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS);
-                for (final String memberId : adminGroup.getAuthorizationGroupConfig().getMemberIdList()) {
-                    if (userClientPair.getUserId().equals(memberId) || userClientPair.getClientId().equals(memberId)) {
-                        return (D) dataBuilder.build();
+
+            if(Registries.getUnitRegistry().isDataAvailable()) {
+                // test if user or client is inside the admin group, if yes return the unfiltered data builder
+                try {
+                    final UnitConfig adminGroup = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS);
+                    for (final String memberId : adminGroup.getAuthorizationGroupConfig().getMemberIdList()) {
+                        if (userClientPair.getUserId().equals(memberId) || userClientPair.getClientId().equals(memberId)) {
+                            return (D) dataBuilder.build();
+                        }
                     }
+                } catch (CouldNotPerformException ex) {
+                    // admin group not available so just continue
                 }
-            } catch (CouldNotPerformException ex) {
-                // admin group not available so just continue
+
+                // no admin so test normal permissions
+                if (AuthorizationHelper.canRead(getConfig(), userClientPair, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap())) {
+                    // user has read permissions so send everything
+                    return (D) dataBuilder.build();
+                }
             }
 
-            // no admin so test normal permissions
-            if (AuthorizationHelper.canRead(getConfig(), userClientPair, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap())) {
-                // user has read permissions so send everything
-                return (D) dataBuilder.build();
-            } else {
-                // filter all service states
-                for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
-                    if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
-                        dataBuilder.clearField(fieldDescriptor);
-                    }
+            // otherwise filter everything
+
+            // filter all service states
+            for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
+                if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
+                    dataBuilder.clearField(fieldDescriptor);
                 }
-                // filter executing or scheduled action list
-                dataBuilder.clearField(ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder, Action.TYPE_FIELD_NAME_ACTION));
-                return (D) dataBuilder.build();
             }
+            // filter executing or scheduled action list
+            dataBuilder.clearField(ProtoBufFieldProcessor.getFieldDescriptor(dataBuilder, Action.TYPE_FIELD_NAME_ACTION));
+            return (D) dataBuilder.build();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not filter data by user permissions!", ex);
         }
