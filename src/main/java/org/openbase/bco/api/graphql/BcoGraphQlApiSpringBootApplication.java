@@ -17,12 +17,13 @@ import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
 import org.openbase.bco.api.graphql.schema.LocationConfigSchemaModule;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
-import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -35,13 +36,9 @@ import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
 
 @SpringBootApplication
-public class BcoGraphQlApiApplication {
+public class BcoGraphQlApiSpringBootApplication {
 
-    /**
-     * Debug via: https://altair.sirmuel.design/
-     */
-
-    private static Logger LOGGER = LoggerFactory.getLogger(BcoGraphQlApiApplication.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(BcoGraphQlApiSpringBootApplication.class);
 
     private final Injector injector;
 
@@ -133,25 +130,11 @@ public class BcoGraphQlApiApplication {
 //
 //        System.out.println(executionResult.getData().toString());
 
-        BCO.printLogo();
-        LOGGER.info("Connect to bco...");
-        Registries.waitUntilReady();
 
-        LOGGER.info("Login to bco...");
-        BCOLogin.getSession().autoLogin(true);
-
-        LOGGER.info("Start webserver...");
-        SpringApplication.run(BcoGraphQlApiApplication.class, args);
-
-        LOGGER.info("Wait for application termination...");
-        final String s = new String();
-        synchronized (s) {
-            s.wait();
-        }
-
-        System.out.println("done.");
 
     }
+
+
 ////
 ////    @Bean
 ////    public ServletRegistrationBean graphQLServlet() {
