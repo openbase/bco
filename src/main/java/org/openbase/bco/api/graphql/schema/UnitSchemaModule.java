@@ -5,9 +5,11 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import org.openbase.bco.api.graphql.AuthorizationContext;
 import org.openbase.bco.api.graphql.coercing.GraphQLScalars;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType;
@@ -44,6 +46,8 @@ public class UnitSchemaModule extends SchemaModule {
 //        }
 //    }
         final String token = ((AuthorizationContext) env.getContext()).getToken();
+
+        // SessionManager.getInstance().loginUser(Registries.getUnitRegistry().getUserUnitIdByUserName("test"), "test", false);
 
         ColorableLightRemote unit = Units.getUnitByAlias(alias, true, Units.COLORABLE_LIGHT);
         PowerStateType.PowerState powerState = PowerStateType.PowerState.newBuilder().setValue(State.valueOf(state)).build();
