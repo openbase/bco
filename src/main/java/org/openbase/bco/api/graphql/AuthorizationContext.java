@@ -25,6 +25,7 @@ package org.openbase.bco.api.graphql;
 import graphql.servlet.context.DefaultGraphQLContext;
 import graphql.servlet.context.DefaultGraphQLServletContext;
 import org.dataloader.DataLoaderRegistry;
+import org.openbase.jul.exception.NotAvailableException;
 
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +40,12 @@ public class AuthorizationContext extends DefaultGraphQLContext {
         this.token = token;
     }
 
-    public String getToken() {
+    public String getToken() throws NotAvailableException {
+
+        if(token == null) {
+            throw new NotAvailableException("AuthToken");
+        }
+
         return token;
     }
 }
