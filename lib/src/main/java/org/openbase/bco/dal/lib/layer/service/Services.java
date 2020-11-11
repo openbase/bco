@@ -60,6 +60,9 @@ import org.openbase.type.domotic.state.ColorStateType.ColorStateOrBuilder;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerStateOrBuilder;
+import org.openbase.type.domotic.state.PresenceStateType;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.state.PresenceStateType.PresenceStateOrBuilder;
 import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.vision.ColorType.Color;
 import org.slf4j.Logger;
@@ -878,6 +881,18 @@ public class Services extends ServiceStateProcessor {
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "inaktiv").build();
                         case ACTIVE:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "aktiv").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
+                case PRESENCE_STATE_SERVICE:
+                    final PresenceState.State presenceStateValue = ((PresenceStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, presenceStateValue.name().toLowerCase());
+                    switch (presenceStateValue) {
+                        case ABSENT:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "abwesend").build();
+                        case PRESENT:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "anwesend").build();
                         case UNKNOWN:
                         default:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
