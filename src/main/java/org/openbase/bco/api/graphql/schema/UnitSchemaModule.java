@@ -33,6 +33,7 @@ import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType;
 import org.openbase.type.domotic.authentication.AuthTokenType;
@@ -67,14 +68,18 @@ public class UnitSchemaModule extends SchemaModule {
 //            throw e;
 //        }
 //    }
-        final String token = ((AuthorizationContext) env.getContext()).getToken();
-
         // SessionManager.getInstance().loginUser(Registries.getUnitRegistry().getUserUnitIdByUserName("test"), "test", false);
 
         ColorableLightRemote unit = Units.getUnitByAlias(alias, true, Units.COLORABLE_LIGHT);
         PowerStateType.PowerState powerState = PowerStateType.PowerState.newBuilder().setValue(State.valueOf(state)).build();
         ActionParameterType.ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE, unit);
-        builder.setAuthToken(AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(token).build());
+
+        try {
+            builder.setAuthToken(AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(((AuthorizationContext) env.getContext()).getToken()).build());
+        } catch (NotAvailableException ex) {
+            // in case the auth token is not available, we just continue without any authentication.
+        }
+
         return unit.applyAction(builder).get(5, TimeUnit.SECONDS);
     }
 }
