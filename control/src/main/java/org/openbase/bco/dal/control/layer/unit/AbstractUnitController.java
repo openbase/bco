@@ -1432,10 +1432,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // log state transition
-                    logger.info("{} is updated from {} to {}.",
-                            getLabel("?"),
-                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder), serviceType)),
-                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType)));
+                    if (logger.isInfoEnabled()) {
+                        final String from = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder), serviceType));
+                        final String to = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType));
+                        logger.info(getLabel("?") + " is updated " + (from.isEmpty() ? "" : "from " + from + " ") + "to " + to + ".");
+                    }
 
                     if (!Services.hasResponsibleAction(newState)) {
                         StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
@@ -1905,7 +1906,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     protected D filterDataForUser(DB dataBuilder, UserClientPair userClientPair) throws CouldNotPerformException {
         try {
 
-            if(Registries.getUnitRegistry().isDataAvailable()) {
+            if (Registries.getUnitRegistry().isDataAvailable()) {
                 // test if user or client is inside the admin group, if yes return the unfiltered data builder
                 try {
                     final UnitConfig adminGroup = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS);
