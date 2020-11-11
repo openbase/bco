@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -1432,10 +1432,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // log state transition
-                    logger.info("{} is updated from {} to {}.",
-                            getLabel("?"),
-                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder), serviceType)),
-                            LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType)));
+                    if (logger.isInfoEnabled()) {
+                        final String from = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder), serviceType));
+                        final String to = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType));
+                        logger.info(getLabel("?") + " is updated " + (from.isEmpty() ? "" : "from " + from + " ") + "to " + to + ".");
+                    }
 
                     if (!Services.hasResponsibleAction(newState)) {
                         StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
@@ -1905,7 +1906,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     protected D filterDataForUser(DB dataBuilder, UserClientPair userClientPair) throws CouldNotPerformException {
         try {
 
-            if(Registries.getUnitRegistry().isDataAvailable()) {
+            if (Registries.getUnitRegistry().isDataAvailable()) {
                 // test if user or client is inside the admin group, if yes return the unfiltered data builder
                 try {
                     final UnitConfig adminGroup = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS);
