@@ -24,6 +24,7 @@ package org.openbase.bco.api.graphql;
 
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
@@ -39,15 +40,20 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
     private ConfigurableApplicationContext context;
 
     @Override
+    public void init() {
+        // nothing to initialize
+    }
+
+    @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         LOGGER.info("Connect to bco...");
         Registries.waitUntilReady();
 
         LOGGER.info("Login to bco...");
-        BCOLogin.getSession().autoLogin(true);
+        BCOLogin.getSession().loginBCOUser();
 
         LOGGER.info("Start webserver...");
-        context = SpringApplication.run(BcoGraphQlApiSpringBootApplication.class);
+        context = SpringApplication.run(BcoGraphQlApiSpringBootApplication.class, JPService.getArgs());
     }
 
     @Override
@@ -55,18 +61,15 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
         LOGGER.info("Logout...");
         BCOLogin.getSession().logout();
 
-        LOGGER.info("Shutdown spring application...");
-        SpringApplication.exit(context);
-        context = null;
+        if(isActive()) {
+            LOGGER.info("Shutdown "+ context.getApplicationName());
+            SpringApplication.exit(context);
+            context = null;
+        }
     }
 
     @Override
     public boolean isActive() {
         return context != null;
-    }
-
-    @Override
-    public void init() {
-        // nothing to initialize
     }
 }
