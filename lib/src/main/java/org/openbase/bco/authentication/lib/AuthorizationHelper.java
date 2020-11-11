@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,6 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.authentication.PermissionConfigType.PermissionConfig;
@@ -363,8 +364,9 @@ public class AuthorizationHelper {
             }
 
             if (!locations.containsKey(locationId)) {
-                LOGGER.warn("Registry does not contains requested location Entry[" + locationId + "] use root location as fallback to compute permissions.");
-                return getRootLocationUnitConfig(locations);
+                final UnitConfig rootLocationUnitConfig = getRootLocationUnitConfig(locations);
+                LOGGER.warn("Registry does not contains requested location Entry[" + locationId + "] use root location [" + LabelProcessor.getBestMatch(rootLocationUnitConfig.getLabel(), "") + ":"+rootLocationUnitConfig.getId()+ "] as fallback to compute permissions.");
+                return rootLocationUnitConfig;
             }
             return locations.get(locationId).getMessage();
         } catch (CouldNotPerformException | NullPointerException ex) {
