@@ -46,12 +46,12 @@ import java.util.concurrent.TimeoutException;
 
 public class UnitSchemaModule extends SchemaModule {
 
-    @SchemaModification
+    /*@SchemaModification
     TypeModification label = Type.find(UnitConfig.getDescriptor()).replaceField(
             GraphQLFieldDefinition.newFieldDefinition()
                     .name("label")
                     .type(GraphQLScalars.create())
-                    .build());
+                    .build());*/
 
     @Mutation("unit")
     ActionDescription getLamp(@Arg("alias") String alias, @Arg("power") String state, DataFetchingEnvironment env) throws InterruptedException, CouldNotPerformException, TimeoutException, ExecutionException {

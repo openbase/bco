@@ -37,12 +37,12 @@ import java.util.concurrent.TimeoutException;
 
 public class RegistrySchemaModule extends SchemaModule {
 
-    @SchemaModification
+    /*@SchemaModification
     TypeModification label = Type.find(UnitConfig.getDescriptor()).replaceField(
             GraphQLFieldDefinition.newFieldDefinition()
                     .name("label")
                     .type(GraphQLScalars.create())
-                    .build());
+                    .build());*/
 
     @Query("unitConfig")
     UnitConfig getUnitConfigById(@Arg("id") String id) throws CouldNotPerformException, InterruptedException {
