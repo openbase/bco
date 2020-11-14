@@ -23,11 +23,14 @@ package org.openbase.bco.api.graphql.schema;
  */
 
 import com.google.api.graphql.rejoiner.*;
+import com.google.common.collect.ImmutableList;
 import graphql.schema.GraphQLFieldDefinition;
 import org.openbase.bco.api.graphql.coercing.GraphQLScalars;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+
+import java.util.List;
 
 public class RegistrySchemaModule extends SchemaModule {
 
@@ -41,6 +44,11 @@ public class RegistrySchemaModule extends SchemaModule {
     @Query("unitConfig")
     UnitConfig getUnitConfigById(@Arg("id") String id) throws CouldNotPerformException, InterruptedException {
         return Registries.getUnitRegistry(true).getUnitConfigById(id);
+    }
+
+    @Query("unitConfigs")
+    ImmutableList<UnitConfig> getUnitConfigs() throws CouldNotPerformException, InterruptedException {
+        return ImmutableList.copyOf(Registries.getUnitRegistry(true).getUnitConfigs());
     }
 
 //    @Query("unitConfig") todo QueryType required in order to support multible arguments
