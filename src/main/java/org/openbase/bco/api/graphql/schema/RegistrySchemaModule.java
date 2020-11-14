@@ -22,14 +22,18 @@ package org.openbase.bco.api.graphql.schema;
  * #L%
  */
 
-import com.google.api.graphql.rejoiner.*;
+import com.google.api.graphql.rejoiner.Arg;
+import com.google.api.graphql.rejoiner.Mutation;
+import com.google.api.graphql.rejoiner.Query;
+import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
-import org.openbase.bco.api.graphql.coercing.GraphQLScalars;
+import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.language.LabelType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +74,16 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("registerUnitConfig")
     UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         return Registries.getUnitRegistry(true).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+    }
+
+    @Mutation("replaceLabel")
+    LabelType.Label replaceLabel(@Arg("unitConfig") UnitConfig unitConfig, @Arg("oldLabel") String oldLabel, @Arg("newLabel") String newLabel, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
+
+        final BCOGraphQLContext context = env.getContext();
+        LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, newLabel);
+
+        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
     }
 
 //    @Query("unitConfig") todo QueryType required in order to support multible arguments
