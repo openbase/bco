@@ -47,7 +47,6 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType;
@@ -83,18 +82,24 @@ public class BcoGraphQlApiSpringBootApplication {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
         final GraphQLObjectType.Builder queryTypeBuilder = GraphQLObjectType.newObject(schema.getQueryType());
+        final GraphQLObjectType.Builder mutationTypeBuilder = GraphQLObjectType.newObject(schema.getMutationType());
         //TODO: can I define that these arguments can not be null as in an SDL
         //TODO: would the preferred way be to define these in an sdl?
         queryTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("login").type(Scalars.GraphQLString)
                 .argument(GraphQLArgument.newArgument().name("username").type(Scalars.GraphQLString).build())
                 .argument(GraphQLArgument.newArgument().name("password").type(Scalars.GraphQLString).build())
                 .build());
+        mutationTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("changePassword").type(Scalars.GraphQLBoolean)
+                .argument(GraphQLArgument.newArgument().name("username").type(Scalars.GraphQLString).build())
+                .argument(GraphQLArgument.newArgument().name("oldPassword").type(Scalars.GraphQLString).build())
+                .argument(GraphQLArgument.newArgument().name("newPassword").type(Scalars.GraphQLString).build())
+                .build());
 
         // type QueryType {
         //     login(username: String!, password: String!): String
         // }
-        GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
-                .dataFetcher(FieldCoordinates.coordinates("QueryType", "login"), new DataFetcher<String>() {
+        final GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
+                .dataFetcher(FieldCoordinates.coordinates(schema.getQueryType().getName(), "login"), new DataFetcher<String>() {
 
                     @Override
                     public String get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
@@ -123,9 +128,29 @@ public class BcoGraphQlApiSpringBootApplication {
                         return tokenValue;
                     }
                 })
+                .dataFetcher(FieldCoordinates.coordinates(schema.getMutationType().getName(), "changePassword"), new DataFetcher<Boolean>() {
+                    @Override
+                    public Boolean get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                        final String username = dataFetchingEnvironment.getArgument("username");
+                        final String oldPassword = dataFetchingEnvironment.getArgument("oldPassword");
+                        final String newPassword = dataFetchingEnvironment.getArgument("newPassword");
+
+                        final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
+
+                        final SessionManager sessionManager = new SessionManager();
+                        sessionManager.loginUser(userId, oldPassword, false);
+                        sessionManager.changePassword(userId, oldPassword, newPassword).get(5, TimeUnit.SECONDS);
+
+                        return true;
+                    }
+                })
                 .build();
 
-        schema = GraphQLSchema.newSchema(schema).query(queryTypeBuilder.build()).codeRegistry(codeRegistry).build();
+        schema = GraphQLSchema.newSchema(schema)
+                .query(queryTypeBuilder.build())
+                .mutation(mutationTypeBuilder.build())
+                .codeRegistry(codeRegistry)
+                .build();
         return new DefaultGraphQLSchemaProvider(schema);
     }
 
