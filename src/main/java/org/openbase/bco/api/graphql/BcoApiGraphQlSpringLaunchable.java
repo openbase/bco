@@ -22,6 +22,7 @@ package org.openbase.bco.api.graphql;
  * #L%
  */
 
+import org.openbase.bco.api.graphql.discovery.ServiceAdvertiser;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
@@ -39,6 +40,7 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
 
     private ConfigurableApplicationContext context;
 
+
     @Override
     public void init() {
         // nothing to initialize
@@ -54,6 +56,9 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
 
         LOGGER.info("Start webserver...");
         context = SpringApplication.run(BcoGraphQlApiSpringBootApplication.class, JPService.getArgs());
+
+        LOGGER.info("Advertise graphql service...");
+        ServiceAdvertiser.getInstance().register("bco-api-graphql", 8080, "graphql");
     }
 
     @Override

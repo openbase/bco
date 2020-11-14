@@ -134,7 +134,7 @@ public class BcoGraphQlApiSpringBootApplication {
 //    @Autowired
 //    GraphQLDataFetchers graphQLDataFetchers;
 
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
+//    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
 //        String schema = "type Query{hello: String}";
 //
 //        SchemaParser schemaParser = new SchemaParser();
@@ -154,7 +154,7 @@ public class BcoGraphQlApiSpringBootApplication {
 
 
 
-    }
+//    }
 
 
 ////
