@@ -10,12 +10,12 @@ package org.openbase.bco.api.graphql;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -28,27 +28,31 @@ import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.*;
 import graphql.servlet.config.DefaultGraphQLSchemaProvider;
 import graphql.servlet.config.GraphQLSchemaProvider;
-import graphql.servlet.context.*;
+import graphql.servlet.context.DefaultGraphQLContext;
+import graphql.servlet.context.DefaultGraphQLWebSocketContext;
+import graphql.servlet.context.GraphQLContext;
+import graphql.servlet.context.GraphQLContextBuilder;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
 import org.openbase.bco.api.graphql.schema.LocationConfigSchemaModule;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.iface.Launchable;
-import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType;
+import org.openbase.type.domotic.authentication.AuthenticationTokenType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
@@ -56,6 +60,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 public class BcoGraphQlApiSpringBootApplication {
@@ -76,6 +81,51 @@ public class BcoGraphQlApiSpringBootApplication {
     @Bean
     public GraphQLSchemaProvider schemaProvider() {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
+
+        final GraphQLObjectType.Builder queryTypeBuilder = GraphQLObjectType.newObject(schema.getQueryType());
+        //TODO: can I define that these arguments can not be null as in an SDL
+        //TODO: would the preferred way be to define these in an sdl?
+        queryTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("login").type(Scalars.GraphQLString)
+                .argument(GraphQLArgument.newArgument().name("username").type(Scalars.GraphQLString).build())
+                .argument(GraphQLArgument.newArgument().name("password").type(Scalars.GraphQLString).build())
+                .build());
+
+        // type QueryType {
+        //     login(username: String!, password: String!): String
+        // }
+        GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
+                .dataFetcher(FieldCoordinates.coordinates("QueryType", "login"), new DataFetcher<String>() {
+
+                    @Override
+                    public String get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                        final String username = dataFetchingEnvironment.getArgument("username");
+                        final String password = dataFetchingEnvironment.getArgument("password");
+
+                        System.out.println("Resolve login request with username[" + username + "] and password[" + password + "]");
+
+                        if (username == null) {
+                            throw new NotAvailableException("username");
+                        }
+
+                        if (password == null) {
+                            throw new NotAvailableException("password");
+                        }
+
+                        final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
+
+                        final SessionManager sessionManager = new SessionManager();
+                        sessionManager.loginUser(userId, password, false);
+                        AuthenticatedValueType.AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
+                        String tokenValue = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
+                                String.class,
+                                authenticatedValue.getTicketAuthenticatorWrapper(),
+                                sessionManager).get(5, TimeUnit.SECONDS);
+                        return tokenValue;
+                    }
+                })
+                .build();
+
+        schema = GraphQLSchema.newSchema(schema).query(queryTypeBuilder.build()).codeRegistry(codeRegistry).build();
         return new DefaultGraphQLSchemaProvider(schema);
     }
 
@@ -123,14 +173,6 @@ public class BcoGraphQlApiSpringBootApplication {
     }
 
 
-
-
-
-
-
-
-
-
 //    @Autowired
 //    GraphQLDataFetchers graphQLDataFetchers;
 
@@ -152,77 +194,6 @@ public class BcoGraphQlApiSpringBootApplication {
 //
 //        System.out.println(executionResult.getData().toString());
 
-
-
-//    }
-
-
-////
-////    @Bean
-////    public ServletRegistrationBean graphQLServlet() {
-////
-////    }
-//
-//    @Bean
-//    GraphQLSchema schema() throws InterruptedException, CouldNotPerformException {
-//
-//        try {
-//            Registries.waitUntilReady();
-//
-//            final URL url = Resources.getResource("schema.graphqls");
-//            final String sdl = Resources.toString(url, Charsets.UTF_8);
-//            final TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(sdl);
-//            final SchemaGenerator schemaGenerator = new SchemaGenerator();
-//            final GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeRegistry, RuntimeWiring.newRuntimeWiring()
-//                    .type(TypeRuntimeWiring.newTypeWiring("Query")
-//                            .dataFetcher("bookById", graphQLDataFetchers.getBookByIdDataFetcher()))
-//                    .type(TypeRuntimeWiring.newTypeWiring("Book")
-//                            .dataFetcher("Book", graphQLDataFetchers.getAuthorDataFetcher()))
-//                    .build());
-//
-//            return graphQLSchema;
-
-//            final Builder schemaBuilder = GraphQLSchema.newSchema();
-
-            // protobuf schema generator stuff
-            /*ProtoUtils.
-//            com.google.api.graphql.rejoiner.SchemaBundle
-//            com.google.api.graphql.rejoiner.SchemaProviderModule*/
-
-            // try to implement an code example without deprecated api usage. (see dataFetcher)
-//            final GraphQLCodeRegistry.Builder codeRegistry = GraphQLCodeRegistry.newCodeRegistry();
-//
-//            codeRegistry.dataFetcher(dataFetchingEnvironment -> {
-//
-//            };
-//
-//            schemaBuilder.codeRegistry(codeRegistry.build());
-//
-//            // define root query
-//            schemaBuilder.query(GraphQLObjectType.newObject()
-//                    .name("query")
-//                    .field(unit -> unit
-//                            .name("unit")
-//                            .type(Scalars.GraphQLString)
-//                            .dataFetcher(environment -> "MR. Pink")
-//                    )
-//                    .build()
-//            );
-
-//            schemaBuilder.query(GraphQLObjectType.newObject()
-//                            .name("query")
-//                            .field(field -> field
-//                                    .name("test")
-//                                    .type(Scalars.GraphQLString)
-//                                    .dataFetcher(environment -> "MR. Ping")
-//                            )
-//                            .build());
-//            return schemaBuilder.build();
-
-//        } catch (CouldNotPerformException | IOException ex) {
-//            ExceptionPrinter.printHistory("Could not generate graphql schema!", ex, LOGGER);
-//            throw new CouldNotPerformException("Could not generate graphql schema!", ex);
-//        }
 //    }
 
 }
