@@ -23,29 +23,34 @@ package org.openbase.bco.api.graphql;
  */
 
 import graphql.servlet.context.DefaultGraphQLContext;
-import graphql.servlet.context.DefaultGraphQLServletContext;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.jul.exception.NotAvailableException;
 
-import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Locale;
 
-public class AuthorizationContext extends DefaultGraphQLContext {
+public class BCOGraphQLContext extends DefaultGraphQLContext {
 
     private final String token;
+    private final String languageCode;
 
-    public AuthorizationContext(DataLoaderRegistry dataLoaderRegistry, String token) {
+    public BCOGraphQLContext(DataLoaderRegistry dataLoaderRegistry, HttpServletRequest req) {
         super(dataLoaderRegistry, null);
-        this.token = token;
+        this.token = req.getHeader("Authorization");
+
+        final String language = req.getHeader("Accept-Language");
+        this.languageCode = (language != null) ? language : Locale.getDefault().getLanguage();
     }
 
     public String getToken() throws NotAvailableException {
-
-        if(token == null) {
+        if (token == null) {
             throw new NotAvailableException("AuthToken");
         }
 
         return token;
+    }
+
+    public String getLanguageCode() {
+        return this.languageCode;
     }
 }

@@ -10,12 +10,12 @@ package org.openbase.bco.api.graphql.schema;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,13 +25,11 @@ package org.openbase.bco.api.graphql.schema;
 import com.google.api.graphql.rejoiner.*;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
-import org.openbase.bco.api.graphql.AuthorizationContext;
+import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.coercing.GraphQLScalars;
-import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -75,7 +73,7 @@ public class UnitSchemaModule extends SchemaModule {
         ActionParameterType.ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE, unit);
 
         try {
-            builder.setAuthToken(AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(((AuthorizationContext) env.getContext()).getToken()).build());
+            builder.setAuthToken(AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(((BCOGraphQLContext) env.getContext()).getToken()).build());
         } catch (NotAvailableException ex) {
             // in case the auth token is not available, we just continue without any authentication.
         }

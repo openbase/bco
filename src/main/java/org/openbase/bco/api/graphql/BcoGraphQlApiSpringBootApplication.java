@@ -182,7 +182,7 @@ public class BcoGraphQlApiSpringBootApplication {
 
             @Override
             public GraphQLContext build(HttpServletRequest req, HttpServletResponse response) {
-                return new AuthorizationContext(dataLoaderRegistry, req.getHeader("Authorization"));
+                return new BCOGraphQLContext(dataLoaderRegistry, req);
             }
 
             @Override
