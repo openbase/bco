@@ -22,29 +22,30 @@ package org.openbase.bco.api.graphql.discovery;
  * #L%
  */
 
+import org.openbase.jul.processing.StringProcessor;
+
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceListener;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class ServiceDiscoveryDemo {
 
     private static class SampleListener implements ServiceListener {
         @Override
         public void serviceAdded(ServiceEvent event) {
-            System.out.println("Added service["+event.getName()+"] of " + event.getType() + " @ "+event.getDNS().getHostName());
         }
 
         @Override
-        public void serviceRemoved(ServiceEvent event) {
-            System.out.println("Remove service["+event.getName()+"] of " + event.getType() + " @ "+event.getDNS().getHostName());
+        public void serviceRemoved(ServiceEvent event) {System.out.println("Added service["+event.getName()+"] of " + event.getType() + " @ "+event.getInfo().getServer()+ ":"+event.getInfo().getQualifiedName());
         }
 
         @Override
         public void serviceResolved(ServiceEvent event) {
-            System.out.println("Resolve service["+event.getName()+"] of " + event.getType() + " @ "+event.getDNS().getHostName());
+            System.out.println("Resolve service["+event.getName()+"] of " + event.getType() + " @ "+event.getInfo().getServer()+ ":"+event.getInfo().getPort()+ " - "+ StringProcessor.transformCollectionToString(Arrays.asList(event.getInfo().getHostAddresses().clone()), ", "));
         }
     }
 
