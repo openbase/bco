@@ -76,12 +76,13 @@ public class RegistrySchemaModule extends SchemaModule {
         return Registries.getUnitRegistry(true).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
     }
 
-    @Mutation("replaceLabel")
-    LabelType.Label replaceLabel(@Arg("unitConfig") UnitConfig unitConfig, @Arg("oldLabel") String oldLabel, @Arg("newLabel") String newLabel, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+    @Mutation("updateLabel")
+    LabelType.Label updateLabel(@Arg("unitConfig") UnitConfig unitConfig, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
 
         final BCOGraphQLContext context = env.getContext();
-        LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, newLabel);
+        final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
+        LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
 
         return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
     }
