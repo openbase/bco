@@ -34,17 +34,17 @@ public class ServiceDiscoveryDemo {
     private static class SampleListener implements ServiceListener {
         @Override
         public void serviceAdded(ServiceEvent event) {
-            System.out.println("Service added: " + event.getInfo());
+            System.out.println("Added service["+event.getName()+"] of " + event.getType() + " @ "+event.getDNS().getHostName());
         }
 
         @Override
         public void serviceRemoved(ServiceEvent event) {
-            System.out.println("Service removed: " + event.getInfo());
+            System.out.println("Remove service["+event.getName()+"] of " + event.getType() + " @ "+event.getDNS().getHostName());
         }
 
         @Override
         public void serviceResolved(ServiceEvent event) {
-            System.out.println("Service resolved: " + event.getInfo());
+            System.out.println("Resolve service["+event.getName()+"] of " + event.getType() + " @ "+event.getDNS().getHostName());
         }
     }
 
