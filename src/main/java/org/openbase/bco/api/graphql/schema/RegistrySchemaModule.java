@@ -33,8 +33,10 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.geometry.PoseType;
 import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
+import org.openbase.type.spatial.ShapeType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -93,6 +95,20 @@ public class RegistrySchemaModule extends SchemaModule {
         final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
         builder.getPlacementConfigBuilder().setLocationId(locationId);
         return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
+    }
+
+    @Mutation("updateFloorPlan")
+    ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException {
+        final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(true).getUnitConfigById(locationId).toBuilder();
+        unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
+        return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getShape();
+    }
+
+    @Mutation("updatePose")
+    PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+        builder.getPlacementConfigBuilder().clearPose().setPose(pose);
+        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
     }
 
 //    @Query("unitConfig") todo QueryType required in order to support multible arguments
