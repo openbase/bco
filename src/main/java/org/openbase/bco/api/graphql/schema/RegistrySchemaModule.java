@@ -41,7 +41,6 @@ import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
 import org.openbase.type.spatial.ShapeType;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -55,19 +54,31 @@ public class RegistrySchemaModule extends SchemaModule {
 
     @Query("unitConfigs")
     ImmutableList<UnitConfig> getUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("inclusiveDisabled") Boolean incluseDisabled) throws CouldNotPerformException, InterruptedException {
+
+        // setup default values
+        if ((unitFilter == null)) {
+            unitFilter = UnitFilter.getDefaultInstance();
+        }
+        if ((incluseDisabled == null)) {
+            incluseDisabled = false;
+        }
+
         return ImmutableList.copyOf(
                 new UnitFilterImpl(unitFilter)
-                        .filter(Registries.getUnitRegistry(true).getUnitConfigsFiltered(!incluseDisabled)));
+                        .pass(Registries.getUnitRegistry(true).getUnitConfigsFiltered(!incluseDisabled)));
     }
 
-    private class UnitFilterImpl implements ListFilter<UnitConfig> {
+    private static class UnitFilterImpl implements ListFilter<UnitConfig> {
 
         private final UnitFilter filter;
         private final UnitConfig properties;
         private final Filter andFilter, orFilter;
 
+        private final boolean bypass;
+
         public UnitFilterImpl(final UnitFilter filter) {
             this.filter = filter;
+            this.bypass = !filter.hasProperties();
             this.properties = filter.getProperties();
 
             if (filter.hasAnd()) {
@@ -89,6 +100,11 @@ public class RegistrySchemaModule extends SchemaModule {
         }
 
         public boolean propertyMatch(final UnitConfig unitConfig) {
+
+            // handle bypass
+            if (bypass) {
+                return !filter.getNot();
+            }
 
             // filter by type
             if (properties.hasUnitType() && !(properties.getUnitType().equals(unitConfig.getUnitType()))) {
