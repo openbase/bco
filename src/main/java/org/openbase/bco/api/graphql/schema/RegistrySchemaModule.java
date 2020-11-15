@@ -32,12 +32,16 @@ import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.pattern.Filter;
+import org.openbase.jul.pattern.ListFilter;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.geometry.PoseType;
 import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
 import org.openbase.type.spatial.ShapeType;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -50,8 +54,83 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Query("unitConfigs")
-    ImmutableList<UnitConfig> getUnitConfigs() throws CouldNotPerformException, InterruptedException {
-        return ImmutableList.copyOf(Registries.getUnitRegistry(true).getUnitConfigs());
+    ImmutableList<UnitConfig> getUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("inclusiveDisabled") Boolean incluseDisabled) throws CouldNotPerformException, InterruptedException {
+        return ImmutableList.copyOf(
+                new UnitFilterImpl(unitFilter)
+                        .filter(Registries.getUnitRegistry(true).getUnitConfigsFiltered(!incluseDisabled)));
+    }
+
+    private class UnitFilterImpl implements ListFilter<UnitConfig> {
+
+        private final UnitFilter filter;
+        private final UnitConfig properties;
+        private final Filter andFilter, orFilter;
+
+        public UnitFilterImpl(final UnitFilter filter) {
+            this.filter = filter;
+            this.properties = filter.getProperties();
+
+            if (filter.hasAnd()) {
+                this.andFilter = new UnitFilterImpl(filter.getAnd());
+            } else {
+                this.andFilter = null;
+            }
+
+            if (filter.hasOr()) {
+                this.orFilter = new UnitFilterImpl(filter.getOr());
+            } else {
+                this.orFilter = null;
+            }
+        }
+
+        @Override
+        public boolean match(final UnitConfig unitConfig) {
+            return (propertyMatch(unitConfig) && andFilterMatch(unitConfig)) || orFilterMatch(unitConfig);
+        }
+
+        public boolean propertyMatch(final UnitConfig unitConfig) {
+
+            // filter by type
+            if (properties.hasUnitType() && !(properties.getUnitType().equals(unitConfig.getUnitType()))) {
+                return filter.getNot();
+            }
+
+            // filter by type
+            if (properties.hasUnitType() && !(properties.getUnitType().equals(unitConfig.getUnitType()))) {
+                return filter.getNot();
+            }
+
+            // filter by location
+            if (properties.getPlacementConfig().hasLocationId() && !(properties.getPlacementConfig().getLocationId().equals(unitConfig.getPlacementConfig().getLocationId()))) {
+                return filter.getNot();
+            }
+
+            // filter by location root
+            if (properties.getLocationConfig().hasRoot() && !(properties.getLocationConfig().getRoot() == (unitConfig.getLocationConfig().getRoot()))) {
+                return filter.getNot();
+            }
+
+            // filter by location type
+            if (properties.getLocationConfig().hasLocationType() && !(properties.getLocationConfig().getLocationType() == (unitConfig.getLocationConfig().getLocationType()))) {
+                return filter.getNot();
+            }
+
+            return !filter.getNot();
+        }
+
+        private boolean orFilterMatch(final UnitConfig unitConfig) {
+            if (orFilter != null) {
+                return orFilter.match(unitConfig);
+            }
+            return false;
+        }
+
+        private boolean andFilterMatch(final UnitConfig unitConfig) {
+            if (andFilter != null) {
+                return andFilter.match(unitConfig);
+            }
+            return true;
+        }
     }
 
     @Mutation("updateUnitConfig")
