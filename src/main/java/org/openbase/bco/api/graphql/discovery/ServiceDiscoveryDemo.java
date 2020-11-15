@@ -40,7 +40,7 @@ public class ServiceDiscoveryDemo {
         }
 
         @Override
-        public void serviceRemoved(ServiceEvent event) {System.out.println("Added service["+event.getName()+"] of " + event.getType() + " @ "+event.getInfo().getServer()+ ":"+event.getInfo().getQualifiedName());
+        public void serviceRemoved(ServiceEvent event) {
         }
 
         @Override
