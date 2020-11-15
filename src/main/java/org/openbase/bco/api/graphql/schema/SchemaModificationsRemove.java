@@ -26,6 +26,8 @@ import com.google.api.graphql.rejoiner.SchemaModification;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.api.graphql.rejoiner.Type;
 import com.google.api.graphql.rejoiner.TypeModification;
+import com.google.protobuf.Descriptors;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.authentication.PermissionConfigType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
@@ -40,6 +42,8 @@ import org.openbase.type.domotic.unit.location.LocationConfigType;
 import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Bundle all schema modifications to remove fields from protobuf types.
@@ -57,66 +61,76 @@ import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
  */
 public class SchemaModificationsRemove extends SchemaModule {
 
-    @SchemaModification
-    TypeModification removeMultiLanguageFields = Type.find(UnitConfig.getDescriptor()).removeFields("description", "label");
+    private String fieldNameByNumber(final int fieldNumber, final Descriptors.Descriptor descriptor) {
+        return StringProcessor.transformToCamelCase(descriptor.findFieldByNumber(fieldNumber).getName());
+    }
+
+    private TypeModification removeFieldByNumber(final int fieldNumber, final Descriptors.Descriptor descriptor) {
+        return Type.find(descriptor).removeField(fieldNameByNumber(fieldNumber, descriptor));
+    }
 
     @SchemaModification
-    TypeModification removeLocationConfigUnitId = Type.find(LocationConfigType.LocationConfig.getDescriptor()).removeField("unitId");
+    TypeModification removeMultiLanguageFields = Type.find(UnitConfig.getDescriptor()).removeFields(
+            fieldNameByNumber(UnitConfig.DESCRIPTION_FIELD_NUMBER, UnitConfig.getDescriptor()),
+            fieldNameByNumber(UnitConfig.LABEL_FIELD_NUMBER, UnitConfig.getDescriptor()));
 
     @SchemaModification
-    TypeModification removeLocationConfigChildId = Type.find(LocationConfigType.LocationConfig.getDescriptor()).removeField("childId");
+    TypeModification removeLocationConfigUnitId = removeFieldByNumber(LocationConfigType.LocationConfig.UNIT_ID_FIELD_NUMBER, LocationConfigType.LocationConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removePermissionConfigId = Type.find(PermissionConfigType.PermissionConfig.getDescriptor()).removeField("ownerId");
+    TypeModification removeLocationConfigChildId = removeFieldByNumber(LocationConfigType.LocationConfig.CHILD_ID_FIELD_NUMBER, LocationConfigType.LocationConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removePermissionMapFieldEntryId = Type.find(PermissionConfigType.PermissionConfig.MapFieldEntry.getDescriptor()).removeField("groupId");
+    TypeModification removePermissionConfigOwnerId = removeFieldByNumber(PermissionConfigType.PermissionConfig.OWNER_ID_FIELD_NUMBER, PermissionConfigType.PermissionConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeActivityConfigActivityTemplateId = Type.find(ActivityConfig.getDescriptor()).removeField("activityTemplateId");
+    TypeModification removePermissionMapFieldEntryId = removeFieldByNumber(PermissionConfigType.PermissionConfig.MapFieldEntry.GROUP_ID_FIELD_NUMBER, PermissionConfigType.PermissionConfig.MapFieldEntry.getDescriptor());
 
     @SchemaModification
-    TypeModification removeServiceDescriptionServiceTemplateId = Type.find(ServiceDescription.getDescriptor()).removeField("serviceTemplateId");
+    TypeModification removeActivityConfigActivityTemplateId = removeFieldByNumber(ActivityConfig.ACTIVITY_TEMPLATE_ID_FIELD_NUMBER, ActivityConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeServiceConfigUnitId = Type.find(ServiceConfig.getDescriptor()).removeField("unitId");
+    TypeModification removeServiceDescriptionServiceTemplateId = removeFieldByNumber(ServiceDescription.SERVICE_TEMPLATE_ID_FIELD_NUMBER, ServiceDescription.getDescriptor());
 
     @SchemaModification
-    TypeModification removeAgentConfigAgentClassId = Type.find(AgentConfig.getDescriptor()).removeField("agentClassId");
+    TypeModification removeServiceConfigUnitId = removeFieldByNumber(ServiceConfig.UNIT_ID_FIELD_NUMBER, ServiceConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeUnitGroupConfigMemberId = Type.find(UnitGroupConfig.getDescriptor()).removeField("memberId");
+    TypeModification removeAgentConfigAgentClassId = removeFieldByNumber(AgentConfig.AGENT_CLASS_ID_FIELD_NUMBER, AgentConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeUnitConfigUnitTemplateId = Type.find(UnitConfig.getDescriptor()).removeField("unitTemplateId");
+    TypeModification removeUnitGroupConfigMemberId = removeFieldByNumber(UnitGroupConfig.MEMBER_ID_FIELD_NUMBER, UnitGroupConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeUnitConfigUnitHostId = Type.find(UnitConfig.getDescriptor()).removeField("unitHostId");
+    TypeModification removeUnitConfigUnitTemplateId = removeFieldByNumber(UnitConfig.UNIT_TEMPLATE_CONFIG_ID_FIELD_NUMBER, UnitConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeAuthorizationGroupMemberId = Type.find(AuthorizationGroupConfig.getDescriptor()).removeField("memberId");
+    TypeModification removeUnitConfigUnitHostId = removeFieldByNumber(UnitConfig.UNIT_HOST_ID_FIELD_NUMBER, UnitConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeTileConfigConnectionId = Type.find(TileConfig.getDescriptor()).removeField("connectionId");
+    TypeModification removeAuthorizationGroupMemberId = removeFieldByNumber(AuthorizationGroupConfig.MEMBER_ID_FIELD_NUMBER, AuthorizationGroupConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeAppConfigAppClassId = Type.find(AppConfig.getDescriptor()).removeField("appClassId");
+    TypeModification removeTileConfigConnectionId = removeFieldByNumber(TileConfig.CONNECTION_ID_FIELD_NUMBER, TileConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeAppConfigUnitId = Type.find(AppConfig.getDescriptor()).removeField("unitId");
+    TypeModification removeAppConfigAppClassId = removeFieldByNumber(AppConfig.APP_CLASS_ID_FIELD_NUMBER, AppConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeConnectionConfigTileId = Type.find(ConnectionConfig.getDescriptor()).removeField("tileId");
+    TypeModification removeAppConfigUnitId = removeFieldByNumber(AppConfig.UNIT_ID_FIELD_NUMBER, AppConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeConnectionConfigUnitId = Type.find(ConnectionConfig.getDescriptor()).removeField("unitId");
+    TypeModification removeConnectionConfigTileId = removeFieldByNumber(ConnectionConfig.TILE_ID_FIELD_NUMBER, ConnectionConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification deviceConfigDeviceClassId = Type.find(DeviceConfig.getDescriptor()).removeField("deviceClassId");
+    TypeModification removeConnectionConfigUnitId = removeFieldByNumber(ConnectionConfig.UNIT_ID_FIELD_NUMBER, ConnectionConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification deviceConfigUnitId = Type.find(DeviceConfig.getDescriptor()).removeField("unitId");
+    TypeModification deviceConfigDeviceClassId = removeFieldByNumber(DeviceConfig.DEVICE_CLASS_ID_FIELD_NUMBER, DeviceConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification placementConfigLocationId = Type.find(PlacementConfig.getDescriptor()).removeField("locationId");
+    TypeModification deviceConfigUnitId = removeFieldByNumber(DeviceConfig.UNIT_ID_FIELD_NUMBER, DeviceConfig.getDescriptor());
+
+    @SchemaModification
+    TypeModification placementConfigLocationId = removeFieldByNumber(PlacementConfig.LOCATION_ID_FIELD_NUMBER, PlacementConfig.getDescriptor());
 }
