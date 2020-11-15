@@ -86,18 +86,15 @@ public class BcoGraphQlApiSpringBootApplication {
         //TODO: can I define that these arguments can not be null as in an SDL
         //TODO: would the preferred way be to define these in an sdl?
         queryTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("login").type(Scalars.GraphQLString)
-                .argument(GraphQLArgument.newArgument().name("username").type(Scalars.GraphQLString).build())
-                .argument(GraphQLArgument.newArgument().name("password").type(Scalars.GraphQLString).build())
+                .argument(GraphQLArgument.newArgument().name("username").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
+                .argument(GraphQLArgument.newArgument().name("password").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
                 .build());
         mutationTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("changePassword").type(Scalars.GraphQLBoolean)
-                .argument(GraphQLArgument.newArgument().name("username").type(Scalars.GraphQLString).build())
-                .argument(GraphQLArgument.newArgument().name("oldPassword").type(Scalars.GraphQLString).build())
-                .argument(GraphQLArgument.newArgument().name("newPassword").type(Scalars.GraphQLString).build())
+                .argument(GraphQLArgument.newArgument().name("username").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
+                .argument(GraphQLArgument.newArgument().name("oldPassword").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
+                .argument(GraphQLArgument.newArgument().name("newPassword").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
                 .build());
 
-        // type QueryType {
-        //     login(username: String!, password: String!): String
-        // }
         final GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
                 .dataFetcher(FieldCoordinates.coordinates(schema.getQueryType().getName(), "login"), new DataFetcher<String>() {
 
@@ -106,18 +103,7 @@ public class BcoGraphQlApiSpringBootApplication {
                         final String username = dataFetchingEnvironment.getArgument("username");
                         final String password = dataFetchingEnvironment.getArgument("password");
 
-                        System.out.println("Resolve login request with username[" + username + "] and password[" + password + "]");
-
-                        if (username == null) {
-                            throw new NotAvailableException("username");
-                        }
-
-                        if (password == null) {
-                            throw new NotAvailableException("password");
-                        }
-
                         final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
-
                         final SessionManager sessionManager = new SessionManager();
                         sessionManager.loginUser(userId, password, false);
                         AuthenticatedValueType.AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
