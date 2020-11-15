@@ -34,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.language.LabelType;
+import org.openbase.type.spatial.PlacementConfigType;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -59,15 +60,15 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Mutation("updateUnitConfig")
-    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
         builder.mergeFrom(unitConfig);
-
         return Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId());
     }
 
     @Mutation("removeUnitConfig")
-    UnitConfig removeUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+    UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
         return Registries.getUnitRegistry(true).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
     }
 
@@ -77,14 +78,21 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Mutation("updateLabel")
-    LabelType.Label updateLabel(@Arg("unitConfig") UnitConfig unitConfig, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
+    LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
 
         final BCOGraphQLContext context = env.getContext();
         final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
         LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
 
         return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
+    }
+
+    @Mutation("updateLocation")
+    PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+        builder.getPlacementConfigBuilder().setLocationId(locationId);
+        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
     }
 
 //    @Query("unitConfig") todo QueryType required in order to support multible arguments
