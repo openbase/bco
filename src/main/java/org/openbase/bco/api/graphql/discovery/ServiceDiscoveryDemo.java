@@ -35,17 +35,33 @@ import java.util.Arrays;
 public class ServiceDiscoveryDemo {
 
     private static class SampleListener implements ServiceListener {
+
+        private final String serviceNameFilter;
+
+        public SampleListener(final String serviceNameFilter) {
+            this.serviceNameFilter = serviceNameFilter;
+        }
+
+        public SampleListener() {
+            this.serviceNameFilter = null;
+        }
+
         @Override
         public void serviceAdded(ServiceEvent event) {
         }
 
         @Override
         public void serviceRemoved(ServiceEvent event) {
+            if(serviceNameFilter == null || event.getName().equals(serviceNameFilter)) {
+                System.out.println("Offline: " + event.getName() + "@" + event.getInfo().getServer() + ":" + event.getInfo().getPort() + " - " + StringProcessor.transformCollectionToString(Arrays.asList(event.getInfo().getHostAddresses().clone()), ", "));
+            }
         }
 
         @Override
         public void serviceResolved(ServiceEvent event) {
-            System.out.println("Resolve service["+event.getName()+"] of " + event.getType() + " @ "+event.getInfo().getServer()+ ":"+event.getInfo().getPort()+ " - "+ StringProcessor.transformCollectionToString(Arrays.asList(event.getInfo().getHostAddresses().clone()), ", "));
+            if(serviceNameFilter == null || event.getName().equals(serviceNameFilter)) {
+                System.out.println("Online: " + event.getName() + "@" + event.getInfo().getServer() + ":" + event.getInfo().getPort() + " - " + StringProcessor.transformCollectionToString(Arrays.asList(event.getInfo().getHostAddresses().clone()), ", "));
+            }
         }
     }
 
@@ -55,7 +71,7 @@ public class ServiceDiscoveryDemo {
             JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 
             // Add a service listener
-            jmdns.addServiceListener("_http._tcp.local.", new SampleListener());
+            jmdns.addServiceListener("_http._tcp.local.", new SampleListener("graphql-bco-openbase"));
 
             // Wait a bit
             Thread.sleep(30000);

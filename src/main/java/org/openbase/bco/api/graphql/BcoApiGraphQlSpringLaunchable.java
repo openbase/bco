@@ -80,9 +80,7 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
         propertyMap.put("bco-uuid", UUID.randomUUID().toString());
         propertyMap.put("path", "graphql");
 
-        final ServiceInfo info = serviceAdvertiser.register(qualifiedNameMap, 8080, 0, 0, false, propertyMap);
-//        LOGGER.info("Service Name: "+info.getQualifiedName());
-//        LOGGER.info("Service Type: "+info.getTypeWithSubtype());
+        serviceAdvertiser.register(qualifiedNameMap, 8080, 0, 0, false, propertyMap);
     }
 
     @Override
