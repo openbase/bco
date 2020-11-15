@@ -28,8 +28,12 @@ import org.openbase.jul.iface.Shutdownable;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceInfo.Fields;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class ServiceAdvertiser implements Shutdownable {
 
@@ -52,10 +56,10 @@ public class ServiceAdvertiser implements Shutdownable {
         return instance;
     }
 
-    public ServiceInfo register(final String serviceName, final int port, final String path) throws CouldNotPerformException {
+    public ServiceInfo register(final HashMap<Fields, String> qualifiedNameMap, final int port, final int weight, final int priority, final boolean persistent, final Map<String, ?> props) throws CouldNotPerformException {
         try {
             // Register the service
-            final ServiceInfo serviceInfo = ServiceInfo.create("_http._tcp.local.", serviceName, port, "path=" + path);
+            final ServiceInfo serviceInfo = ServiceInfo.create(qualifiedNameMap, port, weight, priority, false, props);
             domainNameService.registerService(serviceInfo);
             return serviceInfo;
         } catch (IOException ex) {

@@ -27,6 +27,8 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
@@ -34,16 +36,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import javax.jmdns.ServiceInfo;
+import javax.jmdns.ServiceInfo.Fields;
+import java.util.HashMap;
+import java.util.UUID;
+
 public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInitializable {
 
     private static Logger LOGGER = LoggerFactory.getLogger(BcoApiGraphQlSpringLaunchable.class);
+    private  ServiceAdvertiser serviceAdvertiser;
+
 
     private ConfigurableApplicationContext context;
 
 
     @Override
-    public void init() {
-        // nothing to initialize
+    public void init() throws InitializationException {
+        try {
+            serviceAdvertiser = ServiceAdvertiser.getInstance();
+        } catch (InstantiationException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -58,12 +71,25 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
         context = SpringApplication.run(BcoGraphQlApiSpringBootApplication.class, JPService.getArgs());
 
         LOGGER.info("Advertise graphql service...");
-        ServiceAdvertiser.getInstance().register("bco-api-graphql", 8080, "graphql");
+        HashMap<Fields, String> qualifiedNameMap = new HashMap<>();
+        qualifiedNameMap.put(Fields.Application, "http");
+        qualifiedNameMap.put(Fields.Instance, "graphql-bco-openbase");
+        qualifiedNameMap.put(Fields.Subtype, "graphql");
+
+        HashMap<String, String> propertyMap = new HashMap<>();
+        propertyMap.put("bco-uuid", UUID.randomUUID().toString());
+        propertyMap.put("path", "graphql");
+
+        final ServiceInfo info = serviceAdvertiser.register(qualifiedNameMap, 8080, 0, 0, false, propertyMap);
+//        LOGGER.info("Service Name: "+info.getQualifiedName());
+//        LOGGER.info("Service Type: "+info.getTypeWithSubtype());
     }
 
     @Override
     public void deactivate() {
+
         LOGGER.info("Logout...");
+        serviceAdvertiser.shutdown();
         BCOLogin.getSession().logout();
 
         if(isActive()) {
@@ -75,6 +101,6 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
 
     @Override
     public boolean isActive() {
-        return context != null;
+        return context != null && context.isActive();
     }
 }
