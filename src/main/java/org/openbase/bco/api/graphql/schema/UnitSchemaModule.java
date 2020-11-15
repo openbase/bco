@@ -24,9 +24,7 @@ package org.openbase.bco.api.graphql.schema;
 
 import com.google.api.graphql.rejoiner.*;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
-import org.openbase.bco.api.graphql.coercing.GraphQLScalars;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -38,7 +36,6 @@ import org.openbase.type.domotic.authentication.AuthTokenType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;

@@ -42,6 +42,8 @@ import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
 import org.openbase.bco.api.graphql.schema.LocationConfigSchemaModule;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
+import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
+import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
@@ -71,6 +73,12 @@ public class BcoGraphQlApiSpringBootApplication {
     {
         injector = Guice.createInjector(
                 new SchemaProviderModule(),
+
+                // WARNING:
+                // The order of those two is important, see either class descriptions for details
+                new SchemaModificationsRemove(),
+                new SchemaModificationsAdd(),
+
                 new LocationConfigSchemaModule(),
                 new RegistrySchemaModule(),
                 new UnitSchemaModule()
