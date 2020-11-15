@@ -68,6 +68,64 @@ public class RegistrySchemaModule extends SchemaModule {
                         .pass(Registries.getUnitRegistry(true).getUnitConfigsFiltered(!incluseDisabled)));
     }
 
+    @Mutation("updateUnitConfig")
+    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
+        builder.mergeFrom(unitConfig);
+        return Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId());
+    }
+
+    @Mutation("removeUnitConfig")
+    UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
+        return Registries.getUnitRegistry(true).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+    }
+
+    @Mutation("registerUnitConfig")
+    UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        return Registries.getUnitRegistry(true).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+    }
+
+    @Mutation("updateLabel")
+    LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+
+        final BCOGraphQLContext context = env.getContext();
+        final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
+        LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
+
+        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
+    }
+
+    @Mutation("updateLocation")
+    PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+        builder.getPlacementConfigBuilder().setLocationId(locationId);
+        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
+    }
+
+    @Mutation("updateFloorPlan")
+    ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException {
+        final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(true).getUnitConfigById(locationId).toBuilder();
+        unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
+        return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getShape();
+    }
+
+    @Mutation("updatePose")
+    PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+        builder.getPlacementConfigBuilder().clearPose().setPose(pose);
+        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
+    }
+
+//    @Query("unitConfig") todo QueryType required in order to support multible arguments
+//    UnitConfig getUnitConfigByAlias(@Arg("alias") String alias) throws CouldNotPerformException, InterruptedException {
+//        return Registries.getUnitRegistry(true).getUnitConfigByAlias(alias);
+//    }
+
+
+    // --------------------------------------------------- Stuff that has to be moved to jul --- start ------------------------->
+
     private static class UnitFilterImpl implements ListFilter<UnitConfig> {
 
         private final UnitFilter filter;
@@ -148,59 +206,5 @@ public class RegistrySchemaModule extends SchemaModule {
             return true;
         }
     }
-
-    @Mutation("updateUnitConfig")
-    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
-        builder.mergeFrom(unitConfig);
-        return Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId());
-    }
-
-    @Mutation("removeUnitConfig")
-    UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
-        return Registries.getUnitRegistry(true).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
-    }
-
-    @Mutation("registerUnitConfig")
-    UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        return Registries.getUnitRegistry(true).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
-    }
-
-    @Mutation("updateLabel")
-    LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
-
-        final BCOGraphQLContext context = env.getContext();
-        final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
-        LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
-
-        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
-    }
-
-    @Mutation("updateLocation")
-    PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
-        builder.getPlacementConfigBuilder().setLocationId(locationId);
-        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
-    }
-
-    @Mutation("updateFloorPlan")
-    ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException {
-        final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(true).getUnitConfigById(locationId).toBuilder();
-        unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
-        return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getShape();
-    }
-
-    @Mutation("updatePose")
-    PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
-        builder.getPlacementConfigBuilder().clearPose().setPose(pose);
-        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
-    }
-
-//    @Query("unitConfig") todo QueryType required in order to support multible arguments
-//    UnitConfig getUnitConfigByAlias(@Arg("alias") String alias) throws CouldNotPerformException, InterruptedException {
-//        return Registries.getUnitRegistry(true).getUnitConfigByAlias(alias);
-//    }
+    // --------------------------------------------------- Stuff that has to be moved to jul --- end ------------------------->
 }
