@@ -40,7 +40,6 @@ import graphql.servlet.context.GraphQLContextBuilder;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
-import org.openbase.bco.api.graphql.schema.LocationConfigSchemaModule;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
@@ -79,7 +78,6 @@ public class BcoGraphQlApiSpringBootApplication {
                 new SchemaModificationsRemove(),
                 new SchemaModificationsAdd(),
 
-                new LocationConfigSchemaModule(),
                 new RegistrySchemaModule(),
                 new UnitSchemaModule()
         );
