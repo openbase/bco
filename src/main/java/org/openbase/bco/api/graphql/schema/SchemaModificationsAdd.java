@@ -102,7 +102,7 @@ public class SchemaModificationsAdd extends SchemaModule {
         return Registries.getTemplateRegistry().getActivityTemplateById(activityConfig.getActivityTemplateId());
     }
 
-    @SchemaModification(addField = "label", onType = UnitConfig.class)
+    @SchemaModification(addField = "labelString", onType = UnitConfig.class)
     String addLabelBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
         BCOGraphQLContext context = env.getContext();
         try {
@@ -117,7 +117,7 @@ public class SchemaModificationsAdd extends SchemaModule {
         }
     }
 
-    @SchemaModification(addField = "description", onType = UnitConfig.class)
+    @SchemaModification(addField = "descriptionString", onType = UnitConfig.class)
     String addDescriptionBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
         BCOGraphQLContext context = env.getContext();
         try {
