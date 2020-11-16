@@ -82,7 +82,7 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
 
         // lookup port
         final int port = Integer.parseInt(context.getEnvironment().getProperty("server.port"));
-        System.err.println("port: "+ port);
+
         // register service advertising
         serviceAdvertiser.register(qualifiedNameMap, port, 0, 0, false, propertyMap);
     }
