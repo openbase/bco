@@ -66,6 +66,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openbase.type.geometry.RotationType;
 import org.openbase.type.geometry.RotationType.Rotation;
 import org.openbase.type.geometry.TranslationType;
@@ -678,6 +679,12 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         configPool.register(new MetaConfigVariableProvider("AppBindingConfig", appClass.getBindingConfig().getMetaConfig()));
                         configPool.register(new MetaConfigVariableProvider("AppClassMetaConfig", appClass.getMetaConfig()));
                         configPool.register(new ProtobufVariableProvider(appClass));
+                        break;
+                    case GATEWAY:
+                        final GatewayClass gatewayClass = Registries.getClassRegistry().getGatewayClassById(hostUnitConfig.getGatewayConfig().getGatewayClassId());
+                        configPool.register(new MetaConfigVariableProvider("GatewayBindingConfig", gatewayClass.getBindingConfig().getMetaConfig()));
+                        configPool.register(new MetaConfigVariableProvider("GatewayClassMetaConfig", gatewayClass.getMetaConfig()));
+                        configPool.register(new ProtobufVariableProvider(gatewayClass));
                         break;
                 }
             }
