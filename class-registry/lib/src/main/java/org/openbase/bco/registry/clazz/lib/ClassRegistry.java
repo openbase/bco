@@ -25,6 +25,7 @@ package org.openbase.bco.registry.clazz.lib;
 import org.openbase.bco.registry.lib.provider.clazz.AgentClassCollectionProvider;
 import org.openbase.bco.registry.lib.provider.clazz.AppClassCollectionProvider;
 import org.openbase.bco.registry.lib.provider.clazz.DeviceClassCollectionProvider;
+import org.openbase.bco.registry.lib.provider.clazz.GatewayClassCollectionProvider;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
@@ -34,10 +35,11 @@ import org.openbase.type.domotic.registry.ClassRegistryDataType.ClassRegistryDat
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 
 import java.util.concurrent.Future;
 
-public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCollectionProvider, DeviceClassCollectionProvider, DataProvider<ClassRegistryData>, Shutdownable {
+public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCollectionProvider, DeviceClassCollectionProvider, GatewayClassCollectionProvider, DataProvider<ClassRegistryData>, Shutdownable {
 
     // ===================================== DeviceClass Methods =============================================================
 
@@ -284,5 +286,87 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      */
     @RPCMethod
     Boolean isAppClassRegistryConsistent();
+
+    // ===================================== GatewayClass Methods =============================================================
+
+    /**
+     * Method registers the given gateway class.
+     *
+     * @param gatewayClass the gateway class to be registered.
+     *
+     * @return the registered gateway class.
+     */
+    @RPCMethod
+    Future<GatewayClass> registerGatewayClass(GatewayClass gatewayClass);
+
+    /**
+     * Method registers an gateway class encoded in a transaction value.
+     *
+     * @param transactionValue the gateway class to be registered encoded in a transaction value
+     *
+     * @return a transaction value containing the registered gateway class and an id for this transaction
+     */
+    @RPCMethod
+    Future<TransactionValue> registerGatewayClassVerified(final TransactionValue transactionValue);
+
+    /**
+     * Method updates the given gateway class.
+     *
+     * @param gatewayClass the updated gateway class.
+     *
+     * @return the updated gateway class.
+     */
+    @RPCMethod
+    Future<GatewayClass> updateGatewayClass(GatewayClass gatewayClass);
+
+    /**
+     * Method updates an gateway class encoded in a transaction value.
+     *
+     * @param transactionValue the gateway class to be updated encoded in a transaction value
+     *
+     * @return a transaction value containing the updated gateway class and an id for this transaction
+     */
+    @RPCMethod
+    Future<TransactionValue> updateGatewayClassVerified(final TransactionValue transactionValue);
+
+    /**
+     * Method removes the given gateway class.
+     *
+     * @param gatewayClass the gateway class to be removed.
+     *
+     * @return the removed gateway class.
+     */
+    @RPCMethod
+    Future<GatewayClass> removeGatewayClass(GatewayClass gatewayClass);
+
+    /**
+     * Method removes an gateway class encoded in a transaction value.
+     *
+     * @param transactionValue the gateway class to be removed encoded in a transaction value
+     *
+     * @return a transaction value containing the removed gateway class and an id for this transaction
+     */
+    @RPCMethod
+    Future<TransactionValue> removeGatewayClassVerified(final TransactionValue transactionValue);
+
+    /**
+     * Method returns true if the underlying registry is marked as read only.
+     * <p>
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
+     * @return if the gateway class registry is read only
+     */
+    @RPCMethod
+    Boolean isGatewayClassRegistryReadOnly();
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     * <p>
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
+     * @return if the gateway class registry is consistent
+     */
+    @RPCMethod
+    Boolean isGatewayClassRegistryConsistent();
 
 }

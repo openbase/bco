@@ -2,12 +2,10 @@ package org.openbase.bco.registry.clazz.core;
 
 import org.openbase.bco.registry.clazz.core.consistency.DeviceClassRequiredFieldConsistencyHandler;
 import org.openbase.bco.registry.clazz.core.consistency.DeviceClassUnitTemplateConfigConsistencyHandler;
+import org.openbase.bco.registry.clazz.core.consistency.GatewayClassRequiredFieldConsistencyHandler;
 import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.clazz.lib.ClassRegistry;
-import org.openbase.bco.registry.clazz.lib.jp.JPAgentClassDatabaseDirectory;
-import org.openbase.bco.registry.clazz.lib.jp.JPAppClassDatabaseDirectory;
-import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
-import org.openbase.bco.registry.clazz.lib.jp.JPDeviceClassDatabaseDirectory;
+import org.openbase.bco.registry.clazz.lib.jp.*;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
@@ -22,6 +20,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
@@ -66,11 +65,13 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GatewayClass.getDefaultInstance()));
     }
 
     private ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, ClassRegistryData.Builder> agentClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, ClassRegistryData.Builder> appClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, ClassRegistryData.Builder> deviceClassRegistry;
+    private ProtoBufFileSynchronizedRegistry<String, GatewayClass, GatewayClass.Builder, ClassRegistryData.Builder> gatewayClassRegistry;
 
     public ClassRegistryController() throws InstantiationException, InterruptedException {
         super(JPClassRegistryScope.class, ClassRegistryData.newBuilder(), SPARSELY_REGISTRY_DATA_NOTIFIED);
@@ -98,6 +99,14 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
                     JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(),
                     protoBufJSonFileProvider,
                     false);
+
+            gatewayClassRegistry = new ProtoBufFileSynchronizedRegistry<>(GatewayClass.class,
+                    getBuilderSetup(),
+                    getDataFieldDescriptor(ClassRegistryData.GATEWAY_CLASS_FIELD_NUMBER),
+                    new UUIDGenerator<>(),
+                    JPService.getProperty(JPGatewayClassDatabaseDirectory.class).getValue(),
+                    protoBufJSonFileProvider,
+                    false);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -107,6 +116,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         deviceClassRegistry.registerConsistencyHandler(new DeviceClassUnitTemplateConfigConsistencyHandler());
         deviceClassRegistry.registerConsistencyHandler(new DeviceClassRequiredFieldConsistencyHandler());
+        gatewayClassRegistry.registerConsistencyHandler(new GatewayClassRequiredFieldConsistencyHandler());
         deviceClassRegistry.registerConsistencyHandler(new KNXDeviceClassConsistencyHandler());
     }
 
@@ -115,6 +125,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         agentClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false));
         appClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false));
         deviceClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false));
+        gatewayClassRegistry.registerDependency(CachedTemplateRegistryRemote.getRegistry().getUnitTemplateRemoteRegistry(false));
     }
 
     @Override
@@ -126,6 +137,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         registerRegistry(agentClassRegistry);
         registerRegistry(appClassRegistry);
         registerRegistry(deviceClassRegistry);
+        registerRegistry(gatewayClassRegistry);
     }
 
     /**
@@ -143,6 +155,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
 
         setDataField(ClassRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(ClassRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
+
+        setDataField(ClassRegistryData.GATEWAY_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, gatewayClassRegistry.isReadOnly());
+        setDataField(ClassRegistryData.GATEWAY_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, gatewayClassRegistry.isConsistent());
     }
 
     @Override
@@ -189,6 +204,20 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     public ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, ClassRegistryData.Builder> getDeviceClassRegistry() {
         return deviceClassRegistry;
     }
+
+
+
+    /**
+     * Get the internally used gateway class registry;
+     *
+     * @return the internally used gateway class registry;
+     */
+    public ProtoBufFileSynchronizedRegistry<String, GatewayClass, GatewayClass.Builder, ClassRegistryData.Builder> getGatewayClassRegistry() {
+        return gatewayClassRegistry;
+    }
+
+
+    // --------------------------------------------- device ------------------------------------------------------------
 
     /**
      * {@inheritDoc}
@@ -311,6 +340,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         return deviceClassRegistry.isConsistent();
     }
 
+
+    // --------------------------------------------- agent -------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      *
@@ -431,6 +463,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     public Boolean isAgentClassRegistryConsistent() {
         return agentClassRegistry.isConsistent();
     }
+
+
+    // --------------------------------------------- app ---------------------------------------------------------------
 
     /**
      * {@inheritDoc}
@@ -555,5 +590,128 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     @Override
     public Boolean isAppClassRegistryConsistent() {
         return appClassRegistry.isConsistent();
+    }
+
+    // --------------------------------------------- gateway -----------------------------------------------------------
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public GatewayClass getGatewayClassById(String gatewayClassId) throws CouldNotPerformException {
+        return gatewayClassRegistry.get(gatewayClassId).getMessage();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<GatewayClass> registerGatewayClass(GatewayClass gatewayClass) {
+        return GlobalCachedExecutorService.submit(() -> gatewayClassRegistry.register(gatewayClass));
+    }
+
+    @Override
+    public Future<TransactionValue> registerGatewayClassVerified(TransactionValue transactionValue) {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, GatewayClass.class, this::registerGatewayClass);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean containsGatewayClassById(String gatewayClassId) {
+        return gatewayClassRegistry.contains(gatewayClassId);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean containsGatewayClass(GatewayClass gatewayClass) {
+        return gatewayClassRegistry.contains(gatewayClass);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<GatewayClass> updateGatewayClass(GatewayClass gatewayClass) {
+        return GlobalCachedExecutorService.submit(() -> gatewayClassRegistry.update(gatewayClass));
+    }
+
+    @Override
+    public Future<TransactionValue> updateGatewayClassVerified(TransactionValue transactionValue) {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, GatewayClass.class, this::updateGatewayClass);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<GatewayClass> removeGatewayClass(GatewayClass gatewayClass) {
+        return GlobalCachedExecutorService.submit(() -> gatewayClassRegistry.remove(gatewayClass));
+    }
+
+    @Override
+    public Future<TransactionValue> removeGatewayClassVerified(TransactionValue transactionValue) {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, GatewayClass.class, this::removeGatewayClass);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<GatewayClass> getGatewayClasses() throws CouldNotPerformException {
+        return gatewayClassRegistry.getMessages();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean isGatewayClassRegistryReadOnly() {
+        return gatewayClassRegistry.isReadOnly();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean isGatewayClassRegistryConsistent() {
+        return gatewayClassRegistry.isConsistent();
     }
 }

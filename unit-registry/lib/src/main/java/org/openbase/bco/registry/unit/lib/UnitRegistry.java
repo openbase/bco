@@ -823,6 +823,18 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     Boolean isObjectUnitRegistryReadOnly();
 
     /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistent data entries or
+     * if the underling database is loaded out of a version tag.
+     * <p>
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
+     * @return true if read only.
+     */
+    @RPCMethod
+    Boolean isGatewayUnitRegistryReadOnly();
+
+    /**
      * Method returns true if the underling registry is marked as consistent.
      * <p>
      * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
@@ -951,6 +963,16 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     @RPCMethod
     Boolean isObjectUnitRegistryConsistent();
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     * <p>
+     * Note: Method returns true in case the registry is not available. Maybe you need to check this in advance.
+     *
+     * @return true if consistent
+     */
+    @RPCMethod
+    Boolean isGatewayUnitRegistryConsistent();
 
     default Future<List<UnitConfig>> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) {
         return getUnitConfigsByCoordinateAndRadiusAndUnitType(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);
@@ -1983,6 +2005,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                 case USER:
                 case AUTHORIZATION_GROUP:
                 case DEVICE:
+                case GATEWAY:
                 default:
                     // units do not have any impact on other units.
                     break;

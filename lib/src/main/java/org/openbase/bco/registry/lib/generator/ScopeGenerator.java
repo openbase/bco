@@ -28,7 +28,7 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
-import rsb.Scope;
+import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
@@ -375,6 +375,40 @@ public class ScopeGenerator {
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent("group"));
         // add user name
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, authorizationGroupUniConfig.getLabel())));
+
+        return scope.build();
+    }
+
+    public static Scope generateGatewayScope(UnitConfig unitConfig, UnitConfig locationConfig) throws NotAvailableException {
+
+        if (unitConfig == null) {
+            throw new NotAvailableException("unitConfig");
+        }
+
+        if (!unitConfig.hasLabel()) {
+            throw new NotAvailableException("unit label");
+        }
+
+        if (!unitConfig.hasPlacementConfig()) {
+            throw new NotAvailableException("placement config");
+        }
+
+        if (locationConfig == null) {
+            throw new NotAvailableException("location");
+        }
+
+        if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
+            throw new NotAvailableException("location scope");
+        }
+
+        // add location scope
+        ScopeType.Scope.Builder scope = locationConfig.getScope().toBuilder();
+
+        // add type 'unit'
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent("gateway"));
+
+        // add device scope
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
         return scope.build();
     }

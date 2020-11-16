@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
+package org.openbase.bco.registry.unit.core.consistency;
 
 /*
  * #%L
@@ -35,11 +35,11 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceOwnerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class UnitOwnerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry;
 
-    public DeviceOwnerConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
+    public UnitOwnerConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
         this.unitRegistry = unitRegistry;
     }
 

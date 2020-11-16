@@ -38,6 +38,7 @@ import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
@@ -60,11 +61,13 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GatewayClass.getDefaultInstance()));
     }
 
     private final SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> agentClassRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, AppClass, AppClass.Builder> appClassRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, GatewayClass, GatewayClass.Builder> gatewayClassRemoteRegistry;
 
     public ClassRegistryRemote() throws InstantiationException {
         super(JPClassRegistryScope.class, ClassRegistryData.class);
@@ -73,6 +76,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
             agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ClassRegistryData.AGENT_CLASS_FIELD_NUMBER);
             appClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ClassRegistryData.APP_CLASS_FIELD_NUMBER);
             deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ClassRegistryData.DEVICE_CLASS_FIELD_NUMBER);
+            gatewayClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, ClassRegistryData.GATEWAY_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -97,6 +101,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
         registerRemoteRegistry(agentClassRemoteRegistry);
         registerRemoteRegistry(appClassRemoteRegistry);
         registerRemoteRegistry(deviceClassRemoteRegistry);
+        registerRemoteRegistry(gatewayClassRemoteRegistry);
     }
 
     /**
@@ -148,6 +153,22 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
     }
 
     /**
+     * Get the internally used gateway class remote registry.
+     *
+     * @return the internally used gateway class remote registry
+     */
+    public SynchronizedRemoteRegistry<String, GatewayClass, GatewayClass.Builder> getGatewayClassRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (CouldNotPerformException ex) {
+                throw new NotAvailableException("GatewayClassRemoteRegistry", ex);
+            }
+        }
+        return gatewayClassRemoteRegistry;
+    }
+
+    /**
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
@@ -156,8 +177,17 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
     public Boolean isConsistent() {
         return isDeviceClassRegistryConsistent()
                 && isAgentClassRegistryConsistent()
-                && isAppClassRegistryConsistent();
+                && isAppClassRegistryConsistent()
+                && isGatewayClassRegistryConsistent();
     }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        CachedTemplateRegistryRemote.getRegistry().waitForData();
+        super.waitForData();
+    }
+
+    // --------------------------------------------- device ------------------------------------------------------------
 
     /**
      * {@inheritDoc}
@@ -307,6 +337,8 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
         }
     }
 
+    // --------------------------------------------- agent -------------------------------------------------------------
+
     /**
      * {@inheritDoc}
      *
@@ -449,6 +481,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
             return true;
         }
     }
+
+
+    // --------------------------------------------- app ---------------------------------------------------------------
 
     /**
      * {@inheritDoc}
@@ -593,9 +628,153 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
         }
     }
 
+    // --------------------------------------------- gateway ------------------------------------------------------------
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
+     */
     @Override
-    public void waitForData() throws CouldNotPerformException, InterruptedException {
-        CachedTemplateRegistryRemote.getRegistry().waitForData();
-        super.waitForData();
+    public GatewayClass getGatewayClassById(String gatewayClassId) throws CouldNotPerformException, NotAvailableException {
+        validateData();
+        return gatewayClassRemoteRegistry.getMessage(gatewayClassId);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<GatewayClass> registerGatewayClass(final GatewayClass gatewayClass) {
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(gatewayClass, transactionValue -> registerGatewayClassVerified(transactionValue));
+    }
+
+    @Override
+    public Future<TransactionValue> registerGatewayClassVerified(TransactionValue transactionValue) {
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean containsGatewayClass(final GatewayClass gatewayClass) {
+        try {
+            validateData();
+            return gatewayClassRemoteRegistry.contains(gatewayClass);
+        } catch (InvalidStateException e) {
+            return true;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean containsGatewayClassById(String gatewayClassId) {
+        try {
+            validateData();
+            return gatewayClassRemoteRegistry.contains(gatewayClassId);
+        } catch (InvalidStateException e) {
+            return true;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<GatewayClass> updateGatewayClass(final GatewayClass gatewayClass) {
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(gatewayClass, transactionValue -> updateGatewayClassVerified(transactionValue));
+    }
+
+    @Override
+    public Future<TransactionValue> updateGatewayClassVerified(TransactionValue transactionValue) {
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param gatewayClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<GatewayClass> removeGatewayClass(final GatewayClass gatewayClass) {
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(gatewayClass, transactionValue -> removeGatewayClassVerified(transactionValue));
+    }
+
+    @Override
+    public Future<TransactionValue> removeGatewayClassVerified(TransactionValue transactionValue) {
+        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
+     */
+    @Override
+    public List<GatewayClass> getGatewayClasses() throws CouldNotPerformException, NotAvailableException {
+        validateData();
+        return gatewayClassRemoteRegistry.getMessages();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean isGatewayClassRegistryReadOnly() {
+        if (JPService.getValue(JPReadOnly.class, false) || !isConnected()) {
+            return true;
+        }
+        try {
+            validateData();
+            return getData().getGatewayClassRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean isGatewayClassRegistryConsistent() {
+        try {
+            validateData();
+            return getData().getGatewayClassRegistryConsistent();
+        } catch (InvalidStateException e) {
+            return true;
+        }
     }
 }

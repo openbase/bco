@@ -62,6 +62,7 @@ public class UnitConfigProcessor {
         switch (unitType) {
             case APP:
             case DEVICE:
+            case GATEWAY:
                 return true;
             default:
                 return false;
@@ -97,6 +98,8 @@ public class UnitConfigProcessor {
             case SCENE:
             case UNIT_GROUP:
             case USER:
+            case OBJECT:
+            case GATEWAY:
                 return true;
             default:
                 return false;

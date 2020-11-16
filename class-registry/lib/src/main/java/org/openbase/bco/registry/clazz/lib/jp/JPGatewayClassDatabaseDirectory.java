@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.clazz.lib.provider;
+package org.openbase.bco.registry.clazz.lib.jp;
 
 /*
  * #%L
@@ -22,21 +22,15 @@ package org.openbase.bco.registry.clazz.lib.provider;
  * #L%
  */
 
-import org.openbase.bco.registry.clazz.lib.ClassRegistry;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.bco.registry.lib.jp.AbstractJPGitBCODatabaseDirectory;
 
 /**
- * Interface provides a globally managed class registry instance.
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ClassRegistryProvider {
+public class JPGatewayClassDatabaseDirectory extends AbstractJPGitBCODatabaseDirectory {
 
-    /**
-     * Returns the globally managed class registry instance.
-     * @return
-     * @throws NotAvailableException 
-     */
-    ClassRegistry getClassRegistry() throws NotAvailableException;
-
+    public JPGatewayClassDatabaseDirectory() {
+        super(JPGatewayClassDatabaseDirectory.class);
+    }
 }

@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
+package org.openbase.bco.registry.unit.core.consistency;
 
 /*
  * #%L
@@ -42,11 +42,11 @@ import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class UnitLocationIdAutoSetupConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
 
-    public DeviceLocationIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
+    public UnitLocationIdAutoSetupConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
         this.locationRegistry = locationRegistry;
     }
 
@@ -56,10 +56,10 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
 
         // check if placementconfig is available
         if (!unitConfig.hasPlacementConfig()) {
-            throw new NotAvailableException("device.placementconfig");
+            throw new NotAvailableException("unit.placementconfig");
         }
 
-        // setup base location of device has no location configured.
+        // setup base location of unit has no location configured.
         if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
             unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(LocationUtils.getRootLocation(locationRegistry.getMessages()).getId()));
             throw new EntryModification(entry.setMessage(unitConfig, this), this);
@@ -69,23 +69,14 @@ public class DeviceLocationIdConsistencyHandler extends AbstractProtoBufRegistry
         if (!locationRegistry.contains(unitConfig.getPlacementConfig().getLocationId())) {
             try {
                 if (!JPService.getProperty(JPRecoverDB.class).getValue()) {
-                    throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Device[" + unitConfig.getId() + "] is unknown!");
+                    throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + unitConfig.getId() + "] is unknown!");
                 }
             } catch (JPServiceException ex) {
-                throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Device[" + unitConfig.getId() + "] is unknown and can not be recovered!", ex);
+                throw new InvalidStateException("The configured Location[" + unitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + unitConfig.getId() + "] is unknown and can not be recovered!", ex);
             }
-            // recover device location with root location.
+            // recover unit location with root location.
             unitConfig.setPlacementConfig(PlacementConfig.newBuilder(unitConfig.getPlacementConfig()).setLocationId(LocationUtils.getRootLocation(locationRegistry.getMessages()).getId()));
             throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
-    }
-
-    private String getRootLocationId() throws CouldNotPerformException {
-        for (UnitConfig location : locationRegistry.getMessages()) {
-            if (location.getLocationConfig().getRoot()) {
-                return location.getId();
-            }
-        }
-        throw new NotAvailableException("rootLocation");
     }
 }

@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
+package org.openbase.bco.registry.unit.core.consistency.gatewayconfig;
 
 /*
  * #%L
@@ -21,29 +21,30 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import org.openbase.bco.registry.lib.generator.ScopeGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.bco.registry.lib.generator.ScopeGenerator;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.communication.ScopeType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class GatewayScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
 
-    public DeviceScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
+    public GatewayScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
         this.locationRegistry = locationRegistry;
     }
 
@@ -59,7 +60,7 @@ public class DeviceScopeConsistencyHandler extends AbstractProtoBufRegistryConsi
         }
 
         UnitConfig unitLocationConfig = locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage();
-        ScopeType.Scope newScope = ScopeGenerator.generateDeviceScope(unitConfig, unitLocationConfig);
+        ScopeType.Scope newScope = ScopeGenerator.generateGatewayScope(unitConfig, unitLocationConfig);
 
         // verify and update scope
         if (!ScopeProcessor.generateStringRep(unitConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {

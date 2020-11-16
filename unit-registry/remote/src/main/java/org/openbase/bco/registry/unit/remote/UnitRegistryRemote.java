@@ -86,6 +86,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> objectUnitConfigRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> gatewayUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> baseUnitConfigRemoteRegistry;
 
@@ -110,6 +111,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
             this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
             this.objectUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, UnitRegistryData.OBJECT_UNIT_CONFIG_FIELD_NUMBER);
+            this.gatewayUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this, UnitRegistryData.GATEWAY_UNIT_CONFIG_FIELD_NUMBER);
             this.unitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this,
                     UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
@@ -121,7 +123,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER,
-                    UnitRegistryData.OBJECT_UNIT_CONFIG_FIELD_NUMBER
+                    UnitRegistryData.OBJECT_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.GATEWAY_UNIT_CONFIG_FIELD_NUMBER
             );
             this.baseUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getInternalPrioritizedDataObservable(), this,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
@@ -132,7 +135,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
-                    UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
+                    UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER,
+                    UnitRegistryData.GATEWAY_UNIT_CONFIG_FIELD_NUMBER
             );
 
             aliasMapUpdateObserver = (source, data) -> {
@@ -193,6 +197,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
         registerRemoteRegistry(baseUnitConfigRemoteRegistry);
         registerRemoteRegistry(objectUnitConfigRemoteRegistry);
+        registerRemoteRegistry(gatewayUnitConfigRemoteRegistry);
     }
 
     public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDalUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
@@ -303,6 +308,17 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             }
         }
         return appUnitConfigRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getGatewayUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
+        if (validateConnection) {
+            try {
+                validateData();
+            } catch (InvalidStateException ex) {
+                throw new NotAvailableException("GatewayUnitConfigRemoteRegistry", ex);
+            }
+        }
+        return gatewayUnitConfigRemoteRegistry;
     }
 
     public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUnitConfigRemoteRegistry(final boolean validateConnection) throws NotAvailableException {
@@ -728,6 +744,19 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
+    public Boolean isGatewayUnitRegistryReadOnly() {
+        if (JPService.getValue(JPReadOnly.class, false) || !isConnected()) {
+            return true;
+        }
+        try {
+            validateData();
+            return getData().getGatewayUnitConfigRegistryReadOnly();
+        } catch (InvalidStateException e) {
+            return true;
+        }
+    }
+
+    @Override
     public Boolean isUnitGroupConfigRegistryConsistent() {
         try {
             validateData();
@@ -848,6 +877,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         }
     }
 
+    @Override
+    public Boolean isGatewayUnitRegistryConsistent() {
+        try {
+            validateData();
+            return getData().getGatewayUnitConfigRegistryConsistent();
+        } catch (InvalidStateException e) {
+            return true;
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -915,6 +954,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                 isUserUnitRegistryConsistent() &&
                 isUnitConfigRegistryConsistent() &&
                 isUnitGroupConfigRegistryConsistent() &&
-                isObjectUnitRegistryConsistent();
+                isObjectUnitRegistryConsistent() &&
+                isGatewayUnitRegistryConsistent();
     }
 }
