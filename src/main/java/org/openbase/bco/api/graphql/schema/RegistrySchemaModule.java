@@ -118,6 +118,18 @@ public class RegistrySchemaModule extends SchemaModule {
         return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
     }
 
+    /**
+     * Check if an authentication token retrieved by the login method is still valid.
+     *
+     * @param token the token to be checked
+     * @return if the token is valid and can be used to authenticate further requests
+     */
+    @Query("verifyToken")
+    Boolean verifyToken(@Arg("token") String token) {
+        //TODO: blocked by https://github.com/openbase/bco.registry/issues/108
+        return true;
+    }
+
 //    @Query("unitConfig") todo QueryType required in order to support multible arguments
 //    UnitConfig getUnitConfigByAlias(@Arg("alias") String alias) throws CouldNotPerformException, InterruptedException {
 //        return Registries.getUnitRegistry(true).getUnitConfigByAlias(alias);
