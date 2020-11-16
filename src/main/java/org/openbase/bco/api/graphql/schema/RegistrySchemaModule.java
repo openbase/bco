@@ -80,7 +80,7 @@ public class RegistrySchemaModule extends SchemaModule {
     UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
         builder.mergeFrom(unitConfig);
-        return Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId());
+        return Registries.getUnitRegistry(true).updateUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
     }
 
     @Mutation("removeUnitConfig")
