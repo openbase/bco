@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.core.consistency.sceneconfig;
  */
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Message;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -159,10 +160,18 @@ public class SceneServiceStateConsistencyHandler extends AbstractProtoBufRegistr
             }
 
             try {
-                protoBufJSonProcessor.deserialize(builder.getServiceState(), builder.getServiceStateClassName());
+                // try to deserialize
+                final Message serviceState = protoBufJSonProcessor.deserialize(builder.getServiceState(), builder.getServiceStateClassName());
+
+                // reformat if necessary
+                final String serviceStateString = protoBufJSonProcessor.serialize(serviceState);
+                if (!serviceStateString.equals(builder.getServiceState())) {
+                    builder.setServiceState(serviceStateString);
+                    modification = true;
+                }
+
             } catch (CouldNotPerformException ex) {
-                logger.debug("Remove serviceStateDescription because the attribute {} could not be de-serialized into attributeType {}",
-                        builder.getServiceStateClassName());
+                logger.debug("Remove serviceStateDescription because the attribute {} could not be de-serialized into attributeType {}", builder.getServiceStateClassName());
                 modification = true;
                 continue;
             }
