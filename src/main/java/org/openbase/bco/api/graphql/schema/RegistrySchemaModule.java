@@ -56,7 +56,6 @@ public class RegistrySchemaModule extends SchemaModule {
         try {
             return Registries.getUnitRegistry(true).getUnitConfigById(id);
         }catch (NotAvailableException ex) {
-            System.out.println("Createa argument error!");
             throw new ArgumentError(ex);
         }
     }
