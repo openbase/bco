@@ -31,9 +31,12 @@ import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ListFilter;
+import org.openbase.type.configuration.EntryType;
+import org.openbase.type.configuration.MetaConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.geometry.PoseType;
@@ -128,6 +131,20 @@ public class RegistrySchemaModule extends SchemaModule {
     Boolean verifyToken(@Arg("token") String token) {
         //TODO: blocked by https://github.com/openbase/bco.registry/issues/108
         return true;
+    }
+
+    @Mutation("updateMetaConfig")
+    MetaConfigType.MetaConfig updateMetaConfig(@Arg("unitId") String unitId, @Arg("entry") EntryType.Entry entry) throws NotAvailableException, InterruptedException, ExecutionException, TimeoutException {
+        final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry().getUnitConfigById(unitId).toBuilder();
+        final MetaConfigType.MetaConfig.Builder metaConfigBuilder = unitConfigBuilder.getMetaConfigBuilder();
+        for (int i = 0; i < metaConfigBuilder.getEntryCount(); i++) {
+            if (metaConfigBuilder.getEntry(i).getKey().equals(entry.getKey())) {
+                metaConfigBuilder.removeEntry(i);
+                break;
+            }
+        }
+        metaConfigBuilder.addEntry(entry);
+        return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getMetaConfig();
     }
 
 //    @Query("unitConfig") todo QueryType required in order to support multible arguments
