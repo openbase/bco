@@ -278,6 +278,7 @@ public class FulfillmentHandler {
                 switch (unitConfig.getUnitType()) {
                     case LOCATION:
                     case DEVICE:
+                    case GATEWAY:
                     case USER:
                     case AUTHORIZATION_GROUP:
                     case OBJECT:
