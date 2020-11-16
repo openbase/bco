@@ -28,8 +28,11 @@ import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
+import org.checkerframework.checker.units.qual.A;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
@@ -39,6 +42,8 @@ import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ListFilter;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.configuration.MetaConfigType;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType;
+import org.openbase.type.domotic.authentication.AuthenticationTokenType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.geometry.PoseType;
@@ -167,6 +172,47 @@ public class RegistrySchemaModule extends SchemaModule {
     Boolean verifyToken(@Arg("token") String token) {
         //TODO: blocked by https://github.com/openbase/bco.registry/issues/108
         return true;
+    }
+
+    @Query("login")
+    String login(@Arg("username") String username, @Arg("password") String password) throws ArgumentError, InterruptedException, ExecutionException, TimeoutException {
+        try {
+            final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
+            final SessionManager sessionManager = new SessionManager();
+
+            try {
+                sessionManager.loginUser(userId, password, false);
+            } catch (CouldNotPerformException ex) {
+                throw new ArgumentError(ex);
+            }
+
+            AuthenticatedValueType.AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
+            return new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
+                    String.class,
+                    authenticatedValue.getTicketAuthenticatorWrapper(),
+                    sessionManager).get(5, TimeUnit.SECONDS);
+        } catch (CouldNotPerformException ex) {
+            throw new ArgumentError(ex);
+        }
+    }
+
+    @Query("changePassword")
+    Boolean changePassword(@Arg("username") String username, @Arg("oldPassword") String oldPassword, @Arg("newPassword") String newPassword) throws ArgumentError, CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException {
+        try {
+            final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
+
+            final SessionManager sessionManager = new SessionManager();
+            try {
+                sessionManager.loginUser(userId, oldPassword, false);
+            } catch (CouldNotPerformException ex) {
+                throw new ArgumentError(ex);
+            }
+            sessionManager.changePassword(userId, oldPassword, newPassword).get(5, TimeUnit.SECONDS);
+
+            return true;
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        }
     }
 
     @Mutation("updateMetaConfig")

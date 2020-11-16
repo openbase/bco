@@ -40,6 +40,7 @@ import graphql.servlet.context.GraphQLContextBuilder;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
+import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
@@ -91,7 +92,7 @@ public class BcoGraphQlApiSpringBootApplication {
         final GraphQLObjectType.Builder mutationTypeBuilder = GraphQLObjectType.newObject(schema.getMutationType());
         //TODO: can I define that these arguments can not be null as in an SDL
         //TODO: would the preferred way be to define these in an sdl?
-        queryTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("login").type(Scalars.GraphQLString)
+        /*queryTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("login").type(Scalars.GraphQLString)
                 .argument(GraphQLArgument.newArgument().name("username").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
                 .argument(GraphQLArgument.newArgument().name("password").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
                 .build());
@@ -109,15 +110,23 @@ public class BcoGraphQlApiSpringBootApplication {
                         final String username = dataFetchingEnvironment.getArgument("username");
                         final String password = dataFetchingEnvironment.getArgument("password");
 
-                        final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
-                        final SessionManager sessionManager = new SessionManager();
-                        sessionManager.loginUser(userId, password, false);
-                        AuthenticatedValueType.AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
-                        String tokenValue = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
-                                String.class,
-                                authenticatedValue.getTicketAuthenticatorWrapper(),
-                                sessionManager).get(5, TimeUnit.SECONDS);
-                        return tokenValue;
+                        try {
+                            final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
+                            final SessionManager sessionManager = new SessionManager();
+                            sessionManager.loginUser(userId, password, false);
+                            AuthenticatedValueType.AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
+                            String tokenValue = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
+                                    String.class,
+                                    authenticatedValue.getTicketAuthenticatorWrapper(),
+                                    sessionManager).get(5, TimeUnit.SECONDS);
+                            return tokenValue;
+                        } catch (NotAvailableException ex) {
+
+                            throw new ArgumentError(ex);
+                        } catch (Throwable ex) {
+                            System.out.println("Which ex is thrown here? " + ex.getClass().getSimpleName() + ", " + ex.getMessage());
+                            throw new Exception(ex);
+                        }
                     }
                 })
                 .dataFetcher(FieldCoordinates.coordinates(schema.getMutationType().getName(), "changePassword"), new DataFetcher<Boolean>() {
@@ -142,7 +151,7 @@ public class BcoGraphQlApiSpringBootApplication {
                 .query(queryTypeBuilder.build())
                 .mutation(mutationTypeBuilder.build())
                 .codeRegistry(codeRegistry)
-                .build();
+                .build();*/
         return new DefaultGraphQLSchemaProvider(schema);
     }
 
