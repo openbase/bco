@@ -159,8 +159,8 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
             case LOCATION:
                 sitemap.addDefaultElement(getItem(ServiceType.POWER_STATE_SERVICE), getLabel());
                 break;
+            case GATEWAY:
             case DEVICE:
-                break;
             case AUTHORIZATION_GROUP:
                 break;
             case UNKNOWN:
