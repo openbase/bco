@@ -29,6 +29,7 @@ import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
+import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -51,8 +52,13 @@ import java.util.concurrent.TimeoutException;
 public class RegistrySchemaModule extends SchemaModule {
 
     @Query("unitConfig")
-    UnitConfig getUnitConfigById(@Arg("id") String id) throws CouldNotPerformException, InterruptedException {
-        return Registries.getUnitRegistry(true).getUnitConfigById(id);
+    UnitConfig getUnitConfigById(@Arg("id") String id, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, ArgumentError {
+        try {
+            return Registries.getUnitRegistry(true).getUnitConfigById(id);
+        }catch (NotAvailableException ex) {
+            System.out.println("Createa argument error!");
+            throw new ArgumentError(ex);
+        }
     }
 
     @Query("unitConfigs")
