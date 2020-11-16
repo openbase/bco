@@ -24,14 +24,12 @@ package org.openbase.bco.device.openhab.communication;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
 import org.eclipse.smarthome.core.items.dto.ItemDTO;
 import org.eclipse.smarthome.core.thing.dto.ThingDTO;
 import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.core.types.Command;
-import org.eclipse.smarthome.io.rest.core.item.EnrichedGroupItemDTO;
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -55,6 +53,11 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     public static final String LINKS_TARGET = "links";
     public static final String THINGS_TARGET = "things";
     public static final String INBOX_TARGET = "inbox";
+    public static final String DISCOVERY_TARGET = "discovery";
+    public static final String EXTENSIONS_TARGET = "extensions";
+    public static final String INSTALL_TARGET = "install";
+    public static final String UNINSTALL_TARGET = "uninstall";
+    public static final String SCAN_TARGET = "scan";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABRestCommunicator.class);
 
@@ -195,12 +198,28 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     // DISCOVERY
     // ==========================================================================================================================================
 
+    public void startDiscovery(final String bindingId) throws CouldNotPerformException {
+        post(DISCOVERY_TARGET + SEPARATOR + "bindings" + SEPARATOR + bindingId + SCAN_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+    }
+
     public void approve(final String thingUID, final String label) throws CouldNotPerformException {
         post(INBOX_TARGET + SEPARATOR + thingUID + SEPARATOR + APPROVE_TARGET, label, MediaType.TEXT_PLAIN_TYPE);
     }
 
     public List<DiscoveryResultDTO> getDiscoveryResults() throws CouldNotPerformException {
         return jsonElementToTypedList(jsonParser.parse(get(INBOX_TARGET)), DiscoveryResultDTO.class);
+    }
+
+    // ==========================================================================================================================================
+    // Extensions
+    // ==========================================================================================================================================
+
+    public void addBinding(final String bindingId) throws CouldNotPerformException {
+        post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    public void remove(final String bindingId) throws CouldNotPerformException {
+        post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + UNINSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
     // ==========================================================================================================================================
