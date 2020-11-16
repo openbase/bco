@@ -22,6 +22,7 @@ package org.openbase.bco.api.graphql.discovery;
  * #L%
  */
 
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -50,14 +51,26 @@ public class ServiceAdvertiser implements Shutdownable {
     private ServiceAdvertiser() throws InstantiationException {
         this.domainNameServices = new ArrayList<>();
 
-        for (InetAddress localHostLANAddress : getLocalHostLANAddress()) {
-            System.err.println("interface: "+localHostLANAddress.getHostAddress());
-            try {
-                domainNameServices.add(JmDNS.create(localHostLANAddress));
-            } catch (IOException ex) {
-                ExceptionPrinter.printHistory("Could not initiate domoin name service for interface: " + localHostLANAddress.getAddress(), ex, LOGGER);
-            }
+        // skip advertising in debug mode
+        if (JPService.debugMode()) {
+            return;
         }
+
+
+        try {
+            domainNameServices.add(JmDNS.create());
+        } catch (IOException ex) {
+            ExceptionPrinter.printHistory("Could not initiate domain name service for default interface!", ex, LOGGER);
+        }
+
+//        for (InetAddress localHostLANAddress : getLocalHostLANAddress()) {
+//            System.err.println("interface: "+localHostLANAddress.getHostAddress());
+//            try {
+//                domainNameServices.add(JmDNS.create(localHostLANAddress));
+//            } catch (IOException ex) {
+//                ExceptionPrinter.printHistory("Could not initiate domain name service for interface: " + localHostLANAddress.getAddress(), ex, LOGGER);
+//            }
+//        }
     }
 
     /**
@@ -95,19 +108,19 @@ public class ServiceAdvertiser implements Shutdownable {
 
             // prefer site local addresses
             if (!siteLocal.isEmpty()) {
-                System.out.println("found site local: "+siteLocal.size());
+                System.out.println("found site local: " + siteLocal.size());
                 return siteLocal;
             }
 
             // prefer local if site local is not available
             if (!local.isEmpty()) {
-                System.out.println("found local: "+local.size());
+                System.out.println("found local: " + local.size());
                 return local;
             }
 
             // fallback with loopback device
             if (!loopback.isEmpty()) {
-                System.out.println("found loopback: "+loopback.size());
+                System.out.println("found loopback: " + loopback.size());
                 return loopback;
             }
         } catch (final SocketException ex) {
