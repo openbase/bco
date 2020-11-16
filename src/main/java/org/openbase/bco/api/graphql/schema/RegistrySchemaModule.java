@@ -32,6 +32,7 @@ import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Filter;
@@ -55,7 +56,7 @@ public class RegistrySchemaModule extends SchemaModule {
     UnitConfig getUnitConfigById(@Arg("id") String id, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, ArgumentError {
         try {
             return Registries.getUnitRegistry(true).getUnitConfigById(id);
-        }catch (NotAvailableException ex) {
+        } catch (NotAvailableException ex) {
             throw new ArgumentError(ex);
         }
     }
@@ -77,53 +78,83 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Mutation("updateUnitConfig")
-    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
-        builder.mergeFrom(unitConfig);
-        return Registries.getUnitRegistry(true).updateUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ArgumentError {
+        try {
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
+            builder.mergeFrom(unitConfig);
+            return Registries.getUnitRegistry(true).updateUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        } catch (ExecutionException ex) {
+            throw new ArgumentError(ExceptionProcessor.getInitialCause(ex));
+        }
     }
 
     @Mutation("removeUnitConfig")
-    UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
-        return Registries.getUnitRegistry(true).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+    UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+        try {
+            final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
+            return Registries.getUnitRegistry(true).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        }
     }
 
     @Mutation("registerUnitConfig")
-    UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        return Registries.getUnitRegistry(true).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+    UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ArgumentError {
+        try {
+            return Registries.getUnitRegistry(true).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+        } catch (ExecutionException ex) {
+            throw new ArgumentError(ExceptionProcessor.getInitialCause(ex));
+        }
     }
 
     @Mutation("updateLabel")
-    LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+    LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+        try {
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
 
-        final BCOGraphQLContext context = env.getContext();
-        final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
-        LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
+            final BCOGraphQLContext context = env.getContext();
+            final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
+            LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
 
-        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
+            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        }
     }
 
     @Mutation("updateLocation")
-    PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
-        builder.getPlacementConfigBuilder().setLocationId(locationId);
-        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
+    PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+        try {
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+            builder.getPlacementConfigBuilder().setLocationId(locationId);
+            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        }
     }
 
     @Mutation("updateFloorPlan")
-    ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException {
-        final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(true).getUnitConfigById(locationId).toBuilder();
-        unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
-        return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getShape();
+    ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException, ArgumentError {
+        try {
+            final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(true).getUnitConfigById(locationId).toBuilder();
+            unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
+            return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getShape();
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        }
     }
 
     @Mutation("updatePose")
-    PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
-        final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
-        builder.getPlacementConfigBuilder().clearPose().setPose(pose);
-        return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
+    PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+        try {
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+            builder.getPlacementConfigBuilder().clearPose().setPose(pose);
+            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        }
     }
 
     /**
