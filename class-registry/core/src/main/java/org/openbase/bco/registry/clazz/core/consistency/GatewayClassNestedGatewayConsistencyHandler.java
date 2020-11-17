@@ -42,18 +42,18 @@ public class GatewayClassNestedGatewayConsistencyHandler extends AbstractProtoBu
     public void processData(String id, IdentifiableMessage<String, GatewayClass, GatewayClass.Builder> entry, ProtoBufMessageMap<String, GatewayClass, GatewayClass.Builder> entryMap, ProtoBufRegistry<String, GatewayClass, GatewayClass.Builder> registry) throws CouldNotPerformException, EntryModification {
         final GatewayClass.Builder builder = entry.getMessage().toBuilder();
 
-        final ArrayList<String> nestedGatewayIdList = new ArrayList<>(builder.getNestedGatewayIdList());
-        builder.clearNestedGatewayId();
+        final ArrayList<String> nestedGatewayIdList = new ArrayList<>(builder.getNestedGatewayClassIdList());
+        builder.clearNestedGatewayClassId();
         for (final String nestedGatewayId : nestedGatewayIdList) {
             try {
                 registry.getMessage(nestedGatewayId);
-                builder.addNestedGatewayId(nestedGatewayId);
+                builder.addNestedGatewayClassId(nestedGatewayId);
             } catch (NotAvailableException ex) {
                 // do not re-add id
             }
         }
 
-        if (builder.getNestedGatewayIdList().size() != nestedGatewayIdList.size()) {
+        if (builder.getNestedGatewayClassIdCount() != nestedGatewayIdList.size()) {
             throw new EntryModification(entry.setMessage(builder, this), this);
         }
     }
