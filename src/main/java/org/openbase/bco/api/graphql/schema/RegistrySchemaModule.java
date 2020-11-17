@@ -236,12 +236,6 @@ public class RegistrySchemaModule extends SchemaModule {
         return ImmutableList.copyOf(Registries.getClassRegistry(true).getGatewayClasses());
     }
 
-//    @Query("unitConfig") todo QueryType required in order to support multible arguments
-//    UnitConfig getUnitConfigByAlias(@Arg("alias") String alias) throws CouldNotPerformException, InterruptedException {
-//        return Registries.getUnitRegistry(true).getUnitConfigByAlias(alias);
-//    }
-
-
     // --------------------------------------------------- Stuff that has to be moved to jul --- start ------------------------->
 
     public static class UnitFilterImpl implements ListFilter<UnitConfig> {
