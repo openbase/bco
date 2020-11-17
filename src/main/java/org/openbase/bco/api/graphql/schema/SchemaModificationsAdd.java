@@ -50,9 +50,12 @@ import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupConfi
 import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.openbase.type.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig;
 import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+import org.openbase.type.language.LabelType;
+import org.openbase.type.language.MultiLanguageTextType;
 import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,32 +107,12 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "labelString", onType = UnitConfig.class)
     String addLabelBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
-        BCOGraphQLContext context = env.getContext();
-        try {
-            return LabelProcessor.getBestMatch(context.getLanguageCode(), unitConfig.getLabel());
-        } catch (NotAvailableException e) {
-            try {
-                return LabelProcessor.getFirstLabel(unitConfig.getLabel());
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory(ex, logger);
-                return "";
-            }
-        }
+        return getLabelForContext(unitConfig.getLabel(), env.getContext());
     }
 
     @SchemaModification(addField = "descriptionString", onType = UnitConfig.class)
     String addDescriptionBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
-        BCOGraphQLContext context = env.getContext();
-        try {
-            return MultiLanguageTextProcessor.getMultiLanguageTextByLanguage(context.getLanguageCode(), unitConfig.getDescription());
-        } catch (NotAvailableException e) {
-            try {
-                return MultiLanguageTextProcessor.getFirstMultiLanguageText(unitConfig.getDescription());
-            } catch (NotAvailableException ex) {
-                logger.debug("Unit {} does not have a description", unitConfig.getAlias(0));
-                return "";
-            }
-        }
+        return getTextForContext(unitConfig.getDescription(), env.getContext());
     }
 
     @SchemaModification(addField = "serviceTemplate", onType = ServiceDescription.class)
@@ -205,5 +188,41 @@ public class SchemaModificationsAdd extends SchemaModule {
     @SchemaModification(addField = "location", onType = PlacementConfig.class)
     UnitConfig placementConfigLocation(PlacementConfig placementConfig) throws NotAvailableException {
         return Registries.getUnitRegistry().getUnitConfigById(placementConfig.getLocationId());
+    }
+
+    @SchemaModification(addField = "labelString", onType = GatewayClass.class)
+    String addLabelBestMatch(GatewayClass gatewayClass, DataFetchingEnvironment env) {
+        return getLabelForContext(gatewayClass.getLabel(), env.getContext());
+    }
+
+    @SchemaModification(addField = "descriptionString", onType = GatewayClass.class)
+    String addDescriptionBestMatch(GatewayClass gatewayClass, DataFetchingEnvironment env) {
+        return getTextForContext(gatewayClass.getDescription(), env.getContext());
+    }
+
+    private String getLabelForContext(LabelType.Label label, BCOGraphQLContext context) {
+        try {
+            return LabelProcessor.getBestMatch(context.getLanguageCode(), label);
+        } catch (NotAvailableException e) {
+            try {
+                return LabelProcessor.getFirstLabel(label);
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+                return "";
+            }
+        }
+    }
+
+    private String getTextForContext(MultiLanguageTextType.MultiLanguageText multiLanguageText, BCOGraphQLContext context) {
+        try {
+            return MultiLanguageTextProcessor.getMultiLanguageTextByLanguage(context.getLanguageCode(), multiLanguageText);
+        } catch (NotAvailableException e) {
+            try {
+                return MultiLanguageTextProcessor.getFirstMultiLanguageText(multiLanguageText);
+            } catch (NotAvailableException ex) {
+                logger.debug("No multi language text available!");
+                return "";
+            }
+        }
     }
 }

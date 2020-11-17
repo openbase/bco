@@ -38,12 +38,11 @@ import org.openbase.type.domotic.unit.app.AppConfigType.AppConfig;
 import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import org.openbase.type.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openbase.type.domotic.unit.location.LocationConfigType;
 import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Bundle all schema modifications to remove fields from protobuf types.
@@ -133,4 +132,8 @@ public class SchemaModificationsRemove extends SchemaModule {
 
     @SchemaModification
     TypeModification placementConfigLocationId = removeFieldByNumber(PlacementConfig.LOCATION_ID_FIELD_NUMBER, PlacementConfig.getDescriptor());
+
+    @SchemaModification
+    TypeModification removeGatewayClassMultiLanguageFields = Type.find(GatewayClass.getDescriptor())
+            .removeFields(fieldNameByNumber(GatewayClass.LABEL_FIELD_NUMBER, GatewayClass.getDescriptor()), fieldNameByNumber(GatewayClass.DESCRIPTION_FIELD_NUMBER, GatewayClass.getDescriptor()));
 }
