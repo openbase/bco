@@ -1,9 +1,6 @@
 package org.openbase.bco.registry.clazz.core;
 
-import org.openbase.bco.registry.clazz.core.consistency.DeviceClassRequiredFieldConsistencyHandler;
-import org.openbase.bco.registry.clazz.core.consistency.DeviceClassUnitTemplateConfigConsistencyHandler;
-import org.openbase.bco.registry.clazz.core.consistency.GatewayClassRequiredFieldConsistencyHandler;
-import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
+import org.openbase.bco.registry.clazz.core.consistency.*;
 import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.lib.jp.*;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
@@ -117,6 +114,7 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         deviceClassRegistry.registerConsistencyHandler(new DeviceClassUnitTemplateConfigConsistencyHandler());
         deviceClassRegistry.registerConsistencyHandler(new DeviceClassRequiredFieldConsistencyHandler());
         gatewayClassRegistry.registerConsistencyHandler(new GatewayClassRequiredFieldConsistencyHandler());
+        gatewayClassRegistry.registerConsistencyHandler(new GatewayClassNestedGatewayConsistencyHandler());
         deviceClassRegistry.registerConsistencyHandler(new KNXDeviceClassConsistencyHandler());
     }
 

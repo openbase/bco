@@ -23,31 +23,38 @@ package org.openbase.bco.registry.clazz.core.consistency;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
+import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
-import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass.Builder;
+
+import java.util.ArrayList;
 
 /**
- * Consistency handler that makes sure that every gateway class has a company and a label.
- *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * Make sure that all nested gateway ids exist and remove them if they don't.
  */
-public class GatewayClassRequiredFieldConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, GatewayClass,  Builder> {
+public class GatewayClassNestedGatewayConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, GatewayClass, GatewayClass.Builder> {
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, GatewayClass, Builder> entry, ProtoBufMessageMap<String, GatewayClass, Builder> entryMap, ProtoBufRegistry<String, GatewayClass, Builder> registry) throws CouldNotPerformException {
-        if (!entry.getMessage().hasLabel()) {
+    public void processData(String id, IdentifiableMessage<String, GatewayClass, GatewayClass.Builder> entry, ProtoBufMessageMap<String, GatewayClass, GatewayClass.Builder> entryMap, ProtoBufRegistry<String, GatewayClass, GatewayClass.Builder> registry) throws CouldNotPerformException, EntryModification {
+        final GatewayClass.Builder builder = entry.getMessage().toBuilder();
+
+        final ArrayList<String> nestedGatewayIdList = new ArrayList<>(builder.getNestedGatewayIdList());
+        builder.clearNestedGatewayId();
+        for (final String nestedGatewayId : nestedGatewayIdList) {
             try {
-                LabelProcessor.getBestMatch(entry.getMessage().getLabel());
+                registry.getMessage(nestedGatewayId);
+                builder.addNestedGatewayId(nestedGatewayId);
             } catch (NotAvailableException ex) {
-                throw new InvalidStateException("GatewayClass is missing label");
+                // do not re-add id
             }
+        }
+
+        if (builder.getNestedGatewayIdList().size() != nestedGatewayIdList.size()) {
+            throw new EntryModification(entry.setMessage(builder, this), this);
         }
     }
 }
