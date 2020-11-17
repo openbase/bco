@@ -43,8 +43,7 @@ public class DiscoveryStateServiceImpl<ST extends DiscoveryStateOperationService
             MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider("GatewayClassMetaConfig", gatewayClass.getMetaConfig());
             final String bindingId = metaConfigVariableProvider.getValue(OPENHAB_BINDING_ID_KEY);
 
-            //TODO: schedule task that sets the discovery state to inactive after the timeout
-            //TODO: what do we do with the action stack in this case?
+            //TODO: apply this timeout to the action setting the state to active!
             final Integer discoveryTimeout = OpenHABRestCommunicator.getInstance().startDiscovery(bindingId);
 
             return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(discoveryState, () -> ActionDescription.getDefaultInstance()));
