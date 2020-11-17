@@ -93,7 +93,7 @@ public class OpenHABDeviceManager extends DeviceManagerImpl implements Launchabl
     }
 
     @Override
-    public boolean isSupported(UnitConfig config) {
+    public boolean isUnitSupported(UnitConfig config) {
         DeviceClass deviceClass;
         try {
             try {
@@ -109,7 +109,7 @@ public class OpenHABDeviceManager extends DeviceManagerImpl implements Launchabl
             return false;
         }
 
-        return super.isSupported(config);
+        return super.isUnitSupported(config);
     }
 
     @Override
