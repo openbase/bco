@@ -27,14 +27,10 @@ import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
-import org.openbase.bco.registry.activity.remote.CachedActivityRegistryRemote;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
-import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
-import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -784,6 +780,7 @@ public class MockRegistry {
 
     public enum MockServiceTemplate {
         ACTIVATION_STATE_SERVICE(ServiceType.ACTIVATION_STATE_SERVICE, CommunicationType.ACTIVATION_STATE),
+        AVAILABILITY_STATE_SERVICE(ServiceType.AVAILABILITY_STATE_SERVICE, CommunicationType.AVAILABILITY_STATE),
         ACTIVITY_MULTI_STATE_SERVICE(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, CommunicationType.ACTIVITY_MULTI_STATE),
         BATTERY_STATE_SERVICE(ServiceType.BATTERY_STATE_SERVICE, CommunicationType.BATTERY_STATE),
         BLIND_STATE_SERVICE(ServiceType.BLIND_STATE_SERVICE, CommunicationType.BLIND_STATE),
@@ -792,6 +789,7 @@ public class MockRegistry {
         COLOR_STATE_SERVICE(ServiceType.COLOR_STATE_SERVICE, CommunicationType.COLOR_STATE),
         CONTACT_STATE_SERVICE(ServiceType.CONTACT_STATE_SERVICE, CommunicationType.CONTACT_STATE),
         DOOR_STATE_SERVICE(ServiceType.DOOR_STATE_SERVICE, CommunicationType.DOOR_STATE),
+        DISCOVERY_STATE_SERVICE(ServiceType.DISCOVERY_STATE_SERVICE, CommunicationType.ACTIVATION_STATE),
         EARTHQUAKE_ALARM_STATE_SERVICE(ServiceType.EARTHQUAKE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
         EMPHASIS_STATE_SERVICE(ServiceType.EMPHASIS_STATE_SERVICE, CommunicationType.EMPHASIS_STATE),
         FIRE_ALARM_STATE_SERVICE(ServiceType.FIRE_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
@@ -819,7 +817,6 @@ public class MockRegistry {
         USER_TRANSIT_STATE_SERVICE(ServiceType.USER_TRANSIT_STATE_SERVICE, CommunicationType.USER_TRANSIT_STATE),
         WATER_ALARM_STATE_SERVICE(ServiceType.WATER_ALARM_STATE_SERVICE, CommunicationType.ALARM_STATE),
         WINDOW_STATE_SERVICE(ServiceType.WINDOW_STATE_SERVICE, CommunicationType.WINDOW_STATE);
-
 
         private final ServiceTemplate serviceTemplate;
 
@@ -851,14 +848,17 @@ public class MockRegistry {
         ACTIVATION_SPS(ServiceType.ACTIVATION_STATE_SERVICE, ServicePattern.PROVIDER),
         ACTIVITY_MULTI_SOS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.OPERATION),
         ACTIVITY_MULTI_SPS(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, ServicePattern.PROVIDER),
+        AVAILABILITY_SPS(ServiceType.AVAILABILITY_STATE_SERVICE, ServicePattern.PROVIDER),
         BATTERY_SPS(ServiceType.BATTERY_STATE_SERVICE, ServicePattern.PROVIDER),
         BLIND_SOS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.OPERATION),
         BLIND_SPS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.PROVIDER),
         BRIGHTNESS_SOS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.OPERATION),
         BRIGHTNESS_SPS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.PROVIDER),
-        EMPHASIN_SOS(ServiceType.EMPHASIS_STATE_SERVICE, ServicePattern.OPERATION),
-        EMPHASIN_SPS(ServiceType.EMPHASIS_STATE_SERVICE, ServicePattern.PROVIDER),
+        EMPHASIS_SOS(ServiceType.EMPHASIS_STATE_SERVICE, ServicePattern.OPERATION),
+        EMPHASIS_SPS(ServiceType.EMPHASIS_STATE_SERVICE, ServicePattern.PROVIDER),
         BUTTON_SPS(ServiceType.BUTTON_STATE_SERVICE, ServicePattern.PROVIDER),
+        DISCOVERY_SPS(ServiceType.DISCOVERY_STATE_SERVICE, ServicePattern.PROVIDER),
+        DISCOVERY_SOS(ServiceType.DISCOVERY_STATE_SERVICE, ServicePattern.OPERATION),
         DOOR_SPS(ServiceType.DOOR_STATE_SERVICE, ServicePattern.PROVIDER),
         WINDOW_SPS(ServiceType.WINDOW_STATE_SERVICE, ServicePattern.PROVIDER),
         PASSAGE_SPS(ServiceType.PASSAGE_STATE_SERVICE, ServicePattern.PROVIDER),
@@ -906,6 +906,7 @@ public class MockRegistry {
 
         COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, UnitType.DIMMABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
         DIMMABLE_LIGHT(UnitType.DIMMABLE_LIGHT, UnitType.LIGHT, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
+        GATEWAY(UnitType.GATEWAY, AVAILABILITY_SPS, DISCOVERY_SPS, DISCOVERY_SOS),
         LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
         MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
         LIGHT_SENSOR(UnitType.LIGHT_SENSOR, ILLUMINANCE_SPS),
@@ -922,13 +923,13 @@ public class MockRegistry {
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
         BATTERY(UnitType.BATTERY, BATTERY_SPS),
         LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
-                SMOKE_ALARM_SPS, SMOKE_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS, EMPHASIN_SPS, EMPHASIN_SOS),
+                SMOKE_ALARM_SPS, SMOKE_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS, EMPHASIS_SPS, EMPHASIS_SOS),
         CONNECTION(UnitType.CONNECTION, DOOR_SPS, WINDOW_SPS, PASSAGE_SPS),
         SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
         AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
         APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS),
         UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
-                SMOKE_ALARM_SPS, SMOKE_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS, EMPHASIN_SPS, EMPHASIN_SOS),
+                SMOKE_ALARM_SPS, SMOKE_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS, PRESENCE_SPS, EMPHASIS_SPS, EMPHASIS_SOS),
         USER(UnitType.USER, LOCAL_POSITION_SOS, LOCAL_POSITION_SPS, GLOBAL_POSITION_SOS, GLOBAL_POSITION_SPS, PRESENCE_SOS, PRESENCE_SPS,
                 USER_TRANSIT_SOS, USER_TRANSIT_SPS, ACTIVITY_MULTI_SOS, ACTIVITY_MULTI_SPS);
 
