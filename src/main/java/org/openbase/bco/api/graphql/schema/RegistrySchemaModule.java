@@ -225,7 +225,9 @@ public class RegistrySchemaModule extends SchemaModule {
                 break;
             }
         }
-        metaConfigBuilder.addEntry(entry);
+        if (!entry.getValue().isEmpty()) {
+            metaConfigBuilder.addEntry(entry);
+        }
         return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getMetaConfig();
     }
 
