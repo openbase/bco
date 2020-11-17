@@ -36,6 +36,7 @@ import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.iface.TransactionIdProvider;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Configurable;
@@ -682,8 +683,15 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
                         break;
                     case GATEWAY:
                         final GatewayClass gatewayClass = Registries.getClassRegistry().getGatewayClassById(hostUnitConfig.getGatewayConfig().getGatewayClassId());
-                        configPool.register(new MetaConfigVariableProvider("GatewayBindingConfig", gatewayClass.getBindingConfig().getMetaConfig()));
-                        configPool.register(new MetaConfigVariableProvider("GatewayClassMetaConfig", gatewayClass.getMetaConfig()));
+                        for (String id : gatewayClass.getNestedGatewayClassIdList()) {
+                            final GatewayClass nestedGatewayClass = Registries.getClassRegistry(true).getGatewayClassById(id);
+                            configPool.register(new MetaConfigVariableProvider("NestedGatewayClass["+ LabelProcessor.getBestMatch(nestedGatewayClass.getLabel(), id)+"]", nestedGatewayClass.getMetaConfig()));
+                        }
+
+                        for (String id : hostUnitConfig.getGatewayConfig().getNestedGatewayIdList()) {
+                            final UnitConfig nestedGatewayUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(id);
+                            configPool.register(new MetaConfigVariableProvider("NestedGatewayClass["+ LabelProcessor.getBestMatch(nestedGatewayUnitConfig.getLabel(), id)+"]", nestedGatewayUnitConfig.getMetaConfig()));
+                        }
                         configPool.register(new ProtobufVariableProvider(gatewayClass));
                         break;
                 }
