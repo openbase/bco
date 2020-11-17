@@ -86,6 +86,7 @@ public class UnitSchemaModule extends SchemaModule {
             remoteActions.add(new RemoteAction(unit.applyAction(builder)));
         }
 
+        // TODO: blocked by https://github.com/openbase/bco.dal/issues/170
         if (!remoteActions.isEmpty()) {
             for (final RemoteAction remoteAction : remoteActions) {
                 remoteAction.waitForRegistration(5, TimeUnit.SECONDS);
