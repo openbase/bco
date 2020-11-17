@@ -198,8 +198,16 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     // DISCOVERY
     // ==========================================================================================================================================
 
-    public void startDiscovery(final String bindingId) throws CouldNotPerformException {
-        post(DISCOVERY_TARGET + SEPARATOR + "bindings" + SEPARATOR + bindingId + SCAN_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+    /**
+     *
+     *
+     * @param bindingId
+     * @return the discovery timeout in seconds
+     * @throws CouldNotPerformException
+     */
+    public Integer startDiscovery(final String bindingId) throws CouldNotPerformException {
+        final String response = post(DISCOVERY_TARGET + SEPARATOR + "bindings" + SEPARATOR + bindingId + SCAN_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+        return Integer.parseInt(response);
     }
 
     public void approve(final String thingUID, final String label) throws CouldNotPerformException {
