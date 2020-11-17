@@ -53,6 +53,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -73,6 +74,7 @@ public class Registries {
     private static final Message[] MESSAGE_TYPES = {
             UnitConfig.getDefaultInstance(),
             DeviceClass.getDefaultInstance(),
+            GatewayClass.getDefaultInstance(),
             AppClass.getDefaultInstance(),
             AgentClass.getDefaultInstance(),
             UnitTemplate.getDefaultInstance(),
