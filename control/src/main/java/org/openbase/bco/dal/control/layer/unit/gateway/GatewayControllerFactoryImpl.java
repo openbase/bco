@@ -22,7 +22,6 @@ package org.openbase.bco.dal.control.layer.unit.gateway;
  * #L%
  */
 
-import org.openbase.bco.dal.control.layer.unit.gateway.AbstractGatewayControllerFactory;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
@@ -39,7 +38,7 @@ public class GatewayControllerFactoryImpl extends AbstractGatewayControllerFacto
     private final UnitDataSourceFactory unitDataSourceFactory;
 
     public GatewayControllerFactoryImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws InstantiationException {
-        assert operationServiceFactory != null;
+//        assert operationServiceFactory != null;
         this.operationServiceFactory = operationServiceFactory;
         this.unitDataSourceFactory = unitDataSourceFactory;
     }

@@ -25,22 +25,25 @@ package org.openbase.bco.dal.control.layer.unit.device;
 import org.openbase.bco.dal.control.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.CloseableWriteLockWrapper;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder, UnitController<?, ?>> implements DeviceController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
@@ -51,9 +54,9 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
-            UnitConfig unitConfig = super.applyConfigUpdate(config);
+            final UnitConfig unitConfig = super.applyConfigUpdate(config);
 
             // update unit controller registry if device is active.
             for (final String removedUnitId : getRemovedUnitIds()) {
@@ -69,11 +72,27 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
     }
 
     @Override
+    public List<UnitConfig> getHostedUnitConfigList() throws NotAvailableException, InterruptedException {
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        try {
+            for (final String unitId : getConfig().getDeviceConfig().getUnitIdList()) {
+                final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
+                if (UnitConfigProcessor.isEnabled(unitConfig)) {
+                    unitConfigs.add(unitConfig);
+                }
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Hosted units description of Device", this, ex);
+        }
+        return unitConfigs;
+    }
+
+    @Override
     public void shutdown() {
         try {
             // skip if registry is shutting down anyway.
             if (!DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().isShutdownInitiated()) {
-                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().removeAll(getHostedUnitControllerList());
+                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().removeAllByKey(getHostedUnitControllerIdList());
             }
         } catch (InvalidStateException ex) {
             // registry already shutting down during removal which will clear the entries anyway.

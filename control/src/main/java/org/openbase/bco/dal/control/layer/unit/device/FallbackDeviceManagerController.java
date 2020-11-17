@@ -55,7 +55,7 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
             deviceManager = new DeviceManagerImpl(OperationServiceFactoryMock.getInstance(), true) {
 
                 @Override
-                public boolean isSupported(UnitConfig config) {
+                public boolean isUnitSupported(UnitConfig config) {
                     try {
                         DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
                         return !deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().isEmpty();

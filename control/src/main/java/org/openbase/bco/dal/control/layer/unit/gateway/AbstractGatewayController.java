@@ -24,12 +24,12 @@ package org.openbase.bco.dal.control.layer.unit.gateway;
 
 import org.openbase.bco.dal.control.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerImpl;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
 import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.CloseableWriteLockWrapper;
@@ -40,10 +40,13 @@ import org.openbase.type.domotic.unit.gateway.GatewayDataType.GatewayData;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractGatewayController extends AbstractHostUnitController<GatewayData, GatewayData.Builder> implements GatewayController {
+public abstract class AbstractGatewayController extends AbstractHostUnitController<GatewayData, GatewayData.Builder, DeviceController> implements GatewayController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GatewayData.getDefaultInstance()));
@@ -56,19 +59,17 @@ public abstract class AbstractGatewayController extends AbstractHostUnitControll
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
-            UnitConfig unitConfig = super.applyConfigUpdate(config);
+            final UnitConfig unitConfig = super.applyConfigUpdate(config);
 
-            //todo gateway: validate if this is correct
             // update unit controller registry if gateway is active.
             for (final String removedUnitId : getRemovedUnitIds()) {
-                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().remove(removedUnitId);
+                DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().remove(removedUnitId);
             }
 
-            //todo gateway: validate if this is correct
-            for (final UnitController newUnitController : getNewUnitController()) {
-                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().register(newUnitController);
+            for (final DeviceController newUnitController : getNewUnitController()) {
+                DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().register(newUnitController);
             }
 
             return unitConfig;
@@ -76,12 +77,27 @@ public abstract class AbstractGatewayController extends AbstractHostUnitControll
     }
 
     @Override
+    public List<UnitConfig> getHostedUnitConfigList() throws NotAvailableException, InterruptedException {
+        final List<UnitConfig> unitConfigs = new ArrayList<>();
+        try {
+            for (final String unitId : getConfig().getGatewayConfig().getUnitIdList()) {
+                UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
+                if (UnitConfigProcessor.isEnabled(unitConfig)) {
+                    unitConfigs.add(unitConfig);
+                }
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Hosted units description of Device", this, ex);
+        }
+        return unitConfigs;
+    }
+
+    @Override
     public void shutdown() {
         try {
             // skip if registry is shutting down anyway.
-            //todo gateway: validate if this is correct
-            if (!DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().isShutdownInitiated()) {
-                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().removeAll(getHostedUnitControllerList());
+            if (!DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().isShutdownInitiated()) {
+                DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().removeAllByKey(getHostedUnitControllerIdList());
             }
         } catch (InvalidStateException ex) {
             // registry already shutting down during removal which will clear the entries anyway.

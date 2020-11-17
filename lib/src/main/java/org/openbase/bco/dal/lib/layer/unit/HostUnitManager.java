@@ -25,11 +25,21 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactoryProvider;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface HostUnitManager extends OperationServiceFactoryProvider,   UnitDataSourceFactoryProvider {
+public interface HostUnitManager extends OperationServiceFactoryProvider, UnitDataSourceFactoryProvider {
+
+    /**
+     * Check if the given gateway is supported by this manager instance.
+     *
+     * @param clazz the class of the unit to check.
+     *
+     * @return true if supported.
+     */
+    boolean isGatewaySupported(final GatewayClass clazz);
 
     /**
      * Check if the given unit is supported by this manager instance.
@@ -38,6 +48,5 @@ public interface HostUnitManager extends OperationServiceFactoryProvider,   Unit
      *
      * @return true if supported.
      */
-    boolean isSupported(final UnitConfig config);
-
+    boolean isUnitSupported(final UnitConfig config);
 }

@@ -25,13 +25,24 @@ package org.openbase.bco.dal.lib.layer.unit.device;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitManager;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
+import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
+
+    /**
+     * Enables access of the controller registry of this manager.
+     * <p>
+     * Note: Mainly used for accessing the controller via test routines.
+     *
+     * @return the controller registry.
+     */
+    UnitControllerRegistry<GatewayController> getGatewayControllerRegistry();
 
     /**
      * Enables access of the controller registry of this manager.
@@ -52,6 +63,19 @@ public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
     UnitControllerRegistry<UnitController<?, ?>> getUnitControllerRegistry();
 
     /**
+     * All gateways will be supported by default. Feel free to overwrite method
+     * to changing this behavior.
+     *
+     * @param clazz the gateway class.
+     *
+     * @return true if supported
+     */
+    @Override
+    default boolean isGatewaySupported(final GatewayClass clazz) {
+        return true;
+    }
+
+    /**
      * All devices will be supported by default. Feel free to overwrite method
      * to changing this behavior.
      *
@@ -60,8 +84,7 @@ public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
      * @return true if supported
      */
     @Override
-    default boolean isSupported(final UnitConfig config) {
+    default boolean isUnitSupported(final UnitConfig config) {
         return config.getUnitType() == UnitType.DEVICE;
     }
-
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.gateway;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
 import org.openbase.type.domotic.unit.gateway.GatewayDataType.GatewayData;
 
 /**
@@ -29,5 +30,5 @@ import org.openbase.type.domotic.unit.gateway.GatewayDataType.GatewayData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public interface GatewayController extends Gateway, HostUnitController<GatewayData, GatewayData.Builder> {
+public interface GatewayController extends Gateway, HostUnitController<GatewayData, GatewayData.Builder, DeviceController> {
 }

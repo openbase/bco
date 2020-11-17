@@ -52,10 +52,10 @@ import java.util.*;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractHostUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements HostUnitController<D, DB> {
+public abstract class AbstractHostUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>, C extends UnitController<?, ?>> extends AbstractBaseUnitController<D, DB> implements HostUnitController<D, DB, C> {
 
     //TODO: use a unit controller synchronizer instead of the combination of a diff and unit map
-    private final Map<String, UnitController<?, ?>> unitMap;
+    private final Map<String, C> unitMap;
     private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> hostedUnitDiff;
     private final SyncObject unitMapLock = new SyncObject("UnitMapLock");
 
@@ -65,7 +65,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         this.hostedUnitDiff = new ProtobufListDiff<>();
     }
 
-    protected <U extends UnitController<?, ?>> void registerUnit(final U unit) throws CouldNotPerformException {
+    protected void registerUnit(final C unit) throws CouldNotPerformException {
         synchronized (unitMapLock) {
             try {
                 if (unitMap.containsKey(unit.getId())) {
@@ -82,13 +82,13 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         try {
             Message.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
 
-            Constructor<? extends UnitController> unitConstructor;
+            Constructor<C> unitConstructor;
             try {
-                unitConstructor = detectUnitControllerClass(unitConfig).getConstructor(HostUnitController.class, unitMessageBuilder.getClass());
+                unitConstructor = (Constructor<C>) detectUnitControllerClass(unitConfig).getConstructor(HostUnitController.class, unitMessageBuilder.getClass());
             } catch (CouldNotTransformException | NoSuchMethodException | SecurityException | NullPointerException ex) {
                 throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
             }
-            UnitController unit;
+            C unit;
             try {
                 unit = unitConstructor.newInstance(this, unitMessageBuilder);
             } catch (java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException ex) {
@@ -142,29 +142,13 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
     }
 
     @Override
-    public UnitController<?, ?> getHostedUnitController(final String id) throws NotAvailableException {
+    public C getHostedUnitController(final String id) throws NotAvailableException {
         synchronized (unitMapLock) {
             if (!unitMap.containsKey(id)) {
                 throw new NotAvailableException("Unit[" + id + "]", this + " has no registered unit with given name!");
             }
             return unitMap.get(id);
         }
-    }
-
-    @Override
-    public List<UnitConfig> getHostedUnitConfigList() throws NotAvailableException, InterruptedException {
-        List<UnitConfig> unitConfigs = new ArrayList<>();
-        try {
-            for (String unitId : getConfig().getDeviceConfig().getUnitIdList()) {
-                UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
-                if (UnitConfigProcessor.isEnabled(unitConfig)) {
-                    unitConfigs.add(unitConfig);
-                }
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Hosted units description of Device", this, ex);
-        }
-        return unitConfigs;
     }
 
     @Override
@@ -263,8 +247,8 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         return removedUnitIds;
     }
 
-    protected Set<UnitController> getNewUnitController() {
-        Set<UnitController> newUnitController = new HashSet<>();
+    protected Set<C> getNewUnitController() {
+        Set<C> newUnitController = new HashSet<>();
         hostedUnitDiff.getNewMessageMap().getMessages().forEach((newUnitConfig) -> {
             newUnitController.add(unitMap.get(newUnitConfig.getId()));
         });
@@ -273,7 +257,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
 
     protected final void registerUnits(final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
-        for (UnitConfig unitConfig : unitConfigs) {
+        for (final UnitConfig unitConfig : unitConfigs) {
             try {
                 registerUnit(unitConfig);
             } catch (CouldNotPerformException ex) {
@@ -287,7 +271,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         CachedUnitRegistryRemote.waitForData();
         MultiException.ExceptionStack exceptionStack = null;
 
-        for (String unitId : unitIds) {
+        for (final String unitId : unitIds) {
             try {
                 registerUnit(Registries.getUnitRegistry(true).getUnitConfigById(unitId));
             } catch (CouldNotPerformException ex) {
@@ -298,7 +282,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
     }
 
     @Override
-    public List<UnitController<?, ?>> getHostedUnitControllerList() {
+    public List<C> getHostedUnitControllerList() {
         return new ArrayList<>(unitMap.values());
     }
 }

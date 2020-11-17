@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.app;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.type.domotic.unit.app.AppDataType.AppData;
 
@@ -29,5 +30,5 @@ import org.openbase.type.domotic.unit.app.AppDataType.AppData;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface AppController extends App, HostUnitController<AppData, AppData.Builder> {
+public interface AppController extends App, HostUnitController<AppData, AppData.Builder, UnitController<?, ?>> {
 }
