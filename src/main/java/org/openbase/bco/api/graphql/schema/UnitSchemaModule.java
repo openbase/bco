@@ -23,58 +23,75 @@ package org.openbase.bco.api.graphql.schema;
  */
 
 import com.google.api.graphql.rejoiner.*;
+import com.google.protobuf.Message;
 import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
+import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionParameterType;
-import org.openbase.type.domotic.authentication.AuthTokenType;
-import org.openbase.type.domotic.service.ServiceTemplateType;
-import org.openbase.type.domotic.state.PowerStateType;
-import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class UnitSchemaModule extends SchemaModule {
 
-    /*@SchemaModification
-    TypeModification label = Type.find(UnitConfig.getDescriptor()).replaceField(
-            GraphQLFieldDefinition.newFieldDefinition()
-                    .name("label")
-                    .type(GraphQLScalars.create())
-                    .build());*/
+
+    @SchemaModification(addField = "config", onType = LocationData.class)
+    UnitConfig addConfigToData(LocationData data) throws NotAvailableException {
+        return Registries.getUnitRegistry().getUnitConfigById(data.getId());
+    }
+
+    @Query("unit")
+    LocationData unit(@Arg("unitId") String id) throws InterruptedException, ArgumentError {
+        try {
+            final UnitRemote<?> unit = Units.getUnit(id, true);
+            return (LocationData) ProtoBufBuilderProcessor.merge(LocationData.newBuilder(), unit.getData()).build();
+        } catch (NotAvailableException ex) {
+            throw new ArgumentError(ex);
+        }
+    }
 
     @Mutation("unit")
-    ActionDescription getLamp(@Arg("alias") String alias, @Arg("power") String state, DataFetchingEnvironment env) throws InterruptedException, CouldNotPerformException, TimeoutException, ExecutionException {
+    LocationData unit(@Arg("unitId") String unitId, @Arg("data") LocationData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
+        final UnitRemote<?> unit = Units.getUnit(unitId, true);
 
-//        final State state1 = State.valueOf(state);
-//        try {
-//            Futures.
-//            return CompleFutureProcessor.toCompletableFuture(Units.getUnitByAlias(alias, true, Units.COLORABLE_LIGHT).setPowerState(state1));
-//        } catch (NotAvailableException | ExecutionException | TimeoutException e) {
-//            throw e;
-//        } catch (InterruptedException e) {
-//            throw e;
-//        }
-//    }
-        // SessionManager.getInstance().loginUser(Registries.getUnitRegistry().getUserUnitIdByUserName("test"), "test", false);
+        final List<RemoteAction> remoteActions = new ArrayList<>();
+        for (final ServiceType serviceType : unit.getSupportedServiceTypes()) {
+            if (!Services.hasServiceState(serviceType, ServiceTempus.CURRENT, data)) {
+                continue;
+            }
 
-        ColorableLightRemote unit = Units.getUnitByAlias(alias, true, Units.COLORABLE_LIGHT);
-        PowerStateType.PowerState powerState = PowerStateType.PowerState.newBuilder().setValue(State.valueOf(state)).build();
-        ActionParameterType.ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(powerState, ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE, unit);
+            Message serviceState = Services.invokeProviderServiceMethod(serviceType, data);
 
-        try {
-            builder.setAuthToken(AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(((BCOGraphQLContext) env.getContext()).getToken()).build());
-        } catch (NotAvailableException ex) {
-            // in case the auth token is not available, we just continue without any authentication.
+            ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType);
+            try {
+                builder.setAuthToken(AuthToken.newBuilder().setAuthenticationToken(((BCOGraphQLContext) env.getContext()).getToken()).build());
+            } catch (NotAvailableException ex) {
+                // in case the auth token is not available, we just continue without any authentication.
+            }
+            remoteActions.add(new RemoteAction(unit.applyAction(builder)));
         }
 
-        return unit.applyAction(builder).get(5, TimeUnit.SECONDS);
+        if (!remoteActions.isEmpty()) {
+            for (final RemoteAction remoteAction : remoteActions) {
+                remoteAction.waitForRegistration(5, TimeUnit.SECONDS);
+            }
+        }
+
+        return (LocationData) ProtoBufBuilderProcessor.merge(LocationData.newBuilder(), unit.getData()).build();
     }
 }
