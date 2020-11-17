@@ -23,6 +23,7 @@ package org.openbase.bco.api.graphql.schema;
  */
 
 import com.google.api.graphql.rejoiner.*;
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
@@ -41,6 +42,7 @@ import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 import java.util.ArrayList;
@@ -65,8 +67,32 @@ public class UnitSchemaModule extends SchemaModule {
         }
     }
 
-    @Mutation("unit")
-    LocationData unit(@Arg("unitId") String unitId, @Arg("data") LocationData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
+    private List<UnitConfig> getUnitConfigsByFilter(UnitFilter unitFilter) throws CouldNotPerformException, InterruptedException {
+        // setup default values
+        if ((unitFilter == null)) {
+            unitFilter = UnitFilter.getDefaultInstance();
+        }
+
+        return new RegistrySchemaModule.UnitFilterImpl(unitFilter)
+                .pass(Registries.getUnitRegistry(true).getUnitConfigsFiltered(true));
+    }
+
+    @Query("units")
+    ImmutableList<LocationData> units(@Arg("filter") UnitFilter unitFilter) throws CouldNotPerformException, InterruptedException {
+        List<LocationData> dataList = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigsByFilter(unitFilter)) {
+            UnitRemote<?> unit = Units.getUnit(unitConfig, true);
+            dataList.add((LocationData) ProtoBufBuilderProcessor.merge(LocationData.newBuilder(), unit.getData()).build());
+        }
+
+        return ImmutableList.copyOf(dataList);
+    }
+
+    private LocationData setServiceStates(final UnitConfig unitConfig, final LocationData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
+        return setServiceStates(unitConfig.getId(), data, env);
+    }
+
+    private LocationData setServiceStates(final String unitId, final LocationData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
         final UnitRemote<?> unit = Units.getUnit(unitId, true);
 
         final List<RemoteAction> remoteActions = new ArrayList<>();
@@ -94,5 +120,19 @@ public class UnitSchemaModule extends SchemaModule {
         }
 
         return (LocationData) ProtoBufBuilderProcessor.merge(LocationData.newBuilder(), unit.getData()).build();
+    }
+
+    @Mutation("unit")
+    LocationData unit(@Arg("unitId") String unitId, @Arg("data") LocationData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
+        return setServiceStates(unitId, data, env);
+    }
+
+    @Mutation("units")
+    ImmutableList<LocationData> units(@Arg("filter") UnitFilter filter, @Arg("data") LocationData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
+        final List<LocationData> dataList = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigsByFilter(filter)) {
+            dataList.add(setServiceStates(unitConfig, data, env));
+        }
+        return ImmutableList.copyOf(dataList);
     }
 }

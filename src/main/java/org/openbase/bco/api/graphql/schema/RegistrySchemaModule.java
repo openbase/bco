@@ -244,7 +244,7 @@ public class RegistrySchemaModule extends SchemaModule {
 
     // --------------------------------------------------- Stuff that has to be moved to jul --- start ------------------------->
 
-    private static class UnitFilterImpl implements ListFilter<UnitConfig> {
+    public static class UnitFilterImpl implements ListFilter<UnitConfig> {
 
         private final UnitFilter filter;
         private final UnitConfig properties;
