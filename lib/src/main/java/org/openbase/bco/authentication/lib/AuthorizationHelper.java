@@ -366,6 +366,7 @@ public class AuthorizationHelper {
             if (!locations.containsKey(locationId)) {
                 final UnitConfig rootLocationUnitConfig = getRootLocationUnitConfig(locations);
                 LOGGER.warn("Registry does not contains requested location Entry[" + locationId + "] use root location [" + LabelProcessor.getBestMatch(rootLocationUnitConfig.getLabel(), "") + ":"+rootLocationUnitConfig.getId()+ "] as fallback to compute permissions.");
+                assert false;
                 return rootLocationUnitConfig;
             }
             return locations.get(locationId).getMessage();
