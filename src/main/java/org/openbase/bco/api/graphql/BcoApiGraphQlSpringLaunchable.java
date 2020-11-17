@@ -33,6 +33,7 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -48,7 +49,6 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
 
 
     private ConfigurableApplicationContext context;
-
 
     @Override
     public void init() throws InitializationException {
@@ -71,16 +71,20 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
         context = SpringApplication.run(BcoGraphQlApiSpringBootApplication.class, JPService.getArgs());
 
         LOGGER.info("Advertise graphql service...");
-        HashMap<Fields, String> qualifiedNameMap = new HashMap<>();
+        final HashMap<Fields, String> qualifiedNameMap = new HashMap<>();
         qualifiedNameMap.put(Fields.Application, "http");
         qualifiedNameMap.put(Fields.Instance, "graphql-bco-openbase");
         qualifiedNameMap.put(Fields.Subtype, "graphql");
 
-        HashMap<String, String> propertyMap = new HashMap<>();
+        final HashMap<String, String> propertyMap = new HashMap<>();
         propertyMap.put("bco-uuid", UUID.randomUUID().toString());
         propertyMap.put("path", "graphql");
 
-        serviceAdvertiser.register(qualifiedNameMap, 8080, 0, 0, false, propertyMap);
+        // lookup port
+        final int port = Integer.parseInt(context.getEnvironment().getProperty("server.port"));
+
+        // register service advertising
+        serviceAdvertiser.register(qualifiedNameMap, port, 0, 0, false, propertyMap);
     }
 
     @Override
