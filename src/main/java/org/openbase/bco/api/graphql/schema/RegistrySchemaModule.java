@@ -28,7 +28,6 @@ import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
-import org.checkerframework.checker.units.qual.A;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -46,6 +45,7 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openbase.type.geometry.PoseType;
 import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
@@ -227,6 +227,11 @@ public class RegistrySchemaModule extends SchemaModule {
         }
         metaConfigBuilder.addEntry(entry);
         return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getMetaConfig();
+    }
+
+    @Query("gatewayClasses")
+    ImmutableList<GatewayClass> gatewayClasses() throws CouldNotPerformException, InterruptedException {
+        return ImmutableList.copyOf(Registries.getClassRegistry(true).getGatewayClasses());
     }
 
 //    @Query("unitConfig") todo QueryType required in order to support multible arguments
