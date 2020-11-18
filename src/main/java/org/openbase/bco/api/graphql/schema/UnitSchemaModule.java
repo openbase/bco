@@ -113,14 +113,17 @@ public class UnitSchemaModule extends SchemaModule {
             remoteActions.add(new RemoteAction(unit.applyAction(builder), builder.getAuthToken()));
         }
 
+        UnitData.Builder unitDataBuilder = UnitData.newBuilder();
         // TODO: blocked by https://github.com/openbase/bco.dal/issues/170
         if (!remoteActions.isEmpty()) {
             for (final RemoteAction remoteAction : remoteActions) {
                 remoteAction.waitForRegistration(5, TimeUnit.SECONDS);
+                unitDataBuilder.addTriggeredAction(remoteAction.getActionDescription());
             }
         }
 
-        return (UnitData) ProtoBufBuilderProcessor.merge(UnitData.newBuilder(), unit.getData()).build();
+        ProtoBufBuilderProcessor.merge(unitDataBuilder, unit.getData());
+        return unitDataBuilder.build();
     }
 
     @Mutation("unit")
