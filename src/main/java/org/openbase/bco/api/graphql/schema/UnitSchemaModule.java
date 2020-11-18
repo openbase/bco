@@ -97,19 +97,20 @@ public class UnitSchemaModule extends SchemaModule {
 
         final List<RemoteAction> remoteActions = new ArrayList<>();
         for (final ServiceType serviceType : unit.getSupportedServiceTypes()) {
+
             if (!Services.hasServiceState(serviceType, ServiceTempus.CURRENT, data)) {
                 continue;
             }
 
-            Message serviceState = Services.invokeProviderServiceMethod(serviceType, data);
+            final Message serviceState = Services.invokeProviderServiceMethod(serviceType, data);
 
-            ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType);
+            final ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType, unit);
             try {
                 builder.setAuthToken(AuthToken.newBuilder().setAuthenticationToken(((BCOGraphQLContext) env.getContext()).getToken()).build());
             } catch (NotAvailableException ex) {
                 // in case the auth token is not available, we just continue without any authentication.
             }
-            remoteActions.add(new RemoteAction(unit.applyAction(builder)));
+            remoteActions.add(new RemoteAction(unit.applyAction(builder), builder.getAuthToken()));
         }
 
         // TODO: blocked by https://github.com/openbase/bco.dal/issues/170
