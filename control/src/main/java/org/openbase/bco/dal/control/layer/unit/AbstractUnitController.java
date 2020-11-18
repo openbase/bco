@@ -709,7 +709,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
-    protected SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
+    public SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
         builderSetup.lockRead(lockConsumer);
         try {
             // lookup action to cancel
