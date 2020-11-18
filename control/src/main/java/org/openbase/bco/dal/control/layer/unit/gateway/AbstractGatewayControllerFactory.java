@@ -67,8 +67,10 @@ public abstract class AbstractGatewayControllerFactory implements GatewayControl
             if (!gatewayUnitConfig.getPlacementConfig().hasLocationId()) {
                 throw new NotAvailableException("gatewayConfig.placement.locationId");
             }
+
             final GenericGatewayController genericGatewayController = new GenericGatewayController(getDeviceControllerFactory());
             genericGatewayController.init(gatewayUnitConfig);
+
             return genericGatewayController;
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(Gateway.class, gatewayUnitConfig.getId(), ex);

@@ -29,7 +29,6 @@ import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
