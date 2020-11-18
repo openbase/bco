@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.DiscoveryStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
+import org.openbase.bco.device.openhab.manager.unit.OpenHABGatewayController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -45,8 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DiscoveryStateServiceImpl<ST extends DiscoveryStateOperationService & Unit<?>> extends OpenHABService<ST> implements DiscoveryStateOperationService {
 
-    public static final String OPENHAB_BINDING_ID_KEY = "OPENHAB_BINDING_ID";
-    private static final Logger LOGGER = LoggerFactory.getLogger(ColorStateServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiscoveryStateServiceImpl.class);
 
     private final String DISCOVERY_STATE_SERVICE_LOCK = "DISCOVERY_SERVICE_LOCK";
 
@@ -68,7 +68,7 @@ public class DiscoveryStateServiceImpl<ST extends DiscoveryStateOperationService
             if (discoveryState.getValue() == ActivationState.State.ACTIVE) {
                 // trigger discovery for binding at openHAB
                 final GatewayClassType.GatewayClass gatewayClass = Registries.getClassRegistry().getGatewayClassById(unit.getConfig().getGatewayConfig().getGatewayClassId());
-                final String bindingId = unit.generateVariablePool().getValue(OPENHAB_BINDING_ID_KEY);
+                final String bindingId = unit.generateVariablePool().getValue(OpenHABGatewayController.OPENHAB_BINDING_ID_META_CONFIG_KEY);
                 final Integer discoveryTimeout = OpenHABRestCommunicator.getInstance().startDiscovery(bindingId);
 
                 // apply returned timeout to the action

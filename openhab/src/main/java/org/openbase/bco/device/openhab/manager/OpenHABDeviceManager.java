@@ -25,7 +25,7 @@ package org.openbase.bco.device.openhab.manager;
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerImpl;
 import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
-import org.openbase.bco.device.openhab.manager.service.OpenHABOperationServiceFactory;
+import org.openbase.bco.device.openhab.manager.unit.OpenHABGatewayControllerFactory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
@@ -55,7 +55,7 @@ public class OpenHABDeviceManager extends DeviceManagerImpl implements Launchabl
     private final RecurrenceEventFilter<Object> unitChangeSynchronizationFilter;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
-        super(new OpenHABOperationServiceFactory() ,false);
+        super(new OpenHABGatewayControllerFactory(), false);
 
         // the sync observer triggers a lot when the device manager is initially activated and all unit controllers are created
         // thus add an event filter
@@ -78,7 +78,7 @@ public class OpenHABDeviceManager extends DeviceManagerImpl implements Launchabl
                         try {
                             commandExecutor.applyStateUpdate(item.name, item.type, item.state, true);
                         } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Skip synchronization of item[name:" + item.name + ", label:" + item.label + ", type:" + item.type + ", " + ", state:" + item.state + ", " + item.stateDescription + ", transformedState:" + item.transformedState + ", category:" + item.category+  "]", ex, LOGGER, LogLevel.WARN);
+                            ExceptionPrinter.printHistory("Skip synchronization of item[name:" + item.name + ", label:" + item.label + ", type:" + item.type + ", " + ", state:" + item.state + ", " + item.stateDescription + ", transformedState:" + item.transformedState + ", category:" + item.category + "]", ex, LOGGER, LogLevel.WARN);
                         }
                     }
                 } catch (CouldNotPerformException ex) {

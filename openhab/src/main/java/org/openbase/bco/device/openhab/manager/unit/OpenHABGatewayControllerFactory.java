@@ -23,16 +23,60 @@ package org.openbase.bco.device.openhab.manager.unit;
  */
 
 import org.openbase.bco.dal.control.layer.unit.device.DeviceControllerFactoryImpl;
-import org.openbase.bco.dal.control.layer.unit.gateway.AbstractGatewayControllerFactory;
+import org.openbase.bco.dal.control.layer.unit.gateway.GenericGatewayController;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
+import org.openbase.bco.dal.lib.layer.unit.gateway.Gateway;
+import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
+import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayControllerFactory;
 import org.openbase.bco.device.openhab.manager.service.OpenHABOperationServiceFactory;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
-public class OpenHABGatewayControllerFactory extends AbstractGatewayControllerFactory {
+public class OpenHABGatewayControllerFactory implements GatewayControllerFactory {
+
+    private final DeviceControllerFactory deviceControllerFactory;
 
     public OpenHABGatewayControllerFactory() throws InstantiationException {
-        super(new DeviceControllerFactoryImpl(new OpenHABOperationServiceFactory(), null));
+        this.deviceControllerFactory = new DeviceControllerFactoryImpl(new OpenHABOperationServiceFactory(), null);
     }
 
+    @Override
+    public GatewayController newInstance(final UnitConfig gatewayUnitConfig) throws InstantiationException, InterruptedException {
+        try {
 
+            if (gatewayUnitConfig == null) {
+                throw new NotAvailableException("gatewayConfig");
+            }
 
+            if (!gatewayUnitConfig.hasId()) {
+                throw new NotAvailableException("gatewayConfig.id");
+            }
+
+            if (!gatewayUnitConfig.hasLabel()) {
+                throw new NotAvailableException("gatewayConfig.label");
+            }
+
+            if (!gatewayUnitConfig.hasPlacementConfig()) {
+                throw new NotAvailableException("gatewayConfig.placement");
+            }
+
+            if (!gatewayUnitConfig.getPlacementConfig().hasLocationId()) {
+                throw new NotAvailableException("gatewayConfig.placement.locationId");
+            }
+
+            final GenericGatewayController genericGatewayController = new OpenHABGatewayController(getDeviceControllerFactory());
+            genericGatewayController.init(gatewayUnitConfig);
+
+            return genericGatewayController;
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(Gateway.class, gatewayUnitConfig.getId(), ex);
+        }
+    }
+
+    @Override
+    public DeviceControllerFactory getDeviceControllerFactory() {
+        return deviceControllerFactory;
+    }
 }

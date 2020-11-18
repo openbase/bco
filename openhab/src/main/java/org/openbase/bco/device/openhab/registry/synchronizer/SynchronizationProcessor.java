@@ -50,6 +50,8 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
+import org.openbase.type.language.LabelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,6 +182,21 @@ public class SynchronizationProcessor {
         return resolveDeviceClass(thingDTO.label, thingDTO.thingTypeUID, thingDTO.properties);
     }
 
+    public static GatewayClass getGatewayClassByDiscoveryResult(final DiscoveryResultDTO discoveryResult) throws CouldNotPerformException {
+        // transform to key value map
+        final Map<String, String> properties = new HashMap<>();
+        for (Entry<String, Object> stringObjectEntry : discoveryResult.properties.entrySet()) {
+            properties.put(stringObjectEntry.getKey(), stringObjectEntry.getValue().toString());
+        }
+
+        // resolve
+        return resolveGatewayClass(discoveryResult.label, discoveryResult.thingTypeUID, properties);
+    }
+
+    public static GatewayClass getGatewayClassForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+        return resolveGatewayClass(thingDTO.label, thingDTO.thingTypeUID, thingDTO.properties);
+    }
+
 // outdated and can later be removed.
 //    private static String getClassIdentifierForBinding(final String thingTypeUID, final Map<String, ?> properties) throws NotAvailableException {
 //        if (thingTypeUID.startsWith("zwave")) {
@@ -203,13 +220,55 @@ public class SynchronizationProcessor {
 //    }
 
 
+    private static GatewayClass resolveGatewayClass(final String thingLabel, final String thingTypeUID, final Map<String, String> properties) throws CouldNotPerformException {
+
+        // filter some gateways that are not supported yet
+//            case "OPENHAB_THING_CLASS = hue:bridge":
+//            case "OPENHAB_THING_CLASS = zwave:serial_zstick":
+                // just continue
+
+        // iterate over all gateway classes
+        for (final GatewayClass gatewayClass : Registries.getClassRegistry().getGatewayClasses()) {
+
+            // check if the product number already matches
+            final String modelId = properties.get(OPENHAB_THING_PROPERTY_KEY_MODEL_ID);
+            if(modelId != null && modelId.equalsIgnoreCase(gatewayClass.getProductNumber())) {
+                return gatewayClass;
+            }
+
+            // get the most global meta config
+            final MetaConfigPool metaConfigPool = new MetaConfigPool();
+            metaConfigPool.register(new ProtobufVariableProvider(gatewayClass));
+            metaConfigPool.register(new MetaConfigVariableProvider("GatewayClassMetaConfig", gatewayClass.getMetaConfig()));
+
+            try {
+                // get the value for the openHAB thing class key
+                final String[] thingClassKeys = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY).split(",");
+                for (final String thingClassKey : thingClassKeys) {
+
+                    // check thing uid match
+                    if (thingTypeUID.equals(thingClassKey)) {
+                        return gatewayClass;
+                    }
+
+                    // check variable match
+                    if (match(thingClassKey.trim(), properties, gatewayClass.getLabel())) {
+                        return gatewayClass;
+                    }
+                }
+            } catch (NotAvailableException ex) {
+                // value for gateway not available so continue
+            }
+        }
+        // throw exception because gateway class could not be found
+        throw new NotAvailableException("Could not resolve any GatewayClass for Thing[" + thingTypeUID + "] with Label[" + thingLabel + "] given the following Properties["+ StringProcessor.transformCollectionToString(properties.entrySet(), stringStringEntry -> stringStringEntry.getKey() + ":" + stringStringEntry.getValue(),", ") +"]");
+    }
+
     private static DeviceClass resolveDeviceClass(final String thingLabel, final String thingTypeUID, final Map<String, String> properties) throws CouldNotPerformException {
 
         // filter some things that are not supported yet
         switch (thingTypeUID) {
-            case "hue:bridge":
             case "hue:group":
-            case "zwave:serial_zstick":
                 throw new NotSupportedException(thingLabel, "bco");
             default:
                 // just continue
@@ -233,7 +292,13 @@ public class SynchronizationProcessor {
                 // get the value for the openHAB thing class key
                 final String[] thingClassKeys = metaConfigPool.getValue(OPENHAB_THING_CLASS_KEY).split(",");
                 for (final String thingClassKey : thingClassKeys) {
-                    if (match(thingClassKey.trim(), properties, deviceClass)) {
+                    // check thing uid match
+                    if (thingTypeUID.equals(thingClassKey)) {
+                        return deviceClass;
+                    }
+
+                    // check variable match
+                    if (match(thingClassKey.trim(), properties, deviceClass.getLabel())) {
                         return deviceClass;
                     }
                 }
@@ -245,11 +310,11 @@ public class SynchronizationProcessor {
         throw new NotAvailableException("Could not resolve any DeviceClass for Thing[" + thingTypeUID + "] with Label[" + thingLabel + "] given the following Properties["+ StringProcessor.transformCollectionToString(properties.entrySet(), stringStringEntry -> stringStringEntry.getKey() + ":" + stringStringEntry.getValue(),", ") +"]");
     }
 
-    private static boolean match(final String thingClassKey, final Map<String, String> properties, final DeviceClass deviceClass) {
+    private static boolean match(final String thingClassKey, final Map<String, String> properties, final LabelType.Label label) {
 
         final String[] thingKeyVaulePair = thingClassKey.split(":");
         if (thingKeyVaulePair.length != 2) {
-            LOGGER.warn("Invalid thing class key found for "+LabelProcessor.getBestMatch(deviceClass.getLabel(), "?")+ "! Device will be ignored.");
+            LOGGER.warn("Invalid thing class key found for "+LabelProcessor.getBestMatch(label, "?")+ "! Class will be ignored.");
             return false;
         }
 

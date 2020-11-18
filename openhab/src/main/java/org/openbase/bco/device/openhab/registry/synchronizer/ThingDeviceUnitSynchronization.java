@@ -44,6 +44,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,11 +118,21 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         try {
             deviceClass = SynchronizationProcessor.getDeviceClassForThing(thingDTO);
         } catch (NotSupportedException ex) {
-            logger.debug("Ignore thing {} because: {}", thingDTO.UID, ex.getMessage());
+            logger.debug("Ignore not supported thing {} because: {}", thingDTO.UID, ex.getMessage());
             return;
         } catch (NotAvailableException ex) {
-            logger.warn("Ignore thing {} because: {}", thingDTO.UID, ex.getMessage());
-            return;
+            GatewayClass gatewayClass;
+            try {
+                gatewayClass = SynchronizationProcessor.getGatewayClassForThing(thingDTO);
+                logger.warn("Found new Gateway[{}] with Specs[{}] but registration routine not implemented yet :(", LabelProcessor.getBestMatch(gatewayClass.getLabel(), "?"), thingDTO.UID, ex.getMessage());
+                return;
+            } catch (NotSupportedException exx) {
+                logger.debug("Ignore not supported thing {} because: {}", thingDTO.UID, ex.getMessage());
+                return;
+            } catch (NotAvailableException exx) {
+                logger.warn("Ignore thing {} because: {}", thingDTO.UID, ex.getMessage());
+                return;
+            }
         }
 
         // create device for this class

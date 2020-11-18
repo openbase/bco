@@ -27,10 +27,14 @@ import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
 import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.processing.VariableProvider;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState.State;
+
+import java.util.concurrent.TimeUnit;
 
 public class OpenHABGatewayController extends GenericGatewayController {
 
-    public static final String OPENHAB_EXTENSION_ID_META_CONFIG_KEY = "OPENHAB_EXTENSION_ID";
+    public static final String OPENHAB_BINDING_ID_META_CONFIG_KEY = "OPENHAB_BINDING_ID";
 
     public OpenHABGatewayController(final DeviceControllerFactory deviceControllerFactory) throws CouldNotPerformException {
         super(deviceControllerFactory);
@@ -38,16 +42,27 @@ public class OpenHABGatewayController extends GenericGatewayController {
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        final String value = generateVariablePool().getValue(OPENHAB_EXTENSION_ID_META_CONFIG_KEY);
 
+        // check if installed
         try {
-            // check if installed
-            if (OpenHABRestCommunicator.getInstance().isBindingInstalled(value)) {
-                OpenHABRestCommunicator.getInstance().installBinding(value);
+            // prepare variable pool
+            final VariableProvider vars = generateVariablePool();
+            final String bindingId = vars.getValue(OPENHAB_BINDING_ID_META_CONFIG_KEY);
+
+            // wait for openhab connection
+            OpenHABRestCommunicator.getInstance().waitForConnectionState(State.CONNECTED, 30, TimeUnit.SECONDS);
+
+            // install corresponding binding if missing
+            if (!OpenHABRestCommunicator.getInstance().isBindingInstalled(bindingId)) {
+                try {
+                    OpenHABRestCommunicator.getInstance().installBinding(bindingId);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not install openhab binding: " + bindingId, ex, logger);
+                }
             }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not install openhab binding: " + value, ex, logger);
+            ExceptionPrinter.printHistory("Could not validate gateway binding of " + getLabel("?"), ex, logger);
         }
+        super.activate();
     }
 }

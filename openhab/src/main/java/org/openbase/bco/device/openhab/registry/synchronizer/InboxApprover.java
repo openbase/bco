@@ -57,7 +57,7 @@ public class InboxApprover implements Activatable {
         observer = (source, discoveryResultDTO) -> {
 
             // just ignore things that should be ignored.
-            if(discoveryResultDTO.flag == DiscoveryResultFlag.IGNORED) {
+            if (discoveryResultDTO.flag == DiscoveryResultFlag.IGNORED) {
                 return;
             }
 
@@ -67,15 +67,23 @@ public class InboxApprover implements Activatable {
                     OpenHABRestCommunicator.getInstance().approve(discoveryResultDTO.thingUID, discoveryResultDTO.label);
                     return;
                 }
+
                 // try to find a device class matching the discovery result
                 // this will throw an exception if none can be found
-                SynchronizationProcessor.getDeviceClassByDiscoveryResult(discoveryResultDTO);
+                try {
+                    SynchronizationProcessor.getDeviceClassByDiscoveryResult(discoveryResultDTO);
+                } catch (NotAvailableException ex) {
+                    // try to find a device class matching the discovery result
+                    // this will throw an exception if none can be found
+                    SynchronizationProcessor.getGatewayClassByDiscoveryResult(discoveryResultDTO);
+                }
+
                 // device class could be found so approve
                 OpenHABRestCommunicator.getInstance().approve(discoveryResultDTO.thingUID, discoveryResultDTO.label);
             } catch (NotSupportedException ex) {
                 // ignore not supported things
             } catch (NotAvailableException ex) {
-                // no matching device class found so ignore it for now
+                // no matching gateway or device class found so ignore it for now
                 ExceptionPrinter.printHistory("Ignore discovered thing[" + discoveryResultDTO.thingUID + "].", ex, LOGGER, LogLevel.WARN);
             }
         };
