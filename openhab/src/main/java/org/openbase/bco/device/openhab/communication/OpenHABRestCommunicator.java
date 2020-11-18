@@ -199,15 +199,19 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     // ==========================================================================================================================================
 
     /**
-     *
-     *
      * @param bindingId
      * @return the discovery timeout in seconds
      * @throws CouldNotPerformException
      */
     public Integer startDiscovery(final String bindingId) throws CouldNotPerformException {
         final String response = post(DISCOVERY_TARGET + SEPARATOR + "bindings" + SEPARATOR + bindingId + SCAN_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
-        return Integer.parseInt(response);
+        int discoveryTimeout = Integer.parseInt(response);
+
+        if (discoveryTimeout <= 0) {
+            throw new CouldNotPerformException("Invalid discovery timeout. Maybe binding " + bindingId + " is not available");
+        }
+
+        return discoveryTimeout;
     }
 
     public void approve(final String thingUID, final String label) throws CouldNotPerformException {
