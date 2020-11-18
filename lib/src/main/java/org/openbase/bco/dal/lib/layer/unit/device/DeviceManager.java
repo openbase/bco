@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.layer.unit.HostUnitManager;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
@@ -66,12 +67,12 @@ public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
      * All gateways will be supported by default. Feel free to overwrite method
      * to changing this behavior.
      *
-     * @param clazz the gateway class.
+     * @param config the gateway config.
      *
      * @return true if supported
      */
     @Override
-    default boolean isGatewaySupported(final GatewayClass clazz) {
+    default boolean isGatewaySupported(final UnitConfig config) {
         return true;
     }
 
@@ -85,6 +86,7 @@ public interface DeviceManager extends HostUnitManager, DeviceFactoryProvider {
      */
     @Override
     default boolean isUnitSupported(final UnitConfig config) {
-        return config.getUnitType() == UnitType.DEVICE;
+        // we only maintain devices that do not belong to any gateway yet.
+        return config.getUnitType() == UnitType.DEVICE && !UnitConfigProcessor.isHostUnitAvailable(config);
     }
 }

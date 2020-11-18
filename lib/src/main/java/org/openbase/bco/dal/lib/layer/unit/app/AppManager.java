@@ -65,8 +65,8 @@ public interface AppManager extends HostUnitManager {
      * @return true if supported
      */
     @Override
-    default boolean isGatewaySupported(final GatewayClass clazz) {
-        // gateways are not yet supported
+    default boolean isGatewaySupported(final UnitConfig config) {
+        // gateways are not yet supported for apps.
         return false;
     }
 }

@@ -56,6 +56,11 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
 
                 @Override
                 public boolean isUnitSupported(UnitConfig config) {
+
+                    if (!super.isUnitSupported(config)) {
+                        return false;
+                    }
+
                     try {
                         DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
                         return !deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().isEmpty();

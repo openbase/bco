@@ -44,7 +44,12 @@ public class DeviceControllerFactoryImpl extends AbstractDeviceControllerFactory
     }
 
     @Override
-    public DeviceController newInstance(final UnitConfig config) throws InstantiationException, InterruptedException {
-        return newInstance(config, operationServiceFactory, unitDataSourceFactory);
+    public OperationServiceFactory getOperationServiceFactory() {
+        return operationServiceFactory;
+    }
+
+    @Override
+    public UnitDataSourceFactory getUnitDataSourceFactory() {
+        return unitDataSourceFactory;
     }
 }

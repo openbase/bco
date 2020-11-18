@@ -21,14 +21,16 @@ package org.openbase.bco.dal.control.layer.unit.device;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * * @author <a href="mailto:mpohling@techfak.uni-bielefeld.com">Marian Pohling</a>
  */
@@ -36,6 +38,7 @@ public class GenericDeviceController extends AbstractDeviceController {
 
     private final OperationServiceFactory operationServiceFactory;
     private final UnitDataSourceFactory unitDataSourceFactory;
+    private static final DALUnitFactory dalUnitLoader = new DALUnitFactory();
 
     public GenericDeviceController(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws CouldNotPerformException {
         try {
@@ -47,6 +50,11 @@ public class GenericDeviceController extends AbstractDeviceController {
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    @Override
+    protected UnitController<?, ?> buildUnitController(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        return dalUnitLoader.newInstance(unitConfig, this);
     }
 
     @Override

@@ -22,29 +22,15 @@ package org.openbase.bco.dal.control.layer.unit.gateway;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
-import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class GatewayControllerFactoryImpl extends AbstractGatewayControllerFactory {
 
-    private final OperationServiceFactory operationServiceFactory;
-    private final UnitDataSourceFactory unitDataSourceFactory;
-
-    public GatewayControllerFactoryImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws InstantiationException {
-//        assert operationServiceFactory != null;
-        this.operationServiceFactory = operationServiceFactory;
-        this.unitDataSourceFactory = unitDataSourceFactory;
-    }
-
-    @Override
-    public GatewayController newInstance(final UnitConfig config) throws InstantiationException, InterruptedException {
-        return newInstance(config, operationServiceFactory, unitDataSourceFactory);
+    public GatewayControllerFactoryImpl(final DeviceControllerFactory deviceControllerFactory) throws InstantiationException {
+        super(deviceControllerFactory);
     }
 }

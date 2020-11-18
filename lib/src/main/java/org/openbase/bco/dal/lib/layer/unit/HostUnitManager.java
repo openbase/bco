@@ -33,13 +33,14 @@ import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 public interface HostUnitManager extends OperationServiceFactoryProvider, UnitDataSourceFactoryProvider {
 
     /**
-     * Check if the given gateway is supported by this manager instance.
+     * All gateways will be supported by default. Feel free to overwrite method
+     * to changing this behavior.
      *
-     * @param clazz the class of the unit to check.
+     * @param config the gateway config.
      *
-     * @return true if supported.
+     * @return true if supported
      */
-    boolean isGatewaySupported(final GatewayClass clazz);
+    boolean isGatewaySupported(final UnitConfig config);
 
     /**
      * Check if the given unit is supported by this manager instance.

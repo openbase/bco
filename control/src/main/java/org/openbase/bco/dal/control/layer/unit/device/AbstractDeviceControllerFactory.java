@@ -43,16 +43,8 @@ public abstract class AbstractDeviceControllerFactory implements DeviceControlle
         super();
     }
 
-    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
-        try {
-            return newInstance(deviceUnitConfig, deviceManager.getOperationServiceFactory(), deviceManager.getUnitDataSourceFactory());
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(Device.class, deviceUnitConfig.getId(), ex);
-        }
-    }
-
     @Override
-    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final UnitConfig deviceUnitConfig) throws InstantiationException, InterruptedException {
         try {
             if (deviceUnitConfig == null) {
                 throw new NotAvailableException("deviceConfig");
@@ -74,7 +66,7 @@ public abstract class AbstractDeviceControllerFactory implements DeviceControlle
                 throw new NotAvailableException("deviceConfig.placement.locationId");
             }
 
-            final GenericDeviceController genericDeviceController = new GenericDeviceController(operationServiceFactory, unitDataSourceFactory);
+            final GenericDeviceController genericDeviceController = new GenericDeviceController(getOperationServiceFactory(), getUnitDataSourceFactory());
             genericDeviceController.init(deviceUnitConfig);
             return genericDeviceController;
         } catch (CouldNotPerformException ex) {

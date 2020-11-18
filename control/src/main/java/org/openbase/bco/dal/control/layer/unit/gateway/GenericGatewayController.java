@@ -21,45 +21,45 @@ package org.openbase.bco.dal.control.layer.unit.gateway;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.control.layer.unit.gateway.AbstractGatewayController;
+
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * * @author <a href="mailto:mpohling@techfak.uni-bielefeld.com">Marian Pohling</a>
  */
 public class GenericGatewayController extends AbstractGatewayController {
 
-    private final OperationServiceFactory operationServiceFactory;
-    private final UnitDataSourceFactory unitDataSourceFactory;
+    private final DeviceControllerFactory deviceControllerFactory;
 
-    public GenericGatewayController(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws CouldNotPerformException {
-        try {
-            if (operationServiceFactory == null) {
-                throw new NotAvailableException("service factory");
-            }
-            this.operationServiceFactory = operationServiceFactory;
-            this.unitDataSourceFactory = unitDataSourceFactory;
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+    public GenericGatewayController(final DeviceControllerFactory deviceControllerFactory) throws CouldNotPerformException {
+        this.deviceControllerFactory = deviceControllerFactory;
     }
 
     @Override
-    public OperationServiceFactory getOperationServiceFactory() {
-        return operationServiceFactory;
+    protected DeviceController buildUnitController(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        return deviceControllerFactory.newInstance(unitConfig);
     }
 
+    public DeviceControllerFactory getDeviceControllerFactory() {
+        return deviceControllerFactory;
+    }
+
+    // todo cleanup interfaces since instance is provided via the device manager interface.
+    @Override
+    public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
+        return deviceControllerFactory.getOperationServiceFactory();
+    }
+
+    // todo cleanup interfaces since instance is provided via the device manager interface.
     @Override
     public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
-        if (unitDataSourceFactory == null) {
-            throw new NotAvailableException(UnitDataSourceFactory.class);
-        }
-        return unitDataSourceFactory;
+        return deviceControllerFactory.getUnitDataSourceFactory();
     }
 }

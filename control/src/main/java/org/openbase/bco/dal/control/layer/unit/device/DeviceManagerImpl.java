@@ -55,9 +55,6 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     private static DeviceManagerImpl instance;
 
     private final GatewayControllerFactory gatewayControllerFactory;
-    private final DeviceControllerFactory deviceControllerFactory;
-    private final OperationServiceFactory operationServiceFactory;
-    private final UnitDataSourceFactory unitDataSourceFactory;
 
     private final UnitControllerRegistryImpl<GatewayController> gatewayControllerRegistry;
     private final UnitControllerRegistryImpl<DeviceController> deviceControllerRegistry;
@@ -81,21 +78,17 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     }
 
     public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory, final boolean autoLogin) throws InstantiationException, InterruptedException {
-        this(operationServiceFactory, unitDataSourceFactory, new DeviceControllerFactoryImpl(operationServiceFactory, unitDataSourceFactory), autoLogin);
+        this(new GatewayControllerFactoryImpl(new DeviceControllerFactoryImpl(operationServiceFactory, unitDataSourceFactory)), autoLogin);
     }
 
-    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory, final DeviceControllerFactory deviceControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl(final GatewayControllerFactory gatewayControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             if(autoLogin) {
                 BCOLogin.getSession().loginBCOUser();
             }
             DeviceManagerImpl.instance = this;
 
-            //todo gateway: validate if this is correct
-            this.gatewayControllerFactory = new GatewayControllerFactoryImpl(null, null);
-            this.deviceControllerFactory = deviceControllerFactory;
-            this.operationServiceFactory = operationServiceFactory;
-            this.unitDataSourceFactory = unitDataSourceFactory;
+            this.gatewayControllerFactory = gatewayControllerFactory;
 
             this.gatewayControllerRegistry = new UnitControllerRegistryImpl<>();
             this.unitControllerRegistry = new UnitControllerRegistryImpl<>();
@@ -104,9 +97,9 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
             Registries.waitForData();
 
             this.gatewayRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(gatewayControllerRegistry, Registries.getUnitRegistry().getGatewayUnitConfigRemoteRegistry(false), gatewayControllerFactory);
-            this.gatewayRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isUnitSupported(unitConfig));
+            this.gatewayRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isGatewaySupported(unitConfig));
 
-            this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<DeviceController>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(false), deviceControllerFactory);
+            this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(false), gatewayControllerFactory.getDeviceControllerFactory());
             this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isUnitSupported(unitConfig));
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
@@ -180,19 +173,19 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
     @Override
     public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
-        return operationServiceFactory;
+        return getDeviceControllerFactory().getOperationServiceFactory();
     }
 
     @Override
     public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
-        if (unitDataSourceFactory == null) {
+        if (getDeviceControllerFactory().getUnitDataSourceFactory() == null) {
             throw new NotAvailableException("UnitDataSourceFactory", new NotSupportedException("UnitDataSource", this));
         }
-        return unitDataSourceFactory;
+        return getDeviceControllerFactory().getUnitDataSourceFactory();
     }
 
     @Override
     public DeviceControllerFactory getDeviceControllerFactory() throws NotAvailableException {
-        return deviceControllerFactory;
+        return gatewayControllerFactory.getDeviceControllerFactory();
     }
 }

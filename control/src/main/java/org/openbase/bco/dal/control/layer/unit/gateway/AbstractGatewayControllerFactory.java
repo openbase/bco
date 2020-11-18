@@ -22,9 +22,9 @@ package org.openbase.bco.dal.control.layer.unit.gateway;
  * #L%
  */
 
-import org.openbase.bco.dal.control.layer.unit.gateway.GenericGatewayController;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.bco.dal.lib.layer.unit.gateway.Gateway;
 import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
@@ -35,26 +35,18 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractGatewayControllerFactory implements GatewayControllerFactory {
 
-    public AbstractGatewayControllerFactory() throws InstantiationException {
-        super();
-    }
+    private final DeviceControllerFactory deviceControllerFactory;
 
-    public GatewayController newInstance(final UnitConfig gatewayUnitConfig, final DeviceManager devicemanager) throws InstantiationException, InterruptedException {
-        try {
-            //todo gateway: validate if this is correct
-            return newInstance(gatewayUnitConfig, devicemanager.getOperationServiceFactory(), devicemanager.getUnitDataSourceFactory());
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(Gateway.class, gatewayUnitConfig.getId(), ex);
-        }
+    public AbstractGatewayControllerFactory(final DeviceControllerFactory deviceControllerFactory) throws InstantiationException {
+        this.deviceControllerFactory = deviceControllerFactory;
     }
 
     @Override
-    public GatewayController newInstance(final UnitConfig gatewayUnitConfig, final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws InstantiationException, InterruptedException {
+    public GatewayController newInstance(final UnitConfig gatewayUnitConfig) throws InstantiationException, InterruptedException {
         try {
             if (gatewayUnitConfig == null) {
                 throw new NotAvailableException("gatewayConfig");
@@ -75,12 +67,16 @@ public abstract class AbstractGatewayControllerFactory implements GatewayControl
             if (!gatewayUnitConfig.getPlacementConfig().hasLocationId()) {
                 throw new NotAvailableException("gatewayConfig.placement.locationId");
             }
-            //todo gateway: validate if this is correct
-            final GenericGatewayController genericGatewayController = new GenericGatewayController(operationServiceFactory, unitDataSourceFactory);
+            final GenericGatewayController genericGatewayController = new GenericGatewayController(getDeviceControllerFactory());
             genericGatewayController.init(gatewayUnitConfig);
             return genericGatewayController;
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(Gateway.class, gatewayUnitConfig.getId(), ex);
         }
+    }
+
+    @Override
+    public DeviceControllerFactory getDeviceControllerFactory() {
+        return deviceControllerFactory;
     }
 }

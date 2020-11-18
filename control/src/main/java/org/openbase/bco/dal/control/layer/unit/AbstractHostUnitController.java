@@ -29,11 +29,11 @@ import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
+import org.openbase.jul.extension.protobuf.iface.DataBuilderProvider;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.CloseableWriteLockWrapper;
@@ -65,7 +65,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         this.hostedUnitDiff = new ProtobufListDiff<>();
     }
 
-    protected void registerUnit(final C unit) throws CouldNotPerformException {
+    private void registerUnitController(final C unit) throws CouldNotPerformException {
         synchronized (unitMapLock) {
             try {
                 if (unitMap.containsKey(unit.getId())) {
@@ -75,69 +75,6 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not registerUnit!", ex);
             }
-        }
-    }
-
-    protected void registerUnit(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        try {
-            Message.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
-
-            Constructor<C> unitConstructor;
-            try {
-                unitConstructor = (Constructor<C>) detectUnitControllerClass(unitConfig).getConstructor(HostUnitController.class, unitMessageBuilder.getClass());
-            } catch (CouldNotTransformException | NoSuchMethodException | SecurityException | NullPointerException ex) {
-                throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
-            }
-            C unit;
-            try {
-                unit = unitConstructor.newInstance(this, unitMessageBuilder);
-            } catch (java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException ex) {
-                throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
-            }
-            unit.init(unitConfig);
-            if (isActive()) {
-                unit.activate();
-            }
-            registerUnit(unit);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not register Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
-        }
-    }
-
-    protected <B extends Message.Builder> B registerUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
-            DB builder = dataBuilder.getInternalBuilder();
-            Class builderClass = builder.getClass();
-            String unitTypeName = StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());
-            String repeatedUnitFieldName = "unit_" + unitConfig.getUnitType().name().toLowerCase() + "_data";
-            Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = builder.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
-
-            if (repeatedUnitFieldDescriptor == null) {
-                throw new CouldNotPerformException("Missing FieldDescriptor[" + repeatedUnitFieldName + "] in protobuf Type[" + builder.getClass().getName() + "]!");
-            }
-
-            Message.Builder unitBuilder = UnitConfigProcessor.generateUnitDataBuilder(unitConfig);
-            Method addUnitMethod;
-            try {
-                addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName + "Data", unitBuilder.getClass());
-            } catch (Exception ex) {
-                throw new CouldNotPerformException("Missing repeated field for " + unitBuilder.getClass().getName() + " in protobuf Type[" + builder.getClass().getName() + "]! ", ex);
-            }
-
-            try {
-                addUnitMethod.invoke(builder, unitBuilder);
-            } catch (Exception ex) {
-                throw new CouldNotPerformException("Could not add " + unitBuilder.getClass().getName() + " to message of Type[" + builder.getClass().getName() + "]! ", ex);
-            }
-
-            try {
-                return (B) builderClass.getMethod("getUnit" + unitTypeName + "DataBuilder", int.class).invoke(builder, builder.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
-            } catch (Exception ex) {
-                throw new CouldNotPerformException("Could not create Builder!", ex);
-            }
-
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could register UnitBuilder[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
         }
     }
 
@@ -255,7 +192,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         return newUnitController;
     }
 
-    protected final void registerUnits(final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
+    private final void registerUnits(final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         for (final UnitConfig unitConfig : unitConfigs) {
             try {
@@ -267,22 +204,80 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
         MultiException.checkAndThrow(() -> "Could not register all hosted units of " + this, exceptionStack);
     }
 
-    protected final void registerUnitsById(final Collection<String> unitIds) throws CouldNotPerformException, InterruptedException {
-        CachedUnitRegistryRemote.waitForData();
-        MultiException.ExceptionStack exceptionStack = null;
-
-        for (final String unitId : unitIds) {
-            try {
-                registerUnit(Registries.getUnitRegistry(true).getUnitConfigById(unitId));
-            } catch (CouldNotPerformException ex) {
-                exceptionStack = MultiException.push(this, ex, exceptionStack);
-            }
+    private final void registerUnit(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        final C unitController = buildUnitController(unitConfig);
+        if (isActive()) {
+            activate();
         }
-        MultiException.checkAndThrow(() -> "Could not register all hosted units of " + this, exceptionStack);
+        registerUnitController(unitController);
     }
 
     @Override
     public List<C> getHostedUnitControllerList() {
         return new ArrayList<>(unitMap.values());
+    }
+
+    protected abstract C buildUnitController(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
+
+    public static class DALUnitFactory<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>, C extends UnitController<?, ?>> {
+
+        public C newInstance(final UnitConfig unitConfig, final AbstractHostUnitController<D, DB, C> dataBuilderProvider) throws CouldNotPerformException, InterruptedException {
+            try {
+                final Message.Builder unitMessageBuilder = resolveUnitBuilder(unitConfig, dataBuilderProvider);
+                final Constructor<C> unitConstructor;
+                try {
+                    unitConstructor = (Constructor<C>) detectUnitControllerClass(unitConfig).getConstructor(HostUnitController.class, unitMessageBuilder.getClass());
+                } catch (CouldNotTransformException | NoSuchMethodException | SecurityException | NullPointerException ex) {
+                    throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
+                }
+                C unit;
+                try {
+                    unit = unitConstructor.newInstance(dataBuilderProvider, unitMessageBuilder);
+                } catch (java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NullPointerException ex) {
+                    throw new CouldNotPerformException("Could not instantiate Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
+                }
+                unit.init(unitConfig);
+                return unit;
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not register Unit[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
+            }
+        }
+
+        public <B extends Message.Builder> B resolveUnitBuilder(final UnitConfig unitConfig, final DataBuilderProvider<D, DB> dataBuilderProvider) throws CouldNotPerformException, InterruptedException {
+            try (ClosableDataBuilder<DB> dataBuilder = dataBuilderProvider.getDataBuilderInterruptible(this)) {
+                final DB builder = dataBuilder.getInternalBuilder();
+                final Class builderClass = builder.getClass();
+                final String unitTypeName = StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());
+                final String repeatedUnitFieldName = "unit_" + unitConfig.getUnitType().name().toLowerCase() + "_data";
+                final Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = builder.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
+
+                if (repeatedUnitFieldDescriptor == null) {
+                    throw new CouldNotPerformException("Missing FieldDescriptor[" + repeatedUnitFieldName + "] in protobuf Type[" + builder.getClass().getName() + "]!");
+                }
+
+                Message.Builder unitBuilder = UnitConfigProcessor.generateUnitDataBuilder(unitConfig);
+                Method addUnitMethod;
+                try {
+                    addUnitMethod = builderClass.getMethod("addUnit" + unitTypeName + "Data", unitBuilder.getClass());
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Missing repeated field for " + unitBuilder.getClass().getName() + " in protobuf Type[" + builder.getClass().getName() + "]! ", ex);
+                }
+
+                try {
+                    addUnitMethod.invoke(builder, unitBuilder);
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Could not add " + unitBuilder.getClass().getName() + " to message of Type[" + builder.getClass().getName() + "]! ", ex);
+                }
+
+                try {
+                    return (B) builderClass.getMethod("getUnit" + unitTypeName + "DataBuilder", int.class).invoke(builder, builder.getRepeatedFieldCount(repeatedUnitFieldDescriptor) - 1);
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Could not create Builder!", ex);
+                }
+
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could register UnitBuilder[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!", ex);
+            }
+        }
     }
 }
