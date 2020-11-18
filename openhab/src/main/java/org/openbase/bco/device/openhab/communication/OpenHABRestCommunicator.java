@@ -57,6 +57,8 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     public static final String EXTENSIONS_TARGET = "extensions";
     public static final String INSTALL_TARGET = "install";
     public static final String UNINSTALL_TARGET = "uninstall";
+    public static final String BINDINGS_TARGET = "bindings";
+    public static final String CONFIG_TARGET = "config";
     public static final String SCAN_TARGET = "scan";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABRestCommunicator.class);
@@ -204,7 +206,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
      * @throws CouldNotPerformException
      */
     public Integer startDiscovery(final String bindingId) throws CouldNotPerformException {
-        final String response = post(DISCOVERY_TARGET + SEPARATOR + "bindings" + SEPARATOR + bindingId + SCAN_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+        final String response = post(DISCOVERY_TARGET + SEPARATOR + BINDINGS_TARGET + SEPARATOR + bindingId + SCAN_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
         int discoveryTimeout = Integer.parseInt(response);
 
         if (discoveryTimeout <= 0) {
@@ -228,6 +230,15 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
 
     public void addBinding(final String bindingId) throws CouldNotPerformException {
         post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    public boolean isBindingInstalled(final String bindingId) throws CouldNotPerformException {
+        try {
+            get(BINDINGS_TARGET + SEPARATOR + bindingId + SEPARATOR + CONFIG_TARGET);
+            return true;
+        } catch (NotAvailableException ex) {
+            return false;
+        }
     }
 
     public void remove(final String bindingId) throws CouldNotPerformException {
