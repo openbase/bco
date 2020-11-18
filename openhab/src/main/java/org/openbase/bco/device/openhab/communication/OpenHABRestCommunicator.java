@@ -228,7 +228,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     // Extensions
     // ==========================================================================================================================================
 
-    public void addBinding(final String bindingId) throws CouldNotPerformException {
+    public void installBinding(final String bindingId) throws CouldNotPerformException {
         post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -241,7 +241,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
         }
     }
 
-    public void remove(final String bindingId) throws CouldNotPerformException {
+    public void uninstallBindings(final String bindingId) throws CouldNotPerformException {
         post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + UNINSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
