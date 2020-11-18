@@ -22,19 +22,15 @@ package org.openbase.bco.dal.control.layer.unit.device;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
-import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
-import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractDeviceControllerFactory implements DeviceControllerFactory {
