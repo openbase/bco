@@ -28,6 +28,7 @@ import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import graphql.GraphQL;
 import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.schema.*;
@@ -153,6 +154,11 @@ public class BcoGraphQlApiSpringBootApplication {
                 .codeRegistry(codeRegistry)
                 .build();*/
         return new DefaultGraphQLSchemaProvider(schema);
+    }
+
+    @Bean
+    public GraphQL graphQL() {
+        return GraphQL.newGraphQL(schemaProvider().getSchema()).build();
     }
 
     @Bean
