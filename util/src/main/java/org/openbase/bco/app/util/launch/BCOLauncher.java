@@ -22,6 +22,7 @@ package org.openbase.bco.app.util.launch;
  * #L%
  */
 
+import org.openbase.bco.api.graphql.BcoApiGraphQlLauncher;
 import org.openbase.bco.app.util.launch.jp.JPDeviceManager;
 import org.openbase.bco.app.util.launch.jp.JPDeviceManager.BuildinDeviceManager;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
@@ -81,6 +82,11 @@ public class BCOLauncher {
         launcher.add(LocationManagerLauncher.class);
         launcher.add(SceneManagerLauncher.class);
         launcher.add(UserManagerLauncher.class);
+
+        /**
+         * API Launcher
+         */
+        launcher.add(BcoApiGraphQlLauncher.class);
 
         /**
          * Configure dynamic Device Manager Launcher

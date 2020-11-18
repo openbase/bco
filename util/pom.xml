@@ -177,7 +177,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.app.openapiserver</artifactId>
+            <artifactId>bco.api.graphql</artifactId>
             <version>${dependency.bco.version}</version>
         </dependency>
         <dependency>
