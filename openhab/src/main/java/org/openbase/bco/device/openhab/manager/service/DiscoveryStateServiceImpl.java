@@ -22,6 +22,8 @@ package org.openbase.bco.device.openhab.manager.service;
  * #L%
  */
 
+import org.openbase.bco.dal.control.action.ActionImpl;
+import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.DiscoveryStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -30,20 +32,23 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class DiscoveryStateServiceImpl<ST extends DiscoveryStateOperationService & Unit<?>> extends OpenHABService<ST> implements DiscoveryStateOperationService {
 
     public static final String OPENHAB_BINDING_ID_KEY = "OPENHAB_BINDING_ID";
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorStateServiceImpl.class);
+
+    private final String DISCOVERY_STATE_SERVICE_LOCK = "DISCOVERY_SERVICE_LOCK";
 
     public DiscoveryStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
@@ -56,20 +61,27 @@ public class DiscoveryStateServiceImpl<ST extends DiscoveryStateOperationService
 
     @Override
     public Future<ActionDescription> setDiscoveryState(ActivationState discoveryState) {
-        if (discoveryState.getValue() == ActivationState.State.INACTIVE) {
-            return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(discoveryState, () -> ActionDescription.getDefaultInstance()));
-        }
-
         try {
-            final GatewayClassType.GatewayClass gatewayClass = Registries.getClassRegistry().getGatewayClassById(unit.getConfig().getGatewayConfig().getGatewayClassId());
-            MetaConfigVariableProvider metaConfigVariableProvider = new MetaConfigVariableProvider("GatewayClassMetaConfig", gatewayClass.getMetaConfig());
-            final String bindingId = metaConfigVariableProvider.getValue(OPENHAB_BINDING_ID_KEY);
+            final AbstractUnitController<?, ?> unitController = (AbstractUnitController<?, ?>) unit;
+            unitController.applyServiceState(discoveryState, ServiceTemplateType.ServiceTemplate.ServiceType.DISCOVERY_STATE_SERVICE);
 
-            //TODO: apply this timeout to the action setting the state to active!
-            final Integer discoveryTimeout = OpenHABRestCommunicator.getInstance().startDiscovery(bindingId);
+            if (discoveryState.getValue() == ActivationState.State.ACTIVE) {
+                // trigger discovery for binding at openHAB
+                final GatewayClassType.GatewayClass gatewayClass = Registries.getClassRegistry().getGatewayClassById(unit.getConfig().getGatewayConfig().getGatewayClassId());
+                final String bindingId = unit.generateVariablePool().getValue(OPENHAB_BINDING_ID_KEY);
+                final Integer discoveryTimeout = OpenHABRestCommunicator.getInstance().startDiscovery(bindingId);
+
+                // apply returned timeout to the action
+                final ActionImpl action = (ActionImpl) unitController.getActionById(discoveryState.getResponsibleAction().getActionId(), DISCOVERY_STATE_SERVICE_LOCK);
+                action.setExecutionTimePeriod(discoveryTimeout, TimeUnit.SECONDS);
+                unitController.reschedule();
+            }
 
             return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(discoveryState, () -> ActionDescription.getDefaultInstance()));
         } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
