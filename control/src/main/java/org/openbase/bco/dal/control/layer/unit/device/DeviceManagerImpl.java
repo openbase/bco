@@ -23,6 +23,7 @@ package org.openbase.bco.dal.control.layer.unit.device;
  */
 
 import org.openbase.bco.dal.control.layer.unit.UnitControllerRegistrySynchronizer;
+import org.openbase.bco.dal.control.layer.unit.gateway.GatewayControllerFactoryImpl;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.OperationServiceFactoryMock;
@@ -32,6 +33,8 @@ import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
+import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
+import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayControllerFactory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.*;
@@ -51,13 +54,13 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     //TODO: please remove in future release
     private static DeviceManagerImpl instance;
 
-    private final DeviceControllerFactory deviceControllerFactory;
-    private final OperationServiceFactory operationServiceFactory;
-    private final UnitDataSourceFactory unitDataSourceFactory;
+    private final GatewayControllerFactory gatewayControllerFactory;
 
+    private final UnitControllerRegistryImpl<GatewayController> gatewayControllerRegistry;
     private final UnitControllerRegistryImpl<DeviceController> deviceControllerRegistry;
     private final UnitControllerRegistryImpl<UnitController<?, ?>> unitControllerRegistry;
 
+    private final UnitControllerRegistrySynchronizer<GatewayController> gatewayRegistrySynchronizer;
     private final UnitControllerRegistrySynchronizer<DeviceController> deviceRegistrySynchronizer;
 
     /**
@@ -75,27 +78,29 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     }
 
     public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory, final boolean autoLogin) throws InstantiationException, InterruptedException {
-        this(operationServiceFactory, unitDataSourceFactory, new DeviceControllerFactoryImpl(operationServiceFactory, unitDataSourceFactory), autoLogin);
+        this(new GatewayControllerFactoryImpl(new DeviceControllerFactoryImpl(operationServiceFactory, unitDataSourceFactory)), autoLogin);
     }
 
-    public DeviceManagerImpl(final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory, final DeviceControllerFactory deviceControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerImpl(final GatewayControllerFactory gatewayControllerFactory, final boolean autoLogin) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             if(autoLogin) {
                 BCOLogin.getSession().loginBCOUser();
             }
             DeviceManagerImpl.instance = this;
 
-            this.deviceControllerFactory = deviceControllerFactory;
-            this.operationServiceFactory = operationServiceFactory;
-            this.unitDataSourceFactory = unitDataSourceFactory;
+            this.gatewayControllerFactory = gatewayControllerFactory;
 
+            this.gatewayControllerRegistry = new UnitControllerRegistryImpl<>();
             this.unitControllerRegistry = new UnitControllerRegistryImpl<>();
             this.deviceControllerRegistry = new UnitControllerRegistryImpl<>();
 
             Registries.waitForData();
 
-            this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(false), deviceControllerFactory);
-            this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isSupported(unitConfig));
+            this.gatewayRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(gatewayControllerRegistry, Registries.getUnitRegistry().getGatewayUnitConfigRemoteRegistry(false), gatewayControllerFactory);
+            this.gatewayRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isGatewaySupported(unitConfig));
+
+            this.deviceRegistrySynchronizer = new UnitControllerRegistrySynchronizer<>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(false), gatewayControllerFactory.getDeviceControllerFactory());
+            this.deviceRegistrySynchronizer.addFilter(unitConfig -> !DeviceManagerImpl.this.isUnitSupported(unitConfig));
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -115,32 +120,47 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        gatewayControllerRegistry.activate();
         deviceControllerRegistry.activate();
         unitControllerRegistry.activate();
 
+        gatewayRegistrySynchronizer.activate();
         deviceRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return deviceControllerRegistry.isActive() &&
+        return gatewayControllerRegistry.isActive() &&
+                deviceControllerRegistry.isActive() &&
                 unitControllerRegistry.isActive() &&
+                gatewayRegistrySynchronizer.isActive() &&
                 deviceRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
+        gatewayRegistrySynchronizer.deactivate();
         deviceRegistrySynchronizer.deactivate();
+        gatewayControllerRegistry.deactivate();
         deviceControllerRegistry.deactivate();
         unitControllerRegistry.deactivate();
     }
 
     @Override
     public void shutdown() {
+        gatewayRegistrySynchronizer.shutdown();
         deviceRegistrySynchronizer.shutdown();
+
+        gatewayControllerRegistry.shutdown();
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
+
         instance = null;
+    }
+
+    @Override
+    public UnitControllerRegistry<GatewayController> getGatewayControllerRegistry() {
+        return gatewayControllerRegistry;
     }
 
     @Override
@@ -155,19 +175,19 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
 
     @Override
     public OperationServiceFactory getOperationServiceFactory() throws NotAvailableException {
-        return operationServiceFactory;
+        return getDeviceControllerFactory().getOperationServiceFactory();
     }
 
     @Override
     public UnitDataSourceFactory getUnitDataSourceFactory() throws NotAvailableException {
-        if (unitDataSourceFactory == null) {
+        if (getDeviceControllerFactory().getUnitDataSourceFactory() == null) {
             throw new NotAvailableException("UnitDataSourceFactory", new NotSupportedException("UnitDataSource", this));
         }
-        return unitDataSourceFactory;
+        return getDeviceControllerFactory().getUnitDataSourceFactory();
     }
 
     @Override
     public DeviceControllerFactory getDeviceControllerFactory() throws NotAvailableException {
-        return deviceControllerFactory;
+        return gatewayControllerFactory.getDeviceControllerFactory();
     }
 }

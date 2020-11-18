@@ -110,16 +110,14 @@ public class ServiceTest extends AbstractBCOTest {
             Registries.getTemplateRegistry().waitForData();
 
             for (ServiceType serviceType : ServiceType.values()) {
-                // todo release: refactor name of RFIDState to RfidState to enable class loading via reflection.
-                if (serviceType == ServiceType.UNKNOWN || serviceType == ServiceType.R_F_I_D_STATE_SERVICE) {
+                if (serviceType == ServiceType.UNKNOWN) {
                     continue;
                 }
                 Services.generateServiceStateBuilder(serviceType);
             }
 
             for (CommunicationType communicationType : CommunicationType.values()) {
-                // todo release: refactor name of RFIDState to RfidState to enable class loading via reflection.
-                if (communicationType == CommunicationType.UNKNOWN|| communicationType == CommunicationType.R_F_I_D_STATE) {
+                if (communicationType == CommunicationType.UNKNOWN) {
                     continue;
                 }
                 Services.generateServiceStateBuilder(communicationType);

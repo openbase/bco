@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.lib.layer.unit.app;
+package org.openbase.bco.dal.lib.layer.unit.gateway;
 
 /*
  * #%L
@@ -22,13 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit.app;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import org.openbase.bco.dal.lib.layer.unit.app.App;
-import org.openbase.type.domotic.unit.app.AppDataType.AppData;
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
+import org.openbase.type.domotic.unit.gateway.GatewayDataType.GatewayData;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
  */
-public interface AppController extends App, HostUnitController<AppData, AppData.Builder, UnitController<?, ?>> {
+public interface GatewayController extends Gateway, HostUnitController<GatewayData, GatewayData.Builder, DeviceController> {
 }

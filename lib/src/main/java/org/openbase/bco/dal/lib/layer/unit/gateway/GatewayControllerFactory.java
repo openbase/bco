@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.lib.layer.unit.app;
+package org.openbase.bco.dal.lib.layer.unit.gateway;
 
 /*
  * #%L
@@ -21,14 +21,18 @@ package org.openbase.bco.dal.lib.layer.unit.app;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import org.openbase.bco.dal.lib.layer.unit.app.App;
-import org.openbase.type.domotic.unit.app.AppDataType.AppData;
+
+import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.pattern.Factory;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AppController extends App, HostUnitController<AppData, AppData.Builder, UnitController<?, ?>> {
+public interface GatewayControllerFactory extends Factory<GatewayController, UnitConfig> {
+
+    GatewayController newInstance(final UnitConfig gatewayUnitConfig) throws InstantiationException, InterruptedException;
+
+    DeviceControllerFactory getDeviceControllerFactory();
 }

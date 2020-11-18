@@ -36,6 +36,7 @@ import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.iface.TransactionIdProvider;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Configurable;
@@ -43,6 +44,7 @@ import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.processing.VariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -66,6 +68,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openbase.type.geometry.RotationType;
 import org.openbase.type.geometry.RotationType.Rotation;
 import org.openbase.type.geometry.TranslationType;
@@ -76,10 +79,7 @@ import org.slf4j.LoggerFactory;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
 
 /**
@@ -641,47 +641,65 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
      * @throws InterruptedException  is thrown in case the thread was externally interrupted.
      */
     default VariableProvider generateVariablePool() throws NotAvailableException, InterruptedException {
-        try {
-            final UnitConfig unitConfig = getConfig();
-            final MetaConfigPool configPool = new MetaConfigPool();
+        return registerVariables(getConfig(), new MetaConfigPool());
+    }
 
-            configPool.register(new MetaConfigVariableProvider("UnitMetaConfig", unitConfig.getMetaConfig()));
-            configPool.register(new ProtobufVariableProvider(unitConfig));
+    default MetaConfigPool registerVariables(final UnitConfig unitConfig, final MetaConfigPool variablePool) throws NotAvailableException, InterruptedException {
+        try {
+            final String key = LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel(), getId()) + StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());
+
+            // direct meta config
+            variablePool.register(new MetaConfigVariableProvider(key + "MetaConfig", unitConfig.getMetaConfig()));
+            variablePool.register(new ProtobufVariableProvider(unitConfig));
 
             // register location meta config if available
             try {
                 UnitConfig locationUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
-                configPool.register(new MetaConfigVariableProvider("UnitLocationMetaConfig", locationUnitConfig.getMetaConfig()));
-                configPool.register(new ProtobufVariableProvider(locationUnitConfig));
+                variablePool.register(new MetaConfigVariableProvider(key + "PlacementMetaConfig", locationUnitConfig.getMetaConfig()));
+                variablePool.register(new ProtobufVariableProvider(locationUnitConfig));
             } catch (InterruptedException ex) {
                 throw ex;
             } catch (NullPointerException | CouldNotPerformException ex) {
-                // location not available so skip those
+                // location not available so skip it
             }
 
-            // resolve host unit meta configs if this unit is a dal unit.
-            if (isDalUnit()) {
+            // type specific variables
+            switch (unitConfig.getUnitType()) {
+                case DEVICE:
+                    final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(unitConfig.getDeviceConfig().getDeviceClassId());
+                    variablePool.register(new MetaConfigVariableProvider(key + "BindingConfig", deviceClass.getBindingConfig().getMetaConfig()));
+                    variablePool.register(new MetaConfigVariableProvider(key + "ClassMetaConfig", deviceClass.getMetaConfig()));
+                    variablePool.register(new ProtobufVariableProvider(deviceClass));
+                    break;
+                case APP:
+                    final AppClass appClass = Registries.getClassRegistry().getAppClassById(unitConfig.getAppConfig().getAppClassId());
+                    variablePool.register(new MetaConfigVariableProvider(key + "BindingConfig", appClass.getBindingConfig().getMetaConfig()));
+                    variablePool.register(new MetaConfigVariableProvider(key + "ClassMetaConfig", appClass.getMetaConfig()));
+                    variablePool.register(new ProtobufVariableProvider(appClass));
+                    break;
+                case GATEWAY:
+                    final GatewayClass gatewayClass = Registries.getClassRegistry().getGatewayClassById(unitConfig.getGatewayConfig().getGatewayClassId());
+                    variablePool.register(new MetaConfigVariableProvider(key + "ClassMetaConfig", gatewayClass.getMetaConfig()));
+                    variablePool.register(new ProtobufVariableProvider(gatewayClass));
+                    for (String id : gatewayClass.getNestedGatewayClassIdList()) {
+                        final GatewayClass nestedGatewayClass = Registries.getClassRegistry(true).getGatewayClassById(id);
+                        variablePool.register(new MetaConfigVariableProvider(key + "NestedGatewayClass[" + LabelProcessor.getBestMatch(nestedGatewayClass.getLabel(), id) + "]", nestedGatewayClass.getMetaConfig()));
+                    }
 
-                // HostConfigMetaConfig
-                UnitConfig hostUnitConfig = getHostUnitConfig();
-                configPool.register(new MetaConfigVariableProvider("HostConfigMetaConfig", hostUnitConfig.getMetaConfig()));
-                configPool.register(new ProtobufVariableProvider(hostUnitConfig));
-                switch (hostUnitConfig.getUnitType()) {
-                    case DEVICE:
-                        final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(hostUnitConfig.getDeviceConfig().getDeviceClassId());
-                        configPool.register(new MetaConfigVariableProvider("DeviceBindingConfig", deviceClass.getBindingConfig().getMetaConfig()));
-                        configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
-                        configPool.register(new ProtobufVariableProvider(deviceClass));
-                        break;
-                    case APP:
-                        final AppClass appClass = Registries.getClassRegistry().getAppClassById(hostUnitConfig.getAppConfig().getAppClassId());
-                        configPool.register(new MetaConfigVariableProvider("AppBindingConfig", appClass.getBindingConfig().getMetaConfig()));
-                        configPool.register(new MetaConfigVariableProvider("AppClassMetaConfig", appClass.getMetaConfig()));
-                        configPool.register(new ProtobufVariableProvider(appClass));
-                        break;
-                }
+                    for (String id : unitConfig.getGatewayConfig().getNestedGatewayIdList()) {
+                        final UnitConfig nestedGatewayUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(id);
+                        variablePool.register(new MetaConfigVariableProvider(key + "NestedGatewayClass[" + LabelProcessor.getBestMatch(nestedGatewayUnitConfig.getLabel(), id) + "]", nestedGatewayUnitConfig.getMetaConfig()));
+                    }
+                    variablePool.register(new ProtobufVariableProvider(gatewayClass));
+                    break;
             }
-            return configPool;
+
+            // HostConfigMetaConfig
+            if (UnitConfigProcessor.isHostUnitAvailable(unitConfig)) {
+                registerVariables(getHostUnitConfig(), variablePool);
+            }
+
+            return variablePool;
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("Variable Provider not available!", ex);
         }

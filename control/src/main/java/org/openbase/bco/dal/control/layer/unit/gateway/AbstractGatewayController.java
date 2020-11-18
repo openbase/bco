@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.control.layer.unit.device;
+package org.openbase.bco.dal.control.layer.unit.gateway;
 
 /*
  * #%L
@@ -23,17 +23,20 @@ package org.openbase.bco.dal.control.layer.unit.device;
  */
 
 import org.openbase.bco.dal.control.layer.unit.AbstractHostUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerImpl;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
+import org.openbase.bco.dal.lib.layer.unit.gateway.GatewayController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.CloseableWriteLockWrapper;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.state.AvailabilityStateType.AvailabilityState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
+import org.openbase.type.domotic.unit.gateway.GatewayDataType.GatewayData;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 
@@ -43,14 +46,16 @@ import java.util.List;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder, UnitController<?, ?>> implements DeviceController {
+public abstract class AbstractGatewayController extends AbstractHostUnitController<GatewayData, GatewayData.Builder, DeviceController> implements GatewayController {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GatewayData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AvailabilityState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    public AbstractDeviceController() throws InstantiationException {
-        super(DeviceData.newBuilder());
+    public AbstractGatewayController() throws InstantiationException {
+        super(GatewayData.newBuilder());
     }
 
     @Override
@@ -58,13 +63,13 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
             final UnitConfig unitConfig = super.applyConfigUpdate(config);
 
-            // update unit controller registry if device is active.
+            // update unit controller registry if gateway is active.
             for (final String removedUnitId : getRemovedUnitIds()) {
-                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().remove(removedUnitId);
+                DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().remove(removedUnitId);
             }
 
-            for (final UnitController newUnitController : getNewUnitController()) {
-                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().register(newUnitController);
+            for (final DeviceController newUnitController : getNewUnitController()) {
+                DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().register(newUnitController);
             }
 
             return unitConfig;
@@ -73,10 +78,10 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
 
     @Override
     public List<UnitConfig> getHostedUnitConfigList() throws NotAvailableException, InterruptedException {
-        List<UnitConfig> unitConfigs = new ArrayList<>();
+        final List<UnitConfig> unitConfigs = new ArrayList<>();
         try {
-            for (final String unitId : getConfig().getDeviceConfig().getUnitIdList()) {
-                final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
+            for (final String unitId : getConfig().getGatewayConfig().getUnitIdList()) {
+                UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
                 if (UnitConfigProcessor.isEnabled(unitConfig)) {
                     unitConfigs.add(unitConfig);
                 }
@@ -91,8 +96,8 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
     public void shutdown() {
         try {
             // skip if registry is shutting down anyway.
-            if (!DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().isShutdownInitiated()) {
-                DeviceManagerImpl.getDeviceManager().getUnitControllerRegistry().removeAllByKey(getHostedUnitControllerIdList());
+            if (!DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().isShutdownInitiated()) {
+                DeviceManagerImpl.getDeviceManager().getDeviceControllerRegistry().removeAllByKey(getHostedUnitControllerIdList());
             }
         } catch (InvalidStateException ex) {
             // registry already shutting down during removal which will clear the entries anyway.

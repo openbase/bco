@@ -25,16 +25,47 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.dal.lib.layer.service.OperationServiceFactoryProvider;
 import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactoryProvider;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Identifiable;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public interface HostUnitController<D extends AbstractMessage, DB extends D.Builder<DB>> extends BaseUnitController<D, DB>, HostUnit<D>, OperationServiceFactoryProvider, UnitDataSourceFactoryProvider {
+public interface HostUnitController<D extends AbstractMessage, DB extends D.Builder<DB>, C extends Identifiable<String>> extends BaseUnitController<D, DB>, HostUnit<D>, OperationServiceFactoryProvider, UnitDataSourceFactoryProvider {
 
-    UnitController<?, ?> getHostedUnitController(String id) throws NotAvailableException;
+    C getHostedUnitController(String id) throws NotAvailableException;
 
-    List<UnitController<?, ?>> getHostedUnitControllerList();
+    /**
+     * Method return a list of units that are currently managed by this host unit.
+     * @return a list of unit ids.
+     */
+    List<C> getHostedUnitControllerList();
 
+    /**
+     * Method return a list of units that are currently managed by this host unit referred by its id.
+     * @return a list of unit ids.
+     */
+    default List<String> getHostedUnitControllerIdList() {
+        final ArrayList<String> controllerList = new ArrayList<>();
+        for (C unitController : getHostedUnitControllerList()) {
+            try {
+                controllerList.add(unitController.getId());
+            } catch (NotAvailableException ex) {
+                new FatalImplementationErrorException("Could not resolve id of hosted controller!", this, ex);
+            }
+        }
+        return controllerList;
+    }
+
+    /**
+     * Method returns a list of unit configs of the units that are assigned to this host unit.
+     *
+     * @return the list of unit configs.
+     *
+     * @throws NotAvailableException in case the registry is not available.
+     * @throws InterruptedException  in case the thread was externally interrupted.
+     */
     List<UnitConfig> getHostedUnitConfigList() throws NotAvailableException, InterruptedException;
 }

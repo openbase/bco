@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.layer.unit.HostUnitManager;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 
 /**
  *
@@ -51,7 +52,21 @@ public interface AppManager extends HostUnitManager {
      * @return true if supported
      */
     @Override
-    default boolean isSupported(final UnitConfig config) {
+    default boolean isUnitSupported(final UnitConfig config) {
         return config.getUnitType() == UnitType.APP;
+    }
+
+    /**
+     * All apps will be supported by default. Feel free to overwrite method
+     * to changing this behavior.
+     *
+     * @param config
+     *
+     * @return true if supported
+     */
+    @Override
+    default boolean isGatewaySupported(final UnitConfig config) {
+        // gateways are not yet supported for apps.
+        return false;
     }
 }

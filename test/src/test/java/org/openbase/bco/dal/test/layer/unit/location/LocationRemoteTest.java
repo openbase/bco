@@ -22,6 +22,7 @@ package org.openbase.bco.dal.test.layer.unit.location;
  * #L%
  */
 
+import com.google.protobuf.Message;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -29,11 +30,11 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.*;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.state.States;
-import org.openbase.bco.dal.lib.state.States.Activation;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
@@ -41,20 +42,22 @@ import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
-import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.session.BCOSessionImpl;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionReferenceType;
-import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActionStateType;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
@@ -67,9 +70,9 @@ import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+import org.openbase.type.domotic.unit.location.LocationDataType.LocationData.Builder;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.LoggerFactory;
@@ -77,7 +80,6 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -606,6 +608,60 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
                 }
 
                 assertEquals("Action on unit[" + colorableLightRemote + "] was not cancelled!", ActionStateType.ActionState.State.CANCELED, causedAction.getActionState().getValue());
+            }
+        }
+    }
+
+    @Test(timeout = 20000)
+    public void testLocationModificationViaApplyAction() throws Exception {
+
+
+        final UnitRemote<?> unit = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig().getId(), true);
+
+        final List<RemoteAction> remoteActions = new ArrayList<>();
+
+        final Builder locationDataBuilder = LocationData.newBuilder();
+        locationDataBuilder.setPowerState(Power.ON);
+
+        final BCOSessionImpl bcoSession = new BCOSessionImpl(new SessionManager());
+        bcoSession.loginUserViaUsername("admin", "admin", false);
+
+        final String token = bcoSession.generateAuthToken().getAuthenticationToken();
+        final LocationData data = locationDataBuilder.build();
+
+        for (final ServiceType serviceType : unit.getSupportedServiceTypes()) {
+
+            if (!Services.hasServiceState(serviceType, ServiceTempus.CURRENT, data)) {
+                continue;
+            }
+
+            final Message serviceState = Services.invokeProviderServiceMethod(serviceType, data);
+
+            final ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType, unit);
+            final AuthToken authToken = AuthToken.newBuilder().setAuthenticationToken(token).build();
+            builder.setAuthToken(authToken);
+
+            builder.getServiceStateDescriptionBuilder().setUnitId(unit.getId());
+
+            System.err.println("action parameter:" + builder.toString());
+            try {
+                System.err.println("action registered:" + unit.applyAction(builder).get());
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+
+            remoteActions.add(new RemoteAction(unit.applyAction(builder), authToken));
+
+//            final RemoteAction action = new RemoteAction(builder.build());
+//            action.execute();
+        }
+
+
+        // TODO: blocked by https://github.com/openbase/bco.dal/issues/170
+        if (!remoteActions.isEmpty()) {
+            for (final RemoteAction remoteAction : remoteActions) {
+                remoteAction.waitForRegistration(5, TimeUnit.SECONDS);
             }
         }
     }

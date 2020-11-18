@@ -22,19 +22,15 @@ package org.openbase.bco.dal.control.layer.unit.device;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
-import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceController;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceControllerFactory;
-import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractDeviceControllerFactory implements DeviceControllerFactory {
@@ -43,16 +39,8 @@ public abstract class AbstractDeviceControllerFactory implements DeviceControlle
         super();
     }
 
-    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final DeviceManager deviceManager) throws InstantiationException, InterruptedException {
-        try {
-            return newInstance(deviceUnitConfig, deviceManager.getOperationServiceFactory(), deviceManager.getUnitDataSourceFactory());
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(Device.class, deviceUnitConfig.getId(), ex);
-        }
-    }
-
     @Override
-    public DeviceController newInstance(final UnitConfig deviceUnitConfig, final OperationServiceFactory operationServiceFactory, final UnitDataSourceFactory unitDataSourceFactory) throws InstantiationException, InterruptedException {
+    public DeviceController newInstance(final UnitConfig deviceUnitConfig) throws InstantiationException, InterruptedException {
         try {
             if (deviceUnitConfig == null) {
                 throw new NotAvailableException("deviceConfig");
@@ -74,7 +62,7 @@ public abstract class AbstractDeviceControllerFactory implements DeviceControlle
                 throw new NotAvailableException("deviceConfig.placement.locationId");
             }
 
-            final GenericDeviceController genericDeviceController = new GenericDeviceController(operationServiceFactory, unitDataSourceFactory);
+            final GenericDeviceController genericDeviceController = new GenericDeviceController(getOperationServiceFactory(), getUnitDataSourceFactory());
             genericDeviceController.init(deviceUnitConfig);
             return genericDeviceController;
         } catch (CouldNotPerformException ex) {

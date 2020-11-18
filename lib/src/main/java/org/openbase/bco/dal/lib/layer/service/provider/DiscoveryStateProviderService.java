@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.lib.layer.unit.device;
+package org.openbase.bco.dal.lib.layer.service.provider;
 
 /*
  * #%L
@@ -22,21 +22,24 @@ package org.openbase.bco.dal.lib.layer.unit.device;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.OperationServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.UnitDataSourceFactory;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Factory;
-import org.openbase.type.domotic.unit.UnitConfigType;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+
+import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.DISCOVERY_STATE_SERVICE;
 
 /**
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface DeviceControllerFactory extends Factory<DeviceController, UnitConfig> {
+public interface DiscoveryStateProviderService extends ProviderService {
 
-    DeviceController newInstance(final UnitConfigType.UnitConfig deviceUnitConfig) throws InstantiationException, InterruptedException;
+    default ActivationState getDiscoveryState() throws NotAvailableException {
+        return (ActivationState) getServiceProvider().getServiceState(DISCOVERY_STATE_SERVICE);
+    }
 
-    OperationServiceFactory getOperationServiceFactory();
-
-    UnitDataSourceFactory getUnitDataSourceFactory();
+    static void verifyDiscoveryState(final ActivationState discoveryState) throws VerificationFailedException {
+        Services.verifyServiceState(discoveryState);
+    }
 }
