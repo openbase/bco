@@ -21,9 +21,9 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -34,13 +34,12 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.spatial.PlacementConfigType;
 
 /**
- *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DalUnitLocationIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
@@ -48,7 +47,7 @@ public class DalUnitLocationIdConsistencyHandler extends AbstractProtoBufRegistr
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
 
     public DalUnitLocationIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry) {
+                                               final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry) {
         this.locationRegistry = locationRegistry;
         this.deviceRegistry = deviceRegistry;
     }
@@ -87,16 +86,14 @@ public class DalUnitLocationIdConsistencyHandler extends AbstractProtoBufRegistr
 
         // verify if configured location exists.
         if (!locationRegistry.contains(dalUnitConfig.getPlacementConfig().getLocationId())) {
-            try {
-                if (!JPService.getProperty(JPRecoverDB.class).getValue()) {
-                    throw new InvalidStateException("The configured Location[" + dalUnitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + dalUnitConfig.getId() + "] is unknown!");
-                }
-            } catch (JPServiceException ex) {
-                throw new InvalidStateException("The configured Location[" + dalUnitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + dalUnitConfig.getId() + "] is unknown and can not be recovered!", ex);
+
+            if (!JPService.getValue(JPRecoverDB.class, false)) {
+                throw new InvalidStateException("The configured Location[" + dalUnitConfig.getPlacementConfig().getLocationId() + "] of Unit[" + dalUnitConfig.getId() + "] is unknown!");
             }
+
             // recover unit location with device location.
             // todo: implement handling for dal units offered by apps
-            if(UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
+            if (UnitConfigProcessor.isHostUnitAvailable(dalUnitConfig)) {
                 dalUnitConfig.setPlacementConfig(PlacementConfigType.PlacementConfig.newBuilder(dalUnitConfig.getPlacementConfig()).setLocationId(deviceRegistry.getMessage(dalUnitConfig.getUnitHostId()).getPlacementConfig().getLocationId()));
                 modification = true;
             }
