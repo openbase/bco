@@ -881,6 +881,18 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
+    public void setExecutionTimePeriod(final long time, final TimeUnit timeUnit) throws InterruptedException, CouldNotPerformException {
+        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+        try {
+            if (time <= 0) {
+                throw new CouldNotPerformException("Invalid execution time " + time  + timeUnit.name());
+            }
+            TimestampProcessor.updateTimestamp(time, actionDescriptionBuilder, timeUnit, LOGGER);
+        } finally {
+            actionDescriptionBuilderLock.writeLock().unlock();
+        }
+    }
+
     @Override
     public Future<ActionDescription> extend() {
         try {
