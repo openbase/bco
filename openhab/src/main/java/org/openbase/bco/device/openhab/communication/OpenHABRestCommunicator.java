@@ -55,6 +55,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     public static final String INBOX_TARGET = "inbox";
     public static final String DISCOVERY_TARGET = "discovery";
     public static final String EXTENSIONS_TARGET = "extensions";
+    public static final String EXTENSION_BINDING_PREFIX = "binding-";
     public static final String INSTALL_TARGET = "install";
     public static final String UNINSTALL_TARGET = "uninstall";
     public static final String BINDINGS_TARGET = "bindings";
@@ -202,7 +203,9 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
 
     /**
      * @param bindingId
+     *
      * @return the discovery timeout in seconds
+     *
      * @throws CouldNotPerformException
      */
     public Integer startDiscovery(final String bindingId) throws CouldNotPerformException {
@@ -229,14 +232,17 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     // ==========================================================================================================================================
 
     public void installBinding(final String bindingId) throws CouldNotPerformException {
-        post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+        LOGGER.debug("Install Binding[" + bindingId + "]");
+        post(EXTENSIONS_TARGET + SEPARATOR + EXTENSION_BINDING_PREFIX + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
-    public boolean isBindingInstalled(final String bindingId) throws CouldNotPerformException {
+    public boolean isBindingInstalled(final String bindingId) {
         try {
             get(BINDINGS_TARGET + SEPARATOR + bindingId + SEPARATOR + CONFIG_TARGET);
+            LOGGER.debug("Binding[" + bindingId + "] currently not installed!");
             return true;
-        } catch (NotAvailableException ex) {
+        } catch (CouldNotPerformException ex) {
+            LOGGER.debug("Binding[" + bindingId + "] is already installed.");
             return false;
         }
     }
