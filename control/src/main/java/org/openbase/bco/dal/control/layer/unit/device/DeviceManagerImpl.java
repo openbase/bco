@@ -133,6 +133,7 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
         return gatewayControllerRegistry.isActive() &&
                 deviceControllerRegistry.isActive() &&
                 unitControllerRegistry.isActive() &&
+                gatewayRegistrySynchronizer.isActive() &&
                 deviceRegistrySynchronizer.isActive();
     }
 
@@ -140,6 +141,7 @@ public class DeviceManagerImpl implements DeviceManager, Launchable<Void>, VoidI
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         gatewayRegistrySynchronizer.deactivate();
         deviceRegistrySynchronizer.deactivate();
+        gatewayControllerRegistry.deactivate();
         deviceControllerRegistry.deactivate();
         unitControllerRegistry.deactivate();
     }
