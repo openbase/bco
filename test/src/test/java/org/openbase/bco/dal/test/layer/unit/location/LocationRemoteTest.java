@@ -651,7 +651,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             }
 
 
-            remoteActions.add(new RemoteAction(unit.applyAction(builder), authToken));
+            RemoteAction remoteAction = new RemoteAction(unit.applyAction(builder), authToken);
+            // register action to be automatically cancelled after test
+            observe(remoteAction);
+            remoteActions.add(remoteAction);
 
 //            final RemoteAction action = new RemoteAction(builder.build());
 //            action.execute();
