@@ -23,7 +23,9 @@ package org.openbase.bco.authentication.lib;
  */
 
 import com.google.protobuf.ProtocolStringList;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -366,7 +368,9 @@ public class AuthorizationHelper {
             if (!locations.containsKey(locationId)) {
                 final UnitConfig rootLocationUnitConfig = getRootLocationUnitConfig(locations);
                 LOGGER.warn("Registry does not contains requested location Entry[" + locationId + "] use root location [" + LabelProcessor.getBestMatch(rootLocationUnitConfig.getLabel(), "") + ":"+rootLocationUnitConfig.getId()+ "] as fallback to compute permissions.");
-                assert false;
+                if(JPService.testMode()) {
+                    new FatalImplementationErrorException("Requested Location can not be resolved!", AuthorizationHelper.class);
+                }
                 return rootLocationUnitConfig;
             }
             return locations.get(locationId).getMessage();
