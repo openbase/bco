@@ -216,7 +216,7 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
     private final void registerUnit(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         final C unitController = buildUnitController(unitConfig);
         if (isActive()) {
-            activate();
+            unitController.activate();
         }
         registerUnitController(unitController);
     }
