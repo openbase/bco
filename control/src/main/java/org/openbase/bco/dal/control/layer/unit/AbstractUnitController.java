@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -1005,7 +1005,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     // reject outdated and finish completed actions
                     for (final SchedulableAction action : scheduledActionList) {
 
-                        // only terminate if not valid and still running
+                        // only terminate if not valid and still not done yet
                         if (!action.isValid() && !action.isDone()) {
 
                             // handle auto extension if flag is set and human is initiator
@@ -1044,10 +1044,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                                 scheduledActionList.remove(action);
                             }
                         } else {
-                            if (!action.isValid()) {
-                                new FatalImplementationErrorException("Found invalid " + action + " which has not been removed from list! ", this);
+
+                            // check if action is still valid. It will be cleaned next time, however in this case we do not need to reschedule again.
+                            if (action.isValid()) {
+                                atLeastOneActionToSchedule = true;
                             }
-                            atLeastOneActionToSchedule = true;
                         }
                     }
 
