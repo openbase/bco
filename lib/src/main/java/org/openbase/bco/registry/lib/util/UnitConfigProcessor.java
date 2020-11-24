@@ -69,7 +69,7 @@ public class UnitConfigProcessor {
         }
     }
 
-    public static boolean isDalUnit(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public static boolean isDalUnit(final UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
         verifyUnitConfig(unitConfig, unitConfig.getUnitType());
         return isDalUnit(unitConfig.getUnitType());
     }
