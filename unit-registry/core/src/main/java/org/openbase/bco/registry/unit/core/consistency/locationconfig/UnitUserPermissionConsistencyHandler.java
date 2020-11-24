@@ -71,24 +71,29 @@ public class UnitUserPermissionConsistencyHandler extends AbstractProtoBufRegist
 
         for (final MapFieldEntry groupPermission : groupPermissions) {
             // test if the group permission is specified for a user
-            if (unitRegistry.getUnitConfigById(groupPermission.getGroupId()).getUnitType() == UnitType.USER) {
-                // retrieve user
-                final UnitConfig userUnitConfig = unitRegistry.getUnitConfigById(groupPermission.getGroupId());
-                // validate that it is a system user
-                if (userUnitConfig.getUserConfig().getSystemUser()) {
-                    try {
-                        // retrieve unit belonging to the user
-                        final UnitConfig unit = findUnit(userUnitConfig, unitRegistry);
-                        // validate that unit is still at the same location
-                        if (!unit.getPlacementConfig().getLocationId().equals(entry.getMessage().getId())) {
-                            // not at the same location so remove the permissions
-                            modification = true;
-                            continue;
+            try {
+                if (unitRegistry.getUnitConfigById(groupPermission.getGroupId()).getUnitType() == UnitType.USER) {
+                    // retrieve user
+                    final UnitConfig userUnitConfig = unitRegistry.getUnitConfigById(groupPermission.getGroupId());
+                    // validate that it is a system user
+                    if (userUnitConfig.getUserConfig().getSystemUser()) {
+                        try {
+                            // retrieve unit belonging to the user
+                            final UnitConfig unit = findUnit(userUnitConfig, unitRegistry);
+                            // validate that unit is still at the same location
+                            if (!unit.getPlacementConfig().getLocationId().equals(entry.getMessage().getId())) {
+                                // not at the same location so remove the permissions
+                                modification = true;
+                                continue;
+                            }
+                        } catch (NotAvailableException ex) {
+                            // keep permissions because they can belong to a system user not associated with a unit
                         }
-                    } catch (NotAvailableException ex) {
-                        // keep permissions because they can belong to a system user not associated with a unit
                     }
                 }
+            } catch (NotAvailableException ex) {
+                // user or group is not available so do not add it again
+                continue;
             }
 
             // re-add permission because its valid

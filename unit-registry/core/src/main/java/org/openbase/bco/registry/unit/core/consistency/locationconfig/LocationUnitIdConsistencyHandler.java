@@ -33,6 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.state.EnablingStateType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig;
 
 import java.util.*;
@@ -42,35 +43,10 @@ import java.util.*;
  */
 public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> connectionRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry;
+    private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList;
 
-    public LocationUnitIdConsistencyHandler(
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> connectionRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
-        this.agentRegistry = agentRegistry;
-        this.appRegistry = appRegistry;
-        this.authorizationGroupRegistry = authorizationGroupRegistry;
-        this.connectionRegistry = connectionRegistry;
-        this.dalUnitRegistry = dalUnitRegistry;
-        this.deviceRegistry = deviceRegistry;
-        this.sceneRegistry = sceneRegistry;
-        this.unitGroupRegistry = unitGroupRegistry;
-        this.unitRegistry = unitRegistry;
+    public LocationUnitIdConsistencyHandler(final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList) {
+        this.unitConfigRegistryList = unitConfigRegistryList;
     }
 
     @Override
@@ -101,39 +77,30 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
             }
 
             final Set<String> unitIdSet = new HashSet<>();
-            final List<UnitConfig> unitList = new ArrayList<>();
-            unitList.addAll(agentRegistry.getMessages());
-            unitList.addAll(appRegistry.getMessages());
-            unitList.addAll(authorizationGroupRegistry.getMessages());
-            unitList.addAll(connectionRegistry.getMessages());
-            unitList.addAll(dalUnitRegistry.getMessages());
-            unitList.addAll(deviceRegistry.getMessages());
-            unitList.addAll(sceneRegistry.getMessages());
-            unitList.addAll(unitGroupRegistry.getMessages());
-            unitList.addAll(unitRegistry.getMessages());
-            for (final UnitConfig unitConfig : unitList) {
+            for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
+                for (UnitConfig unitConfig : registry.getMessages()) {
 
-                // skip units with no placement config
-                if (!unitConfig.hasPlacementConfig()) {
-                    continue;
-                } else if (!unitConfig.getPlacementConfig().hasLocationId()) {
-                    continue;
-                } else if (unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                    continue;
+                    // skip units with no placement config
+                    if (!unitConfig.hasPlacementConfig()) {
+                        continue;
+                    } else if (!unitConfig.getPlacementConfig().hasLocationId()) {
+                        continue;
+                    } else if (unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                        continue;
+                    }
+
+                    // filter units which are currently disabled
+                    if (!unitConfig.hasEnablingState() || !unitConfig.getEnablingState().hasValue()) {
+                        continue;
+                    } else if (unitConfig.getEnablingState().getValue() != EnablingStateType.EnablingState.State.ENABLED) {
+                        continue;
+                    }
+
+                    // add direct assigned units
+                    if (unitConfig.getPlacementConfig().getLocationId().equals(locationUnitConfig.getId())) {
+                        unitIdSet.add(unitConfig.getId());
+                    }
                 }
-
-                // filter units which are currently disabled
-                if (!unitConfig.hasEnablingState() || !unitConfig.getEnablingState().hasValue()) {
-                    continue;
-                } else if (unitConfig.getEnablingState().getValue() != EnablingStateType.EnablingState.State.ENABLED) {
-                    continue;
-                }
-
-                // add direct assigned units
-                if (unitConfig.getPlacementConfig().getLocationId().equals(locationUnitConfig.getId())) {
-                    unitIdSet.add(unitConfig.getId());
-                }
-
             }
 
             // add child units

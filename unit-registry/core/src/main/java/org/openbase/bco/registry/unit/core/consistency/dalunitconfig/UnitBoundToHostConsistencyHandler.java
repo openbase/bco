@@ -40,9 +40,13 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> locationRegistry;
 
-    public UnitBoundToHostConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry) {
+    public UnitBoundToHostConsistencyHandler(
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> locationRegistry) {
         this.deviceRegistry = deviceRegistry;
+        this.locationRegistry = locationRegistry;
     }
 
     @Override
@@ -78,9 +82,13 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
 
             // copy location id
             if (!dalUnitConfig.getPlacementConfig().getLocationId().equals(deviceUnitConfig.getPlacementConfig().getLocationId())) {
-                dalUnitConfig.getPlacementConfigBuilder().setLocationId(deviceUnitConfig.getPlacementConfig().getLocationId());
-                logger.debug("Updated location to : " + deviceUnitConfig.getPlacementConfig().getLocationId());
-                modification = true;
+
+                // only apply if location is valid
+                if(locationRegistry.contains(deviceUnitConfig.getPlacementConfig().getLocationId())) {
+                    dalUnitConfig.getPlacementConfigBuilder().setLocationId(deviceUnitConfig.getPlacementConfig().getLocationId());
+                    logger.debug("Updated location to : " + deviceUnitConfig.getPlacementConfig().getLocationId());
+                    modification = true;
+                }
             }
 
             // copy position

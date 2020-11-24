@@ -70,7 +70,7 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
         // wait until transformation was published
         try {
             int maxChecks = 10;
-            Exception exception = null;
+            Exception exception = new CouldNotPerformException("This should not happen");
             for (int i = 0; i < maxChecks; i++) {
                 try {
                     // check if transformation was published
