@@ -49,7 +49,6 @@ import java.util.*;
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractHostUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>, C extends UnitController<?, ?>> extends AbstractBaseUnitController<D, DB> implements HostUnitController<D, DB, C> {
@@ -102,6 +101,16 @@ public abstract class AbstractHostUnitController<D extends AbstractMessage & Ser
             }
         }
         MultiException.checkAndThrow(() -> "Could not activate all hosted units of " + this, exceptionStack);
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        synchronized (unitMapLock) {
+            for (UnitController<?, ?> unit : unitMap.values()) {
+                unit.shutdown();
+            }
+        }
     }
 
     @Override
