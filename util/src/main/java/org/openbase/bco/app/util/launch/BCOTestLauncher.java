@@ -69,7 +69,7 @@ public class BCOTestLauncher {
                 DeviceManagerLauncher.class,
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,
-                UserManagerLauncher.class
+                UserManagerLauncher.class,
 
                 /**
                  * API Launcher
