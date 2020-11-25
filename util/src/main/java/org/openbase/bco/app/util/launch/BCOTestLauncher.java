@@ -22,6 +22,7 @@ package org.openbase.bco.app.util.launch;
  * #L%
  */
 
+import org.openbase.bco.api.graphql.BcoApiGraphQlLauncher;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
@@ -49,6 +50,7 @@ public class BCOTestLauncher {
         BCO.printLogo();
         AbstractLauncher.main(BCO.class, args,
                 AuthenticatorLauncher.class,
+
                 /**
                  * Registry *
                  */
@@ -58,6 +60,7 @@ public class BCOTestLauncher {
                 ActivityRegistryLauncher.class,
                 UnitRegistryLauncher.class,
                 MessageRegistryLauncher.class,
+
                 /**
                  * Manager *
                  */
@@ -67,6 +70,11 @@ public class BCOTestLauncher {
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,
                 UserManagerLauncher.class
+
+                /**
+                 * API Launcher
+                 */
+                BcoApiGraphQlLauncher.class
         );
     }
 }
