@@ -24,7 +24,7 @@ package org.openbase.bco.api.graphql.handler;
 
 import graphql.ExceptionWhileDataFetching;
 import graphql.GraphQLError;
-import graphql.servlet.core.GraphQLErrorHandler;
+import graphql.kickstart.execution.error.GraphQLErrorHandler;
 import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.api.graphql.error.BCOGraphQLError;
 import org.openbase.bco.api.graphql.error.ServerError;

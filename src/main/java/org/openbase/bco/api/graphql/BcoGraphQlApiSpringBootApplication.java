@@ -31,13 +31,14 @@ import com.google.inject.Key;
 import graphql.GraphQL;
 import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
+import graphql.kickstart.execution.config.DefaultGraphQLSchemaProvider;
+import graphql.kickstart.execution.config.GraphQLSchemaProvider;
+import graphql.kickstart.execution.context.DefaultGraphQLContext;
+import graphql.kickstart.execution.context.GraphQLContext;
+import graphql.kickstart.execution.context.GraphQLContextBuilder;
+import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
+import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
-import graphql.servlet.config.DefaultGraphQLSchemaProvider;
-import graphql.servlet.config.GraphQLSchemaProvider;
-import graphql.servlet.context.DefaultGraphQLContext;
-import graphql.servlet.context.DefaultGraphQLWebSocketContext;
-import graphql.servlet.context.GraphQLContext;
-import graphql.servlet.context.GraphQLContextBuilder;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
@@ -84,9 +85,8 @@ public class BcoGraphQlApiSpringBootApplication {
                 new UnitSchemaModule()
         );
     }
-
     @Bean
-    public GraphQLSchemaProvider schemaProvider() {
+    GraphQLSchema schema() {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
         final GraphQLObjectType.Builder queryTypeBuilder = GraphQLObjectType.newObject(schema.getQueryType());
@@ -153,13 +153,13 @@ public class BcoGraphQlApiSpringBootApplication {
                 .mutation(mutationTypeBuilder.build())
                 .codeRegistry(codeRegistry)
                 .build();*/
-        return new DefaultGraphQLSchemaProvider(schema);
+        return schema;
     }
-
-    @Bean
-    public GraphQL graphQL() {
-        return GraphQL.newGraphQL(schemaProvider().getSchema()).build();
-    }
+//
+//    @Bean
+//    public GraphQL graphQL() {
+//        return GraphQL.newGraphQL(schemaProvider().getSchema()).build();
+//    }
 
     @Bean
     public Instrumentation instrumentation() {
@@ -184,12 +184,12 @@ public class BcoGraphQlApiSpringBootApplication {
     }
 
     @Bean
-    public GraphQLContextBuilder contextBuilder(DataLoaderRegistry dataLoaderRegistry) {
-        return new GraphQLContextBuilder() {
+    public GraphQLServletContextBuilder contextBuilder(DataLoaderRegistry dataLoaderRegistry) {
+        return new GraphQLServletContextBuilder() {
 
             @Override
             public GraphQLContext build(HttpServletRequest req, HttpServletResponse response) {
-                return new BCOGraphQLContext(dataLoaderRegistry, req);
+                return new BCOGraphQLContext(req);
             }
 
             @Override
