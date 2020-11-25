@@ -196,9 +196,19 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
             logger.debug("Aggregate all target actions");
             for (UnitRemote targetRemote : targetRemotes) {
+
+                // check if target unit
+                if (!targetRemote.isDataAvailable()) {
+                    continue;
+                }
                 final Message msg = (Message) targetRemote.getData();
                 final Descriptors.FieldDescriptor actionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(msg, Action.TYPE_FIELD_NAME_ACTION);
                 allTargetAction.addAll((List<ActionDescription>) msg.getField(actionFieldDescriptor));
+            }
+
+            // we do not need to compute any aggregated states in case non are available.
+            if (allTargetAction.isEmpty()) {
+                return;
             }
 
             logger.debug("Filter for on actions");
