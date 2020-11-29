@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class SitemapGenerator {
 
@@ -75,7 +76,7 @@ public class SitemapGenerator {
     private void serializeToFile(final String content, final String fileName) throws CouldNotPerformException {
         try {
             final File configFile = new File(JPService.getProperty(JPOpenHABSitemap.class).getValue(), fileName+".sitemap");
-            FileUtils.writeStringToFile(configFile, content, Charset.forName("UTF8"), false);
+            FileUtils.writeStringToFile(configFile, content, StandardCharsets.UTF_8, false);
             logger.info("Sitemap[" + configFile.getAbsolutePath() + "] successfully generated.");
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not serialize sitemap to file!", ex);
