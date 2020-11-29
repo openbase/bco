@@ -22,6 +22,7 @@ package org.openbase.bco.registry.lib.jp;
  * #L%
  */
 
+import org.apache.commons.io.FileUtils;
 import org.openbase.bco.authentication.lib.jp.JPBCOVarDirectory;
 import org.openbase.bco.registry.lib.util.BCORegistryLoader;
 import org.openbase.jps.core.JPService;
@@ -33,8 +34,14 @@ import org.openbase.jps.preset.JPShareDirectory;
 import org.openbase.jps.preset.JPVarDirectory;
 import org.openbase.jps.tools.FileHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.slf4j.Logger;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -95,6 +102,55 @@ public class JPBCODatabaseDirectory extends AbstractJPDirectory {
         }
 
         throw new JPServiceException("Could not auto detect database location!");
+    }
+
+    public static final String GIT_IGNORE_TEMPLATE = "### This file is auto generated and maintained by BCO ### \n\n" +
+            "activity-template-db\n" +
+            "agent-class-db\n" +
+            "app-class-db\n" +
+            "device-class-db\n" +
+            "gateway-class-db\n" +
+            "service-template-db\n" +
+            "unit-template-db";
+
+    @Override
+    public void validate() throws JPValidationException {
+        super.validate();
+
+        // do nothing in case directory does not exist
+        if (!getValue().exists()) {
+            return;
+        }
+
+        final File gitIgroreFile = new File(getValue(), ".gitignore");
+
+        // create file if not exist, otherwise validate
+        if (!gitIgroreFile.exists()) {
+            logger.info("Create new git ignore file to exclude external database.");
+
+            try {
+                FileUtils.writeStringToFile(gitIgroreFile, GIT_IGNORE_TEMPLATE, StandardCharsets.UTF_8, false);
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(new JPValidationException("Could not create git ignore file to exclude external databases to be committed.", ex), logger, LogLevel.WARN);
+            }
+        } else {
+            // validate existing one
+            try {
+                final String fileContent = FileUtils.readFileToString(gitIgroreFile, StandardCharsets.UTF_8);
+                if (!fileContent.equals(GIT_IGNORE_TEMPLATE)) {
+
+                    logger.info("Recover git ignore file to exclude external database.");
+                    try {
+                    // recover file content
+                    FileUtils.writeStringToFile(gitIgroreFile, GIT_IGNORE_TEMPLATE, StandardCharsets.UTF_8, false);
+                    } catch (IOException ex) {
+                        ExceptionPrinter.printHistory(new JPValidationException("Could not recover git ignore file content!", ex), logger, LogLevel.WARN);
+                    }
+                }
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(new JPValidationException("Could validate git ignore file content!", ex), logger, LogLevel.WARN);
+            }
+        }
     }
 
     @Override
