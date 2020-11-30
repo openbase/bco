@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.remote.layer.unit;
+package org.openbase.bco.dal.remote.layer.unit.object;
 
 /*-
  * #%L
@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
