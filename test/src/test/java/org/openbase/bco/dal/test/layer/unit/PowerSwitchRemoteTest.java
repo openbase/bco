@@ -159,7 +159,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
 
         // manually cancel all action
         for (ActionDescription actionDescription : powerSwitchRemote.getActionList()) {
-            powerSwitchRemote.cancelAction(actionDescription);
+            powerSwitchRemote.cancelAction(actionDescription).get();
         }
     }
 
