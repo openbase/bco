@@ -10,12 +10,12 @@ package org.openbase.bco.api.graphql;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -33,11 +33,9 @@ import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
-import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceInfo.Fields;
 import java.util.HashMap;
 import java.util.UUID;
@@ -45,7 +43,7 @@ import java.util.UUID;
 public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInitializable {
 
     private static Logger LOGGER = LoggerFactory.getLogger(BcoApiGraphQlSpringLaunchable.class);
-    private  ServiceAdvertiser serviceAdvertiser;
+    private ServiceAdvertiser serviceAdvertiser;
 
 
     private ConfigurableApplicationContext context;
@@ -94,8 +92,8 @@ public class BcoApiGraphQlSpringLaunchable implements Launchable<Void>, VoidInit
         serviceAdvertiser.shutdown();
         BCOLogin.getSession().logout();
 
-        if(isActive()) {
-            LOGGER.info("Shutdown "+ context.getApplicationName());
+        if (isActive()) {
+            LOGGER.info("Shutdown " + context.getApplicationName());
             SpringApplication.exit(context);
             context = null;
         }
