@@ -1,4 +1,4 @@
-package org.openbase.bco.api.graphql.websocket;
+package org.openbase.bco.api.graphql.subscriptions;
 
 /*-
  * #%L
@@ -22,22 +22,22 @@ package org.openbase.bco.api.graphql.websocket;
  * #L%
  */
 
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import org.springframework.stereotype.Component;
-import org.springframework.web.reactive.socket.WebSocketHandler;
-import org.springframework.web.reactive.socket.WebSocketMessage;
-import org.springframework.web.reactive.socket.WebSocketSession;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+public class BCOWebSocketHandler extends TextWebSocketHandler {
 
-public class BCOSocket implements WebSocketHandler{
 
     @Override
-    public Mono<Void> handle(WebSocketSession session) {
-        Flux<WebSocketMessage> map = session.receive()
-                .doOnNext(webSocketMessage -> System.out.println("Received msg: " + webSocketMessage))
-                .map(value -> session.textMessage("Echo: " + value));
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        System.out.println("Got message: " + message.getPayload());
+    }
 
-        return session.send(map);
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        super.afterConnectionEstablished(session);
+
+        System.out.println("Connection Established");
     }
 }
