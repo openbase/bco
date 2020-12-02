@@ -1,48 +1,82 @@
-package org.openbase.bco.registry.lib.generator;
+package org.openbase.bco.registry.unit.lib.generator;
 
-/*
+/*-
  * #%L
- * BCO Registry Lib
+ * BCO Registry Unit Library
  * %%
  * Copyright (C) 2014 - 2020 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
+ * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Lesser Public License for more details.
  * 
- * You should have received a copy of the GNU General Public
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import org.openbase.bco.registry.clazz.lib.ClassRegistry;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
-import org.openbase.jul.processing.StringProcessor;
+import org.openbase.type.communication.ScopeType;
 import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
-import org.openbase.type.communication.ScopeType;
 
-import java.util.Collection;
 import java.util.Locale;
 
-/**
- * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
- */
-public class ScopeGenerator {
+public class UnitLabelScopeGenerator implements UnitScopeGenerator {
 
-    public static ScopeType.Scope generateLocationScope(final UnitConfig unitConfig, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException {
+    @Override
+    public Scope generateScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
+
+        if (unitRegistry == null) {
+            throw new NotAvailableException("UnitRegistry");
+        }
+
+        if (classRegistry == null) {
+            throw new NotAvailableException("ClassRegistry");
+        }
+
+        switch (unitConfig.getUnitType()) {
+            case LOCATION:
+                return generateLocationScope(unitConfig, unitRegistry, classRegistry);
+            case DEVICE:
+                return generateDeviceScope(unitConfig, unitRegistry, classRegistry);
+            case CONNECTION:
+                return generateConnectionScope(unitConfig, unitRegistry, classRegistry);
+            case UNIT_GROUP:
+                return generateUnitGroupScope(unitConfig, unitRegistry, classRegistry);
+            case AGENT:
+                return generateAgentScope(unitConfig, unitRegistry, classRegistry);
+            case APP:
+                return generateAppScope(unitConfig, unitRegistry, classRegistry);
+            case SCENE:
+                return generateSceneScope(unitConfig, unitRegistry, classRegistry);
+            case USER:
+                return generateUserScope(unitConfig, unitRegistry, classRegistry);
+            case AUTHORIZATION_GROUP:
+                return generateAuthorizationGroupScope(unitConfig, unitRegistry, classRegistry);
+            case GATEWAY:
+                return generateGatewayScope(unitConfig, unitRegistry, classRegistry);
+            default:
+                return generateUnitScope(unitConfig, unitRegistry, classRegistry);
+        }
+    }
+
+    private static ScopeType.Scope generateLocationScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
         if (unitConfig == null) {
             throw new NotAvailableException("unitConfig");
@@ -50,10 +84,6 @@ public class ScopeGenerator {
 
         if (!unitConfig.hasLocationConfig() || unitConfig.getLocationConfig() == null) {
             throw new NotAvailableException("locationConfig");
-        }
-
-        if (registry == null) {
-            throw new NotAvailableException("registry");
         }
 
         if (!unitConfig.hasLabel()) {
@@ -70,14 +100,14 @@ public class ScopeGenerator {
 
         ScopeType.Scope.Builder scope = ScopeType.Scope.newBuilder();
         if (!unitConfig.getLocationConfig().getRoot()) {
-            scope.addAllComponent(registry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getScope().getComponentList());
+            scope.addAllComponent(unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION).getScope().getComponentList());
         }
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
         return scope.build();
     }
 
-    public static ScopeType.Scope generateConnectionScope(final UnitConfig unitConfig, final UnitConfig locationConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateConnectionScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
         if (unitConfig == null) {
             throw new NotAvailableException("unitConfig");
@@ -88,62 +118,57 @@ public class ScopeGenerator {
         }
 
         final String defaultLabel = LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel());
-
-        if (locationConfig == null) {
-            throw new NotAvailableException("location");
-        }
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
 
         if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
             throw new NotAvailableException("location scope");
         }
 
         // add location scope
-        ScopeType.Scope.Builder scope = locationConfig.getScope().toBuilder();
+        ScopeType.Scope.Builder locationScope = locationConfig.getScope().toBuilder();
 
         // add unit type
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(unitConfig.getUnitType().name().replace("_", "")));
+        locationScope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(unitConfig.getUnitType().name().replace("_", "")));
 
         // add unit label
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(defaultLabel));
+        locationScope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(defaultLabel));
 
-        return scope.build();
+        return locationScope.build();
     }
 
-    public static ScopeType.Scope generateDeviceScope(final UnitConfig deviceConfig, final UnitConfig locationConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateDeviceScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
-        if (deviceConfig == null) {
-            throw new NotAvailableException("deviceConfig");
+        if (unitConfig == null) {
+            throw new NotAvailableException("unitConfig");
         }
 
-        if (!deviceConfig.hasLabel()) {
+        if (!unitConfig.hasLabel()) {
             throw new NotAvailableException("device label");
         }
 
-        if (!deviceConfig.hasPlacementConfig()) {
+        if (!unitConfig.hasPlacementConfig()) {
             throw new NotAvailableException("placement config");
         }
 
-        if (locationConfig == null) {
-            throw new NotAvailableException("location");
-        }
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
 
         if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
             throw new NotAvailableException("location scope");
         }
 
         // add location scope
-        ScopeType.Scope.Builder scope = locationConfig.getScope().toBuilder();
+        ScopeType.Scope.Builder locationScope = locationConfig.getScope().toBuilder();
 
         // add type 'device'
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent("device"));
+        locationScope.addComponent(ScopeProcessor.convertIntoValidScopeComponent("device"));
 
         // add device scope
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, deviceConfig.getLabel())));
+        locationScope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
-        return scope.build();
+        return locationScope.build();
     }
 
-    public static ScopeType.Scope generateUnitScope(final UnitConfig unitConfig, final UnitConfig locationConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateUnitScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
         if (unitConfig == null) {
             throw new NotAvailableException("unitConfig");
@@ -157,9 +182,7 @@ public class ScopeGenerator {
             throw new NotAvailableException("placement config");
         }
 
-        if (locationConfig == null) {
-            throw new NotAvailableException("location");
-        }
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
 
         if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
             throw new NotAvailableException("location scope");
@@ -177,23 +200,21 @@ public class ScopeGenerator {
         return scope.build();
     }
 
-    public static ScopeType.Scope generateUnitGroupScope(final UnitConfig unitGroupConfig, final UnitConfig locationConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateUnitGroupScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
-        if (unitGroupConfig == null) {
+        if (unitConfig == null) {
             throw new NotAvailableException("unitConfig");
         }
 
-        if (!unitGroupConfig.hasLabel()) {
+        if (!unitConfig.hasLabel()) {
             throw new NotAvailableException("unitConfig.label");
         }
 
-        if (!unitGroupConfig.hasPlacementConfig()) {
+        if (!unitConfig.hasPlacementConfig()) {
             throw new NotAvailableException("placement config");
         }
 
-        if (locationConfig == null) {
-            throw new NotAvailableException("location");
-        }
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
 
         if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
             throw new NotAvailableException("location scope");
@@ -206,22 +227,20 @@ public class ScopeGenerator {
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent("UnitGroup"));
 
         // add unit label
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitGroupConfig.getLabel())));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
         return scope.build();
     }
 
-    public static ScopeType.Scope generateAgentScope(final UnitConfig agentUnitConfig, final AgentClass agentClass, final UnitConfig locationUnitConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateAgentScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
-        if (agentUnitConfig == null) {
+        if (unitConfig == null) {
             throw new NotAvailableException("unitConfig");
         }
 
-        if (agentClass == null) {
-            throw new NotAvailableException("agentClass");
-        }
+        final AgentClass agentClass = classRegistry.getAgentClassById(unitConfig.getAgentConfig().getAgentClassId());
 
-        if (!agentUnitConfig.hasAgentConfig() || agentUnitConfig.getAgentConfig() == null) {
+        if (!unitConfig.hasAgentConfig() || unitConfig.getAgentConfig() == null) {
             throw new NotAvailableException("unitConfig.agentConfig");
         }
 
@@ -229,87 +248,48 @@ public class ScopeGenerator {
             throw new NotAvailableException("agentClass.label");
         }
 
-        if (!agentUnitConfig.hasLabel()) {
-            throw new NotAvailableException("agentUnitConfig.label");
+        if (!unitConfig.hasLabel()) {
+            throw new NotAvailableException("unitConfig.label");
         }
 
-        if (locationUnitConfig == null) {
-            throw new NotAvailableException("location");
-        }
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
 
-        if (!locationUnitConfig.hasScope() || locationUnitConfig.getScope().getComponentList().isEmpty()) {
+        if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
             throw new NotAvailableException("locationUnitConfig.scope");
         }
 
         // add location scope
-        ScopeType.Scope.Builder scope = locationUnitConfig.getScope().toBuilder();
+        ScopeType.Scope.Builder scope = locationConfig.getScope().toBuilder();
 
         // add unit type
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(agentUnitConfig.getUnitType().name()));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(unitConfig.getUnitType().name()));
 
         // add agent class label
         scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, agentClass.getLabel())));
 
         // add unit label
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, agentUnitConfig.getLabel())));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
         return scope.build();
     }
 
-    public static ScopeType.Scope generateAppScope(final UnitConfig appUnitConfig, final AppClass appClass, final UnitConfig locationUnitConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateAppScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
-        if (appUnitConfig == null) {
-            throw new NotAvailableException("appConfig");
+        if (unitConfig == null) {
+            throw new NotAvailableException("unitConfig");
         }
 
-        if (appClass == null) {
-            throw new NotAvailableException("appClass");
-        }
+        final AppClass appClass = classRegistry.getAppClassById(unitConfig.getAppConfig().getAppClassId());
 
-        if (!appUnitConfig.hasLabel()) {
+
+        if (!unitConfig.hasLabel()) {
             throw new NotAvailableException("appConfig.label");
         }
 
         if (!appClass.hasLabel()) {
             throw new NotAvailableException("appClass.label");
         }
-
-        if (locationUnitConfig == null) {
-            throw new NotAvailableException("location");
-        }
-
-        if (!locationUnitConfig.hasScope() || locationUnitConfig.getScope().getComponentList().isEmpty()) {
-            throw new NotAvailableException("location scope");
-        }
-
-        // add location scope
-        ScopeType.Scope.Builder scope = locationUnitConfig.getScope().toBuilder();
-
-        // add unit type
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(appUnitConfig.getUnitType().name()));
-
-        // add unit app
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, appClass.getLabel())));
-
-        // add unit label
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, appUnitConfig.getLabel())));
-
-        return scope.build();
-    }
-
-    public static ScopeType.Scope generateSceneScope(final UnitConfig sceneUnitConfig, final UnitConfig locationConfig) throws CouldNotPerformException {
-
-        if (sceneUnitConfig == null) {
-            throw new NotAvailableException("sceneConfig");
-        }
-
-        if (!sceneUnitConfig.hasLabel()) {
-            throw new NotAvailableException("sceneConfig.label");
-        }
-
-        if (locationConfig == null) {
-            throw new NotAvailableException("location");
-        }
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
 
         if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
             throw new NotAvailableException("location scope");
@@ -319,15 +299,46 @@ public class ScopeGenerator {
         ScopeType.Scope.Builder scope = locationConfig.getScope().toBuilder();
 
         // add unit type
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(sceneUnitConfig.getUnitType().name()));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(unitConfig.getUnitType().name()));
+
+        // add unit app
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, appClass.getLabel())));
 
         // add unit label
-        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, sceneUnitConfig.getLabel())));
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
 
         return scope.build();
     }
 
-    public static ScopeType.Scope generateUserScope(final UnitConfig userUnitConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateSceneScope(final UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
+
+        if (unitConfig == null) {
+            throw new NotAvailableException("sceneConfig");
+        }
+
+        if (!unitConfig.hasLabel()) {
+            throw new NotAvailableException("sceneConfig.label");
+        }
+        
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
+
+        if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
+            throw new NotAvailableException("location scope");
+        }
+
+        // add location scope
+        ScopeType.Scope.Builder scope = locationConfig.getScope().toBuilder();
+
+        // add unit type
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(unitConfig.getUnitType().name()));
+
+        // add unit label
+        scope.addComponent(ScopeProcessor.convertIntoValidScopeComponent(LabelProcessor.getBestMatch(Locale.ENGLISH, unitConfig.getLabel())));
+
+        return scope.build();
+    }
+
+    private static ScopeType.Scope generateUserScope(final UnitConfig userUnitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
         if (userUnitConfig == null) {
             throw new NotAvailableException("userUnitConfig");
@@ -357,7 +368,7 @@ public class ScopeGenerator {
         return scope.build();
     }
 
-    public static ScopeType.Scope generateAuthorizationGroupScope(final UnitConfig authorizationGroupUniConfig) throws CouldNotPerformException {
+    private static ScopeType.Scope generateAuthorizationGroupScope(final UnitConfig authorizationGroupUniConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws CouldNotPerformException {
 
         if (authorizationGroupUniConfig == null) {
             throw new NotAvailableException("authorizationGroupConfig");
@@ -379,7 +390,7 @@ public class ScopeGenerator {
         return scope.build();
     }
 
-    public static Scope generateGatewayScope(UnitConfig unitConfig, UnitConfig locationConfig) throws NotAvailableException {
+    private static Scope generateGatewayScope(UnitConfig unitConfig, final UnitRegistry unitRegistry, final ClassRegistry classRegistry) throws NotAvailableException {
 
         if (unitConfig == null) {
             throw new NotAvailableException("unitConfig");
@@ -392,10 +403,8 @@ public class ScopeGenerator {
         if (!unitConfig.hasPlacementConfig()) {
             throw new NotAvailableException("placement config");
         }
-
-        if (locationConfig == null) {
-            throw new NotAvailableException("location");
-        }
+        
+        final UnitConfig locationConfig = unitRegistry.getUnitConfigByIdAndUnitType(unitConfig.getPlacementConfig().getLocationId(), UnitType.LOCATION);
 
         if (!locationConfig.hasScope() || locationConfig.getScope().getComponentList().isEmpty()) {
             throw new NotAvailableException("location scope");

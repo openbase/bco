@@ -34,20 +34,15 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.core.consistency.*;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentConfigAgentClassIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.appconfig.AppConfigAppClassIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.appconfig.AppScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.*;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLocationConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTilesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.deviceconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.gatewayconfig.GatewayConfigGatewayClassIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.gatewayconfig.GatewayScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.gatewayconfig.GatewayUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.*;
-import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneServiceStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.ServiceStateDescriptionHierarchyConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.*;
@@ -179,19 +174,21 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.appUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.objectUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.OBJECT_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPObjectConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.gatewayUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.GATEWAY_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPGatewayConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.unitConfigRegistryList.add(dalUnitConfigRegistry);
+
+            // ===== Attention the order over here is important because it defines the order of the initially performed consistency checks! ==== //
             this.unitConfigRegistryList.add(locationUnitConfigRegistry);
+            this.unitConfigRegistryList.add(connectionUnitConfigRegistry);
             this.unitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
             this.unitConfigRegistryList.add(userUnitConfigRegistry);
+            this.unitConfigRegistryList.add(gatewayUnitConfigRegistry);
             this.unitConfigRegistryList.add(deviceUnitConfigRegistry);
+            this.unitConfigRegistryList.add(dalUnitConfigRegistry);
             this.unitConfigRegistryList.add(unitGroupUnitConfigRegistry);
-            this.unitConfigRegistryList.add(connectionUnitConfigRegistry);
             this.unitConfigRegistryList.add(sceneUnitConfigRegistry);
             this.unitConfigRegistryList.add(agentUnitConfigRegistry);
             this.unitConfigRegistryList.add(appUnitConfigRegistry);
             this.unitConfigRegistryList.add(objectUnitConfigRegistry);
-            this.unitConfigRegistryList.add(gatewayUnitConfigRegistry);
-
+            // ================================================================================================================================= //
 
             this.baseUnitConfigRegistryList.add(userUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
@@ -250,16 +247,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler());
         agentUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
-        agentUnitConfigRegistry.registerConsistencyHandler(new AgentScopeConsistencyHandler(locationUnitConfigRegistry));
         agentUnitConfigRegistry.registerConsistencyHandler(new ExecutableUnitAutostartConsistencyHandler());
 
         appUnitConfigRegistry.registerConsistencyHandler(new AppConfigAppClassIdConsistencyHandler());
         appUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
-        appUnitConfigRegistry.registerConsistencyHandler(new AppScopeConsistencyHandler(locationUnitConfigRegistry));
         appUnitConfigRegistry.registerConsistencyHandler(new ExecutableUnitAutostartConsistencyHandler());
 
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigLabelConsistencyHandler());
-        authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigScopeConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorziationGroupDuplicateMemberConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupPermissionConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupClassGroupConsistencyHandler(userUnitConfigRegistry, agentUnitConfigRegistry, appUnitConfigRegistry));
@@ -267,13 +261,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationUnitConfigRegistry));
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationUnitConfigRegistry));
-        connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationUnitConfigRegistry));
 
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitHostIdConsistencyHandler(deviceUnitConfigRegistry, appUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(deviceUnitConfigRegistry, appUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLocationIdConsistencyHandler(locationUnitConfigRegistry, deviceUnitConfigRegistry));
-        dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitScopeConsistencyHandler(locationUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceUnitConfigRegistry, locationUnitConfigRegistry));
 
@@ -285,9 +277,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceUnitLabelConsistencyHandler());
         deviceUnitConfigRegistry.registerConsistencyHandler(new UnitLocationIdAutoSetupConsistencyHandler(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new UnitOwnerConsistencyHandler(userUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationUnitConfigRegistry));
 
-        userUnitConfigRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserUnitLabelConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserPermissionConsistencyHandler());
@@ -299,7 +289,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler());
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler());
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
-        unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupScopeConsistencyHandler(locationUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupPlacementConfigConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry));
 
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
@@ -310,7 +299,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerConsistencyHandler(new RootLocationExistenceConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
-        locationUnitConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(unitConfigRegistryList));
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationTypeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationHierarchyConsistencyHandler());
@@ -320,7 +308,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerConsistencyHandler(new UnitUserPermissionConsistencyHandler(this));
 
         sceneUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
-        sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneServiceStateConsistencyHandler(unitConfigRegistryList));
         sceneUnitConfigRegistry.registerConsistencyHandler(new ServiceStateDescriptionHierarchyConsistencyHandler());
 
@@ -328,7 +315,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         gatewayUnitConfigRegistry.registerConsistencyHandler(new GatewayUnitLabelConsistencyHandler());
         gatewayUnitConfigRegistry.registerConsistencyHandler(new UnitLocationIdAutoSetupConsistencyHandler(locationUnitConfigRegistry));
         gatewayUnitConfigRegistry.registerConsistencyHandler(new UnitOwnerConsistencyHandler(userUnitConfigRegistry));
-        gatewayUnitConfigRegistry.registerConsistencyHandler(new GatewayScopeConsistencyHandler(locationUnitConfigRegistry));
 
         // add consistency handler for all unitConfig registries
         registerConsistencyHandler(new BaseUnitTypeFieldConsistencyHandler(), UnitConfig.class);
@@ -341,6 +327,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new TransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(authorizationGroupUnitConfigRegistry, locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new AccessPermissionConsistencyHandler(), UnitConfig.class);
+        registerConsistencyHandler(new UnitScopeConsistencyHandler(this), UnitConfig.class);
 
         if (JPService.getValue(JPAuthentication.class, true)) {
             authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupAdminAndBCOConsistencyHandler(aliasIdMap));

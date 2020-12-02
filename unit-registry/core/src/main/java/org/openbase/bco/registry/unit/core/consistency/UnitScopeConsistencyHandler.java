@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.consistency.gatewayconfig;
+package org.openbase.bco.registry.unit.core.consistency;
 
 /*
  * #%L
@@ -22,50 +22,71 @@ package org.openbase.bco.registry.unit.core.consistency.gatewayconfig;
  * #L%
  */
 
-import org.openbase.bco.registry.lib.generator.ScopeGenerator;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.lib.generator.GenericUnitScopeGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.type.communication.ScopeType;
-import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class GatewayScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class UnitScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
+    private final Map<String, UnitConfig> unitIdScopeMap;
+    final UnitRegistry unitRegistry;
 
-    public GatewayScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
-        this.locationRegistry = locationRegistry;
+    public UnitScopeConsistencyHandler(final UnitRegistry unitRegistry) {
+        this.unitRegistry = unitRegistry;
+        this.unitIdScopeMap = new TreeMap<>();
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig unitConfig = entry.getMessage();
+        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+
+        boolean modification = false;
 
         if (!unitConfig.hasPlacementConfig()) {
-            throw new NotAvailableException("unitConfig.placementconfig");
-        }
-        if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-            throw new NotAvailableException("unitConfig.placementconfig.locationid");
+            throw new NotAvailableException("placementconfig");
         }
 
-        UnitConfig unitLocationConfig = locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage();
-        ScopeType.Scope newScope = ScopeGenerator.generateGatewayScope(unitConfig, unitLocationConfig);
+        if (!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+            throw new NotAvailableException("placementconfig.locationid");
+        }
+
+        ScopeType.Scope newScope = GenericUnitScopeGenerator.generateScope(unitConfig.build(), unitRegistry);
 
         // verify and update scope
         if (!ScopeProcessor.generateStringRep(unitConfig.getScope()).equals(ScopeProcessor.generateStringRep(newScope))) {
-            entry.setMessage(unitConfig.toBuilder().setScope(newScope), this);
-            throw new EntryModification(entry, this);
+            unitConfig.setScope(newScope);
+            modification = true;
         }
+
+        if (unitIdScopeMap.containsKey(ScopeProcessor.generateStringRep(unitConfig.getScope()))) {
+            throw new InvalidStateException("Two units with same scope[" + ScopeProcessor.generateStringRep(unitConfig.getScope()) + "]!");
+        }
+
+        unitIdScopeMap.put(ScopeProcessor.generateStringRep(unitConfig.getScope()), unitConfig.build());
+
+        if (modification) {
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
+        }
+    }
+
+    @Override
+    public void reset() {
+        unitIdScopeMap.clear();
     }
 }
