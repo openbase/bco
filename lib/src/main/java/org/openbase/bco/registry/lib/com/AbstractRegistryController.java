@@ -399,8 +399,6 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
             } else {
                 logger.debug("Registration of dependency " + dependency + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
             }
-            // disabled because this can not be right over here. Remove it if everything works fine afterwards.
-//            registry.registerDependency(dependency);
         }
     }
 
