@@ -58,6 +58,10 @@ public class BCOSessionImpl implements BCOSession {
     private Properties loginProperties;
     private SessionManager sessionManager;
 
+    public BCOSessionImpl() {
+        this(new Properties(), new SessionManager());
+    }
+
     public BCOSessionImpl(final SessionManager sessionManager) {
         this(new Properties(), sessionManager);
     }
@@ -286,6 +290,20 @@ public class BCOSessionImpl implements BCOSession {
     @Override
     public void loginUser(String id, String password, boolean stayLoggedIn) throws CouldNotPerformException {
         sessionManager.loginUser(id, password, stayLoggedIn);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param id           {@inheritDoc}
+     * @param passwordHash     {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public void loginUser(String id, byte[] passwordHash, boolean stayLoggedIn) throws CouldNotPerformException {
+        sessionManager.loginUser(id, passwordHash, stayLoggedIn);
     }
 
     /**
