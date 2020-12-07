@@ -87,7 +87,9 @@ public class Registries {
      * Returns a list of all available bco registries.
      *
      * @param waitForData
+     *
      * @return a list of remote registry instances.
+     *
      * @throws CouldNotPerformException is throw if at least one registry is not available.
      * @throws InterruptedException     is thrown if thread is externally interrupted.
      */
@@ -104,6 +106,7 @@ public class Registries {
      * Returns a list of all available bco registries without waiting for data.
      *
      * @return a list of all available bco registries
+     *
      * @throws CouldNotPerformException is throw if at least one registry is not available.
      */
     public static List<RegistryRemote> getRegistries() throws CouldNotPerformException {
@@ -119,6 +122,7 @@ public class Registries {
      * Returns an initialized and activated remote registry.
      *
      * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      */
     public static UnitRegistryRemote getUnitRegistry() throws NotAvailableException {
@@ -128,7 +132,64 @@ public class Registries {
     /**
      * Returns an initialized and activated remote registry.
      *
+     * @param timeout  timeout used to fail in case the task takes to long.
+     * @param timeUnit the time unit of the timeout.
+     *
      * @return the remote registry instance.
+     *
+     * @throws NotAvailableException
+     */
+    public static UnitRegistryRemote getUnitRegistry(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final UnitRegistryRemote registry = CachedUnitRegistryRemote.getRegistry();
+        registry.waitForData(timeout, timeUnit);
+        return registry;
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @return the remote registry instance.
+     *
+     * @throws NotAvailableException
+     */
+    public static ActivityRegistryRemote getActivityRegistry(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final ActivityRegistryRemote registry = CachedActivityRegistryRemote.getRegistry();
+        registry.waitForData(timeout, timeUnit);
+        return registry;
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @return the remote registry instance.
+     *
+     * @throws NotAvailableException
+     */
+    public static ClassRegistryRemote getClassRegistry(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final ClassRegistryRemote registry = CachedClassRegistryRemote.getRegistry();
+        registry.waitForData(timeout, timeUnit);
+        return registry;
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @return the remote registry instance.
+     *
+     * @throws NotAvailableException
+     */
+    public static TemplateRegistryRemote getTemplateRegistry(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final TemplateRegistryRemote registry = CachedTemplateRegistryRemote.getRegistry();
+        registry.waitForData(timeout, timeUnit);
+        return registry;
+    }
+
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      */
     public static ActivityRegistryRemote getActivityRegistry() throws NotAvailableException {
@@ -139,6 +200,7 @@ public class Registries {
      * Returns an initialized and activated remote registry.
      *
      * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      */
     public static ClassRegistryRemote getClassRegistry() throws NotAvailableException {
@@ -149,6 +211,7 @@ public class Registries {
      * Returns an initialized and activated remote registry.
      *
      * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      */
     public static TemplateRegistryRemote getTemplateRegistry() throws NotAvailableException {
@@ -159,7 +222,9 @@ public class Registries {
      * Returns an initialized and activated remote registry.
      *
      * @param waitForData defines if this call should block until the registry data is available.
+     *
      * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
@@ -178,7 +243,9 @@ public class Registries {
      * Returns an initialized and activated remote registry.
      *
      * @param waitForData defines if this call should block until the registry data is available.
+     *
      * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
@@ -197,7 +264,9 @@ public class Registries {
      * Returns an initialized and activated remote registry.
      *
      * @param waitForData defines if this call should block until the registry data is available.
+     *
      * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
@@ -216,7 +285,9 @@ public class Registries {
      * Returns an initialized and activated remote registry.
      *
      * @param waitForData defines if this call should block until the registry data is available.
+     *
      * @return the remote registry instance.
+     *
      * @throws NotAvailableException
      * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
@@ -325,6 +396,7 @@ public class Registries {
      *
      * @param message the message that will be registered
      * @param <M>     the type of message registered
+     *
      * @return the registered message
      */
     @Experimental
@@ -342,6 +414,7 @@ public class Registries {
      *
      * @param message the message that will be updated
      * @param <M>     the type of message updates
+     *
      * @return the updated message
      */
     @Experimental
@@ -359,6 +432,7 @@ public class Registries {
      *
      * @param message the message that will be removed
      * @param <M>     the type of message removed
+     *
      * @return the removed message
      */
     @Experimental
@@ -377,6 +451,7 @@ public class Registries {
      * @param message the message that will be tested
      *                <p>
      *                Note: The method returns false if the registry is not reachable.
+     *
      * @return true if the message is contained in a registry, else false
      */
     @Experimental
@@ -392,6 +467,7 @@ public class Registries {
      * Test if a given message is contained in a registry.
      *
      * @param id the id which is checked
+     *
      * @return true if the message is contained in a registry, false if it is not contained in any and no exception is thrown
      */
     @Experimental
@@ -409,6 +485,7 @@ public class Registries {
      *
      * @param id               the id that is checked
      * @param messageOrBuilder message or builder defining which registry is checked
+     *
      * @return true if the message is contained or false if the registry is not available or the entry not contained.
      */
     @Experimental
@@ -424,7 +501,9 @@ public class Registries {
      * Get a message from a registry by id.
      *
      * @param id the id that is checked
+     *
      * @return a message with the id
+     *
      * @throws CouldNotPerformException if no message with the id could be found
      */
     @Experimental
@@ -447,7 +526,9 @@ public class Registries {
      *
      * @param id               the id that is checked
      * @param messageOrBuilder message or builder defining which registry is checked
+     *
      * @return a message with the id
+     *
      * @throws CouldNotPerformException if no message with the id could be found
      */
     @Experimental
@@ -460,7 +541,9 @@ public class Registries {
      *
      * @param messageOrBuilder type used to identify the registry whose list is returned
      * @param <M>              the type of message in the list
+     *
      * @return a list of message in a registry
+     *
      * @throws CouldNotPerformException if the list could not be retrieved for the type
      */
     @Experimental
@@ -479,6 +562,7 @@ public class Registries {
      * Test if a registry is read only.
      *
      * @param messageOrBuilder type to identify the registry checked.
+     *
      * @return true if the registry is read only or not reachable.
      */
     @Experimental
@@ -496,6 +580,7 @@ public class Registries {
      * @param messageOrBuilder type to identify the registry checked.
      *                         <p>
      *                         Note: Methode also returns true in case the check could not be performed. Maybe you wanna check in advance if the registry is available.
+     *
      * @return true if the registry is consistent.
      */
     @Experimental
@@ -561,7 +646,9 @@ public class Registries {
      * Note: Method can be used in constructors where the registry needs to be passed to the super class and no exception handling is possible.
      *
      * @param clazz the class used as cause for the InstantiationException
+     *
      * @return an unit registry remote instance.
+     *
      * @throws InstantiationException is thrown if the registry is not available.
      */
     public static UnitRegistryRemote getUnitRegistry(final Class clazz) throws InstantiationException {
