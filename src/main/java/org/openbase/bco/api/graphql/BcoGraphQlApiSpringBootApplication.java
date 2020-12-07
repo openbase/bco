@@ -28,42 +28,42 @@ import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import graphql.GraphQL;
 import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
-import graphql.kickstart.execution.config.DefaultGraphQLSchemaProvider;
-import graphql.kickstart.execution.config.GraphQLSchemaProvider;
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
 import graphql.kickstart.execution.context.GraphQLContext;
-import graphql.kickstart.execution.context.GraphQLContextBuilder;
 import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
+import io.reactivex.*;
+import io.reactivex.functions.BiConsumer;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
+import org.jetbrains.annotations.NotNull;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
-import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.api.graphql.subscriptions.UnitDataPublisher;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType;
+import org.reactivestreams.FlowAdapters;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import rx.Observable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Callable;
 
 @SpringBootApplication
 public class BcoGraphQlApiSpringBootApplication {
@@ -85,12 +85,32 @@ public class BcoGraphQlApiSpringBootApplication {
                 new UnitSchemaModule()
         );
     }
+
     @Bean
     GraphQLSchema schema() {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
-        final GraphQLObjectType.Builder queryTypeBuilder = GraphQLObjectType.newObject(schema.getQueryType());
-        final GraphQLObjectType.Builder mutationTypeBuilder = GraphQLObjectType.newObject(schema.getMutationType());
+        GraphQLObjectType.Builder builder = GraphQLObjectType.newObject().name("Subscription");
+        builder.field(GraphQLFieldDefinition.newFieldDefinition().name("powerState").type(Scalars.GraphQLString)
+                .argument(GraphQLArgument.newArgument().name("alias").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
+                .build());
+
+        GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
+                .dataFetcher(FieldCoordinates.coordinates("Subscription", "powerState"), new DataFetcher<Publisher<String>>() {
+                    @Override
+                    public Publisher<String> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                        System.out.println("Create publiser for alias: " + dataFetchingEnvironment.getArgument("alias").toString());
+                        return new UnitDataPublisher(dataFetchingEnvironment.getArgument("alias"));
+                    }
+                }).build();
+
+        schema = GraphQLSchema.newSchema(schema)
+                .subscription(builder.build())
+                .codeRegistry(codeRegistry)
+                .build();
+
+        //final GraphQLObjectType.Builder queryTypeBuilder = GraphQLObjectType.newObject(schema.getQueryType());
+        // final GraphQLObjectType.Builder mutationTypeBuilder = GraphQLObjectType.newObject(schema.getMutationType());
         //TODO: can I define that these arguments can not be null as in an SDL
         //TODO: would the preferred way be to define these in an sdl?
         /*queryTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("login").type(Scalars.GraphQLString)
@@ -148,13 +168,21 @@ public class BcoGraphQlApiSpringBootApplication {
                 })
                 .build();
 
+
         schema = GraphQLSchema.newSchema(schema)
                 .query(queryTypeBuilder.build())
                 .mutation(mutationTypeBuilder.build())
                 .codeRegistry(codeRegistry)
                 .build();*/
+
         return schema;
     }
+
+    /*@Bean
+    public GraphQL graphQL() {
+        System.out.println("Add exec strategy..");
+        return GraphQL.newGraphQL(schema()).subscriptionExecutionStrategy(new SubscriptionExecutionStrategy()).build();
+    }*/
 //
 //    @Bean
 //    public GraphQL graphQL() {

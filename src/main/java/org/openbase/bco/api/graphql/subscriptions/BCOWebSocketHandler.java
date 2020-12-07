@@ -28,7 +28,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 public class BCOWebSocketHandler extends TextWebSocketHandler {
 
-
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         System.out.println("Got message: " + message.getPayload());
