@@ -30,8 +30,8 @@ import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.BCOSessionImpl;
@@ -43,8 +43,6 @@ import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ListFilter;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.configuration.MetaConfigType;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
@@ -53,6 +51,8 @@ import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
 import org.openbase.type.spatial.ShapeType;
 
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -168,6 +168,7 @@ public class RegistrySchemaModule extends SchemaModule {
      * Check if an authentication token retrieved by the login method is still valid.
      *
      * @param token the token to be checked
+     *
      * @return if the token is valid and can be used to authenticate further requests
      */
     @Query("verifyToken")
@@ -177,15 +178,14 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Query("login")
-    String login(@Arg("username") String username, @Arg("password") byte[] passwordHash) throws ArgumentError, InterruptedException, ExecutionException, TimeoutException {
+    String login(@Arg("username") String username, @Arg("password") String passwordHash) throws ArgumentError, InterruptedException, ExecutionException, TimeoutException {
         try {
 
-
-//            final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
+    //            final String userId = Registries.getUnitRegistry(5, TimeUnit.SECONDS);
             final BCOSession session = new BCOSessionImpl();
 
             try {
-                session.loginUserViaUsername(username, passwordHash, false);
+                session.loginUserViaUsername(username, Arrays.copyOf(Base64.getDecoder().decode(passwordHash), 16), false);
             } catch (CouldNotPerformException ex) {
                 throw new ArgumentError(ex);
             }
