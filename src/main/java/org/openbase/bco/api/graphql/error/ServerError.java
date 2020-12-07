@@ -24,7 +24,13 @@ package org.openbase.bco.api.graphql.error;
 
 import graphql.ErrorClassification;
 
+import java.util.concurrent.TimeUnit;
+
 public class ServerError extends BCOGraphQLError {
+
+    public static final long BCO_TIMEOUT_SHORT = 10;
+    public static final long BCO_TIMEOUT_LONG = 20;
+    public static final TimeUnit BCO_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
     public ServerError(String message) {
         this(message, null);
@@ -32,6 +38,10 @@ public class ServerError extends BCOGraphQLError {
 
     public ServerError(String message, Throwable cause) {
         super(message, cause);
+    }
+
+    public ServerError(final Throwable cause) {
+        super(cause.getMessage(), cause);
     }
 
     @Override

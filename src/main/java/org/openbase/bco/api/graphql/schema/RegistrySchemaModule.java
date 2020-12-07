@@ -30,13 +30,15 @@ import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
+import org.openbase.bco.api.graphql.error.BCOGraphQLError;
+import org.openbase.bco.api.graphql.error.GenericError;
+import org.openbase.bco.api.graphql.error.ServerError;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.BCOSessionImpl;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.ExceptionProcessor;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ListFilter;
@@ -49,8 +51,8 @@ import org.openbase.type.geometry.PoseType;
 import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
 import org.openbase.type.spatial.ShapeType;
+import org.reactivestreams.FlowAdapters;
 
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -59,107 +61,110 @@ import java.util.concurrent.TimeoutException;
 public class RegistrySchemaModule extends SchemaModule {
 
     @Query("unitConfig")
-    UnitConfig getUnitConfigById(@Arg("id") String id, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, ArgumentError {
+    UnitConfig getUnitConfigById(@Arg("id") String id, DataFetchingEnvironment env) throws BCOGraphQLError {
         try {
-            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(id);
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+            return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(id);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Query("unitConfigs")
-    ImmutableList<UnitConfig> getUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("inclusiveDisabled") Boolean incluseDisabled) throws CouldNotPerformException, InterruptedException {
+    ImmutableList<UnitConfig> getUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("inclusiveDisabled") Boolean incluseDisabled) throws BCOGraphQLError {
 
-        // setup default values
-        if ((unitFilter == null)) {
-            unitFilter = UnitFilter.getDefaultInstance();
-        }
-        if ((incluseDisabled == null)) {
-            incluseDisabled = false;
-        }
+        try {
+            // setup default values
+            if ((unitFilter == null)) {
+                unitFilter = UnitFilter.getDefaultInstance();
+            }
+            if ((incluseDisabled == null)) {
+                incluseDisabled = false;
+            }
 
-        return ImmutableList.copyOf(
-                new UnitFilterImpl(unitFilter)
-                        .pass(Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigsFiltered(!incluseDisabled)));
+            return ImmutableList.copyOf(
+                    new UnitFilterImpl(unitFilter)
+                            .pass(Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigsFiltered(!incluseDisabled)));
+
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
+        }
     }
 
     @Mutation("updateUnitConfig")
-    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ArgumentError {
+    UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws BCOGraphQLError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitConfig.getId()).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitConfig.getId()).toBuilder();
             builder.mergeFrom(unitConfig);
-            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).updateUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
-        } catch (ExecutionException ex) {
-            throw new ArgumentError(ExceptionProcessor.getInitialCause(ex));
+            return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).updateUnitConfig(unitConfig).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Mutation("removeUnitConfig")
-    UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+    UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws BCOGraphQLError {
         try {
-            final UnitConfig unitConfig = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId);
-            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+            final UnitConfig unitConfig = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitId);
+            return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).removeUnitConfig(unitConfig).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Mutation("registerUnitConfig")
-    UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ArgumentError {
+    UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws BCOGraphQLError {
         try {
-            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
-        } catch (ExecutionException ex) {
-            throw new ArgumentError(ExceptionProcessor.getInitialCause(ex));
+            return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).registerUnitConfig(unitConfig).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Mutation("updateLabel")
-    LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+    LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws BCOGraphQLError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitId).toBuilder();
 
             final BCOGraphQLContext context = env.getContext();
             final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
             LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
 
-            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getLabel();
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getLabel();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Mutation("updateLocation")
-    PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+    PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws BCOGraphQLError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitId).toBuilder();
             builder.getPlacementConfigBuilder().setLocationId(locationId);
-            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getPlacementConfig();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Mutation("updateFloorPlan")
-    ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException, ArgumentError {
+    ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws BCOGraphQLError {
         try {
-            final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(locationId).toBuilder();
+            final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(locationId).toBuilder();
             unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
-            return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getShape();
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+            return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getPlacementConfig().getShape();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Mutation("updatePose")
-    PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
+    PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws BCOGraphQLError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitId).toBuilder();
             builder.getPlacementConfigBuilder().clearPose().setPose(pose);
-            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+            return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getPlacementConfig().getPose();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
@@ -176,27 +181,34 @@ public class RegistrySchemaModule extends SchemaModule {
         return true;
     }
 
+    /**
+     * Method can be used to request a token of the given bco user.
+     *
+     * @param username     the name of the user as plain text string.
+     * @param passwordHash the password hash of the user that need to be generted first (see note below).
+     *
+     * @return the login token.
+     *
+     * Note: The hash of the default admin password is: '''R+gZ+PFuauhav8rRVa3XlWXXSEyi5BcdrbeXLEY3tDQ='''
+     *
+     * @throws BCOGraphQLError
+     */
     @Query("login")
-    String login(@Arg("username") String username, @Arg("password") String passwordHash) throws ArgumentError, InterruptedException, ExecutionException, TimeoutException {
+    String login(@Arg("username") String username, @Arg("password") String passwordHash) throws BCOGraphQLError {
         try {
             final BCOSession session = new BCOSessionImpl();
 
-            try {
                 session.loginUserViaUsername(username, Base64.getDecoder().decode(passwordHash), false);
-            } catch (CouldNotPerformException ex) {
-                throw new ArgumentError(ex);
-            }
-
-            return session.generateAuthToken(5, TimeUnit.SECONDS).getAuthenticationToken();
-        } catch (CouldNotPerformException ex) {
-            throw new ArgumentError(ex);
+            return session.generateAuthToken(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getAuthenticationToken();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Query("changePassword")
-    Boolean changePassword(@Arg("username") String username, @Arg("oldPassword") String oldPassword, @Arg("newPassword") String newPassword) throws ArgumentError, CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException {
+    Boolean changePassword(@Arg("username") String username, @Arg("oldPassword") String oldPassword, @Arg("newPassword") String newPassword) throws BCOGraphQLError {
         try {
-            final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
+            final String userId = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUserUnitIdByUserName(username);
 
             final SessionManager sessionManager = new SessionManager();
             try {
@@ -204,28 +216,34 @@ public class RegistrySchemaModule extends SchemaModule {
             } catch (CouldNotPerformException ex) {
                 throw new ArgumentError(ex);
             }
-            sessionManager.changePassword(userId, oldPassword, newPassword).get(5, TimeUnit.SECONDS);
+            sessionManager.changePassword(userId, oldPassword, newPassword).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
 
             return true;
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
     }
 
     @Mutation("updateMetaConfig")
-    MetaConfigType.MetaConfig updateMetaConfig(@Arg("unitId") String unitId, @Arg("entry") EntryType.Entry entry) throws NotAvailableException, InterruptedException, ExecutionException, TimeoutException {
-        final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry().getUnitConfigById(unitId).toBuilder();
-        final MetaConfigType.MetaConfig.Builder metaConfigBuilder = unitConfigBuilder.getMetaConfigBuilder();
-        for (int i = 0; i < metaConfigBuilder.getEntryCount(); i++) {
-            if (metaConfigBuilder.getEntry(i).getKey().equals(entry.getKey())) {
-                metaConfigBuilder.removeEntry(i);
-                break;
+    MetaConfigType.MetaConfig updateMetaConfig(@Arg("unitId") String unitId, @Arg("entry") EntryType.Entry entry) throws BCOGraphQLError {
+        try {
+            final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+
+            final UnitConfig.Builder unitConfigBuilder = unitRegistry.getUnitConfigById(unitId).toBuilder();
+            final MetaConfigType.MetaConfig.Builder metaConfigBuilder = unitConfigBuilder.getMetaConfigBuilder();
+            for (int i = 0; i < metaConfigBuilder.getEntryCount(); i++) {
+                if (metaConfigBuilder.getEntry(i).getKey().equals(entry.getKey())) {
+                    metaConfigBuilder.removeEntry(i);
+                    break;
+                }
             }
+            if (!entry.getValue().isEmpty()) {
+                metaConfigBuilder.addEntry(entry);
+            }
+            return unitRegistry.updateUnitConfig(unitConfigBuilder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getMetaConfig();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
         }
-        if (!entry.getValue().isEmpty()) {
-            metaConfigBuilder.addEntry(entry);
-        }
-        return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getMetaConfig();
     }
 
     @Query("gatewayClasses")

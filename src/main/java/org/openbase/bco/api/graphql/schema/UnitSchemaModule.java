@@ -27,7 +27,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
-import org.openbase.bco.api.graphql.error.ArgumentError;
+import org.openbase.bco.api.graphql.error.BCOGraphQLError;
+import org.openbase.bco.api.graphql.error.GenericError;
+import org.openbase.bco.api.graphql.error.ServerError;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -51,19 +53,55 @@ import java.util.concurrent.TimeUnit;
 
 public class UnitSchemaModule extends SchemaModule {
 
-
     @SchemaModification(addField = "config", onType = UnitData.class)
-    UnitConfig addConfigToData(UnitData data) throws NotAvailableException {
-        return Registries.getUnitRegistry().getUnitConfigById(data.getId());
+    UnitConfig addConfigToData(UnitData data) throws CouldNotPerformException, InterruptedException {
+        return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(data.getId());
     }
 
     @Query("unit")
-    UnitData unit(@Arg("unitId") String id) throws InterruptedException, ArgumentError {
+    UnitData unit(@Arg("unitId") String id) throws BCOGraphQLError {
         try {
-            final UnitRemote<?> unit = Units.getUnit(id, true);
+            final UnitRemote<?> unit = Units.getUnit(id, ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
             return (UnitData) ProtoBufBuilderProcessor.merge(UnitData.newBuilder(), unit.getData()).build();
-        } catch (NotAvailableException ex) {
-            throw new ArgumentError(ex);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
+        }
+    }
+
+    @Query("units")
+    ImmutableList<UnitData> units(@Arg("filter") UnitFilter unitFilter) throws BCOGraphQLError {
+        try {
+            final List<UnitData> dataList = new ArrayList<>();
+            for (UnitConfig unitConfig : getUnitConfigsByFilter(unitFilter)) {
+                UnitRemote<?> unit = Units.getUnit(unitConfig, ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+                dataList.add((UnitData) ProtoBufBuilderProcessor.merge(UnitData.newBuilder(), unit.getData()).build());
+            }
+            return ImmutableList.copyOf(dataList);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
+        }
+    }
+
+    @Mutation("unit")
+    UnitData unit(@Arg("unitId") String unitId, @Arg("data") UnitData data, DataFetchingEnvironment env) throws BCOGraphQLError {
+        try {
+            return setServiceStates(unitId, data, env, ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
+        }
+
+    }
+
+    @Mutation("units")
+    ImmutableList<UnitData> units(@Arg("filter") UnitFilter filter, @Arg("data") UnitData data, DataFetchingEnvironment env) throws BCOGraphQLError {
+        try {
+            final List<UnitData> dataList = new ArrayList<>();
+            for (UnitConfig unitConfig : getUnitConfigsByFilter(filter)) {
+                dataList.add(setServiceStates(unitConfig, data, env, ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT));
+            }
+            return ImmutableList.copyOf(dataList);
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
         }
     }
 
@@ -74,26 +112,15 @@ public class UnitSchemaModule extends SchemaModule {
         }
 
         return new RegistrySchemaModule.UnitFilterImpl(unitFilter)
-                .pass(Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigsFiltered(true));
+                .pass(Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigsFiltered(true));
     }
 
-    @Query("units")
-    ImmutableList<UnitData> units(@Arg("filter") UnitFilter unitFilter) throws CouldNotPerformException, InterruptedException {
-        List<UnitData> dataList = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigsByFilter(unitFilter)) {
-            UnitRemote<?> unit = Units.getUnit(unitConfig, true);
-            dataList.add((UnitData) ProtoBufBuilderProcessor.merge(UnitData.newBuilder(), unit.getData()).build());
-        }
-
-        return ImmutableList.copyOf(dataList);
+    private UnitData setServiceStates(final UnitConfig unitConfig, final UnitData data, DataFetchingEnvironment env, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        return setServiceStates(unitConfig.getId(), data, env, timeout, timeUnit);
     }
 
-    private UnitData setServiceStates(final UnitConfig unitConfig, final UnitData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
-        return setServiceStates(unitConfig.getId(), data, env);
-    }
-
-    private UnitData setServiceStates(final String unitId, final UnitData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
-        final UnitRemote<?> unit = Units.getUnit(unitId, true);
+    private UnitData setServiceStates(final String unitId, final UnitData data, DataFetchingEnvironment env, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final UnitRemote<?> unit = Units.getUnit(unitId, timeout, timeUnit);
 
         final List<RemoteAction> remoteActions = new ArrayList<>();
         for (final ServiceType serviceType : unit.getSupportedServiceTypes()) {
@@ -117,26 +144,12 @@ public class UnitSchemaModule extends SchemaModule {
         // TODO: blocked by https://github.com/openbase/bco.dal/issues/170
         if (!remoteActions.isEmpty()) {
             for (final RemoteAction remoteAction : remoteActions) {
-                remoteAction.waitForRegistration(5, TimeUnit.SECONDS);
+                remoteAction.waitForRegistration(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
                 unitDataBuilder.addTriggeredAction(remoteAction.getActionDescription());
             }
         }
 
         ProtoBufBuilderProcessor.merge(unitDataBuilder, unit.getData());
         return unitDataBuilder.build();
-    }
-
-    @Mutation("unit")
-    UnitData unit(@Arg("unitId") String unitId, @Arg("data") UnitData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
-        return setServiceStates(unitId, data, env);
-    }
-
-    @Mutation("units")
-    ImmutableList<UnitData> units(@Arg("filter") UnitFilter filter, @Arg("data") UnitData data, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException {
-        final List<UnitData> dataList = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigsByFilter(filter)) {
-            dataList.add(setServiceStates(unitConfig, data, env));
-        }
-        return ImmutableList.copyOf(dataList);
     }
 }
