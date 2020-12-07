@@ -38,10 +38,8 @@ public class GenericUnitScopeGenerator implements UnitScopeGenerator {
     public synchronized static UnitScopeGenerator getInstance() {
         if (instance == null) {
             if (JPService.getValue(JPRSBLegacyMode.class, false)) {
-                System.err.println("legacy mode enabled");
                 instance = new UnitLabelScopeGenerator();
             } else {
-                System.err.println("legacy mode disabled");
                 instance = new UnitIdScopeGenerator();
             }
         }
