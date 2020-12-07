@@ -172,6 +172,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
             registerDependencies();
 
             // plugins often are able to register configurations, therefore remote dependencies have to be available for consistency checks
+            //todo: waiting within the activation method is a bit critical since in case the middle ware is not available the management lock is hold for a long amount of time.
             waitForRemoteDependencies();
 
             try {
