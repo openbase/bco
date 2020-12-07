@@ -50,17 +50,18 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.TimeoutSplitter;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.rct.Transform;
-import rsb.Scope;
+import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.communication.ScopeType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rsb.Scope;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -373,27 +374,6 @@ public class Units {
         Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
     }
 
-//    todo: method is outdated and should be removed
-//    /**
-//     * Method returns an instance of the unit registry. If this method is called
-//     * for the first time, a new registry instance will be created. This method
-//     * only returns if the unit registry synchronization is finished otherwise
-//     * this method blocks forever. In case you won't wait for the
-//     * synchronization, request your own instance by calling:
-//     * <code>Registries.getUnitRegistry();</code>
-//     *
-//     * @return the unit registry instance.
-//     *
-//     * @throws InterruptedException     is thrown if the current thread was
-//     *                                  externally interrupted.
-//     * @throws CouldNotPerformException Is thrown in case an error occurs during
-//     *                                  registry connection.
-//     */
-//    private synchronized static UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
-//        Registries.waitForData();
-//        return Registries.getUnitRegistry();
-//    }
-
     /**
      * Returns the unit remote of the unit identified by the given unit id.
      *
@@ -516,6 +496,324 @@ public class Units {
             unitRemote.waitForData();
         }
         return unitRemote;
+    }
+
+    /**
+     * Method waits for unit data if the waitForData flag is set.
+     *
+     * @param unitRemote the remote to wait for data.
+     * @param timeout    timeout used to fail in case the task takes to long.
+     * @param timeUnit   the time unit of the timeout.
+     *
+     * @return the given unit remote.
+     *
+     * @throws CouldNotPerformException is thrown if any error occurs during the
+     *                                  wait phase.
+     * @throws InterruptedException     is thrown in case the thread is externally
+     *                                  interrupted.
+     */
+    private static UnitRemote<?> waitForData(final UnitRemote<?> unitRemote, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
+        Registries.getUnitRegistry(timeoutSplitter.getTime(), timeoutSplitter.getTimeUnit());
+        unitRemote.waitForData(timeoutSplitter.getTime(), timeoutSplitter.getTimeUnit());
+        return unitRemote;
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit
+     * identifier. The returned unit remote object is fully synchronized with
+     * the unit controller and all states locally cached. Use the
+     * {@code waitForData} flag to block the current thread until the unit
+     * remote is fully synchronized with the unit controller during the startup
+     * phase. This synchronization is just done once and the current thread will
+     * not block if the unit remote was already synchronized before. To force a
+     * resynchronization call
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
+     * remote instance. Please avoid polling unit states! If you want to get
+     * informed about unit config or unit data state changes, please register
+     * new config or data observer on this remote instance.
+     *
+     * @param unitId   the unit identifier.
+     * @param timeout  timeout used to fail in case the task takes to long.
+     * @param timeUnit the time unit of the timeout.
+     *
+     * @return a new or cached unit remote which can be used to control the unit
+     * or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not
+     *                               available.
+     * @throws InterruptedException  is thrown in case the thread is externally
+     *                               interrupted
+     */
+    public static UnitRemote<?> getUnit(final String unitId, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+        try {
+            if (unitId == null) {
+                assert false;
+                throw new NotAvailableException("UnitId");
+            }
+            return waitForData(getUnitRemote(unitId), timeout, timeUnit);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + unitId + "]", ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit
+     * identifier. The returned unit remote object is fully synchronized with
+     * the unit controller and all states locally cached. Use the
+     * {@code waitForData} flag to block the current thread until the unit
+     * remote is fully synchronized with the unit controller during the startup
+     * phase. This synchronization is just done once and the current thread will
+     * not block if the unit remote was already synchronized before. To force a
+     * resynchronization call
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
+     * remote instance. Please avoid polling unit states! If you want to get
+     * informed about unit config or unit data state changes, please register
+     * new config or data observer on this remote instance.
+     *
+     * @param unitConfig the unit configuration.
+     * @param timeout    timeout used to fail in case the task takes to long.
+     * @param timeUnit   the time unit of the timeout.
+     *
+     * @return a new or cached unit remote which can be used to control the unit
+     * or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not
+     *                               available.
+     * @throws InterruptedException  is thrown in case the thread is externally
+     *                               interrupted
+     */
+    public static UnitRemote<?> getUnit(final UnitConfig unitConfig, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+        try {
+            if (unitConfig == null) {
+                assert false;
+                throw new NotAvailableException("UnitConfig");
+            }
+            return waitForData(getUnitRemote(unitConfig), timeout, timeUnit);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + unitConfig.getId() + "|" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]", ex);
+        }
+    }
+
+    /**
+     * This method is a wrapper for
+     * {@link #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
+     * and casts the result to the given {@code unitRemoteClass}.
+     *
+     * @param <UR>            the unit remote class type.
+     * @param unitConfig      Checkout wrapped method doc
+     *                        {@link #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
+     * @param timeout         timeout used to fail in case the task takes to long.
+     * @param timeUnit        the time unit of the timeout.
+     * @param unitRemoteClass the unit remote class.
+     *
+     * @return an instance of the given remote class.
+     *
+     * @throws NotAvailableException Is thrown if the remote instance is not
+     *                               compatible with the given class. See
+     *                               {{@link #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
+     *                               for further cases.
+     * @throws InterruptedException  Checkout wrapped method doc
+     *                               {@link #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
+     * @see #getUnit(org.openbase.type.domotic.unit.UnitConfigType.UnitConfig, boolean)
+     */
+    public static <UR extends UnitRemote<?>> UR getUnit(final UnitConfig unitConfig, final long timeout, final TimeUnit timeUnit, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        try {
+            return castUnitRemote(getUnit(unitConfig, timeout, timeUnit), unitRemoteClass);
+        } catch (ClassCastException | VerificationFailedException ex) {
+            throw new NotAvailableException("Unit[" + unitConfig.getId() + "]", new InvalidStateException("Requested Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] of UnitType[" + unitConfig.getUnitType() + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
+        }
+    }
+
+    /**
+     * This method is a wrapper for
+     * {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} and
+     * casts the result to the given {@code unitRemoteClass}.
+     *
+     * @param <UR>            the unit remote class type.
+     * @param unitId          Checkout wrapped method doc
+     *                        {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)}
+     * @param timeout         timeout used to fail in case the task takes to long.
+     * @param timeUnit        the time unit of the timeout.
+     * @param unitRemoteClass the unit remote class.
+     *
+     * @return an instance of the given remote class.
+     *
+     * @throws NotAvailableException Is thrown if the remote instance is not
+     *                               compatible with the given class. See
+     *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for
+     *                               further cases.
+     * @throws InterruptedException  Checkout wrapped method doc
+     *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)}
+     * @see #getUnit(java.lang.String, boolean)
+     */
+    public static <UR extends UnitRemote<?>> UR getUnit(final String unitId, final long timeout, final TimeUnit timeUnit, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        try {
+            return castUnitRemote(getUnit(unitId, timeout, timeUnit), unitRemoteClass);
+        } catch (ClassCastException | VerificationFailedException ex) {
+            throw new NotAvailableException("Unit[" + unitId + "]", new InvalidStateException("Requested Unit[" + unitId + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
+        }
+    }
+
+    /**
+     * Method establishes a connection to all enabled units.
+     * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     * <p>
+     * Note: Please to not use this method if you not really need all units because this method establishes a connection to each unit and the synchronization will even continue if you are not working with the remote instances anymore.
+     *
+     * @param timeout  timeout used to fail in case the task takes to long.
+     * @param timeUnit the time unit of the timeout.
+     *
+     * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static List<UnitRemote<?>> getUnits(final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+        try {
+            final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
+                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
+                unitRemoteList.add(getUnit(unitConfig, timeout, timeUnit));
+            }
+            return unitRemoteList;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Units", ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the units referred by the given unit label.
+     * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param label    the label to identify the unit.
+     * @param unitType the type of the unit.
+     * @param timeout  timeout used to fail in case the task takes to long.
+     * @param timeUnit the time unit of the timeout.
+     *
+     * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static List<UnitRemote<?>> getUnitsByLabelAndType(final String label, final UnitType unitType, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+        try {
+            if (label == null) {
+                assert false;
+                throw new NotAvailableException("UnitName");
+            }
+
+            final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(label, unitType)) {
+                unitRemoteList.add(getUnit(unitConfig, timeout, timeUnit));
+            }
+            return unitRemoteList;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the units referred by the given unit label.
+     * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param label    the label to identify the unit.
+     * @param timeout  timeout used to fail in case the task takes to long.
+     * @param timeUnit the time unit of the timeout.
+     *
+     * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static List<UnitRemote<?>> getUnitsByLabel(final String label, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+        try {
+            if (label == null) {
+                assert false;
+                throw new NotAvailableException("UnitName");
+            }
+
+            final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabel(label)) {
+                unitRemoteList.add(getUnit(unitConfig, timeout, timeUnit));
+            }
+            return unitRemoteList;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit alias.
+     * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param alias    the alias to identify the unit.
+     * @param timeout  timeout used to fail in case the task takes to long.
+     * @param timeUnit the time unit of the timeout.
+     *
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static UnitRemote<?> getUnitByAlias(final String alias, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+        try {
+            if (alias == null) {
+                assert false;
+                throw new NotAvailableException("UnitAlias");
+            }
+            return getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), timeout, timeUnit);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit", "alias:" + alias, ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit alias.
+     * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param alias           the alias to identify the unit.
+     * @param timeout         timeout used to fail in case the task takes to long.
+     * @param timeUnit        the time unit of the timeout.
+     * @param unitRemoteClass the unit remote class.
+     *
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static <UR extends UnitRemote<?>> UR getUnitByAlias(final String alias, final long timeout, final TimeUnit timeUnit, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        try {
+            if (alias == null) {
+                assert false;
+                throw new NotAvailableException("UnitAlias");
+            }
+            return castUnitRemote(getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), timeout, timeUnit), unitRemoteClass);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit", "alias:" + alias, ex);
+        }
     }
 
     /**
@@ -648,7 +946,7 @@ public class Units {
      *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)}
      * @see #getUnit(java.lang.String, boolean)
      */
-    public static <UR extends UnitRemote<?>> UR getUnit(final String unitId, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> UR getUnit(final String unitId, final boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
             return castUnitRemote(getUnit(unitId, waitForData), unitRemoteClass);
         } catch (ClassCastException | VerificationFailedException ex) {
@@ -673,7 +971,7 @@ public class Units {
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
-    public static List<UnitRemote<?>> getUnits(boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static List<UnitRemote<?>> getUnits(final boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
@@ -1012,7 +1310,7 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally
      *                               interrupted.
      */
-    public static UnitRemote<?> getUnitByScope(final ScopeType.Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static UnitRemote<?> getUnitByScope(final ScopeType.Scope scope, final boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
             if (scope == null) {
                 assert false;
