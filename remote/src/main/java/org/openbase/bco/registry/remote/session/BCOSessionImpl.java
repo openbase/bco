@@ -24,7 +24,6 @@ package org.openbase.bco.registry.remote.session;
 
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
-import org.openbase.bco.authentication.lib.iface.Session;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
 import org.openbase.bco.registry.lib.jp.JPBCOAutoLoginUser;
@@ -255,6 +254,20 @@ public class BCOSessionImpl implements BCOSession {
      * {@inheritDoc}
      *
      * @param username     {@inheritDoc}
+     * @param passwordHash {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public void loginUserViaUsername(String username, byte[] passwordHash, boolean stayLoggedIn) throws CouldNotPerformException {
+        loginUser(Registries.getUnitRegistry().getUserUnitIdByUserName(username), passwordHash, stayLoggedIn);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param username     {@inheritDoc}
      * @param credentials  {@inheritDoc}
      * @param stayLoggedIn {@inheritDoc}
      *
@@ -296,7 +309,7 @@ public class BCOSessionImpl implements BCOSession {
      * {@inheritDoc}
      *
      * @param id           {@inheritDoc}
-     * @param passwordHash     {@inheritDoc}
+     * @param passwordHash {@inheritDoc}
      * @param stayLoggedIn {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
