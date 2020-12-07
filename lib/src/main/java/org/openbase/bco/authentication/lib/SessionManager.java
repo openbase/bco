@@ -260,7 +260,7 @@ public class SessionManager implements Shutdownable, Session {
     @Override
     public synchronized void loginUser(final String id, final byte[] passwordHash, final boolean stayLoggedIn) throws CouldNotPerformException {
         final LoginCredentials credentials = LoginCredentials.newBuilder().setId(id).setSymmetric(true)
-                .setCredentials(ByteString.copyFrom(passwordHash)).build();
+                .setCredentials(ByteString.copyFrom(passwordHash, 0, EncryptionHelper.HASH_LENGTH)).build();
         loginUser(id, credentials, stayLoggedIn);
     }
 

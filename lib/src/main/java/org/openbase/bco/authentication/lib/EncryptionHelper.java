@@ -56,7 +56,10 @@ public class EncryptionHelper {
 
     private static final String SYMMETRIC_ALGORITHM = "AES";
     private static final String SYMMETRIC_TRANSFORMATION = SYMMETRIC_ALGORITHM;
+
+    // todo release: think about increasing the key lenght before releasing bco 2.0
     private static final int SYMMETRIC_KEY_LENGTH = 128;
+    public static final int HASH_LENGTH = SYMMETRIC_KEY_LENGTH / 8;
 
     private static final String HASH_ALGORITHM = "SHA-256";
 
@@ -109,7 +112,7 @@ public class EncryptionHelper {
             MessageDigest sha = MessageDigest.getInstance(HASH_ALGORITHM);
             key = sha.digest(key);
             // length of byte array has to match the symmetric key length for the symmetric algorithm
-            return Arrays.copyOf(key, SYMMETRIC_KEY_LENGTH / 8);
+            return Arrays.copyOf(key, HASH_LENGTH);
         } catch (NoSuchAlgorithmException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException("Hashing[" + string + "] failed!", EncryptionHelper.class, ex), LOGGER);
             return null;
