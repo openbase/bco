@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.registry.remote.Registries;
@@ -180,23 +179,15 @@ public class RegistrySchemaModule extends SchemaModule {
     @Query("login")
     String login(@Arg("username") String username, @Arg("password") String passwordHash) throws ArgumentError, InterruptedException, ExecutionException, TimeoutException {
         try {
-
-    //            final String userId = Registries.getUnitRegistry(5, TimeUnit.SECONDS);
             final BCOSession session = new BCOSessionImpl();
 
             try {
-                session.loginUserViaUsername(username, Arrays.copyOf(Base64.getDecoder().decode(passwordHash), 16), false);
+                session.loginUserViaUsername(username, Base64.getDecoder().decode(passwordHash), false);
             } catch (CouldNotPerformException ex) {
                 throw new ArgumentError(ex);
             }
 
             return session.generateAuthToken(5, TimeUnit.SECONDS).getAuthenticationToken();
-
-//            AuthenticatedValueType.AuthenticatedValue authenticatedValue = session.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
-//            return new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
-//                    String.class,
-//                    authenticatedValue.getTicketAuthenticatorWrapper(),
-//                    sessionManager).get(5, TimeUnit.SECONDS);
         } catch (CouldNotPerformException ex) {
             throw new ArgumentError(ex);
         }
