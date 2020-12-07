@@ -27,6 +27,8 @@ import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public interface BCOSession extends Session {
     /**
@@ -118,4 +120,17 @@ public interface BCOSession extends Session {
      * @throws InterruptedException     is thrown if the thread was externally interrupted which could indicated an system shutdown.
      */
     AuthToken generateAuthToken() throws CouldNotPerformException, InterruptedException;
+
+    /**
+     * Method generates a new AuthToken including an authentication token for the user who is currently logged in.
+     * @param timeout        timeout used to fail in case the task takes to long.
+     * @param timeUnit       the time unit of the timeout.
+     *
+     * @return the token.
+     *
+     * @throws CouldNotPerformException is thrown if the token could not be generated.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted which could indicated an system shutdown.
+     * @throws TimeoutException         is thrown in case a timeout occurs.
+     */
+    AuthToken generateAuthToken(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException;
 }
