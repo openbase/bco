@@ -23,11 +23,13 @@ package org.openbase.bco.registry.unit.core.consistency;
  */
 
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -72,6 +74,11 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
 
         if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
             throw new NotAvailableException("unit.placement.locationId");
+        }
+
+        // only check that labels are unique per location (below) if in legacy mode
+        if (!JPService.getValue(JPRSBLegacyMode.class, false)) {
+            return;
         }
 
         // check if every label of this unit are unique for its location
