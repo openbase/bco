@@ -74,7 +74,7 @@ public class UnitSchemaModule extends SchemaModule {
         }
 
         return new RegistrySchemaModule.UnitFilterImpl(unitFilter)
-                .pass(Registries.getUnitRegistry(true).getUnitConfigsFiltered(true));
+                .pass(Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigsFiltered(true));
     }
 
     @Query("units")

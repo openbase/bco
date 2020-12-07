@@ -31,8 +31,9 @@ import graphql.schema.DataFetchingEnvironment;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.remote.session.BCOSessionImpl;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
@@ -41,8 +42,6 @@ import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ListFilter;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.configuration.MetaConfigType;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
@@ -51,6 +50,8 @@ import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
 import org.openbase.type.spatial.ShapeType;
 
+import java.util.Arrays;
+import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -60,7 +61,7 @@ public class RegistrySchemaModule extends SchemaModule {
     @Query("unitConfig")
     UnitConfig getUnitConfigById(@Arg("id") String id, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, ArgumentError {
         try {
-            return Registries.getUnitRegistry(true).getUnitConfigById(id);
+            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(id);
         } catch (NotAvailableException ex) {
             throw new ArgumentError(ex);
         }
@@ -79,15 +80,15 @@ public class RegistrySchemaModule extends SchemaModule {
 
         return ImmutableList.copyOf(
                 new UnitFilterImpl(unitFilter)
-                        .pass(Registries.getUnitRegistry(true).getUnitConfigsFiltered(!incluseDisabled)));
+                        .pass(Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigsFiltered(!incluseDisabled)));
     }
 
     @Mutation("updateUnitConfig")
     UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ArgumentError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getId()).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitConfig.getId()).toBuilder();
             builder.mergeFrom(unitConfig);
-            return Registries.getUnitRegistry(true).updateUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).updateUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
         } catch (NotAvailableException ex) {
             throw new ArgumentError(ex);
         } catch (ExecutionException ex) {
@@ -98,8 +99,8 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("removeUnitConfig")
     UnitConfig removeUnitConfig(@Arg("unitId") String unitId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
         try {
-            final UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
-            return Registries.getUnitRegistry(true).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+            final UnitConfig unitConfig = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId);
+            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).removeUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
         } catch (NotAvailableException ex) {
             throw new ArgumentError(ex);
         }
@@ -108,7 +109,7 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("registerUnitConfig")
     UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException, TimeoutException, ArgumentError {
         try {
-            return Registries.getUnitRegistry(true).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
+            return Registries.getUnitRegistry(5, TimeUnit.SECONDS).registerUnitConfig(unitConfig).get(5, TimeUnit.SECONDS);
         } catch (ExecutionException ex) {
             throw new ArgumentError(ExceptionProcessor.getInitialCause(ex));
         }
@@ -117,7 +118,7 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("updateLabel")
     LabelType.Label updateLabel(@Arg("unitId") String unitId, @Arg("label") String label, DataFetchingEnvironment env) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId).toBuilder();
 
             final BCOGraphQLContext context = env.getContext();
             final String oldLabel = LabelProcessor.getBestMatch(context.getLanguageCode(), builder.getLabel());
@@ -132,7 +133,7 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("updateLocation")
     PlacementConfigType.PlacementConfig updateLocation(@Arg("unitId") String unitId, @Arg("locationId") String locationId) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId).toBuilder();
             builder.getPlacementConfigBuilder().setLocationId(locationId);
             return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig();
         } catch (NotAvailableException ex) {
@@ -143,7 +144,7 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("updateFloorPlan")
     ShapeType.Shape updateFloorPlan(@Arg("locationId") String locationId, @Arg("shape") ShapeType.Shape shape) throws CouldNotPerformException, InterruptedException, ExecutionException, TimeoutException, ArgumentError {
         try {
-            final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(true).getUnitConfigById(locationId).toBuilder();
+            final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(locationId).toBuilder();
             unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
             return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getShape();
         } catch (NotAvailableException ex) {
@@ -154,7 +155,7 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("updatePose")
     PoseType.Pose updatePose(@Arg("unitId") String unitId, @Arg("pose") PoseType.Pose pose) throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException, ArgumentError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(true).getUnitConfigById(unitId).toBuilder();
+            final UnitConfig.Builder builder = Registries.getUnitRegistry(5, TimeUnit.SECONDS).getUnitConfigById(unitId).toBuilder();
             builder.getPlacementConfigBuilder().clearPose().setPose(pose);
             return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(5, TimeUnit.SECONDS).getPlacementConfig().getPose();
         } catch (NotAvailableException ex) {
@@ -166,6 +167,7 @@ public class RegistrySchemaModule extends SchemaModule {
      * Check if an authentication token retrieved by the login method is still valid.
      *
      * @param token the token to be checked
+     *
      * @return if the token is valid and can be used to authenticate further requests
      */
     @Query("verifyToken")
@@ -175,22 +177,17 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Query("login")
-    String login(@Arg("username") String username, @Arg("password") String password) throws ArgumentError, InterruptedException, ExecutionException, TimeoutException {
+    String login(@Arg("username") String username, @Arg("password") String passwordHash) throws ArgumentError, InterruptedException, ExecutionException, TimeoutException {
         try {
-            final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
-            final SessionManager sessionManager = new SessionManager();
+            final BCOSession session = new BCOSessionImpl();
 
             try {
-                sessionManager.loginUser(userId, password, false);
+                session.loginUserViaUsername(username, Base64.getDecoder().decode(passwordHash), false);
             } catch (CouldNotPerformException ex) {
                 throw new ArgumentError(ex);
             }
 
-            AuthenticatedValueType.AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
-            return new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
-                    String.class,
-                    authenticatedValue.getTicketAuthenticatorWrapper(),
-                    sessionManager).get(5, TimeUnit.SECONDS);
+            return session.generateAuthToken(5, TimeUnit.SECONDS).getAuthenticationToken();
         } catch (CouldNotPerformException ex) {
             throw new ArgumentError(ex);
         }
