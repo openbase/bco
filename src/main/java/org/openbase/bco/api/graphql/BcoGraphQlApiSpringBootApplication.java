@@ -119,7 +119,7 @@ public class BcoGraphQlApiSpringBootApplication {
                             String tokenValue = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
                                     String.class,
                                     authenticatedValue.getTicketAuthenticatorWrapper(),
-                                    sessionManager).get(5, TimeUnit.SECONDS);
+                                    sessionManager).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
                             return tokenValue;
                         } catch (NotAvailableException ex) {
 
@@ -141,7 +141,7 @@ public class BcoGraphQlApiSpringBootApplication {
 
                         final SessionManager sessionManager = new SessionManager();
                         sessionManager.loginUser(userId, oldPassword, false);
-                        sessionManager.changePassword(userId, oldPassword, newPassword).get(5, TimeUnit.SECONDS);
+                        sessionManager.changePassword(userId, oldPassword, newPassword).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
 
                         return true;
                     }

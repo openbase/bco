@@ -27,6 +27,7 @@ import graphql.GraphQLError;
 import graphql.kickstart.execution.error.GraphQLErrorHandler;
 import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.api.graphql.error.BCOGraphQLError;
+import org.openbase.bco.api.graphql.error.ErrorType;
 import org.openbase.bco.api.graphql.error.ServerError;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
@@ -57,13 +58,13 @@ class CustomGraphQlErrorHandler implements GraphQLErrorHandler {
             final BCOGraphQLError bcoError = (cause instanceof BCOGraphQLError) ? ((BCOGraphQLError) cause) : new ServerError(dataFetchingError.getMessage(), cause);
 
             // update argument error fields
-            if (bcoError instanceof ArgumentError) {
-                System.out.println("Is argument error?");
+            if (bcoError.getErrorType() == ErrorType.ARGUMENT_ERROR) {
                 bcoError.setLocations(dataFetchingError.getLocations());
                 bcoError.setPath(dataFetchingError.getPath());
             }
 
-            if (bcoError instanceof ServerError) {
+            // print server errors
+            if (bcoError.getErrorType() == ErrorType.SERVER_ERROR) {
                 ExceptionPrinter.printHistory(bcoError, logger);
             }
 
