@@ -252,6 +252,22 @@ public class SessionManager implements Shutdownable, Session {
      * {@inheritDoc}
      *
      * @param id           {@inheritDoc}
+     * @param passwordHash     {@inheritDoc}
+     * @param stayLoggedIn {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public synchronized void loginUser(final String id, final byte[] passwordHash, final boolean stayLoggedIn) throws CouldNotPerformException {
+        final LoginCredentials credentials = LoginCredentials.newBuilder().setId(id).setSymmetric(true)
+                .setCredentials(ByteString.copyFrom(passwordHash)).build();
+        loginUser(id, credentials, stayLoggedIn);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param id           {@inheritDoc}
      * @param credentials  {@inheritDoc}
      * @param stayLoggedIn {@inheritDoc}
      *

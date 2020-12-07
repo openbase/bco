@@ -52,6 +52,18 @@ public interface Session {
     void loginUser(String id, String password, boolean stayLoggedIn) throws CouldNotPerformException;
 
     /**
+     * Login a user with a password. The password is hashed and used for symmetric encryption.
+     * If a client is already logged in the user will be logged in on top of the client.
+     *
+     * @param id           the id of the user to be logged in.
+     * @param passwordHash the hashed password used as credentials.
+     * @param stayLoggedIn if the ticket of the user is automatically extended before it expires.
+     *
+     * @throws CouldNotPerformException if logging in fails.
+     */
+    void loginUser(String id, byte[] passwordHash, boolean stayLoggedIn) throws CouldNotPerformException;
+
+    /**
      * Login a user. If a client is already logged in the user will be logged in on top of the client.
      *
      * @param id           the id of the user to be logged in.
@@ -136,6 +148,7 @@ public interface Session {
 
     /**
      * Method returns the session manager of this session.
+     *
      * @return the session manager instance used by this session.
      */
     SessionManager getSessionManager();
