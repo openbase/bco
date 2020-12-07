@@ -26,13 +26,13 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.type.domotic.authentication.AuthTokenType;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class TokenGenerator {
 
@@ -46,6 +46,22 @@ public class TokenGenerator {
      */
     public static AuthToken generateAuthToken() throws CouldNotPerformException, InterruptedException {
         return generateAuthToken(SessionManager.getInstance());
+    }
+
+    /**
+     * Method generates a new AuthToken including an authentication token for the user who is currently logged in.
+     *
+     * @param timeout  timeout used to fail in case the task takes to long.
+     * @param timeUnit the time unit of the timeout.
+     *
+     * @return the token.
+     *
+     * @throws CouldNotPerformException is thrown if the token could not be generated.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted which could indicated an system shutdown.
+     * @throws TimeoutException         is thrown in case a timeout occurs.
+     */
+    public static AuthToken generateAuthToken(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
+        return generateAuthToken(SessionManager.getInstance(), timeout, timeUnit);
     }
 
     /**
@@ -67,6 +83,34 @@ public class TokenGenerator {
                     String.class,
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get();
+            return AuthToken.newBuilder().setAuthenticationToken(authenticationToken).build();
+        } catch (CouldNotPerformException | ExecutionException ex) {
+            throw new CouldNotPerformException("Could not generate token!", ex);
+        }
+    }
+
+    /**
+     * Method generates a new AuthToken including an authentication token for the user who is currently logged in at the given {@code sessionManager}.
+     *
+     * @param sessionManager the session manager used to identify the user.
+     * @param timeout        timeout used to fail in case the task takes to long.
+     * @param timeUnit       the time unit of the timeout.
+     *
+     * @return the token.
+     *
+     * @throws CouldNotPerformException is thrown if the token could not be generated.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted which could indicated an system shutdown.
+     * @throws TimeoutException         is thrown in case a timeout occurs.
+     */
+    public static AuthToken generateAuthToken(final SessionManager sessionManager, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
+        try {
+            // request authentication token for new user
+            AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationToken.newBuilder().setUserId(sessionManager.getUserClientPair().getUserId()).build(), null);
+            final String authenticationToken = new AuthenticatedValueFuture<>(
+                    Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
+                    String.class,
+                    authenticatedValue.getTicketAuthenticatorWrapper(),
+                    sessionManager).get(timeout, timeUnit);
             return AuthToken.newBuilder().setAuthenticationToken(authenticationToken).build();
         } catch (CouldNotPerformException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not generate token!", ex);

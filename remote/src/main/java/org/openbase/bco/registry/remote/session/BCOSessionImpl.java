@@ -49,13 +49,15 @@ import java.io.FileOutputStream;
 import java.util.Properties;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class BCOSessionImpl implements BCOSession {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BCOSessionImpl.class);
 
-    private Properties loginProperties;
-    private SessionManager sessionManager;
+    private final Properties loginProperties;
+    private final SessionManager sessionManager;
 
     public BCOSessionImpl() {
         this(new Properties(), new SessionManager());
@@ -436,6 +438,23 @@ public class BCOSessionImpl implements BCOSession {
     @Override
     public AuthToken generateAuthToken() throws CouldNotPerformException, InterruptedException {
         return TokenGenerator.generateAuthToken(sessionManager);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param timeout  {@inheritDoc}
+     * @param timeUnit {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
+     * @throws TimeoutException         {@inheritDoc}
+     */
+    @Override
+    public AuthToken generateAuthToken(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
+        return TokenGenerator.generateAuthToken(sessionManager, timeout, timeUnit);
     }
 
     /**
