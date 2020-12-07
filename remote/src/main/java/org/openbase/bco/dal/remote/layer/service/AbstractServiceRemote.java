@@ -52,6 +52,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.TimeoutSplitter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
@@ -1036,14 +1037,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     @Override
     public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+
+        // skip if no remote are registered
         if (unitRemoteMap.isEmpty()) {
             return;
         }
-        //todo reimplement with respect to the given timeout.
+
+        final TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
         for (UnitRemote remote : unitRemoteMap.values()) {
-            remote.waitForData(timeout, timeUnit);
+            remote.waitForData(timeoutSplitter.getTime(), timeoutSplitter.getTimeUnit());
         }
-        serviceStateObservable.waitForValue(timeout, timeUnit);
+        serviceStateObservable.waitForValue(timeoutSplitter.getTime(), timeoutSplitter.getTimeUnit());
     }
 
     /**
