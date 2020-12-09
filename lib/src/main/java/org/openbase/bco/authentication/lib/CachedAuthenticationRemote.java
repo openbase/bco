@@ -72,7 +72,7 @@ public class CachedAuthenticationRemote {
                 throw new ShutdownInProgressException("AuthenticationRemote");
             }
 
-            if (authenticationRemote != null) {
+            if (authenticationRemote != null && authenticationRemote.isActive()) {
                 return authenticationRemote;
             }
 
