@@ -21,31 +21,33 @@ package org.openbase.bco.dal.control.layer.unit.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentController;
 import org.openbase.bco.dal.lib.layer.unit.agent.AgentControllerFactory;
-
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.StringProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Locale;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
     protected final Logger logger = LoggerFactory.getLogger(AgentControllerFactoryImpl.class);
     private static AgentControllerFactoryImpl instance;
+
+    public static final String META_CONFIG_KEY_AGENT_CLASS_PREFIX = "AGENT_CLASS_PREFIX";
 
     private static final String PRESET_AGENT_PACKAGE_PREFIX = "org.openbase.bco.app.preset";
     private static final String CUSTOM_AGENT_PACKAGE_PREFIX = "org.openbase.bco.app";
@@ -70,21 +72,24 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
             Registries.waitForData();
             final AgentClass agentClass = Registries.getClassRegistry().getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
+            final MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("AgentClass", agentClass.getMetaConfig());
 
-            final String agentLabel = StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel()));
+            final String agentClassPrefix = variableProvider.getValue(
+                    META_CONFIG_KEY_AGENT_CLASS_PREFIX,
+                    StringProcessor.removeWhiteSpaces(LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel())));
 
             try {
                 // try to load preset agent
                 String className = PRESET_AGENT_PACKAGE_PREFIX
                         + ".agent"
-                        + "." + agentLabel + "Agent";
+                        + "." + agentClassPrefix + "Agent";
                 agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).getConstructor().newInstance();
             } catch (ClassNotFoundException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | InvocationTargetException ex) {
                 // try to load custom agent
                 String className = CUSTOM_AGENT_PACKAGE_PREFIX
-                        + "." + StringProcessor.removeWhiteSpaces(agentLabel).toLowerCase()
+                        + "." + StringProcessor.removeWhiteSpaces(agentClassPrefix).toLowerCase()
                         + ".agent"
-                        + "." + StringProcessor.transformToPascalCase(StringProcessor.removeWhiteSpaces(agentLabel)) + "Agent";
+                        + "." + StringProcessor.transformToPascalCase(StringProcessor.removeWhiteSpaces(agentClassPrefix)) + "Agent";
                 agent = (AgentController) Thread.currentThread().getContextClassLoader().loadClass(className).getConstructor().newInstance();
             }
             logger.debug("Creating agent of type [" + LabelProcessor.getBestMatch(agentClass.getLabel()) + "]");
