@@ -115,7 +115,7 @@ public class CachedTemplateRegistryRemote {
                 throw new ShutdownInProgressException(TemplateRegistry.class);
             }
 
-            if (registryRemote != null) {
+            if (registryRemote != null && registryRemote.isActive()) {
                 return registryRemote;
             }
 

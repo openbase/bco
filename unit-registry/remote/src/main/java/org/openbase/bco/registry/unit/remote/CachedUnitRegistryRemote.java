@@ -116,7 +116,7 @@ public class CachedUnitRegistryRemote {
                 throw new ShutdownInProgressException(UnitRegistry.class);
             }
 
-            if (registryRemote != null) {
+            if (registryRemote != null && registryRemote.isActive()) {
                 return registryRemote;
             }
 
