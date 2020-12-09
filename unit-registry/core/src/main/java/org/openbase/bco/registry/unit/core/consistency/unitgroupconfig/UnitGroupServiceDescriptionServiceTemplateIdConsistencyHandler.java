@@ -44,10 +44,9 @@ public class UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler exte
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-        UnitGroupConfig.Builder unitGroup = unitConfig.getUnitGroupConfigBuilder();
 
         boolean modification = false;
-        for (ServiceDescription.Builder serviceDescription : unitGroup.getServiceDescriptionBuilderList()) {
+        for (ServiceDescription.Builder serviceDescription : unitConfig.getUnitGroupConfigBuilder().getServiceDescriptionBuilderList()) {
             if (serviceDescription.getServiceTemplateId().isEmpty()) {
                 if (!serviceDescription.hasServiceType()) {
                     throw new NotAvailableException("ServiceType");

@@ -21,10 +21,10 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.List;
 
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -36,8 +36,9 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 
+import java.util.List;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
@@ -60,11 +61,24 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
         }
     }
 
-    private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceDescription> serviceDescription) throws CouldNotPerformException {
+    private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceDescription> serviceDescriptionList) throws CouldNotPerformException {
         final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitType);
-        if (!serviceDescription.stream().noneMatch((serviceTemplate) -> (!unitTemplate.getServiceDescriptionList().contains(serviceTemplate)))) {
-            return false;
+
+        // validate if all registered services are included in the unit template
+        for (ServiceDescription serviceDescription : serviceDescriptionList) {
+            if (!unitTemplate.getServiceDescriptionList().stream().anyMatch(serviceTemplate -> serviceTemplate.getServiceType() == serviceDescription.getServiceType() &&
+                    serviceTemplate.getPattern() == serviceDescription.getPattern())) {
+                return false;
+            }
         }
-        return unitTemplate.getServiceDescriptionList().stream().noneMatch((serviceType) -> (!serviceDescription.contains(serviceType)));
+
+        //validate if all services of the unit template are registered
+        for (ServiceDescription serviceTemplate : unitTemplate.getServiceDescriptionList()) {
+            if (!serviceDescriptionList.stream().anyMatch(serviceDescription -> serviceTemplate.getServiceType() == serviceDescription.getServiceType() &&
+                    serviceTemplate.getPattern() == serviceDescription.getPattern())) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -116,7 +116,6 @@ public class AuthorizationGroupClassGroupConsistencyHandler extends AbstractProt
             }
         }
 
-
         boolean modification = false;
         final AuthorizationGroupConfig.Builder authorizationGroupConfig = authorizationGroup.getAuthorizationGroupConfigBuilder();
 

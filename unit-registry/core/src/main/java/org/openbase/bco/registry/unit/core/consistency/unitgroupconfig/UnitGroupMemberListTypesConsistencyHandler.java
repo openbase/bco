@@ -22,9 +22,6 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -41,6 +38,10 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -85,29 +86,11 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         UnitConfig.Builder unitGroupUnitConfig = entry.getMessage().toBuilder();
         UnitGroupConfig.Builder unitGroup = unitGroupUnitConfig.getUnitGroupConfigBuilder();
 
-        // check if all member units fullfill the according unit type or, if the unit type field is unkown, have all the according services
+        // check if all member units fullfill the according unit type.
         boolean modification = false;
-        List<String> memberIds = new ArrayList<>();
-        unitGroup.clearMemberId();
-        if (unitGroup.getUnitType() == UnitType.UNKNOWN) {
-            //check if every unit has all given services
-            for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
-                UnitConfig unitConfig = getUnitConfigById(memberId);
-                boolean skip = true;
-                for (ServiceDescription serviceDescription : unitGroup.getServiceDescriptionList()) {
-                    for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                        if (serviceDescription.equals(serviceConfig.getServiceDescription())) {
-                            skip = false;
-                        }
-                    }
-                }
-                if (skip) {
-                    modification = true;
-                    continue;
-                }
-                memberIds.add(memberId);
-            }
-        } else {
+        if (unitGroup.getUnitType() != UnitType.UNKNOWN) {
+            final List<String> memberIds = new ArrayList<>();
+            unitGroup.clearMemberId();
             for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
                 UnitType unitType = getUnitConfigById(memberId).getUnitType();
                 if (unitType == unitGroup.getUnitType() || getSubTypes(unitGroup.getUnitType()).contains(unitType)) {
@@ -116,8 +99,44 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
                     modification = true;
                 }
             }
+            unitGroup.addAllMemberId(memberIds);
         }
-        unitGroup.addAllMemberId(memberIds);
+
+        // compute service list
+        final HashMap<String, ServiceConfig> serviceConfigMap = new HashMap<>();
+        for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
+            for (ServiceConfig memberServiceConfig : getUnitConfigById(memberId).getServiceConfigList()) {
+                boolean supported = true;
+                for (String memberToCompare : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
+                    boolean match = false;
+                    for (ServiceConfig memberToCompareServiceConfig : getUnitConfigById(memberToCompare).getServiceConfigList()) {
+                        if (memberServiceConfig.getServiceDescription().getServiceType() == memberToCompareServiceConfig.getServiceDescription().getServiceType() &&
+                                memberServiceConfig.getServiceDescription().getPattern() == memberToCompareServiceConfig.getServiceDescription().getPattern()) {
+                            match = true;
+                        }
+                    }
+                    supported |= match;
+                }
+
+                // store service config if supported but make sure no service type service pattern pair is registered twice.
+                if (supported) {
+                    serviceConfigMap.put(memberServiceConfig.getServiceDescription().getServiceType().name() + memberServiceConfig.getServiceDescription().getPattern(), memberServiceConfig);
+                }
+            }
+            final List<ServiceDescription> originalServices = unitGroup.getServiceDescriptionList();
+            unitGroup.clearServiceDescription();
+            for (ServiceConfig value : serviceConfigMap.values()) {
+                unitGroup.addServiceDescription(
+                        ServiceDescription.newBuilder()
+                                .setServiceType(value.getServiceDescription().getServiceType())
+                                .setPattern(value.getServiceDescription().getPattern())
+                                .setAggregated(true)
+                                .setServiceTemplateId(value.getServiceDescription().getServiceTemplateId()).build());
+            }
+            if (!unitGroup.getServiceDescriptionList().equals(originalServices)) {
+                modification = true;
+            }
+        }
 
         if (modification) {
             throw new EntryModification(entry.setMessage(unitGroupUnitConfig, this), this);

@@ -22,13 +22,8 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.media.j3d.Transform3D;
-import javax.vecmath.Point3d;
-
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
+import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -53,6 +48,12 @@ import org.openbase.type.geometry.RotationType.Rotation;
 import org.openbase.type.geometry.TranslationType.Translation;
 import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import org.openbase.type.spatial.ShapeType.Shape;
+
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This consinstency handler creates a bounding box around the bounding boxes of
@@ -105,6 +106,11 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
 
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
         final String locationFrameId;
+
+        // setup root location as default placement
+        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasLocationId()) {
+            unitConfig.setPlacementConfig(PlacementConfig.newBuilder().setLocationId(LocationUtils.getRootLocation(locationUnitConfigRegistry.getMessages()).getId()).build());
+        }
 
         try {
             final UnitConfig locationConfig = locationUnitConfigRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage();
