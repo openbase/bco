@@ -105,17 +105,14 @@ public class XMasLightAgent extends AbstractTriggerableAgent {
     @Override
     protected void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
 
-        xMasScene.waitForData(5, TimeUnit.SECONDS);
-
-        if(xMasScene.getAvailableServiceTypes().contains(ServiceType.POWER_STATE_SERVICE)) {
-            switch (activationState.getValue()) {
-                case ACTIVE:
-                    observe(xMasScene.setActivationState(State.ACTIVE, getDefaultActionParameter(Long.MAX_VALUE)));
-                    break;
-                case INACTIVE:
-                    cancelAllObservedActions();
-                    break;
-            }
+        // activate xmas scene
+        switch (activationState.getValue()) {
+            case ACTIVE:
+                observe(xMasScene.setActivationState(State.ACTIVE, getDefaultActionParameter(Long.MAX_VALUE)));
+                break;
+            case INACTIVE:
+                cancelAllObservedActions();
+                break;
         }
     }
 }
