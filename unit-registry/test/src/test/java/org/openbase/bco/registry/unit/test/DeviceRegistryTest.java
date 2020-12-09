@@ -25,6 +25,7 @@ package org.openbase.bco.registry.unit.test;
 import org.junit.Test;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
@@ -79,12 +80,22 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         String company = "Fibaro";
 
         String deviceLabel = "TestSensor";
-        String deviceScope = "/" + LabelProcessor.getBestMatch(Registries.getUnitRegistry().getRootLocationConfig().getLabel()).toLowerCase() + "/" + "device" + "/" + deviceLabel.toLowerCase() + "/";
-        String expectedUnitScope = "/" + LabelProcessor.getBestMatch(Registries.getUnitRegistry().getRootLocationConfig().getLabel()).toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + deviceLabel.toLowerCase() + "/";
 
         // units are automatically added when a unit template config in the device class exists
         DeviceClass motionSensorClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("F_MotionSensor", productNumber, company, UnitType.BATTERY)).get();
         UnitConfig motionSensorConfig = Registries.getUnitRegistry().registerUnitConfig(generateDeviceUnitConfig(deviceLabel, serialNumber, motionSensorClass)).get();
+
+        // lookup battery unit
+        UnitConfig batteryUnitConfig = null;
+        for (String unitId : motionSensorConfig.getDeviceConfig().getUnitIdList()) {
+            final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+            if (unitConfig.getUnitType() == UnitType.BATTERY) {
+                batteryUnitConfig = unitConfig;
+            }
+        }
+
+        String deviceScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + "device" + "/"+motionSensorConfig.getAlias(0).toLowerCase()+"/";
+        String expectedUnitScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + batteryUnitConfig.getAlias(0).toLowerCase() + "/";
 
         assertEquals("Device scope is not set properly", deviceScope, ScopeProcessor.generateStringRep(motionSensorConfig.getScope()));
         assertEquals("Device has not the correct number of units", 1, motionSensorConfig.getDeviceConfig().getUnitIdCount());
@@ -114,33 +125,6 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         assertEquals("The device label is not set as the id if it is empty!",
                 LabelProcessor.format(deviceClass.getCompany() + " " + LabelProcessor.getBestMatch(deviceClass.getLabel()) + " " + deviceWithoutLabel.getAlias(0)),
                 LabelProcessor.getBestMatch(deviceWithoutLabel.getLabel()));
-    }
-
-    /**
-     * Test of testRegisterTwoDevicesWithSameLabel method, of class
-     * DeviceRegistryImpl.
-     */
-    @Test(timeout = 5000)
-    public void testRegisterTwoDevicesWithSameLabel() throws Exception {
-        System.out.println("testRegisterTwoDevicesWithSameLabel");
-        String serialNumber1 = "FIRST_DEV";
-        String serialNumber2 = "BAD_DEV";
-        String deviceLabel = "SameLabelSameLocation";
-
-        DeviceClass clazz = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("WithoutLabel", "xyz", "HuxGMBH")).get();
-        UnitConfig deviceWithLabel1 = generateDeviceUnitConfig(deviceLabel, serialNumber1, clazz);
-        UnitConfig deviceWithLabel2 = generateDeviceUnitConfig(deviceLabel, serialNumber2, clazz);
-
-        Registries.getUnitRegistry().registerUnitConfig(deviceWithLabel1).get();
-        try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            Registries.getUnitRegistry().registerUnitConfig(deviceWithLabel2).get();
-            fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location");
-        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            assertTrue(true);
-        } finally {
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
     }
 
     @Test(timeout = 5000)

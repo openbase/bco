@@ -188,43 +188,6 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
     }
 
     /**
-     * Test if a location with two children with the same label can be
-     * registered.
-     *
-     * @throws Exception if any error occurs
-     */
-    @Test(timeout = 5000)
-    public void testChildWithSameLabelConsistency() throws Exception {
-        System.out.println("testChildWithSameLabelConsistency");
-
-        // retrieve root location
-        final UnitConfig root = Registries.getUnitRegistry().getRootLocationConfig();
-        // create label
-        final String label = "childish";
-        // generate 2 identical location unit configs
-        UnitConfig.Builder child1 = getLocationUnitBuilder(LocationType.ZONE, label);
-        UnitConfig.Builder child2 = getLocationUnitBuilder(LocationType.ZONE, label);
-        child1.getPlacementConfigBuilder().setLocationId(root.getId());
-        child2.getPlacementConfigBuilder().setLocationId(root.getId());
-
-        // register the first one
-        Registries.getUnitRegistry().registerUnitConfig(child1.build()).get();
-        try {
-            // set exception printer to quit because an exception is expected
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            // register second child
-            Registries.getUnitRegistry().registerUnitConfig(child2.build()).get();
-            // fail if the no exception has been thrown
-            Assert.fail("No exception thrown when registering a second child with the same label");
-        } catch (ExecutionException ex) {
-            // if an execution exception is thrown the second child could not be registered
-        } finally {
-            // reset quit flag from exception printer
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
-    }
-
-    /**
      * Test the registration process of connections.
      * If connections with less than two tile ids can be registered and if the tile id list is cleared up.
      *
