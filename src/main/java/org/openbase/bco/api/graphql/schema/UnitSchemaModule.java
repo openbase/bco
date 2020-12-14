@@ -26,11 +26,14 @@ import com.google.api.graphql.rejoiner.*;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLOutputType;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.BCOGraphQLError;
 import org.openbase.bco.api.graphql.error.GenericError;
 import org.openbase.bco.api.graphql.error.ServerError;
+import org.openbase.bco.api.graphql.subscriptions.AbstractObserverMapper;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -92,7 +95,14 @@ public class UnitSchemaModule extends SchemaModule {
                 System.out.println("notify change of: "+ messageServiceStateProvider.getServiceProvider().getId());
             });
             subscriptionUnitPool.activate();
-            // todo: subsciption service shutdown needs to be implemented.
+
+            /*AbstractObserverMapper.createObservable(CustomUnitPool::addObserver, CustomUnitPool::removeObserver, new AbstractObserverMapper<ServiceStateProvider<Message>, Message, GraphQLOutputType>() {
+                @Override
+                public GraphQLOutputType mapData(Message data) throws Exception {
+                    return null;
+                }
+            });*/
+            // todo: subscription service shutdown needs to be implemented.
             //subscriptionUnitPool.shutdown();
         } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
             throw new GenericError(ex);

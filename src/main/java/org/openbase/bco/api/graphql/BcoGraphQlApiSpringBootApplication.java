@@ -23,12 +23,18 @@ package org.openbase.bco.api.graphql;
  */
 
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
+import com.google.api.graphql.rejoiner.GqlInputConverter;
 import com.google.api.graphql.rejoiner.Schema;
+import com.google.api.graphql.rejoiner.SchemaDefinitionReader;
 import com.google.api.graphql.rejoiner.SchemaProviderModule;
+import com.google.common.base.CharMatcher;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provides;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
 import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
@@ -36,8 +42,6 @@ import graphql.kickstart.execution.context.GraphQLContext;
 import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Observable;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
@@ -45,12 +49,11 @@ import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
-import org.openbase.bco.api.graphql.subscriptions.ObserverMapper;
-import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.type.domotic.unit.UnitDataType;
+import org.openbase.type.domotic.unit.UnitFilterType;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,6 +64,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
+import java.util.Map;
+
+import static com.google.common.collect.ImmutableList.toImmutableList;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 @SpringBootApplication
 public class BcoGraphQlApiSpringBootApplication {
@@ -88,25 +95,28 @@ public class BcoGraphQlApiSpringBootApplication {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
         final GraphQLOutputType unitDataOutputType = (GraphQLOutputType) schema.getType("openbase_type_domotic_unit_UnitData");
-        final GraphQLInputType unitFilterOutputType = (GraphQLInputType) schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
+        //TODO: rename into input type
+        final GraphQLNamedInputType unitFilterOutputType = (GraphQLNamedInputType) schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
+
+        //GraphQLType named = (GraphQLNamedInputType) (schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
 
         GraphQLObjectType.Builder builder = GraphQLObjectType.newObject().name("Subscription");
-        builder.field(GraphQLFieldDefinition.newFieldDefinition().name("units").type(unitDataOutputType)
+        builder.field(newFieldDefinition().name("units").type(unitDataOutputType)
                 .argument(GraphQLArgument.newArgument().name("unitFilter").type(unitFilterOutputType).build())
                 .build());
 
-        builder.field(GraphQLFieldDefinition.newFieldDefinition().name("powerState").type(Scalars.GraphQLString)
+        builder.field(newFieldDefinition().name("powerState").type(Scalars.GraphQLString)
                 .argument(GraphQLArgument.newArgument().name("alias").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
                 .build());
 
         GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
-                .dataFetcher(FieldCoordinates.coordinates("Subscription", "powerState"), new DataFetcher<Publisher<String>>() {
+                /*.dataFetcher(FieldCoordinates.coordinates("Subscription", "powerState"), new DataFetcher<Publisher<String>>() {
                     @Override
                     public Publisher<String> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
                         final String alias = dataFetchingEnvironment.getArgument("alias").toString();
 
-                        final ObserverMapper observerMapper = new ObserverMapper();
-                        ColorableLightRemote unit = Units.getUnit(Registries.getUnitRegistry().getUnitConfigByAlias(alias).getId(), false, Units.COLORABLE_LIGHT);
+                        //final AbstractObserverMapper observerMapper = new AbstractObserverMapper<>();
+                        /*ColorableLightRemote unit = Units.getUnit(Registries.getUnitRegistry().getUnitConfigByAlias(alias).getId(), false, Units.COLORABLE_LIGHT);
 
                         Observable<String> obs = Observable.create(observableEmitter -> {
                             observerMapper.setEmitter(observableEmitter);
@@ -116,6 +126,31 @@ public class BcoGraphQlApiSpringBootApplication {
                         obs = obs.doOnDispose(() -> unit.removeDataObserver(observerMapper));
 
                         return obs.toFlowable(BackpressureStrategy.DROP);
+                    }
+                })*/
+                .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), new DataFetcher<Publisher<GraphQLType>>() {
+                    @Override
+                    public Publisher<GraphQLType> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                        System.out.println("Call to units subscription...");
+                        Map<String, Object> unitFilter = (Map<String, Object>) dataFetchingEnvironment.getArgument("unitFilter");
+                        System.out.println("data: "+ unitFilter.getClass().getSimpleName());
+
+                        UnitFilterType.UnitFilter.Builder builder1 = UnitFilterType.UnitFilter.newBuilder();
+                        GqlInputConverter build = GqlInputConverter.newBuilder().add(UnitFilterType.getDescriptor()).build();
+                        Message protoBuf = build.createProtoBuf(UnitFilterType.UnitFilter.getDescriptor(), builder1, unitFilter);
+                        System.out.println("Converted! " + protoBuf.getClass().getSimpleName());
+                        System.out.println("Alias" + ((UnitFilterType.UnitFilter) protoBuf).getProperties().getAlias(0));
+
+                        // new SchemaDefinitionReader().createBundle().
+
+                        UnitFilterType.UnitFilter.Builder builder2 = UnitFilterType.UnitFilter.newBuilder();
+                        builder2.getPropertiesBuilder().addAlias("Test");
+
+                        //TODO: how do we get the GraphQLInterfaceType from the unitFilterOutputType?
+
+                        //GraphQLObjectType convert = ProtoToGql.convert(builder2.build().getDescriptorForType(), unitFilterOutputType);
+                        //System.out.println("Converted" + convert.getName() + ", " + convert);
+                        return null;
                     }
                 }).build();
 
@@ -272,4 +307,99 @@ public class BcoGraphQlApiSpringBootApplication {
 
 //    }
 
+    /*private static final ImmutableList<GraphQLFieldDefinition> STATIC_FIELD =
+            ImmutableList.of(newFieldDefinition().type(Scalars.GraphQLString).name("_").staticValue("-").build());
+
+    private static GraphQLFieldDefinition convertField(
+            Descriptors.FieldDescriptor fieldDescriptor, SchemaOptions schemaOptions) {
+        DataFetcher<?> dataFetcher = new ProtoDataFetcher(fieldDescriptor);
+        GraphQLFieldDefinition.Builder builder =
+                newFieldDefinition()
+                        .type(convertType(fieldDescriptor, schemaOptions))
+                        .dataFetcher(dataFetcher)
+                        .name(fieldDescriptor.getJsonName());
+        builder.description(schemaOptions.commentsMap().get(fieldDescriptor.getFullName()));
+        if (fieldDescriptor.getOptions().hasDeprecated()
+                && fieldDescriptor.getOptions().getDeprecated()) {
+            builder.deprecate("deprecated in proto");
+        }
+        return builder.build();
+    }
+
+    static GraphQLObjectType convert(
+            Descriptors.Descriptor descriptor,
+            GraphQLInterfaceType nodeInterface) {
+        ImmutableList<GraphQLFieldDefinition> graphQLFieldDefinitions =
+                descriptor.getFields().stream()
+                        .map(field -> convertField(field))
+                        .collect(toImmutableList());
+
+        // TODO: add back relay support
+
+        //    Optional<GraphQLFieldDefinition> relayId =
+        //        descriptor.getFields().stream()
+        //            .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
+        //            .map(
+        //                field ->
+        //                    newFieldDefinition()
+        //                        .name("id")
+        //                        .type(new GraphQLNonNull(GraphQLID))
+        //                        .description("Relay ID")
+        //                        .dataFetcher(
+        //                            data ->
+        //                                new Relay()
+        //                                    .toGlobalId(
+        //                                        getReferenceName(descriptor),
+        //                                        data.<Message>getSource().getField(field).toString()))
+        //                        .build())
+        //            .findFirst();
+
+        //   if (relayId.isPresent()) {
+        //      return GraphQLObjectType.newObject()
+        //          .name(getReferenceName(descriptor))
+        //          .withInterface(nodeInterface)
+        //          .field(relayId.get())
+        //          .fields(
+        //              graphQLFieldDefinitions
+        //                  .stream()
+        //                  .map(
+        //                      field ->
+        //                          field.getName().equals("id")
+        //                              ? GraphQLFieldDefinition.newFieldDefinition()
+        //                                  .name("rawId")
+        //                                  .description(field.getDescription())
+        //                                  .type(field.getType())
+        //                                  .dataFetcher(field.getDataFetcher())
+        //                                  .build()
+        //                              : field)
+        //                  .collect(ImmutableList.toImmutableList()))
+        //          .build();
+        //    }
+
+        return GraphQLObjectType.newObject()
+                .name(getReferenceName(descriptor))
+                .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)
+                .build();
+    }
+
+    static GraphQLEnumType convert(
+            Descriptors.EnumDescriptor descriptor) {
+        GraphQLEnumType.Builder builder = GraphQLEnumType.newEnum().name(getReferenceName(descriptor));
+        for (Descriptors.EnumValueDescriptor value : descriptor.getValues()) {
+            builder.value(
+                    value.getName(),
+                    value.getName());
+        }
+        return builder.build();
+    }
+
+    /** Returns the GraphQL name of the supplied proto. */
+    /*static String getReferenceName(Descriptors.GenericDescriptor descriptor) {
+        return CharMatcher.anyOf(".").replaceFrom(descriptor.getFullName(), "_");
+    }
+
+    /** Returns a reference to the GraphQL type corresponding to the supplied proto. */
+    /*static GraphQLTypeReference getReference(Descriptors.GenericDescriptor descriptor) {
+        return new GraphQLTypeReference(getReferenceName(descriptor));
+    }*/
 }
