@@ -23,21 +23,25 @@ package org.openbase.bco.api.graphql;
  */
 
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
-import graphql.kickstart.execution.context.GraphQLContext;
+import org.dataloader.DataLoaderRegistry;
 import org.openbase.jul.exception.NotAvailableException;
 
+import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 
 public class BCOGraphQLContext extends DefaultGraphQLContext {
 
+    public static final String DATA_LOADER_UNITS = "units";
+
     private final String token;
     private final String languageCode;
 
-    public BCOGraphQLContext(HttpServletRequest req) {
-        this.token = req.getHeader("Authorization");
+    public BCOGraphQLContext(DataLoaderRegistry dataLoaderRegistry, Subject subject, HttpServletRequest request) {
+        super(dataLoaderRegistry, subject);
+        this.token = request.getHeader("Authorization");
 
-        final String language = req.getHeader("Accept-Language");
+        final String language = request.getHeader("Accept-Language");
         this.languageCode = (language != null) ? language : Locale.getDefault().getLanguage();
     }
 

@@ -25,35 +25,24 @@ package org.openbase.bco.api.graphql;
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
 import com.google.api.graphql.rejoiner.Schema;
 import com.google.api.graphql.rejoiner.SchemaProviderModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import graphql.GraphQL;
-import graphql.Scalars;
+import com.google.inject.*;
 import graphql.execution.instrumentation.Instrumentation;
-import graphql.kickstart.execution.config.DefaultGraphQLSchemaProvider;
-import graphql.kickstart.execution.config.GraphQLSchemaProvider;
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
 import graphql.kickstart.execution.context.GraphQLContext;
-import graphql.kickstart.execution.context.GraphQLContextBuilder;
 import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
-import graphql.schema.*;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
-import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -63,7 +52,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
-import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 public class BcoGraphQlApiSpringBootApplication {
@@ -85,6 +73,7 @@ public class BcoGraphQlApiSpringBootApplication {
                 new UnitSchemaModule()
         );
     }
+
     @Bean
     GraphQLSchema schema() {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
@@ -177,9 +166,10 @@ public class BcoGraphQlApiSpringBootApplication {
     }
 
     @Bean
+    @Provides
     public DataLoaderRegistry buildDataLoaderRegistry(BCOUnitBatchLoader bcoUnitBatchLoader) {
         DataLoaderRegistry registry = new DataLoaderRegistry();
-        registry.register("units", new DataLoader<>(bcoUnitBatchLoader));
+        registry.register(BCOGraphQLContext.DATA_LOADER_UNITS, new DataLoader<>(bcoUnitBatchLoader));
         return registry;
     }
 
@@ -188,8 +178,8 @@ public class BcoGraphQlApiSpringBootApplication {
         return new GraphQLServletContextBuilder() {
 
             @Override
-            public GraphQLContext build(HttpServletRequest req, HttpServletResponse response) {
-                return new BCOGraphQLContext(req);
+            public GraphQLContext build(HttpServletRequest request, HttpServletResponse response) {
+                return new BCOGraphQLContext(dataLoaderRegistry, null, request);
             }
 
             @Override
