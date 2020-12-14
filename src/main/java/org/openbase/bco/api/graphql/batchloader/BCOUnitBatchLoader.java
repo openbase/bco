@@ -22,9 +22,15 @@ package org.openbase.bco.api.graphql.batchloader;
  * #L%
  */
 
+import lombok.extern.slf4j.Slf4j;
 import org.dataloader.BatchLoader;
+import org.openbase.bco.api.graphql.error.ServerError;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.TimeoutException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.springframework.stereotype.Component;
 
@@ -32,8 +38,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.TimeUnit;
 
 @Component
+@Slf4j
 public class BCOUnitBatchLoader implements BatchLoader<String, UnitConfig> {
 
     private final UnitRegistry unitRegistry;
@@ -50,8 +58,8 @@ public class BCOUnitBatchLoader implements BatchLoader<String, UnitConfig> {
         for (String id : ids) {
             try {
                 unitConfigList.add(unitRegistry.getUnitConfigById(id));
-            } catch (NotAvailableException e) {
-                e.printStackTrace();
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not resolve all unit config by id!", ex, log);
             }
         }
 
