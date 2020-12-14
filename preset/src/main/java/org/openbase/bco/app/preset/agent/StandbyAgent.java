@@ -61,7 +61,6 @@ public class StandbyAgent extends AbstractDelayedTriggerableAgent {
     public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(30);
 
     private LocationRemote locationRemote;
-    private RemoteAction lastAction;
 
     public StandbyAgent() throws InstantiationException {
         super(AbstractDelayedTriggerableAgent.DelayMode.DELAY_ACTIVATION, MAX_TIMEOUT);
@@ -73,7 +72,6 @@ public class StandbyAgent extends AbstractDelayedTriggerableAgent {
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
             registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceStateType.PresenceState.State.ABSENT, ServiceType.PRESENCE_STATE_SERVICE),  TriggerAggregation.OR);
-            //registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, State.UNKNOWN, ServiceType.MOTION_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -83,12 +81,10 @@ public class StandbyAgent extends AbstractDelayedTriggerableAgent {
     protected void delayedTrigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                lastAction = observe(locationRemote.setPowerState(PowerStateType.PowerState.State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
+                observe(locationRemote.setPowerState(PowerStateType.PowerState.State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
             case INACTIVE:
-                if (lastAction != null && !lastAction.isDone()) {
-                    lastAction.cancel();
-                }
+                cancelAllObservedActions();
                 break;
         }
     }

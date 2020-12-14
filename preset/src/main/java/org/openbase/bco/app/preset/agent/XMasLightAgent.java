@@ -35,6 +35,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
+import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
@@ -70,7 +72,7 @@ public class XMasLightAgent extends AbstractTriggerableAgent {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
 
             // activation trigger
-            registerActivationTrigger(new GenericBoundedDoubleValueTrigger<>(locationRemote, MIN_ILLUMINANCE_UNTIL_TRIGGER, TriggerOperation.LOW_ACTIVE, ServiceType.ILLUMINANCE_STATE_SERVICE, "getIlluminance"), TriggerAggregation.AND);
+            registerActivationTrigger(new GenericBoundedDoubleValueTrigger<>(locationRemote, MIN_ILLUMINANCE_UNTIL_TRIGGER, TriggerOperation.LOW_ACTIVE, ServiceType.ILLUMINANCE_STATE_SERVICE, "getIlluminance"), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -78,37 +80,41 @@ public class XMasLightAgent extends AbstractTriggerableAgent {
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        final UnitConfig unitConfig = super.applyConfigUpdate(config);
-        UnitConfig xMasLightSceneConfig = super.applyConfigUpdate(config);
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            final UnitConfig unitConfig = super.applyConfigUpdate(config);
 
-        try {
-            xMasLightSceneConfig = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(XMAS_SCENE, UnitType.SCENE);
-        } catch (final NotAvailableException ex) {
-            final Builder xMasSceneBuilder = UnitConfig.newBuilder();
-            xMasSceneBuilder.setUnitType(UnitType.SCENE);
-            xMasSceneBuilder.addAlias(XMAS_SCENE);
-            LabelProcessor.addLabel(xMasSceneBuilder.getLabelBuilder(), Locale.ENGLISH, "XMas Lights");
-            LabelProcessor.addLabel(xMasSceneBuilder.getLabelBuilder(), Locale.GERMAN, "Weihnachtsbeleuchtung");
-
-            // create xmas group if not available
+            // create xmas scene if not available otherwise load config of existing one
+            UnitConfig xMasLightSceneConfig = null;
             try {
-                xMasLightSceneConfig = Registries.getUnitRegistry().registerUnitConfig(xMasSceneBuilder.build()).get(5, TimeUnit.SECONDS);
-            } catch (ExecutionException | TimeoutException exx) {
-                ExceptionPrinter.printHistory("Could not register XMas Light Group", ex, logger);
-            }
-        }
+                xMasLightSceneConfig = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(XMAS_SCENE, UnitType.SCENE);
+            } catch (final NotAvailableException ex) {
+                final Builder xMasSceneBuilder = UnitConfig.newBuilder();
+                xMasSceneBuilder.setUnitType(UnitType.SCENE);
+                xMasSceneBuilder.addAlias(XMAS_SCENE);
+                LabelProcessor.addLabel(xMasSceneBuilder.getLabelBuilder(), Locale.ENGLISH, "XMas Lights");
+                LabelProcessor.addLabel(xMasSceneBuilder.getLabelBuilder(), Locale.GERMAN, "Weihnachtsbeleuchtung");
 
-        xMasScene = Units.getUnit(xMasLightSceneConfig, false, Units.SCENE);
-        return unitConfig;
+                try {
+                    xMasLightSceneConfig = Registries.getUnitRegistry().registerUnitConfig(xMasSceneBuilder.build()).get(5, TimeUnit.SECONDS);
+                } catch (ExecutionException | TimeoutException exx) {
+                    ExceptionPrinter.printHistory("Could not register XMas Light Group", ex, logger);
+                }
+            }
+
+            // load xmas scene
+            xMasScene = Units.getUnit(xMasLightSceneConfig, false, Units.SCENE);
+            return unitConfig;
+        }
     }
 
     @Override
-    protected void trigger(final ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
+    protected void trigger(final ActivationState activationState) throws
+            CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
 
         // activate xmas scene
         switch (activationState.getValue()) {
             case ACTIVE:
-                observe(xMasScene.setActivationState(State.ACTIVE, getDefaultActionParameter(Long.MAX_VALUE)));
+                observe(xMasScene.setActivationState(State.ACTIVE, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)));
                 break;
             case INACTIVE:
                 cancelAllObservedActions();

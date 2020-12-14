@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class NightLightApp extends AbstractAppController {
 
-    public static final HSBColor COLOR_ORANGE = HSBColor.newBuilder().setHue(30d).setSaturation(1.0d).setBrightness(0.20d).build();
+    public static final HSBColor COLOR_ORANGE = HSBColor.newBuilder().setHue(15d).setSaturation(1.0d).setBrightness(0.10d).build();
     private static final Logger LOGGER = LoggerFactory.getLogger(NightLightApp.class);
     private static final String META_CONFIG_KEY_EXCLUDE_LOCATION = "EXCLUDE_LOCATION";
 
