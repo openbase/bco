@@ -25,15 +25,14 @@ package org.openbase.bco.api.graphql.schema;
 import com.google.api.graphql.rejoiner.SchemaModification;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.ProtocolStringList;
 import graphql.schema.DataFetchingEnvironment;
 import net.javacrumbs.futureconverter.java8guava.FutureConverter;
-import org.dataloader.DataLoader;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.EnumNotSupportedException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
@@ -63,7 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Bundle all schema modifications to add fields to protobuf types.
@@ -113,6 +111,11 @@ public class SchemaModificationsAdd extends SchemaModule {
         return getLabelForContext(unitConfig.getLabel(), env.getContext());
     }
 
+    @SchemaModification(addField = "labelString", onType = UnitTemplate.class)
+    String addLabelBestMatch(UnitTemplate unitTemplate, DataFetchingEnvironment env) {
+        return getLabelForContext(unitTemplate.getLabel(), env.getContext());
+    }
+
     @SchemaModification(addField = "descriptionString", onType = UnitConfig.class)
     String addDescriptionBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
         return getTextForContext(unitConfig.getDescription(), env.getContext());
@@ -140,7 +143,7 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "unitTemplate", onType = UnitConfig.class)
     UnitTemplate unitConfigUnitTemplate(UnitConfig unitConfig) throws CouldNotPerformException {
-        return Registries.getTemplateRegistry().getUnitTemplateById(unitConfig.getUnitTemplateConfigId());
+        return Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getUnitType());
     }
 
     @SchemaModification(addField = "unitHost", onType = UnitConfig.class)
@@ -191,6 +194,35 @@ public class SchemaModificationsAdd extends SchemaModule {
     @SchemaModification(addField = "location", onType = PlacementConfig.class)
     UnitConfig placementConfigLocation(PlacementConfig placementConfig) throws NotAvailableException {
         return Registries.getUnitRegistry().getUnitConfigById(placementConfig.getLocationId());
+    }
+
+    @SchemaModification(addField = "parentTile", onType = PlacementConfig.class)
+    UnitConfig placementParentTileConfig(PlacementConfig placementConfig) throws NotAvailableException {
+        try {
+            return resolveParentTile(placementConfig.getLocationId());
+
+        } catch (NotAvailableException ex) {
+            return UnitConfig.getDefaultInstance();
+        }
+    }
+
+    private UnitConfig resolveParentTile(String locationId) throws NotAvailableException {
+        try {
+            final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(locationId);
+            switch (locationUnitConfig.getLocationConfig().getLocationType()) {
+                case TILE:
+                    return locationUnitConfig;
+                case ZONE:
+                    throw new InvalidStateException("Zones do not provide a tile!");
+                case REGION:
+                    return resolveParentTile(locationUnitConfig.getPlacementConfig().getLocationId());
+                case UNKNOWN:
+                default:
+                    throw new EnumNotSupportedException(locationUnitConfig.getLocationConfig().getLocationType(), this);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Tile");
+        }
     }
 
     @SchemaModification(addField = "labelString", onType = DeviceClass.class)

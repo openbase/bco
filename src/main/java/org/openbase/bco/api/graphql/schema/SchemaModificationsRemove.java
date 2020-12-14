@@ -101,9 +101,6 @@ public class SchemaModificationsRemove extends SchemaModule {
     TypeModification removeUnitGroupConfigMemberId = removeFieldByNumber(UnitGroupConfig.MEMBER_ID_FIELD_NUMBER, UnitGroupConfig.getDescriptor());
 
     @SchemaModification
-    TypeModification removeUnitConfigUnitTemplateId = removeFieldByNumber(UnitConfig.UNIT_TEMPLATE_CONFIG_ID_FIELD_NUMBER, UnitConfig.getDescriptor());
-
-    @SchemaModification
     TypeModification removeUnitConfigUnitHostId = removeFieldByNumber(UnitConfig.UNIT_HOST_ID_FIELD_NUMBER, UnitConfig.getDescriptor());
 
     @SchemaModification
