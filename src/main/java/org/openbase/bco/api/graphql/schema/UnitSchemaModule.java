@@ -34,11 +34,13 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.action.RemoteAction;
+import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
+import org.openbase.jul.pattern.ListFilter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -82,6 +84,34 @@ public class UnitSchemaModule extends SchemaModule {
         }
     }
 
+    void subscribeUnits(@Arg("filter") UnitFilter unitFilter) throws BCOGraphQLError {
+        try {
+            final CustomUnitPool subscriptionUnitPool = new CustomUnitPool();
+            subscriptionUnitPool.init(buildUnitConfigFilter(unitFilter));
+            subscriptionUnitPool.addObserver((messageServiceStateProvider, message) -> {
+                System.out.println("notify change of: "+ messageServiceStateProvider.getServiceProvider().getId());
+            });
+            subscriptionUnitPool.activate();
+            // todo: subsciption service shutdown needs to be implemented.
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
+        }
+    }
+
+//    void subscribeUnitConfigs(@Arg("filter") UnitFilter unitFilter) throws BCOGraphQLError {
+//        try {
+//            final CustomUnitPool subscriptionUnitPool = new CustomUnitPool();
+//            subscriptionUnitPool.init(buildUnitConfigFilter(unitFilter));
+//            subscriptionUnitPool.addObserver((messageServiceStateProvider, message) -> {
+//                System.out.println("notify change of: "+ messageServiceStateProvider.getServiceProvider().getId());
+//            });
+//            subscriptionUnitPool.activate();
+//            // todo: subsciption service shutdown needs to be implemented.
+//        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+//            throw new GenericError(ex);
+//        }
+//    }
+
     @Mutation("unit")
     UnitData unit(@Arg("unitId") String unitId, @Arg("data") UnitData data, DataFetchingEnvironment env) throws BCOGraphQLError {
         try {
@@ -89,7 +119,6 @@ public class UnitSchemaModule extends SchemaModule {
         } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
             throw new GenericError(ex);
         }
-
     }
 
     @Mutation("units")
@@ -106,13 +135,15 @@ public class UnitSchemaModule extends SchemaModule {
     }
 
     private List<UnitConfig> getUnitConfigsByFilter(UnitFilter unitFilter) throws CouldNotPerformException, InterruptedException {
+        return buildUnitConfigFilter(unitFilter).pass(Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigsFiltered(true));
+    }
+
+    private ListFilter<UnitConfig> buildUnitConfigFilter(UnitFilter unitFilter) throws CouldNotPerformException, InterruptedException {
         // setup default values
         if ((unitFilter == null)) {
             unitFilter = UnitFilter.getDefaultInstance();
         }
-
-        return new RegistrySchemaModule.UnitFilterImpl(unitFilter)
-                .pass(Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigsFiltered(true));
+        return new RegistrySchemaModule.UnitFilterImpl(unitFilter);
     }
 
     private UnitData setServiceStates(final UnitConfig unitConfig, final UnitData data, DataFetchingEnvironment env, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
