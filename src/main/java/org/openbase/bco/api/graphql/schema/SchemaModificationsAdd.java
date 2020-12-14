@@ -193,6 +193,11 @@ public class SchemaModificationsAdd extends SchemaModule {
         return Registries.getUnitRegistry().getUnitConfigById(placementConfig.getLocationId());
     }
 
+    @SchemaModification(addField = "labelString", onType = DeviceClass.class)
+    String addLabelBestMatch(DeviceClass deviceClass, DataFetchingEnvironment env) {
+        return getLabelForContext(deviceClass.getLabel(), env.getContext());
+    }
+
     @SchemaModification(addField = "labelString", onType = GatewayClass.class)
     String addLabelBestMatch(GatewayClass gatewayClass, DataFetchingEnvironment env) {
         return getLabelForContext(gatewayClass.getLabel(), env.getContext());
@@ -204,16 +209,7 @@ public class SchemaModificationsAdd extends SchemaModule {
     }
 
     private String getLabelForContext(LabelType.Label label, BCOGraphQLContext context) {
-        try {
-            return LabelProcessor.getBestMatch(context.getLanguageCode(), label);
-        } catch (NotAvailableException e) {
-            try {
-                return LabelProcessor.getFirstLabel(label);
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory(ex, logger);
-                return "";
-            }
-        }
+        return LabelProcessor.getBestMatch(context.getLanguageCode(), label, "?");
     }
 
     private String getTextForContext(MultiLanguageTextType.MultiLanguageText multiLanguageText, BCOGraphQLContext context) {
