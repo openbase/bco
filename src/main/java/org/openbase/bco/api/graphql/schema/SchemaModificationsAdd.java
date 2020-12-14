@@ -30,8 +30,9 @@ import net.javacrumbs.futureconverter.java8guava.FutureConverter;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.EnumNotSupportedException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
@@ -82,12 +83,12 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "units", onType = LocationConfig.class)
     ListenableFuture<List<UnitConfig>> locationConfigUnits(LocationConfig locationConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(locationConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(locationConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "children", onType = LocationConfig.class)
     ListenableFuture<List<UnitConfig>> locationConfigChildren(LocationConfig locationConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(locationConfig.getChildIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(locationConfig.getChildIdList()));
     }
 
     @SchemaModification(addField = "owner", onType = PermissionConfig.class)
@@ -108,6 +109,11 @@ public class SchemaModificationsAdd extends SchemaModule {
     @SchemaModification(addField = "labelString", onType = UnitConfig.class)
     String addLabelBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
         return getLabelForContext(unitConfig.getLabel(), env.getContext());
+    }
+
+    @SchemaModification(addField = "labelString", onType = UnitTemplate.class)
+    String addLabelBestMatch(UnitTemplate unitTemplate, DataFetchingEnvironment env) {
+        return getLabelForContext(unitTemplate.getLabel(), env.getContext());
     }
 
     @SchemaModification(addField = "descriptionString", onType = UnitConfig.class)
@@ -132,12 +138,12 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "member", onType = UnitGroupConfig.class)
     ListenableFuture<List<UnitConfig>> unitGroupConfigUnitConfig(UnitGroupConfig unitGroupConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(unitGroupConfig.getMemberIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(unitGroupConfig.getMemberIdList()));
     }
 
     @SchemaModification(addField = "unitTemplate", onType = UnitConfig.class)
     UnitTemplate unitConfigUnitTemplate(UnitConfig unitConfig) throws CouldNotPerformException {
-        return Registries.getTemplateRegistry().getUnitTemplateById(unitConfig.getUnitTemplateConfigId());
+        return Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getUnitType());
     }
 
     @SchemaModification(addField = "unitHost", onType = UnitConfig.class)
@@ -147,12 +153,12 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "member", onType = AuthorizationGroupConfig.class)
     ListenableFuture<List<UnitConfig>> authorizationGroupConfigUnitConfig(AuthorizationGroupConfig authorizationGroupConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(authorizationGroupConfig.getMemberIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(authorizationGroupConfig.getMemberIdList()));
     }
 
     @SchemaModification(addField = "connections", onType = TileConfig.class)
     ListenableFuture<List<UnitConfig>> unitConfigUnitHost(TileConfig tileConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(tileConfig.getConnectionIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(tileConfig.getConnectionIdList()));
     }
 
     @SchemaModification(addField = "appClass", onType = AppConfig.class)
@@ -162,17 +168,17 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "units", onType = AppConfig.class)
     ListenableFuture<List<UnitConfig>> appConfigUnits(AppConfig appConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(appConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(appConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "tiles", onType = ConnectionConfig.class)
     ListenableFuture<List<UnitConfig>> connectionConfigTiles(ConnectionConfig connectionConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(connectionConfig.getTileIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(connectionConfig.getTileIdList()));
     }
 
     @SchemaModification(addField = "units", onType = ConnectionConfig.class)
     ListenableFuture<List<UnitConfig>> connectionConfigUnits(ConnectionConfig connectionConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(connectionConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(connectionConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "deviceClass", onType = DeviceConfig.class)
@@ -182,12 +188,46 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "units", onType = DeviceConfig.class)
     ListenableFuture<List<UnitConfig>> deviceConfigUnits(DeviceConfig deviceConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader("units").loadMany(deviceConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(deviceConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "location", onType = PlacementConfig.class)
     UnitConfig placementConfigLocation(PlacementConfig placementConfig) throws NotAvailableException {
         return Registries.getUnitRegistry().getUnitConfigById(placementConfig.getLocationId());
+    }
+
+    @SchemaModification(addField = "parentTile", onType = PlacementConfig.class)
+    UnitConfig placementParentTileConfig(PlacementConfig placementConfig) throws NotAvailableException {
+        try {
+            return resolveParentTile(placementConfig.getLocationId());
+
+        } catch (NotAvailableException ex) {
+            return UnitConfig.getDefaultInstance();
+        }
+    }
+
+    private UnitConfig resolveParentTile(String locationId) throws NotAvailableException {
+        try {
+            final UnitConfig locationUnitConfig = Registries.getUnitRegistry().getUnitConfigById(locationId);
+            switch (locationUnitConfig.getLocationConfig().getLocationType()) {
+                case TILE:
+                    return locationUnitConfig;
+                case ZONE:
+                    throw new InvalidStateException("Zones do not provide a tile!");
+                case REGION:
+                    return resolveParentTile(locationUnitConfig.getPlacementConfig().getLocationId());
+                case UNKNOWN:
+                default:
+                    throw new EnumNotSupportedException(locationUnitConfig.getLocationConfig().getLocationType(), this);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Tile");
+        }
+    }
+
+    @SchemaModification(addField = "labelString", onType = DeviceClass.class)
+    String addLabelBestMatch(DeviceClass deviceClass, DataFetchingEnvironment env) {
+        return getLabelForContext(deviceClass.getLabel(), env.getContext());
     }
 
     @SchemaModification(addField = "labelString", onType = GatewayClass.class)
@@ -201,16 +241,7 @@ public class SchemaModificationsAdd extends SchemaModule {
     }
 
     private String getLabelForContext(LabelType.Label label, BCOGraphQLContext context) {
-        try {
-            return LabelProcessor.getBestMatch(context.getLanguageCode(), label);
-        } catch (NotAvailableException e) {
-            try {
-                return LabelProcessor.getFirstLabel(label);
-            } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory(ex, logger);
-                return "";
-            }
-        }
+        return LabelProcessor.getBestMatch(context.getLanguageCode(), label, "?");
     }
 
     private String getTextForContext(MultiLanguageTextType.MultiLanguageText multiLanguageText, BCOGraphQLContext context) {

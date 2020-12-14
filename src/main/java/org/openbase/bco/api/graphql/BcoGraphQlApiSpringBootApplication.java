@@ -28,6 +28,7 @@ import com.google.api.graphql.rejoiner.SchemaProviderModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Provides;
 import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
@@ -35,11 +36,8 @@ import graphql.kickstart.execution.context.GraphQLContext;
 import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
-import io.reactivex.*;
-import io.reactivex.functions.BiConsumer;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
-import org.jetbrains.annotations.NotNull;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
@@ -49,21 +47,16 @@ import org.openbase.bco.api.graphql.subscriptions.UnitDataPublisher;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.NotAvailableException;
-import org.reactivestreams.FlowAdapters;
 import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import rx.Observable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
-import java.util.concurrent.Callable;
 
 @SpringBootApplication
 public class BcoGraphQlApiSpringBootApplication {
@@ -205,9 +198,10 @@ public class BcoGraphQlApiSpringBootApplication {
     }
 
     @Bean
+    @Provides
     public DataLoaderRegistry buildDataLoaderRegistry(BCOUnitBatchLoader bcoUnitBatchLoader) {
         DataLoaderRegistry registry = new DataLoaderRegistry();
-        registry.register("units", new DataLoader<>(bcoUnitBatchLoader));
+        registry.register(BCOGraphQLContext.DATA_LOADER_UNITS, new DataLoader<>(bcoUnitBatchLoader));
         return registry;
     }
 
@@ -216,8 +210,8 @@ public class BcoGraphQlApiSpringBootApplication {
         return new GraphQLServletContextBuilder() {
 
             @Override
-            public GraphQLContext build(HttpServletRequest req, HttpServletResponse response) {
-                return new BCOGraphQLContext(req);
+            public GraphQLContext build(HttpServletRequest request, HttpServletResponse response) {
+                return new BCOGraphQLContext(dataLoaderRegistry, null, request);
             }
 
             @Override
