@@ -36,6 +36,8 @@ import graphql.kickstart.execution.context.GraphQLContext;
 import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Observable;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
@@ -43,7 +45,9 @@ import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
-import org.openbase.bco.api.graphql.subscriptions.UnitDataPublisher;
+import org.openbase.bco.api.graphql.subscriptions.ObserverMapper;
+import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.NotAvailableException;
@@ -83,7 +87,14 @@ public class BcoGraphQlApiSpringBootApplication {
     GraphQLSchema schema() {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
+        final GraphQLOutputType unitDataOutputType = (GraphQLOutputType) schema.getType("openbase_type_domotic_unit_UnitData");
+        final GraphQLInputType unitFilterOutputType = (GraphQLInputType) schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
+
         GraphQLObjectType.Builder builder = GraphQLObjectType.newObject().name("Subscription");
+        builder.field(GraphQLFieldDefinition.newFieldDefinition().name("units").type(unitDataOutputType)
+                .argument(GraphQLArgument.newArgument().name("unitFilter").type(unitFilterOutputType).build())
+                .build());
+
         builder.field(GraphQLFieldDefinition.newFieldDefinition().name("powerState").type(Scalars.GraphQLString)
                 .argument(GraphQLArgument.newArgument().name("alias").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
                 .build());
@@ -92,8 +103,19 @@ public class BcoGraphQlApiSpringBootApplication {
                 .dataFetcher(FieldCoordinates.coordinates("Subscription", "powerState"), new DataFetcher<Publisher<String>>() {
                     @Override
                     public Publisher<String> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-                        System.out.println("Create publiser for alias: " + dataFetchingEnvironment.getArgument("alias").toString());
-                        return new UnitDataPublisher(dataFetchingEnvironment.getArgument("alias"));
+                        final String alias = dataFetchingEnvironment.getArgument("alias").toString();
+
+                        final ObserverMapper observerMapper = new ObserverMapper();
+                        ColorableLightRemote unit = Units.getUnit(Registries.getUnitRegistry().getUnitConfigByAlias(alias).getId(), false, Units.COLORABLE_LIGHT);
+
+                        Observable<String> obs = Observable.create(observableEmitter -> {
+                            observerMapper.setEmitter(observableEmitter);
+                            unit.addDataObserver(observerMapper);
+                        });
+
+                        obs = obs.doOnDispose(() -> unit.removeDataObserver(observerMapper));
+
+                        return obs.toFlowable(BackpressureStrategy.DROP);
                     }
                 }).build();
 
