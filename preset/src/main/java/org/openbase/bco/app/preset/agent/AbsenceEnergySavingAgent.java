@@ -53,7 +53,6 @@ public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
     public static final long MAX_TIMEOUT = TimeUnit.MINUTES.toMillis(30);
 
     private LocationRemote locationRemote;
-    private RemoteAction lastAction;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(DelayMode.DELAY_ACTIVATION, MAX_TIMEOUT);
@@ -74,7 +73,7 @@ public class AbsenceEnergySavingAgent extends AbstractDelayedTriggerableAgent {
     protected void delayedTrigger(ActivationState activationState) throws CouldNotPerformException, ExecutionException, InterruptedException {
         switch (activationState.getValue()) {
             case ACTIVE:
-                lastAction = observe(locationRemote.setPowerState(State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
+                observe(locationRemote.setPowerState(State.OFF, getDefaultActionParameter(Long.MAX_VALUE)));
                 break;
             case INACTIVE:
                 cancelAllObservedActions();
