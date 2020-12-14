@@ -93,24 +93,11 @@ public class UnitSchemaModule extends SchemaModule {
             });
             subscriptionUnitPool.activate();
             // todo: subsciption service shutdown needs to be implemented.
+            //subscriptionUnitPool.shutdown();
         } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
             throw new GenericError(ex);
         }
     }
-
-//    void subscribeUnitConfigs(@Arg("filter") UnitFilter unitFilter) throws BCOGraphQLError {
-//        try {
-//            final CustomUnitPool subscriptionUnitPool = new CustomUnitPool();
-//            subscriptionUnitPool.init(buildUnitConfigFilter(unitFilter));
-//            subscriptionUnitPool.addObserver((messageServiceStateProvider, message) -> {
-//                System.out.println("notify change of: "+ messageServiceStateProvider.getServiceProvider().getId());
-//            });
-//            subscriptionUnitPool.activate();
-//            // todo: subsciption service shutdown needs to be implemented.
-//        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
-//            throw new GenericError(ex);
-//        }
-//    }
 
     @Mutation("unit")
     UnitData unit(@Arg("unitId") String unitId, @Arg("data") UnitData data, DataFetchingEnvironment env) throws BCOGraphQLError {

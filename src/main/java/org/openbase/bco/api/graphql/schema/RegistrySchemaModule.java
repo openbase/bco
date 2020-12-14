@@ -28,6 +28,7 @@ import com.google.api.graphql.rejoiner.Query;
 import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.collect.ImmutableList;
 import graphql.schema.DataFetchingEnvironment;
+import org.checkerframework.checker.units.qual.A;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.ArgumentError;
 import org.openbase.bco.api.graphql.error.BCOGraphQLError;
@@ -35,16 +36,21 @@ import org.openbase.bco.api.graphql.error.GenericError;
 import org.openbase.bco.api.graphql.error.ServerError;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
+import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.BCOSessionImpl;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.protobuf.ListDiffImpl;
+import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ListFilter;
+import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.configuration.MetaConfigType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openbase.type.geometry.PoseType;
@@ -53,6 +59,7 @@ import org.openbase.type.spatial.PlacementConfigType;
 import org.openbase.type.spatial.ShapeType;
 import org.reactivestreams.FlowAdapters;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -70,21 +77,42 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Query("unitConfigs")
-    ImmutableList<UnitConfig> getUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("inclusiveDisabled") Boolean incluseDisabled) throws BCOGraphQLError {
+    ImmutableList<UnitConfig> getUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("includeDisabledUnits") Boolean includeDisabledUnits) throws BCOGraphQLError {
 
         try {
             // setup default values
             if ((unitFilter == null)) {
                 unitFilter = UnitFilter.getDefaultInstance();
             }
-            if ((incluseDisabled == null)) {
-                incluseDisabled = false;
+            if ((includeDisabledUnits == null)) {
+                includeDisabledUnits = false;
             }
 
             return ImmutableList.copyOf(
                     new UnitFilterImpl(unitFilter)
-                            .pass(Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigsFiltered(!incluseDisabled)));
+                            .pass(Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigsFiltered(!includeDisabledUnits)));
 
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
+        }
+    }
+
+    void subscribeUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("includeDisabledUnits") Boolean includeDisabledUnits) throws BCOGraphQLError {
+        try {
+            final ArrayList<UnitConfig> unitConfigs = new ArrayList<>(getUnitConfigs(unitFilter, includeDisabledUnits));
+            Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).addDataObserver((unitRegistryDataDataProvider, unitRegistryData) -> {
+                final ImmutableList<UnitConfig> newUnitConfigs = getUnitConfigs(unitFilter, includeDisabledUnits);
+                if(newUnitConfigs.equals(unitConfigs)) {
+                    // nothing has changed
+                    return;
+                }
+
+                // store update
+                unitConfigs.clear();
+                unitConfigs.addAll(newUnitConfigs);
+
+                // todo: notify
+            });
         } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
             throw new GenericError(ex);
         }
