@@ -427,7 +427,7 @@ public class ActionImpl implements SchedulableAction {
             }
 
             // extend
-            actionDescriptionBuilder.setPriority(Priority.LOW);
+            actionDescriptionBuilder.setPriority(Priority.NO);
             actionDescriptionBuilder.setInterruptible(false);
             actionDescriptionBuilder.setSchedulable(false);
             actionDescriptionBuilder.setExecutionTimePeriod(Timeout.getInfinityTimeout(TimeUnit.MICROSECONDS));

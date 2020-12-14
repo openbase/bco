@@ -102,7 +102,7 @@ public abstract class AbstractAggregatedBaseUnitController<D extends AbstractMes
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
             final UnitConfig unitConfig = super.applyConfigUpdate(config);
             serviceRemoteManager.applyConfigUpdate(getAggregatedUnitConfigList());
-            // if already active than update the current state.
+            // if already active then update the current state.
             if (isActive()) {
                 updateUnitData();
             }
