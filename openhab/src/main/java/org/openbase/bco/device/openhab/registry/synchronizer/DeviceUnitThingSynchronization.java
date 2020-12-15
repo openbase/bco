@@ -238,7 +238,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
 
     @Override
     protected void afterInternalSync() {
-        logger.info("Internal sync finished!");
+        logger.debug("Internal sync finished!");
     }
 
     private void registerKNXThings(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException {

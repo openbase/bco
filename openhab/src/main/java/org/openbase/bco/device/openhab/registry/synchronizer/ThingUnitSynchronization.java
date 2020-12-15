@@ -69,7 +69,7 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
 
     @Override
     protected void afterInternalSync() {
-        logger.info("Internal sync finished!");
+        logger.debug("Internal sync finished!");
     }
 
     @Override
