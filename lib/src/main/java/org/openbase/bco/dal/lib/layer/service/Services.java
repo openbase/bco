@@ -52,17 +52,33 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationStateOrBuilder;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryStateOrBuilder;
 import org.openbase.type.domotic.state.BrightnessStateType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessStateOrBuilder;
+import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
+import org.openbase.type.domotic.state.ButtonStateType.ButtonStateOrBuilder;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.ColorStateType.ColorStateOrBuilder;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.state.ContactStateType.ContactStateOrBuilder;
+import org.openbase.type.domotic.state.DoorStateType.DoorState;
+import org.openbase.type.domotic.state.DoorStateType.DoorStateOrBuilder;
+import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
+import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceStateOrBuilder;
+import org.openbase.type.domotic.state.MotionStateType.MotionState;
+import org.openbase.type.domotic.state.MotionStateType.MotionStateOrBuilder;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerStateOrBuilder;
 import org.openbase.type.domotic.state.PresenceStateType;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceStateOrBuilder;
+import org.openbase.type.domotic.state.TamperStateType.TamperState;
+import org.openbase.type.domotic.state.TamperStateType.TamperStateOrBuilder;
+import org.openbase.type.domotic.state.WindowStateType.WindowState;
+import org.openbase.type.domotic.state.WindowStateType.WindowStateOrBuilder;
 import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.vision.ColorType.Color;
 import org.slf4j.Logger;
@@ -885,6 +901,18 @@ public class Services extends ServiceStateProcessor {
                         default:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
                     }
+                case MOTION_STATE_SERVICE:
+                    final MotionState.State motionStateValue = ((MotionStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, motionStateValue.name().toLowerCase());
+                    switch (motionStateValue) {
+                        case NO_MOTION:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "keine Bewegung").build();
+                        case MOTION:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "Bewegung").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
                 case PRESENCE_STATE_SERVICE:
                     final PresenceState.State presenceStateValue = ((PresenceStateOrBuilder) serviceStateOrBuilder).getValue();
                     LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, presenceStateValue.name().toLowerCase());
@@ -893,6 +921,32 @@ public class Services extends ServiceStateProcessor {
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "abwesend").build();
                         case PRESENT:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "anwesend").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
+                case TAMPER_STATE_SERVICE:
+                    final TamperState.State tamperStateValue = ((TamperStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, tamperStateValue.name().toLowerCase());
+                    switch (tamperStateValue) {
+                        case NO_TAMPER:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "ok").build();
+                        case TAMPER:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "manipulation").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
+                case BUTTON_STATE_SERVICE:
+                    final ButtonState.State buttonStateValue = ((ButtonStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, buttonStateValue.name().toLowerCase());
+                    switch (buttonStateValue) {
+                        case DOUBLE_PRESSED:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "zweifach gedrückt").build();
+                        case PRESSED:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "gedrückt").build();
+                        case RELEASED:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "losgelassen").build();
                         case UNKNOWN:
                         default:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
@@ -906,6 +960,78 @@ public class Services extends ServiceStateProcessor {
                 case COLOR_STATE_SERVICE:
                     final Color color = ((ColorStateOrBuilder) serviceStateOrBuilder).getColor();
                     return ColorStateToLabelTransformer.computeColorLabelFromColor(color);
+                case ILLUMINANCE_STATE_SERVICE:
+                    final IlluminanceState.State illuminanceStateValue = ((IlluminanceStateOrBuilder) serviceStateOrBuilder).getValue();
+                    final String illuminance = ((int) (((IlluminanceStateOrBuilder) serviceStateOrBuilder).getIlluminance())) + " Lux";
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, illuminanceStateValue.name().toLowerCase() + " " + illuminance);
+                    switch (illuminanceStateValue) {
+                        case DARK:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dunkel " + illuminance).build();
+                        case DUSKY:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dämmernd " + illuminance).build();
+                        case SHADY:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "schattig " + illuminance).build();
+                        case SUNNY:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "sonnig " + illuminance).build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt " + illuminance).build();
+                    }
+                case BATTERY_STATE_SERVICE:
+                    final BatteryState.State batteryStateValue = ((BatteryStateOrBuilder) serviceStateOrBuilder).getValue();
+                    final String level = ((int) (((BatteryStateOrBuilder) serviceStateOrBuilder).getLevel() * 100d)) + " %";
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, batteryStateValue.name().toLowerCase() + " " + level);
+                    switch (batteryStateValue) {
+                        case INSUFFICIENT:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unzureichend " + level).build();
+                        case CRITICAL:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "kritisch " + level).build();
+                        case LOW:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "gering " + level).build();
+                        case OK:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "ok " + level).build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt " + level).build();
+                    }
+                case DOOR_STATE_SERVICE:
+                    final DoorState.State doorStateValue = ((DoorStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, doorStateValue.name().toLowerCase());
+                    switch (doorStateValue) {
+                        case CLOSED:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "zu").build();
+                        case OPEN:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "offen").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
+                case WINDOW_STATE_SERVICE:
+                    final WindowState.State windowStateValue = ((WindowStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, windowStateValue.name().toLowerCase());
+                    switch (windowStateValue) {
+                        case CLOSED:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "zu").build();
+                        case TILTED:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "angewinkelt").build();
+                        case OPEN:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "offen").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
+                case CONTACT_STATE_SERVICE:
+                    final ContactState.State contactStateValue = ((ContactStateOrBuilder) serviceStateOrBuilder).getValue();
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, contactStateValue.name().toLowerCase());
+                    switch (contactStateValue) {
+                        case CLOSED:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "zu").build();
+                        case OPEN:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "offen").build();
+                        case UNKNOWN:
+                        default:
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt").build();
+                    }
                 case UNKNOWN:
                 default:
                     return LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, StringProcessor.transformCollectionToString(Services.generateServiceStateStringRepresentation(serviceStateOrBuilder, serviceType), " ")).build();
