@@ -503,7 +503,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         super.notifyChange();
     }
 
-    private ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRegistry(final UnitType unitType) {
+    private ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRegistry(final UnitType unitType) throws InvalidStateException {
         switch (unitType) {
             case AUTHORIZATION_GROUP:
                 return authorizationGroupUnitConfigRegistry;
@@ -527,6 +527,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 return objectUnitConfigRegistry;
             case GATEWAY:
                 return gatewayUnitConfigRegistry;
+            case UNKNOWN:
+                throw new InvalidStateException("Unit type not declared!");
             default:
                 return dalUnitConfigRegistry;
         }
@@ -636,7 +638,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Boolean containsUnitConfig(final UnitConfig unitConfig) {
-        return getUnitConfigRegistry(unitConfig.getUnitType()).contains(unitConfig);
+        try {
+            return getUnitConfigRegistry(unitConfig.getUnitType()).contains(unitConfig);
+        } catch (InvalidStateException e) {
+            return false;
+        }
     }
 
     @Override
