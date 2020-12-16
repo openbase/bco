@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,6 +52,11 @@ public class LocationRegistryLegacyTest extends AbstractBCORegistryTest {
     @BeforeClass
     public static void setupProperties() throws Exception {
         JPService.registerProperty(JPRSBLegacyMode.class, true);
+    }
+
+    @AfterClass
+    public static void removeProperties() throws Exception {
+        JPService.registerProperty(JPRSBLegacyMode.class, false);
     }
 
     private static UnitConfig.Builder getLocationUnitBuilder(final String label) {
