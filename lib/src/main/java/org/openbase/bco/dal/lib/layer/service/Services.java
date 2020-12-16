@@ -159,8 +159,6 @@ public class Services extends ServiceStateProcessor {
      * @param alternative string is returned in case the service name could not be resolved.
      *
      * @return the service name.
-     *
-     * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
      */
     public static String getServiceStateName(final ServiceType serviceType, final String alternative) {
         try {

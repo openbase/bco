@@ -196,7 +196,7 @@ public class ServiceStateProcessor {
      * @param serviceState the service state that provides the responsible action
      *
      * @return the responsible action.
-     * throws {@link NotAvailableException in case the state dose not provide any responsible action or if the message is not a valid service state.
+     * @throws NotAvailableException in case the state dose not provide any responsible action or if the message is not a valid service state.
      */
     public static ActionDescription getResponsibleAction(final Message serviceState) throws NotAvailableException {
         final FieldDescriptor responsibleActionFieldDescriptor;
