@@ -96,6 +96,14 @@ public class LocationElement extends AbstractUnitSitemapElement {
         }
         sitemap.closeContext();
 
+        // add groups
+        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.UNIT_GROUP, false);
+        sitemap.openFrameContext("Gruppen");
+        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.UNIT_GROUP)) {
+            sitemap.append(new GenericUnitSitemapElement(unitConfig));
+        }
+        sitemap.closeContext();
+
         // add apps
         unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.APP, false);
         sitemap.openFrameContext("Apps");
