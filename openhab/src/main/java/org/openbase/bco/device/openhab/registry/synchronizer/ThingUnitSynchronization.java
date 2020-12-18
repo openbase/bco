@@ -80,7 +80,6 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
         // update unit label and location if needed
         final UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getUnitConfigById(getUnitId(identifiableEnrichedThingDTO.getDTO())).toBuilder();
         if (SynchronizationProcessor.updateUnitToThing(identifiableEnrichedThingDTO.getDTO(), unitConfig)) {
-//            Registries.getUnitRegistry().updateUnitConfig(unitConfig.build());
             try {
                 Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
             } catch (ExecutionException ex) {
