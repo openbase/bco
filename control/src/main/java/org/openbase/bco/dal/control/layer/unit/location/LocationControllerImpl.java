@@ -174,6 +174,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
         }
     }
 
+    @Deprecated
     public class StandbyStateOperationServiceImpl implements StandbyStateOperationService {
 
         private StandbyController<LocationController> standbyController;
