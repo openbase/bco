@@ -35,6 +35,8 @@ import org.openbase.type.domotic.state.ColorStateType.ColorState;
 
 import java.util.concurrent.Future;
 
+// todo: class possibly not used anymore, please validate and cleanup.
+@Deprecated
 public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<?>> extends OpenHABService<ST> implements ColorStateOperationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorStateServiceImpl.class);

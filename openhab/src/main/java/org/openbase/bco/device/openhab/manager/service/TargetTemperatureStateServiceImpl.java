@@ -32,6 +32,8 @@ import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 
 import java.util.concurrent.Future;
 
+// todo: class possibly not used anymore, please validate and cleanup.
+@Deprecated
 public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureStateOperationService & Unit<?>> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
 
     public TargetTemperatureStateServiceImpl(ST unit) throws InstantiationException {

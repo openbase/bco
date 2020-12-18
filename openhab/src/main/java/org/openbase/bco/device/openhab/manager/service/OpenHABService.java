@@ -50,21 +50,6 @@ import java.util.concurrent.Future;
 
 public abstract class OpenHABService<ST extends Service & Unit<?>> implements Service {
 
-//    /**
-//     * first Repeat delay in milliseconds
-//     */
-//    public static final int ACTION_EXECUTION_REPEAT_DELAY_1 = 3000;
-//
-//    /**
-//     * second Repeat delay in milliseconds
-//     */
-//    public static final int ACTION_EXECUTION_REPEAT_DELAY_2 = 10000;
-//    public static final long ACTION_EXECUTION_TIMEOUT = 15000;
-//
-//    public static final int REPEAT_TASK_1 = 0;
-//    public static final int REPEAT_TASK_2 = 1;
-
-
     protected final ST unit;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String itemName;

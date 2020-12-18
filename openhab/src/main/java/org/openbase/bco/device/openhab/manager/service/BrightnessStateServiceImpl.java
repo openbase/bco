@@ -32,6 +32,8 @@ import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 
 import java.util.concurrent.Future;
 
+// todo: class possibly not used anymore, please validate and cleanup.
+@Deprecated
 public class BrightnessStateServiceImpl<ST extends BrightnessStateOperationService & Unit<?>> extends OpenHABService<ST> implements BrightnessStateOperationService {
 
     public BrightnessStateServiceImpl(final ST unit) throws InstantiationException {

@@ -32,6 +32,9 @@ import org.openbase.type.domotic.state.PowerStateType.PowerState;
 
 import java.util.concurrent.Future;
 
+// todo: class possibly not used anymore, please validate and cleanup.
+// otherwise, implement CustomOpenhabService and handle more generic and check why activation state was not required?
+@Deprecated
 public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<?>> extends OpenHABService<ST> implements PowerStateOperationService {
 
     public PowerStateServiceImpl(final ST unit) throws InstantiationException {

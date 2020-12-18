@@ -32,6 +32,8 @@ import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 
 import java.util.concurrent.Future;
 
+// todo: class possibly not used anymore, please validate and cleanup.
+@Deprecated
 public class StandbyStateServiceImpl<ST extends StandbyStateOperationService & Unit<?>> extends OpenHABService<ST> implements StandbyStateOperationService {
 
     public StandbyStateServiceImpl(ST unit) throws InstantiationException {

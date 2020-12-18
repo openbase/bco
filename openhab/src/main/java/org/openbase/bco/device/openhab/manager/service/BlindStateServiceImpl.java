@@ -32,6 +32,8 @@ import org.openbase.type.domotic.state.BlindStateType.BlindState;
 
 import java.util.concurrent.Future;
 
+// todo: class possibly not used anymore, please validate and cleanup.
+@Deprecated
 public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<?>> extends OpenHABService<ST> implements BlindStateOperationService {
 
     public BlindStateServiceImpl(ST unit) throws InstantiationException {
