@@ -334,23 +334,33 @@ public class SynchronizationProcessor {
 
     public static Map<ServiceType, ServicePattern> generateServiceMap(final UnitConfig unitConfig) {
         // build service mapping for services to create matching items
-        // this map will only contain provider and operation services, and if there are both for the same service the operation service will be saved
+        // this map will only contain provider and operation services,
+        // and if there are both for the same service the operation service will be saved
         final Map<ServiceType, ServicePattern> serviceTypePatternMap = new HashMap<>();
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-            if (serviceConfig.getServiceDescription().getPattern() == ServicePattern.CONSUMER) {
+
+            // prepare stuff
+            final ServiceType serviceType = serviceConfig.getServiceDescription().getServiceType();
+            final ServicePattern pattern = serviceConfig.getServiceDescription().getPattern();
+
+            // skip consumer services
+            if (pattern == ServicePattern.CONSUMER) {
                 continue;
             }
 
-            if (serviceConfig.getServiceDescription().getPattern() == ServicePattern.STREAM) {
+            // skip stream services
+            if (pattern == ServicePattern.STREAM) {
                 continue;
             }
 
-            if (!serviceTypePatternMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
-                serviceTypePatternMap.put(serviceConfig.getServiceDescription().getServiceType(), serviceConfig.getServiceDescription().getPattern());
+            // register if service is new
+            if (!serviceTypePatternMap.containsKey(serviceType)) {
+                serviceTypePatternMap.put(serviceType, pattern);
             } else {
-                if (serviceTypePatternMap.get(serviceConfig.getServiceDescription().getServiceType()) == ServicePattern.PROVIDER) {
-                    if (serviceConfig.getServiceDescription().getPattern() == ServicePattern.OPERATION) {
-                        serviceTypePatternMap.put(serviceConfig.getServiceDescription().getServiceType(), serviceConfig.getServiceDescription().getPattern());
+                // replace provider services by operation services.
+                if (serviceTypePatternMap.get(serviceType) == ServicePattern.PROVIDER) {
+                    if (pattern == ServicePattern.OPERATION) {
+                        serviceTypePatternMap.put(serviceType, pattern);
                     }
                 }
             }
@@ -534,12 +544,15 @@ public class SynchronizationProcessor {
      */
     public static boolean updateUnitToThing(final EnrichedThingDTO thing, final UnitConfig.Builder unitConfig) throws CouldNotPerformException, InterruptedException {
         boolean modification = false;
-        // update label and location
+
+        // update label
         if (!LabelProcessor.contains(unitConfig.getLabel(), thing.label)) {
             modification = true;
             String oldLabel = LabelProcessor.getBestMatch(unitConfig.getLabel());
             LabelProcessor.replace(unitConfig.getLabelBuilder(), oldLabel, thing.label);
         }
+
+        // update location
         if (thing.location != null) {
             String locationId;
             try {
