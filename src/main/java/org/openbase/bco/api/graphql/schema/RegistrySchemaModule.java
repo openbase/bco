@@ -77,7 +77,11 @@ public class RegistrySchemaModule extends SchemaModule {
     }
 
     @Query("unitConfigs")
-    ImmutableList<UnitConfig> getUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("includeDisabledUnits") Boolean includeDisabledUnits) throws BCOGraphQLError {
+    ImmutableList<UnitConfig> queryGetUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("includeDisabledUnits") Boolean includeDisabledUnits) throws BCOGraphQLError {
+        return getUnitConfigs(unitFilter, includeDisabledUnits);
+    }
+
+    public static ImmutableList<UnitConfig> getUnitConfigs(UnitFilter unitFilter, Boolean includeDisabledUnits) throws BCOGraphQLError {
 
         try {
             // setup default values
@@ -277,6 +281,14 @@ public class RegistrySchemaModule extends SchemaModule {
     @Query("gatewayClasses")
     ImmutableList<GatewayClass> gatewayClasses() throws CouldNotPerformException, InterruptedException {
         return ImmutableList.copyOf(Registries.getClassRegistry(true).getGatewayClasses());
+    }
+
+    public static ListFilter<UnitConfig> buildUnitConfigFilter(UnitFilter unitFilter) throws CouldNotPerformException, InterruptedException {
+        // setup default values
+        if ((unitFilter == null)) {
+            unitFilter = UnitFilter.getDefaultInstance();
+        }
+        return new RegistrySchemaModule.UnitFilterImpl(unitFilter);
     }
 
     // --------------------------------------------------- Stuff that has to be moved to jul --- start ------------------------->

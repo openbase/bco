@@ -26,7 +26,6 @@ import com.google.api.graphql.rejoiner.*;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLOutputType;
 import org.openbase.bco.api.graphql.BCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.BCOGraphQLError;
 import org.openbase.bco.api.graphql.error.GenericError;
@@ -87,27 +86,7 @@ public class UnitSchemaModule extends SchemaModule {
         }
     }
 
-    void subscribeUnits(@Arg("filter") UnitFilter unitFilter) throws BCOGraphQLError {
-        try {
-            final CustomUnitPool subscriptionUnitPool = new CustomUnitPool();
-            subscriptionUnitPool.init(buildUnitConfigFilter(unitFilter));
-            subscriptionUnitPool.addObserver((messageServiceStateProvider, message) -> {
-                System.out.println("notify change of: "+ messageServiceStateProvider.getServiceProvider().getId());
-            });
-            subscriptionUnitPool.activate();
 
-            /*AbstractObserverMapper.createObservable(CustomUnitPool::addObserver, CustomUnitPool::removeObserver, new AbstractObserverMapper<ServiceStateProvider<Message>, Message, GraphQLOutputType>() {
-                @Override
-                public GraphQLOutputType mapData(Message data) throws Exception {
-                    return null;
-                }
-            });*/
-            // todo: subscription service shutdown needs to be implemented.
-            //subscriptionUnitPool.shutdown();
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
-            throw new GenericError(ex);
-        }
-    }
 
     @Mutation("unit")
     UnitData unit(@Arg("unitId") String unitId, @Arg("data") UnitData data, DataFetchingEnvironment env) throws BCOGraphQLError {

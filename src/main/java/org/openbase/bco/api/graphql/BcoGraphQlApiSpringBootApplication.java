@@ -42,6 +42,8 @@ import graphql.kickstart.execution.context.GraphQLContext;
 import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Observable;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
@@ -49,12 +51,17 @@ import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
+import org.openbase.bco.api.graphql.subscriptions.SubscriptionModule;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.type.domotic.state.PowerStateType;
+import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitDataType;
-import org.openbase.type.domotic.unit.UnitFilterType;
+import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -64,6 +71,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -95,64 +103,44 @@ public class BcoGraphQlApiSpringBootApplication {
         GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
 
         final GraphQLOutputType unitDataOutputType = (GraphQLOutputType) schema.getType("openbase_type_domotic_unit_UnitData");
-        //TODO: rename into input type
-        final GraphQLNamedInputType unitFilterOutputType = (GraphQLNamedInputType) schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
-
-        //GraphQLType named = (GraphQLNamedInputType) (schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
+        final GraphQLOutputType unitConfigOutputType = (GraphQLOutputType) schema.getType("openbase_type_domotic_unit_UnitConfig");
+        final GraphQLInputType unitFilterInputType = (GraphQLInputType) schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
+        final GqlInputConverter unitFilterInputConverter = GqlInputConverter.newBuilder().add(UnitFilter.getDescriptor().getFile()).build();
 
         GraphQLObjectType.Builder builder = GraphQLObjectType.newObject().name("Subscription");
         builder.field(newFieldDefinition().name("units").type(unitDataOutputType)
-                .argument(GraphQLArgument.newArgument().name("unitFilter").type(unitFilterOutputType).build())
+                .argument(GraphQLArgument.newArgument().name("filter").type(unitFilterInputType).build())
                 .build());
-
-        builder.field(newFieldDefinition().name("powerState").type(Scalars.GraphQLString)
-                .argument(GraphQLArgument.newArgument().name("alias").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
+        builder.field(newFieldDefinition().name("unitConfigs").type(unitConfigOutputType)
+                .argument(GraphQLArgument.newArgument().name("filter").type(unitFilterInputType))
+                .argument(GraphQLArgument.newArgument().name("includeDisabledUnits").type(Scalars.GraphQLBoolean))
                 .build());
 
         GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
-                /*.dataFetcher(FieldCoordinates.coordinates("Subscription", "powerState"), new DataFetcher<Publisher<String>>() {
+                .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), new DataFetcher<Publisher<UnitDataType.UnitData>>() {
                     @Override
-                    public Publisher<String> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-                        final String alias = dataFetchingEnvironment.getArgument("alias").toString();
-
-                        //final AbstractObserverMapper observerMapper = new AbstractObserverMapper<>();
-                        /*ColorableLightRemote unit = Units.getUnit(Registries.getUnitRegistry().getUnitConfigByAlias(alias).getId(), false, Units.COLORABLE_LIGHT);
-
-                        Observable<String> obs = Observable.create(observableEmitter -> {
-                            observerMapper.setEmitter(observableEmitter);
-                            unit.addDataObserver(observerMapper);
-                        });
-
-                        obs = obs.doOnDispose(() -> unit.removeDataObserver(observerMapper));
-
-                        return obs.toFlowable(BackpressureStrategy.DROP);
-                    }
-                })*/
-                .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), new DataFetcher<Publisher<GraphQLType>>() {
-                    @Override
-                    public Publisher<GraphQLType> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                    public Publisher<UnitDataType.UnitData> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
                         System.out.println("Call to units subscription...");
-                        Map<String, Object> unitFilter = (Map<String, Object>) dataFetchingEnvironment.getArgument("unitFilter");
-                        System.out.println("data: "+ unitFilter.getClass().getSimpleName());
+                        UnitFilter unitFilter = (UnitFilter) unitFilterInputConverter.createProtoBuf(UnitFilter.getDescriptor(), UnitFilter.newBuilder(), dataFetchingEnvironment.getArgument("filter"));
+                        System.out.println("Alias" + unitFilter.getProperties().getAlias(0));
 
-                        UnitFilterType.UnitFilter.Builder builder1 = UnitFilterType.UnitFilter.newBuilder();
-                        GqlInputConverter build = GqlInputConverter.newBuilder().add(UnitFilterType.getDescriptor()).build();
-                        Message protoBuf = build.createProtoBuf(UnitFilterType.UnitFilter.getDescriptor(), builder1, unitFilter);
-                        System.out.println("Converted! " + protoBuf.getClass().getSimpleName());
-                        System.out.println("Alias" + ((UnitFilterType.UnitFilter) protoBuf).getProperties().getAlias(0));
-
-                        // new SchemaDefinitionReader().createBundle().
-
-                        UnitFilterType.UnitFilter.Builder builder2 = UnitFilterType.UnitFilter.newBuilder();
-                        builder2.getPropertiesBuilder().addAlias("Test");
-
-                        //TODO: how do we get the GraphQLInterfaceType from the unitFilterOutputType?
-
-                        //GraphQLObjectType convert = ProtoToGql.convert(builder2.build().getDescriptorForType(), unitFilterOutputType);
-                        //System.out.println("Converted" + convert.getName() + ", " + convert);
-                        return null;
+                        return SubscriptionModule.subscribeUnits(unitFilter);
                     }
-                }).build();
+                })
+                .dataFetcher(FieldCoordinates.coordinates("Subscription", "unitConfigs"), new DataFetcher<Publisher<UnitConfigType.UnitConfig>>() {
+                    @Override
+                    public Publisher<UnitConfigType.UnitConfig> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                        UnitFilter unitFilter = (UnitFilter) unitFilterInputConverter.createProtoBuf(UnitFilter.getDescriptor(), UnitFilter.newBuilder(), dataFetchingEnvironment.getArgument("filter"));
+
+                        Boolean includeDisabledUnits = false;
+                        if (dataFetchingEnvironment.getArgument("includeDisabledUnits") != null) {
+                            includeDisabledUnits = dataFetchingEnvironment.getArgument("includeDisabledUnits");
+                        }
+
+                        return SubscriptionModule.subscribeUnitConfigs(unitFilter, includeDisabledUnits);
+                    }
+                })
+                .build();
 
         schema = GraphQLSchema.newSchema(schema)
                 .subscription(builder.build())
