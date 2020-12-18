@@ -92,18 +92,10 @@ public class OpenHABItemProcessor {
             case POWER_CONSUMPTION_STATE_SERVICE:
             case TEMPERATURE_STATE_SERVICE:
             case BATTERY_STATE_SERVICE:
-            case SMOKE_ALARM_STATE_SERVICE:
-            case SMOKE_STATE_SERVICE:
-            case FIRE_ALARM_STATE_SERVICE:
-            case EARTHQUAKE_ALARM_STATE_SERVICE:
-            case INTRUSION_ALARM_STATE_SERVICE:
-            case MEDICAL_EMERGENCY_ALARM_STATE_SERVICE:
-            case TEMPEST_ALARM_STATE_SERVICE:
-            case WATER_ALARM_STATE_SERVICE:
-            case TEMPERATURE_ALARM_STATE_SERVICE:
             case TARGET_TEMPERATURE_STATE_SERVICE:
             case ILLUMINANCE_STATE_SERVICE:
             case USER_TRANSIT_STATE_SERVICE:
+            case SMOKE_STATE_SERVICE:
                 return OPENHAB_NUMBER_TYPE;
             case BLIND_STATE_SERVICE:
                 return OPENHAB_ROLLERSHUTTER_TYPE;
@@ -117,6 +109,14 @@ public class OpenHABItemProcessor {
             case POWER_STATE_SERVICE:
             case BUTTON_STATE_SERVICE:
             case ACTIVATION_STATE_SERVICE:
+            case SMOKE_ALARM_STATE_SERVICE:
+            case FIRE_ALARM_STATE_SERVICE:
+            case EARTHQUAKE_ALARM_STATE_SERVICE:
+            case INTRUSION_ALARM_STATE_SERVICE:
+            case MEDICAL_EMERGENCY_ALARM_STATE_SERVICE:
+            case TEMPEST_ALARM_STATE_SERVICE:
+            case WATER_ALARM_STATE_SERVICE:
+            case TEMPERATURE_ALARM_STATE_SERVICE:
                 return OPENHAB_SWITCH_TYPE;
             case CONTACT_STATE_SERVICE:
             case WINDOW_STATE_SERVICE:
@@ -126,6 +126,8 @@ public class OpenHABItemProcessor {
                 return OPENHAB_STRING_TYPE;
             case BRIGHTNESS_STATE_SERVICE:
                 return OPENHAB_DIMMER_TYPE;
+            case GLOBAL_POSITION_STATE_SERVICE:
+                return OPENHAB_LOCATION_TYPE;
             default:
                 throw new NotAvailableException("OpenHAB item type for service[" + serviceType.name() + "]");
         }
