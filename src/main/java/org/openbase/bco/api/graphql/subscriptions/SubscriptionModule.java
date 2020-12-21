@@ -10,12 +10,12 @@ package org.openbase.bco.api.graphql.subscriptions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -31,33 +31,28 @@ import org.openbase.bco.api.graphql.error.ServerError;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.type.domotic.registry.UnitRegistryDataType;
-import org.openbase.type.domotic.state.PowerStateType;
-import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitDataType;
-import org.openbase.type.domotic.unit.UnitFilterType;
-import org.openbase.type.domotic.unit.dal.ColorableLightDataType;
+import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.reactivestreams.Publisher;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class SubscriptionModule {
 
     //TODO: what is a good value here
     private static BackpressureStrategy BACKPRESSURE_STRATEGY = BackpressureStrategy.BUFFER;
 
-    public static Publisher<UnitDataType.UnitData> subscribeUnits(UnitFilterType.UnitFilter unitFilter) throws BCOGraphQLError {
+    public static Publisher<UnitDataType.UnitData> subscribeUnits(UnitFilter unitFilter) throws BCOGraphQLError {
         System.out.println("Subscribe to units");
         try {
             /*
@@ -84,11 +79,10 @@ public class SubscriptionModule {
                     subscriptionUnitPool::removeObserver,
                     new AbstractObserverMapper<ServiceStateProvider<Message>, Message, UnitDataType.UnitData>() {
                         @Override
-                        public UnitDataType.UnitData mapData(Message data) throws Exception {
+                        public UnitDataType.UnitData mapData(ServiceStateProvider<Message> source, Message data) throws Exception {
                             System.out.println("Received data: " + data.getClass().getSimpleName());
-                            UnitDataType.UnitData.Builder builder = UnitDataType.UnitData.newBuilder();
-                            builder.getPowerStateBuilder().setValue(PowerStateType.PowerState.State.ON);
-                            return builder.build();
+                            final UnitRemote<?> unit = Units.getUnit(source.getServiceProvider().getId(), false);
+                            return (UnitDataType.UnitData) ProtoBufBuilderProcessor.merge(UnitDataType.UnitData.newBuilder(), unit.getData()).build();
                         }
 
                         @Override
@@ -108,34 +102,51 @@ public class SubscriptionModule {
         }
     }
 
-    public static Publisher<UnitConfigType.UnitConfig> subscribeUnitConfigs(final UnitFilterType.UnitFilter unitFilter, boolean includeDisabledUnits) throws BCOGraphQLError {
+    public static Publisher<List<UnitConfig>> subscribeUnitConfigs(final UnitFilter unitFilter, boolean includeDisabledUnits) throws BCOGraphQLError {
         System.out.println("Subscribe to registry");
-        return null;
-        /*try {
-            UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
-
-            final ArrayList<UnitConfigType.UnitConfig> unitConfigs = new ArrayList<>(RegistrySchemaModule.getUnitConfigs(unitFilter, includeDisabledUnits));
+        try {
+            final RegistrySubscriptionObserver observer = new RegistrySubscriptionObserver(unitFilter, includeDisabledUnits);
+            final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
             return AbstractObserverMapper.createObservable(unitRegistry::addDataObserver, unitRegistry::removeDataObserver,
-                    new AbstractObserverMapper<DataProvider<UnitRegistryDataType.UnitRegistryData>, UnitRegistryDataType.UnitRegistryData, List<UnitConfigType.UnitConfig>>() {
-
-                        @Override
-                        public List<UnitConfigType.UnitConfig> mapData(UnitRegistryDataType.UnitRegistryData data) throws Exception {
-                            System.out.println("Map data...");
-                            final ImmutableList<UnitConfigType.UnitConfig> newUnitConfigs = RegistrySchemaModule.getUnitConfigs(unitFilter, includeDisabledUnits);
-                            if(newUnitConfigs.equals(unitConfigs)) {
-                                // nothing has changed
-                                return;
-                            }
-
-                            // store update
-                            unitConfigs.clear();
-                            unitConfigs.addAll(newUnitConfigs);
-
-                            return unitConfigs;
-                        }
-                    }).toFlowable(BACKPRESSURE_STRATEGY);
+                    observer).toFlowable(BACKPRESSURE_STRATEGY);
         } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
             throw new GenericError(ex);
-        }*/
+        }
+    }
+
+    public static class RegistrySubscriptionObserver extends AbstractObserverMapper<DataProvider<UnitRegistryData>, UnitRegistryData, List<UnitConfig>> {
+
+        private final boolean includeDisabledUnits;
+        private final UnitFilter unitFilter;
+        private final List<UnitConfig> unitConfigs;
+
+        public RegistrySubscriptionObserver(final UnitFilter unitFilter, boolean includeDisabledUnits) throws CouldNotPerformException, InterruptedException, BCOGraphQLError {
+            this.unitFilter = unitFilter;
+            this.includeDisabledUnits = includeDisabledUnits;
+
+            Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+            this.unitConfigs = new ArrayList<>(RegistrySchemaModule.getUnitConfigs(unitFilter, includeDisabledUnits));
+        }
+
+        @Override
+        public void update(DataProvider<UnitRegistryData> source, UnitRegistryData target) throws Exception {
+            final ImmutableList<UnitConfig> newUnitConfigs = RegistrySchemaModule.getUnitConfigs(unitFilter, includeDisabledUnits);
+
+            if (newUnitConfigs.equals(unitConfigs)) {
+                // nothing has changed
+                return;
+            }
+
+            // store update
+            unitConfigs.clear();
+            unitConfigs.addAll(newUnitConfigs);
+
+            super.update(source, target);
+        }
+
+        @Override
+        public List<UnitConfig> mapData(DataProvider<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+            return this.unitConfigs;
+        }
     }
 }

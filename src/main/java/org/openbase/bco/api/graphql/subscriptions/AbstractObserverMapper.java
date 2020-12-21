@@ -40,14 +40,14 @@ public abstract class AbstractObserverMapper<S, T, E> implements Observer<S, T> 
             return;
         }
 
-        emitter.onNext(mapData(target));
+        emitter.onNext(mapData(source, target));
     }
 
     public void setEmitter(final ObservableEmitter<E> emitter) {
         this.emitter = emitter;
     }
 
-    public abstract E mapData(final T data) throws Exception;
+    public abstract E mapData(final S source, final T data) throws Exception;
 
     public void doAfterRemoveObserver() throws CouldNotPerformException {
     }

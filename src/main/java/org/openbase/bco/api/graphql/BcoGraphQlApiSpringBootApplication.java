@@ -25,16 +25,11 @@ package org.openbase.bco.api.graphql;
 import com.google.api.graphql.execution.GuavaListenableFutureSupport;
 import com.google.api.graphql.rejoiner.GqlInputConverter;
 import com.google.api.graphql.rejoiner.Schema;
-import com.google.api.graphql.rejoiner.SchemaDefinitionReader;
 import com.google.api.graphql.rejoiner.SchemaProviderModule;
-import com.google.common.base.CharMatcher;
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provides;
-import com.google.protobuf.Descriptors;
-import com.google.protobuf.Message;
 import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
@@ -42,8 +37,6 @@ import graphql.kickstart.execution.context.GraphQLContext;
 import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
-import io.reactivex.BackpressureStrategy;
-import io.reactivex.Observable;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
@@ -52,16 +45,13 @@ import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
 import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
 import org.openbase.bco.api.graphql.subscriptions.SubscriptionModule;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.type.domotic.state.PowerStateType;
-import org.openbase.type.domotic.unit.UnitConfigType;
-import org.openbase.type.domotic.unit.UnitDataType;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.type.domotic.unit.UnitDataType.UnitData;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -72,9 +62,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.websocket.Session;
 import javax.websocket.server.HandshakeRequest;
 import java.util.List;
-import java.util.Map;
 
-import static com.google.common.collect.ImmutableList.toImmutableList;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 
 @SpringBootApplication
@@ -117,9 +105,9 @@ public class BcoGraphQlApiSpringBootApplication {
                 .build());
 
         GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
-                .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), new DataFetcher<Publisher<UnitDataType.UnitData>>() {
+                .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), new DataFetcher<Publisher<UnitData>>() {
                     @Override
-                    public Publisher<UnitDataType.UnitData> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                    public Publisher<UnitData> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
                         System.out.println("Call to units subscription...");
                         UnitFilter unitFilter = (UnitFilter) unitFilterInputConverter.createProtoBuf(UnitFilter.getDescriptor(), UnitFilter.newBuilder(), dataFetchingEnvironment.getArgument("filter"));
                         System.out.println("Alias" + unitFilter.getProperties().getAlias(0));
@@ -127,9 +115,9 @@ public class BcoGraphQlApiSpringBootApplication {
                         return SubscriptionModule.subscribeUnits(unitFilter);
                     }
                 })
-                .dataFetcher(FieldCoordinates.coordinates("Subscription", "unitConfigs"), new DataFetcher<Publisher<UnitConfigType.UnitConfig>>() {
+                .dataFetcher(FieldCoordinates.coordinates("Subscription", "unitConfigs"), new DataFetcher<Publisher<List<UnitConfig>>>() {
                     @Override
-                    public Publisher<UnitConfigType.UnitConfig> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
+                    public Publisher<List<UnitConfig>> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
                         UnitFilter unitFilter = (UnitFilter) unitFilterInputConverter.createProtoBuf(UnitFilter.getDescriptor(), UnitFilter.newBuilder(), dataFetchingEnvironment.getArgument("filter"));
 
                         Boolean includeDisabledUnits = false;
