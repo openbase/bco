@@ -93,8 +93,7 @@ public class SubscriptionModule {
 
                         @Override
                         public void doAfterRemoveObserver() {
-                            // todo: subscription service shutdown needs to be implemented.
-                            //subscriptionUnitPool.shutdown();
+                            subscriptionUnitPool.shutdown();
                         }
                     }).toFlowable(BACKPRESSURE_STRATEGY);
         } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {

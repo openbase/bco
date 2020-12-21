@@ -99,7 +99,7 @@ public class BcoGraphQlApiSpringBootApplication {
         builder.field(newFieldDefinition().name("units").type(unitDataOutputType)
                 .argument(GraphQLArgument.newArgument().name("filter").type(unitFilterInputType).build())
                 .build());
-        builder.field(newFieldDefinition().name("unitConfigs").type(unitConfigOutputType)
+        builder.field(newFieldDefinition().name("unitConfigs").type(GraphQLList.list(unitConfigOutputType))
                 .argument(GraphQLArgument.newArgument().name("filter").type(unitFilterInputType))
                 .argument(GraphQLArgument.newArgument().name("includeDisabledUnits").type(Scalars.GraphQLBoolean))
                 .build());
