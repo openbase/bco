@@ -1,4 +1,4 @@
-package org.openbase.bco.api.graphql;
+package org.openbase.bco.api.graphql.context;
 
 /*-
  * #%L
@@ -30,14 +30,12 @@ import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Locale;
 
-public class BCOGraphQLContext extends DefaultGraphQLContext {
-
-    public static final String DATA_LOADER_UNITS = "units";
+public class DefaultBCOGraphQLContext extends AbstractBCOGraphQLContext {
 
     private final String token;
     private final String languageCode;
 
-    public BCOGraphQLContext(DataLoaderRegistry dataLoaderRegistry, Subject subject, HttpServletRequest request) {
+    public DefaultBCOGraphQLContext(DataLoaderRegistry dataLoaderRegistry, Subject subject, HttpServletRequest request) {
         super(dataLoaderRegistry, subject);
         this.token = request.getHeader("Authorization");
 

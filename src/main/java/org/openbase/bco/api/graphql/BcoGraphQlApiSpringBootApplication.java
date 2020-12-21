@@ -34,12 +34,14 @@ import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
 import graphql.kickstart.execution.context.GraphQLContext;
-import graphql.kickstart.servlet.context.DefaultGraphQLWebSocketContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
 import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
+import org.openbase.bco.api.graphql.context.AbstractBCOGraphQLContext;
+import org.openbase.bco.api.graphql.context.BCOGraphQLWebsocketContext;
+import org.openbase.bco.api.graphql.context.DefaultBCOGraphQLContext;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
 import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
@@ -234,7 +236,7 @@ public class BcoGraphQlApiSpringBootApplication {
     @Provides
     public DataLoaderRegistry buildDataLoaderRegistry(BCOUnitBatchLoader bcoUnitBatchLoader) {
         DataLoaderRegistry registry = new DataLoaderRegistry();
-        registry.register(BCOGraphQLContext.DATA_LOADER_UNITS, new DataLoader<>(bcoUnitBatchLoader));
+        registry.register(AbstractBCOGraphQLContext.DATA_LOADER_UNITS, new DataLoader<>(bcoUnitBatchLoader));
         return registry;
     }
 
@@ -244,7 +246,7 @@ public class BcoGraphQlApiSpringBootApplication {
 
             @Override
             public GraphQLContext build(HttpServletRequest request, HttpServletResponse response) {
-                return new BCOGraphQLContext(dataLoaderRegistry, null, request);
+                return new DefaultBCOGraphQLContext(dataLoaderRegistry, null, request);
             }
 
             @Override
@@ -254,7 +256,7 @@ public class BcoGraphQlApiSpringBootApplication {
 
             @Override
             public GraphQLContext build(Session session, HandshakeRequest request) {
-                return DefaultGraphQLWebSocketContext.createWebSocketContext(dataLoaderRegistry, null).with(session).with(request).build();
+                return new BCOGraphQLWebsocketContext(dataLoaderRegistry, null, session, request);
             }
         };
     }

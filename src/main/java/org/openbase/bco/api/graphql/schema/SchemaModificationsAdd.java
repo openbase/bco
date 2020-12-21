@@ -27,7 +27,7 @@ import com.google.api.graphql.rejoiner.SchemaModule;
 import com.google.common.util.concurrent.ListenableFuture;
 import graphql.schema.DataFetchingEnvironment;
 import net.javacrumbs.futureconverter.java8guava.FutureConverter;
-import org.openbase.bco.api.graphql.BCOGraphQLContext;
+import org.openbase.bco.api.graphql.context.AbstractBCOGraphQLContext;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.EnumNotSupportedException;
@@ -83,12 +83,12 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "units", onType = LocationConfig.class)
     ListenableFuture<List<UnitConfig>> locationConfigUnits(LocationConfig locationConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(locationConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(locationConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "children", onType = LocationConfig.class)
     ListenableFuture<List<UnitConfig>> locationConfigChildren(LocationConfig locationConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(locationConfig.getChildIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(locationConfig.getChildIdList()));
     }
 
     @SchemaModification(addField = "owner", onType = PermissionConfig.class)
@@ -138,7 +138,7 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "member", onType = UnitGroupConfig.class)
     ListenableFuture<List<UnitConfig>> unitGroupConfigUnitConfig(UnitGroupConfig unitGroupConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(unitGroupConfig.getMemberIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(unitGroupConfig.getMemberIdList()));
     }
 
     @SchemaModification(addField = "unitTemplate", onType = UnitConfig.class)
@@ -153,12 +153,12 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "member", onType = AuthorizationGroupConfig.class)
     ListenableFuture<List<UnitConfig>> authorizationGroupConfigUnitConfig(AuthorizationGroupConfig authorizationGroupConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(authorizationGroupConfig.getMemberIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(authorizationGroupConfig.getMemberIdList()));
     }
 
     @SchemaModification(addField = "connections", onType = TileConfig.class)
     ListenableFuture<List<UnitConfig>> unitConfigUnitHost(TileConfig tileConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(tileConfig.getConnectionIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(tileConfig.getConnectionIdList()));
     }
 
     @SchemaModification(addField = "appClass", onType = AppConfig.class)
@@ -168,17 +168,17 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "units", onType = AppConfig.class)
     ListenableFuture<List<UnitConfig>> appConfigUnits(AppConfig appConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(appConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(appConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "tiles", onType = ConnectionConfig.class)
     ListenableFuture<List<UnitConfig>> connectionConfigTiles(ConnectionConfig connectionConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(connectionConfig.getTileIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(connectionConfig.getTileIdList()));
     }
 
     @SchemaModification(addField = "units", onType = ConnectionConfig.class)
     ListenableFuture<List<UnitConfig>> connectionConfigUnits(ConnectionConfig connectionConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(connectionConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(connectionConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "deviceClass", onType = DeviceConfig.class)
@@ -188,7 +188,7 @@ public class SchemaModificationsAdd extends SchemaModule {
 
     @SchemaModification(addField = "units", onType = DeviceConfig.class)
     ListenableFuture<List<UnitConfig>> deviceConfigUnits(DeviceConfig deviceConfig, DataFetchingEnvironment environment) {
-        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(BCOGraphQLContext.DATA_LOADER_UNITS).loadMany(deviceConfig.getUnitIdList()));
+        return FutureConverter.toListenableFuture(environment.<String, UnitConfig>getDataLoader(AbstractBCOGraphQLContext.DATA_LOADER_UNITS).loadMany(deviceConfig.getUnitIdList()));
     }
 
     @SchemaModification(addField = "location", onType = PlacementConfig.class)
@@ -240,11 +240,11 @@ public class SchemaModificationsAdd extends SchemaModule {
         return getTextForContext(gatewayClass.getDescription(), env.getContext());
     }
 
-    private String getLabelForContext(LabelType.Label label, BCOGraphQLContext context) {
+    private String getLabelForContext(LabelType.Label label, AbstractBCOGraphQLContext context) {
         return LabelProcessor.getBestMatch(context.getLanguageCode(), label, "?");
     }
 
-    private String getTextForContext(MultiLanguageTextType.MultiLanguageText multiLanguageText, BCOGraphQLContext context) {
+    private String getTextForContext(MultiLanguageTextType.MultiLanguageText multiLanguageText, AbstractBCOGraphQLContext context) {
         try {
             return MultiLanguageTextProcessor.getMultiLanguageTextByLanguage(context.getLanguageCode(), multiLanguageText);
         } catch (NotAvailableException e) {

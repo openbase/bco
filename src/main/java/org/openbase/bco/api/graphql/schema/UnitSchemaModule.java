@@ -26,17 +26,14 @@ import com.google.api.graphql.rejoiner.*;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import graphql.schema.DataFetchingEnvironment;
-import org.openbase.bco.api.graphql.BCOGraphQLContext;
+import org.openbase.bco.api.graphql.context.AbstractBCOGraphQLContext;
 import org.openbase.bco.api.graphql.error.BCOGraphQLError;
 import org.openbase.bco.api.graphql.error.GenericError;
 import org.openbase.bco.api.graphql.error.ServerError;
-import org.openbase.bco.api.graphql.subscriptions.AbstractObserverMapper;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.action.RemoteAction;
-import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -140,7 +137,7 @@ public class UnitSchemaModule extends SchemaModule {
 
             final ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType, unit);
             try {
-                builder.setAuthToken(AuthToken.newBuilder().setAuthenticationToken(((BCOGraphQLContext) env.getContext()).getToken()).build());
+                builder.setAuthToken(AuthToken.newBuilder().setAuthenticationToken(((AbstractBCOGraphQLContext) env.getContext()).getToken()).build());
             } catch (NotAvailableException ex) {
                 // in case the auth token is not available, we just continue without any authentication.
             }
