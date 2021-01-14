@@ -39,7 +39,6 @@ import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
-import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,15 +78,15 @@ public class HowToObserveMotionStatesOfAllRooms {
             // make sure the pool only contains tile locations (rooms are represented as tiles in bco).
             // so we want to filter all non locations and non tiles.
             locationPool.init(
-                    unitConfig -> unitConfig.getUnitType() != UnitType.LOCATION,
-                    unitConfig -> unitConfig.getLocationConfig().getLocationType() != LocationType.TILE
+                    unitConfig -> unitConfig.getUnitType() == UnitType.LOCATION,
+                    unitConfig -> unitConfig.getLocationConfig().getLocationType() == LocationType.TILE
                     );
 
             // activate the pool so units get synchronized...
             locationPool.activate();
 
             // register an observer on each location and log when the movement state has changed.
-            locationPool.addObserver((source, data) -> {
+            locationPool.addServiceStateObserver((source, data) -> {
 
                 // filter non motion state events
                 if(source.getServiceType() != ServiceType.MOTION_STATE_SERVICE) {

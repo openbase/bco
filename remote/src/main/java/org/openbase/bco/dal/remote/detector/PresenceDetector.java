@@ -24,7 +24,6 @@ package org.openbase.bco.dal.remote.detector;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
@@ -118,7 +117,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
             this.buttonUnitPool = new CustomUnitPool();
             this.connectionUnitPool = new CustomUnitPool();
 
-            this.buttonUnitPool.addObserver((source, data) -> {
+            this.buttonUnitPool.addServiceStateObserver((source, data) -> {
                 try {
                     PresenceDetector.this.updateButtonState((ButtonState) data);
                 } catch (ClassCastException ex) {
@@ -126,7 +125,7 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
                 }
             });
 
-            this.connectionUnitPool.addObserver((source, data) -> {
+            this.connectionUnitPool.addServiceStateObserver((source, data) -> {
                 switch (source.getServiceType()) {
                     case WINDOW_STATE_SERVICE:
                         updateWindowState((WindowState) data);
@@ -153,10 +152,10 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
         try {
             this.location = location;
             buttonUnitPool.init(
-                    unitConfig -> unitConfig.getUnitType() != UnitType.BUTTON,
+                    unitConfig -> unitConfig.getUnitType() == UnitType.BUTTON,
                     unitConfig -> {
                         try {
-                            return !unitConfig.getPlacementConfig().getLocationId().equals(location.getId());
+                            return unitConfig.getPlacementConfig().getLocationId().equals(location.getId());
                         } catch (NotAvailableException ex) {
                             ExceptionPrinter.printHistory("Could not resolve location id within button filter operation.", ex, logger);
                             return true;
@@ -166,21 +165,21 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
 
             if ((location.getConfig().getLocationConfig().getLocationType() == LocationType.TILE)) {
                 connectionUnitPool.init(
-                    unitConfig -> unitConfig.getUnitType() != UnitType.CONNECTION,
+                    unitConfig -> unitConfig.getUnitType() == UnitType.CONNECTION,
                     unitConfig -> {
                         try {
-                            return !unitConfig.getConnectionConfig().getTileIdList().contains(location.getId());
+                            return unitConfig.getConnectionConfig().getTileIdList().contains(location.getId());
                         } catch (NotAvailableException ex) {
                             ExceptionPrinter.printHistory("Could not resolve location id within connection filter operation.", ex, logger);
-                            return true;
+                            return false;
                         }
                     },
                     unitConfig -> {
                         try {
-                            return location.getConfig().getLocationConfig().getTileConfig().getTileType() == TileType.OUTDOOR && unitConfig.getConnectionConfig().getConnectionType() == ConnectionType.WINDOW;
+                            return location.getConfig().getLocationConfig().getTileConfig().getTileType() != TileType.OUTDOOR || unitConfig.getConnectionConfig().getConnectionType() != ConnectionType.WINDOW;
                         } catch (NotAvailableException ex) {
                             ExceptionPrinter.printHistory("Could not resolve location id within connection filter operation.", ex, logger);
-                            return true;
+                            return false;
                         }
                     });
             }

@@ -25,31 +25,27 @@ package org.openbase.bco.dal.remote.layer.unit;
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.lib.layer.unit.UnitFilters;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
+import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilterImpl;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.iface.Activatable;
-import org.openbase.jul.iface.DefaultInitializable;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -62,25 +58,34 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
     private final ReentrantReadWriteLock UNIT_REMOTE_REGISTRY_LOCK = new ReentrantReadWriteLock();
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryDataObserver;
     private final Observer unitDataObserver;
+    private final Observer serviceStateObserver;
     private final RemoteControllerRegistry<String, UnitRemote<? extends Message>> unitRemoteRegistry;
     private final ProtobufListDiff<String, UnitConfig, Builder> unitConfigDiff;
     private final Set<Filter<UnitConfig>> filterSet;
-    private final ObservableImpl<ServiceStateProvider<Message>, Message> unitDataObservable;
+    private final ObservableImpl<Unit<Message>, Message> unitDataObservable;
+    private final ObservableImpl<ServiceStateProvider<Message>, Message> serviceStateObservable;
     private volatile boolean active;
 
     public CustomUnitPool() throws InstantiationException {
         try {
             this.filterSet = new HashSet<>();
-            this.filterSet.add(UnitFilters.DISABELED_UNIT_FILTER);
             this.unitConfigDiff = new ProtobufListDiff<>();
             this.unitRemoteRegistry = new RemoteControllerRegistry<>();
-            this.unitDataObservable = new ObservableImpl<>();
             this.unitRegistryDataObserver = (source, data) -> {
                 sync();
             };
-            this.unitDataObserver = (source, data) -> {
+            this.unitDataObservable = new ObservableImpl<>();
+            this.unitDataObserver = (source, message) -> {
                 try {
-                    unitDataObservable.notifyObservers((ServiceStateProvider<Message>) source, (Message) data);
+                    unitDataObservable.notifyObservers(((Unit) source), (Message) message);
+                } catch (ClassCastException ex) {
+                    ExceptionPrinter.printHistory("Could not handle incoming data because type is unknown!", ex, LOGGER);
+                }
+            };
+            this.serviceStateObservable = new ObservableImpl<>();
+            this.serviceStateObserver = (source, data) -> {
+                try {
+                    serviceStateObservable.notifyObservers((ServiceStateProvider<Message>) source, (Message) data);
                 } catch (ClassCastException ex) {
                     ExceptionPrinter.printHistory("Could not handle incoming data because type is unknown!", ex, LOGGER);
                 }
@@ -97,12 +102,27 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
      * If the pool is already active, then the filter is directly applied.
      * If you call this method twice, only the latest filter set is used.
      *
+     * @param unitFilter this is a unit filter that can be used to limit the number of unit to observer. No filter means every unit is observed by this pool.
+     *
+     * @throws InitializationException is throw if the initialization fails.
+     * @throws InterruptedException    is thrown if the thread was externally interrupted.
+     */
+    public final void init(final UnitFilter unitFilter) throws InitializationException, InterruptedException {
+        init(new UnitConfigFilterImpl(unitFilter));
+    }
+
+    /**
+     * This filter initialization is optional.
+     * Method sets a new filter set for the custom pool.
+     * If the pool is already active, then the filter is directly applied.
+     * If you call this method twice, only the latest filter set is used.
+     *
      * @param filters this set of filters can be used to limit the number of unit to observer. No filter means every unit is observed by this pool.
      *
      * @throws InitializationException is throw if the initialization fails.
      * @throws InterruptedException    is thrown if the thread was externally interrupted.
      */
-    public void init(final Filter<UnitConfig>... filters) throws InitializationException, InterruptedException {
+    public final void init(final Filter<UnitConfig>... filters) throws InitializationException, InterruptedException {
         init(Arrays.asList(filters));
     }
 
@@ -122,7 +142,6 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
         UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
         try {
             filterSet.clear();
-            filterSet.add(UnitFilters.DISABELED_UNIT_FILTER);
             filterSet.addAll(filters);
             if (active) {
                 sync();
@@ -145,6 +164,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
         try {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly();
             try {
+                // todo: why not filter before diff? That would make so much things easier here.
                 unitConfigDiff.diffMessages(Registries.getUnitRegistry().getUnitConfigs());
 
                 // handle new units
@@ -153,7 +173,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
                     // apply unit filter
                     for (Filter<UnitConfig> filter : filterSet) {
-                        if (filter.match(entry.getValue().getMessage())) {
+                        if (filter.pass(entry.getValue().getMessage())) {
                             continue unitLoop;
                         }
                     }
@@ -166,19 +186,19 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
                     for (Filter<UnitConfig> filter : filterSet) {
 
-                        // remove known units which match the filter
-                        if (filter.match(entry.getValue().getMessage()) && unitRemoteRegistry.contains(entry.getKey())) {
+                        // remove known units which pass the filter
+                        if (filter.pass(entry.getValue().getMessage()) && unitRemoteRegistry.contains(entry.getKey())) {
                             removeUnitRemote(entry.getKey());
                             continue unitLoop;
                         }
 
                         // we are done if unit is already known
-                        if(unitRemoteRegistry.contains(entry.getKey())) {
+                        if (unitRemoteRegistry.contains(entry.getKey())) {
                             continue unitLoop;
                         }
 
                         // filter if required
-                        if (filter.match(entry.getValue().getMessage())) {
+                        if (filter.pass(entry.getValue().getMessage())) {
                             continue unitLoop;
                         }
                     }
@@ -200,7 +220,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
                     // apply unit filter
                     for (Filter<UnitConfig> filter : filterSet) {
-                        if (filter.match(unit.getConfig())) {
+                        if (filter.pass(unit.getConfig())) {
                             removeUnitRemote(unit.getId());
                             continue unitLoop;
                         }
@@ -224,11 +244,11 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
 
             final UnitRemote<?> unitRemote = Units.getUnit(unitId, false);
             unitRemoteRegistry.register(unitRemote);
-            // todo: validate this, why not directly using the data observer?
+
             for (ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
-                unitRemote.addServiceStateObserver(serviceType, unitDataObserver);
+                unitRemote.addServiceStateObserver(serviceType, serviceStateObserver);
             }
-            //unitRemote.addDataObserver(unitDataObserver);
+            unitRemote.addDataObserver(unitDataObserver);
         } catch (CouldNotPerformException ex) {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory("Could not add " + unitId, ex, LOGGER);
@@ -246,9 +266,9 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
                 return;
             }
             for (ServiceType serviceType : unitRemote.getAvailableServiceTypes()) {
-                unitRemote.removeServiceStateObserver(serviceType, unitDataObserver);
+                unitRemote.removeServiceStateObserver(serviceType, serviceStateObserver);
             }
-            //unitRemote.removeDataObserver(unitDataObserver);
+            unitRemote.removeDataObserver(unitDataObserver);
             unitRemoteRegistry.remove(unitRemote);
         } catch (CouldNotPerformException ex) {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
@@ -262,7 +282,7 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
      *
      * @param observer is the observer to register.
      */
-    public void addObserver(Observer<ServiceStateProvider<Message>, Message> observer) {
+    public void addDataObserver(Observer<Unit<Message>, Message> observer) {
         unitDataObservable.addObserver(observer);
     }
 
@@ -271,8 +291,26 @@ public class CustomUnitPool implements Manageable<Collection<Filter<UnitConfig>>
      *
      * @param observer is the observer to remove.
      */
-    public void removeObserver(Observer<ServiceStateProvider<Message>, Message> observer) {
+    public void removeDataObserver(Observer<Unit<Message>, Message> observer) {
         unitDataObservable.removeObserver(observer);
+    }
+
+    /**
+     * Method registers the given observer to all internal unit remotes to get informed about state changes.
+     *
+     * @param observer is the observer to register.
+     */
+    public void addServiceStateObserver(Observer<ServiceStateProvider<Message>, Message> observer) {
+        serviceStateObservable.addObserver(observer);
+    }
+
+    /**
+     * Method removes the given observer from all internal unit remotes.
+     *
+     * @param observer is the observer to remove.
+     */
+    public void removeServiceStateObserver(Observer<ServiceStateProvider<Message>, Message> observer) {
+        serviceStateObservable.removeObserver(observer);
     }
 
     @Override

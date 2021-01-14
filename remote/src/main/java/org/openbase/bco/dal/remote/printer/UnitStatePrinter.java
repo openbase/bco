@@ -28,7 +28,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
@@ -37,9 +36,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.iface.DefaultInitializable;
-import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.Observer;
@@ -57,7 +53,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.io.PrintStream;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig>>> {
 
@@ -100,7 +95,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
     public void init(final Collection<Filter<UnitConfig>> filters) throws InitializationException, InterruptedException {
         try {
             customUnitPool.init(filters);
-            customUnitPool.addObserver(unitStateObserver);
+            customUnitPool.addServiceStateObserver(unitStateObserver);
 
             // print initial unit states
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {

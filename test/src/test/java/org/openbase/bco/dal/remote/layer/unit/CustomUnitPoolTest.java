@@ -58,8 +58,8 @@ public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
         customUnitPool.activate();
 
         customUnitPool.init(
-                unitConfig -> !unitConfig.hasId(),
-                unitConfig -> unitConfig.getUnitType() != UnitType.BUTTON);
+                unitConfig -> unitConfig.hasId(),
+                unitConfig -> unitConfig.getUnitType() == UnitType.BUTTON);
 
         customUnitPool.activate();
 

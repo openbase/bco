@@ -32,7 +32,11 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 public class UnitFilters {
 
     /**
-     * Filters all units which are disabled and let enabled ones filter.
+     * Filters all units that are enabled.
      */
-    public static final Filter<UnitConfig> DISABELED_UNIT_FILTER = unitConfig -> unitConfig.getEnablingState().getValue() != State.ENABLED;
+    public static final Filter<UnitConfig> ENABLE_UNIT_FILTER = UnitFilters::match;
+
+    private static boolean match(UnitConfig unitConfig) {
+        return unitConfig.getEnablingState().getValue() == State.ENABLED;
+    }
 }
