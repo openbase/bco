@@ -229,7 +229,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
         }
 
         // deregister
-        customUnitPool.removeObserver(unitStateObserver);
+        customUnitPool.removeServiceStateObserver(unitStateObserver);
         customUnitPool.deactivate();
         disconnectDatabase();
 
@@ -239,7 +239,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
     public void startObservation() throws InitializationException, InterruptedException {
         try {
             // setup pool
-            customUnitPool.addObserver(unitStateObserver);
+            customUnitPool.addServiceStateObserver(unitStateObserver);
             customUnitPool.activate();
 
             for (UnitConfigType.UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
