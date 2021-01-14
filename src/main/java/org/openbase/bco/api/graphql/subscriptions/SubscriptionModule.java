@@ -25,11 +25,13 @@ package org.openbase.bco.api.graphql.subscriptions;
 import com.google.common.collect.ImmutableList;
 import com.google.protobuf.Message;
 import io.reactivex.BackpressureStrategy;
+import lombok.extern.slf4j.Slf4j;
 import org.openbase.bco.api.graphql.error.BCOGraphQLError;
 import org.openbase.bco.api.graphql.error.GenericError;
 import org.openbase.bco.api.graphql.error.ServerError;
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -47,48 +49,32 @@ import org.reactivestreams.Publisher;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 public class SubscriptionModule {
 
-    //TODO: what is a good value here
+    //TODO: what is a good strategy here
     private static BackpressureStrategy BACKPRESSURE_STRATEGY = BackpressureStrategy.BUFFER;
 
-    public static Publisher<UnitDataType.UnitData> subscribeUnits(UnitFilter unitFilter) throws BCOGraphQLError {
-        System.out.println("Subscribe to units");
+    public static Publisher<UnitDataType.UnitData> subscribeUnits(final UnitFilter unitFilter) throws BCOGraphQLError {
         try {
-            /*
-            ColorableLightRemote unit = Units.getUnit(Registries.getUnitRegistry().getUnitConfigByAlias("ColorableLight-38"), false, ColorableLightRemote.class);
-            return AbstractObserverMapper.createObservable(
-                    unit::addDataObserver,
-                    unit::removeDataObserver,
-                    new AbstractObserverMapper<DataProvider<ColorableLightDataType.ColorableLightData>, ColorableLightDataType.ColorableLightData, UnitDataType.UnitData>() {
-
-                        @Override
-                        public UnitDataType.UnitData mapData(ColorableLightDataType.ColorableLightData data) throws Exception {
-                            return (UnitDataType.UnitData) ProtoBufBuilderProcessor.merge(UnitDataType.UnitData.newBuilder(), data).build();
-                        }
-                    }
-            ).toFlowable(BACKPRESSURE_STRATEGY);
-             */
-
-            //TODO: this never triggers any updates -- the custom unit pool itself does not
             final CustomUnitPool subscriptionUnitPool = new CustomUnitPool();
-            subscriptionUnitPool.init(RegistrySchemaModule.buildUnitConfigFilter(unitFilter));
+            subscriptionUnitPool.init(unitFilter);
 
             return AbstractObserverMapper.createObservable(
-                    subscriptionUnitPool::addObserver,
-                    subscriptionUnitPool::removeObserver,
-                    new AbstractObserverMapper<ServiceStateProvider<Message>, Message, UnitDataType.UnitData>() {
+                    subscriptionUnitPool::addDataObserver,
+                    subscriptionUnitPool::removeDataObserver,
+                    new AbstractObserverMapper<Unit<Message>, Message, UnitDataType.UnitData>() {
                         @Override
-                        public UnitDataType.UnitData mapData(ServiceStateProvider<Message> source, Message data) throws Exception {
-                            System.out.println("Received data: " + data.getClass().getSimpleName());
-                            final UnitRemote<?> unit = Units.getUnit(source.getServiceProvider().getId(), false);
-                            return (UnitDataType.UnitData) ProtoBufBuilderProcessor.merge(UnitDataType.UnitData.newBuilder(), unit.getData()).build();
+                        public UnitDataType.UnitData mapData(Unit<Message> source, Message data) {
+                            return (UnitDataType.UnitData) ProtoBufBuilderProcessor.merge(UnitDataType.UnitData.newBuilder(), data).build();
                         }
 
                         @Override
                         public void doAfterAddObserver() throws CouldNotPerformException, InterruptedException {
-                            System.out.println("Activate unit subscription pool");
                             subscriptionUnitPool.activate();
+                            for (UnitRemote<? extends Message> unitRemote : subscriptionUnitPool.getInternalUnitList()) {
+                                log.debug("Subscribe to: "+unitRemote);
+                            }
                         }
 
                         @Override
