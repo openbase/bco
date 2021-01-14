@@ -31,6 +31,8 @@ import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
+import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilter;
+import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilterImpl;
 import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,6 +44,8 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.pattern.Filter;
+import org.openbase.jul.pattern.ListFilter;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryService;
@@ -58,6 +62,7 @@ import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStat
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
@@ -69,6 +74,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
+import java.rmi.ServerError;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -290,6 +296,113 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
             }
         }
         return unitConfigs;
+    }
+
+    /**
+     * Method returns a list of all globally registered units of the given {@code type}.
+     * <p>
+     * Note: The type {@code UnitType.UNKNOWN} is used as wildcard and will return a list of all registered units.
+     *
+     * @param unitType the unit type to filter.
+     *
+     * @return a list of unit configurations.
+     *
+     * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
+     */
+
+    /**
+     * Method returns all registered unit configs. It allows to filter unit configs.
+     *
+     * @param includeDisabledUnits if true all unit configs that are disabled will be included as well.
+     * @param unitFilter if set, only units that match the filter will be returned.
+     *
+     * @return the unit config collection as queried.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs(final boolean includeDisabledUnits, final UnitFilter unitFilter) throws CouldNotPerformException {
+        return getUnitConfigs(includeDisabledUnits, new UnitConfigFilterImpl(unitFilter));
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter unit configs.
+     *
+     * @param unitFilter if set, only units that match the filter will be returned.
+     *
+     * @return the unit config collection as queried.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs(final UnitFilter unitFilter) throws CouldNotPerformException {
+        return getUnitConfigs(false, unitFilter);
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter unit configs.
+     *
+     * @param includeDisabledUnits if true all unit configs that are disabled will be included as well.
+     * @param unitFilter if set, only units that match the filter will be returned.
+     *
+     * @return the unit config collection as queried.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs(final boolean includeDisabledUnits, final Filter<UnitConfig> unitFilter) throws CouldNotPerformException {
+        final ListFilter<UnitConfig> listFilter = unitFilter::match;
+        return getUnitConfigs(includeDisabledUnits, listFilter);
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter unit configs.
+     *
+     * @param unitFilter if set, only units that match the filter will be returned.
+     *
+     * @return the unit config collection as queried.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs(final Filter<UnitConfig> unitFilter) throws CouldNotPerformException {
+        return getUnitConfigs(false, unitFilter);
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter unit configs.
+     *
+     * @param includeDisabledUnits if true all unit configs that are disabled will be included as well.
+     * @param unitFilter if set, only units that match the filter will be returned.
+     *
+     * @return the unit config collection as queried.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs(final boolean includeDisabledUnits, final ListFilter<UnitConfig> unitFilter) throws CouldNotPerformException {
+        return unitFilter.pass(getUnitConfigs(includeDisabledUnits));
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter unit configs.
+     *
+     * @param unitFilter if set, only units that match the filter will be returned.
+     *
+     * @return the unit config collection as queried.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs(final ListFilter<UnitConfig> unitFilter) throws CouldNotPerformException {
+        return getUnitConfigs(false, unitFilter);
+    }
+
+    /**
+     * Method returns all registered unit configs. It allows to filter unit configs.
+     *
+     * @param includeDisabledUnits if true all unit configs that are disabled will be included as well.
+     *
+     * @return the unit config collection as queried.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getUnitConfigs(final boolean includeDisabledUnits) throws CouldNotPerformException {
+        return getUnitConfigsFiltered(!includeDisabledUnits);
     }
 
     /**
