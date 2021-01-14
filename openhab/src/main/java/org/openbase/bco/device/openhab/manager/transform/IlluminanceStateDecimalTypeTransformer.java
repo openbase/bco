@@ -8,7 +8,7 @@ import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
  * #%L
  * BCO Openhab Device Manager
  * %%
- * Copyright (C) 2015 - 2020 openbase.org
+ * Copyright (C) 2015 - 2021 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
