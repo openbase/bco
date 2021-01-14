@@ -139,8 +139,11 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("updateUnitConfig")
     UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws BCOGraphQLError {
         try {
-            final UnitConfig.Builder builder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitConfig.getId()).toBuilder();
-            builder.mergeFrom(unitConfig);
+            unitConfig = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT)
+                    .getUnitConfigById(unitConfig.getId())
+                    .toBuilder()
+                    .mergeFrom(unitConfig)
+                    .build();
             return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).updateUnitConfig(unitConfig).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
         } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw new GenericError(ex);
