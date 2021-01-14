@@ -37,6 +37,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.BCOSessionImpl;
+import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilterImpl;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -59,6 +60,61 @@ import java.util.concurrent.TimeoutException;
 
 public class RegistrySchemaModule extends SchemaModule {
 
+    // ===================================== Queries ===================================================================
+
+    /**
+     * Check if an authentication token retrieved by the login method is still valid.
+     *
+     * @param token the token to be checked
+     * @return if the token is valid and can be used to authenticate further requests
+     */
+    @Query("verifyToken")
+    Boolean verifyToken(@Arg("token") String token) {
+        //TODO: blocked by https://github.com/openbase/bco.registry/issues/108
+        return true;
+    }
+
+    /**
+     * Method can be used to request a token of the given bco user.
+     *
+     * @param username     the name of the user as plain text string.
+     * @param passwordHash the password hash of the user that need to be generted first (see note below).
+     * @return the login token.
+     * <p>
+     * Note: The hash of the default admin password is: '''R+gZ+PFuauhav8rRVa3XlWXXSEyi5BcdrbeXLEY3tDQ='''
+     * @throws BCOGraphQLError
+     */
+    @Query("login")
+    String login(@Arg("username") String username, @Arg("password") String passwordHash) throws BCOGraphQLError {
+        try {
+            final BCOSession session = new BCOSessionImpl();
+
+            session.loginUserViaUsername(username, Base64.getDecoder().decode(passwordHash), false);
+            return session.generateAuthToken(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getAuthenticationToken();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | TimeoutException ex) {
+            throw new GenericError(ex);
+        }
+    }
+
+    @Query("changePassword")
+    Boolean changePassword(@Arg("username") String username, @Arg("oldPassword") String oldPassword, @Arg("newPassword") String newPassword) throws BCOGraphQLError {
+        try {
+            final String userId = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUserUnitIdByUserName(username);
+
+            final SessionManager sessionManager = new SessionManager();
+            try {
+                sessionManager.loginUser(userId, oldPassword, false);
+            } catch (CouldNotPerformException ex) {
+                throw new ArgumentError(ex);
+            }
+            sessionManager.changePassword(userId, oldPassword, newPassword).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+
+            return true;
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+            throw new GenericError(ex);
+        }
+    }
+
     @Query("unitConfig")
     UnitConfig getUnitConfigById(@Arg("id") String id, DataFetchingEnvironment env) throws BCOGraphQLError {
         try {
@@ -73,46 +129,12 @@ public class RegistrySchemaModule extends SchemaModule {
         return getUnitConfigs(unitFilter, includeDisabledUnits);
     }
 
-    public static ImmutableList<UnitConfig> getUnitConfigs(UnitFilter unitFilter, Boolean includeDisabledUnits) throws BCOGraphQLError {
-
-        try {
-            // setup default values
-            if ((unitFilter == null)) {
-                unitFilter = UnitFilter.getDefaultInstance();
-            }
-            if ((includeDisabledUnits == null)) {
-                includeDisabledUnits = false;
-            }
-
-            return ImmutableList.copyOf(
-                    new UnitFilterImpl(unitFilter)
-                            .pass(Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigsFiltered(!includeDisabledUnits)));
-
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
-            throw new GenericError(ex);
-        }
+    @Query("gatewayClasses")
+    ImmutableList<GatewayClass> gatewayClasses() throws CouldNotPerformException, InterruptedException {
+        return ImmutableList.copyOf(Registries.getClassRegistry(true).getGatewayClasses());
     }
 
-    void subscribeUnitConfigs(@Arg("filter") UnitFilter unitFilter, @Arg("includeDisabledUnits") Boolean includeDisabledUnits) throws BCOGraphQLError {
-        try {
-            final ArrayList<UnitConfig> unitConfigs = new ArrayList<>(getUnitConfigs(unitFilter, includeDisabledUnits));
-            Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).addDataObserver((unitRegistryDataDataProvider, unitRegistryData) -> {
-                final ImmutableList<UnitConfig> newUnitConfigs = getUnitConfigs(unitFilter, includeDisabledUnits);
-                if (newUnitConfigs.equals(unitConfigs)) {
-                    // nothing has changed
-                    return;
-                }
-
-                // store update
-                unitConfigs.clear();
-                unitConfigs.addAll(newUnitConfigs);
-
-                // todo: notify
-            });
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
-            throw new GenericError(ex);
-        }
-    }
+    // ===================================== Mutations =================================================================
 
     @Mutation("updateUnitConfig")
     UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws BCOGraphQLError {
@@ -192,59 +214,6 @@ public class RegistrySchemaModule extends SchemaModule {
         }
     }
 
-    /**
-     * Check if an authentication token retrieved by the login method is still valid.
-     *
-     * @param token the token to be checked
-     * @return if the token is valid and can be used to authenticate further requests
-     */
-    @Query("verifyToken")
-    Boolean verifyToken(@Arg("token") String token) {
-        //TODO: blocked by https://github.com/openbase/bco.registry/issues/108
-        return true;
-    }
-
-    /**
-     * Method can be used to request a token of the given bco user.
-     *
-     * @param username     the name of the user as plain text string.
-     * @param passwordHash the password hash of the user that need to be generted first (see note below).
-     * @return the login token.
-     * <p>
-     * Note: The hash of the default admin password is: '''R+gZ+PFuauhav8rRVa3XlWXXSEyi5BcdrbeXLEY3tDQ='''
-     * @throws BCOGraphQLError
-     */
-    @Query("login")
-    String login(@Arg("username") String username, @Arg("password") String passwordHash) throws BCOGraphQLError {
-        try {
-            final BCOSession session = new BCOSessionImpl();
-
-            session.loginUserViaUsername(username, Base64.getDecoder().decode(passwordHash), false);
-            return session.generateAuthToken(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getAuthenticationToken();
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | TimeoutException ex) {
-            throw new GenericError(ex);
-        }
-    }
-
-    @Query("changePassword")
-    Boolean changePassword(@Arg("username") String username, @Arg("oldPassword") String oldPassword, @Arg("newPassword") String newPassword) throws BCOGraphQLError {
-        try {
-            final String userId = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUserUnitIdByUserName(username);
-
-            final SessionManager sessionManager = new SessionManager();
-            try {
-                sessionManager.loginUser(userId, oldPassword, false);
-            } catch (CouldNotPerformException ex) {
-                throw new ArgumentError(ex);
-            }
-            sessionManager.changePassword(userId, oldPassword, newPassword).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
-
-            return true;
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
-            throw new GenericError(ex);
-        }
-    }
-
     @Mutation("updateMetaConfig")
     MetaConfigType.MetaConfig updateMetaConfig(@Arg("unitId") String unitId, @Arg("entry") EntryType.Entry entry) throws BCOGraphQLError {
         try {
@@ -267,100 +236,18 @@ public class RegistrySchemaModule extends SchemaModule {
         }
     }
 
-    @Query("gatewayClasses")
-    ImmutableList<GatewayClass> gatewayClasses() throws CouldNotPerformException, InterruptedException {
-        return ImmutableList.copyOf(Registries.getClassRegistry(true).getGatewayClasses());
-    }
+    // ===================================== Service Methods ===========================================================
 
-    public static ListFilter<UnitConfig> buildUnitConfigFilter(UnitFilter unitFilter) throws CouldNotPerformException, InterruptedException {
-        // setup default values
-        if ((unitFilter == null)) {
-            unitFilter = UnitFilter.getDefaultInstance();
-        }
-        return new RegistrySchemaModule.UnitFilterImpl(unitFilter);
-    }
-
-    // --------------------------------------------------- Stuff that has to be moved to jul --- start ------------------------->
-
-    public static class UnitFilterImpl implements ListFilter<UnitConfig> {
-
-        private final UnitFilter filter;
-        private final UnitConfig properties;
-        private final Filter andFilter, orFilter;
-
-        private final boolean bypass;
-
-        public UnitFilterImpl(final UnitFilter filter) {
-            this.filter = filter;
-            this.bypass = !filter.hasProperties();
-            this.properties = filter.getProperties();
-
-            if (filter.hasAnd()) {
-                this.andFilter = new UnitFilterImpl(filter.getAnd());
-            } else {
-                this.andFilter = null;
+    public static ImmutableList<UnitConfig> getUnitConfigs(final UnitFilter unitFilter, Boolean includeDisabledUnits) throws BCOGraphQLError {
+        try {
+            if ((includeDisabledUnits == null)) {
+                includeDisabledUnits = false;
             }
+            return ImmutableList.copyOf(
+                    Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigs(includeDisabledUnits, unitFilter));
 
-            if (filter.hasOr()) {
-                this.orFilter = new UnitFilterImpl(filter.getOr());
-            } else {
-                this.orFilter = null;
-            }
-        }
-
-        @Override
-        public boolean match(final UnitConfig unitConfig) {
-            return (propertyMatch(unitConfig) && andFilterMatch(unitConfig)) || orFilterMatch(unitConfig);
-        }
-
-        public boolean propertyMatch(final UnitConfig unitConfig) {
-
-            // handle bypass
-            if (bypass) {
-                return !filter.getNot();
-            }
-
-            // filter by type
-            if (properties.hasUnitType() && !(properties.getUnitType().equals(unitConfig.getUnitType()))) {
-                return filter.getNot();
-            }
-
-            // filter by type
-            if (properties.hasUnitType() && !(properties.getUnitType().equals(unitConfig.getUnitType()))) {
-                return filter.getNot();
-            }
-
-            // filter by location
-            if (properties.getPlacementConfig().hasLocationId() && !(properties.getPlacementConfig().getLocationId().equals(unitConfig.getPlacementConfig().getLocationId()))) {
-                return filter.getNot();
-            }
-
-            // filter by location root
-            if (properties.getLocationConfig().hasRoot() && !(properties.getLocationConfig().getRoot() == (unitConfig.getLocationConfig().getRoot()))) {
-                return filter.getNot();
-            }
-
-            // filter by location type
-            if (properties.getLocationConfig().hasLocationType() && !(properties.getLocationConfig().getLocationType() == (unitConfig.getLocationConfig().getLocationType()))) {
-                return filter.getNot();
-            }
-
-            return !filter.getNot();
-        }
-
-        private boolean orFilterMatch(final UnitConfig unitConfig) {
-            if (orFilter != null) {
-                return orFilter.match(unitConfig);
-            }
-            return false;
-        }
-
-        private boolean andFilterMatch(final UnitConfig unitConfig) {
-            if (andFilter != null) {
-                return andFilter.match(unitConfig);
-            }
-            return true;
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
         }
     }
-    // --------------------------------------------------- Stuff that has to be moved to jul --- end ------------------------->
 }
