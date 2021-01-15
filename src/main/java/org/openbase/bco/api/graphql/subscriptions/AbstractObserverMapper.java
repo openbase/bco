@@ -35,7 +35,6 @@ public abstract class AbstractObserverMapper<S, T, E> implements Observer<S, T> 
 
     @Override
     public void update(final S source, T target) throws Exception {
-        System.out.println("Observer mapper received update...");
         if (emitter == null) {
             return;
         }
@@ -56,9 +55,7 @@ public abstract class AbstractObserverMapper<S, T, E> implements Observer<S, T> 
     }
 
     public static <S, T, E> Observable<E> createObservable(Consumer<Observer<S, T>> addObserver, Consumer<Observer<S, T>> removeObserver, AbstractObserverMapper<S, T, E> obs) {
-        System.out.println("Create observable...");
         Observable<E> observable = Observable.create(emitter -> {
-            System.out.println("Create an add emitter");
             obs.setEmitter(emitter);
             addObserver.accept(obs);
             obs.doAfterAddObserver();

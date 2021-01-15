@@ -110,10 +110,7 @@ public class BcoGraphQlApiSpringBootApplication {
                 .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), new DataFetcher<Publisher<UnitData>>() {
                     @Override
                     public Publisher<UnitData> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-                        System.out.println("Call to units subscription...");
                         UnitFilter unitFilter = (UnitFilter) unitFilterInputConverter.createProtoBuf(UnitFilter.getDescriptor(), UnitFilter.newBuilder(), dataFetchingEnvironment.getArgument("filter"));
-                        System.out.println("Alias" + unitFilter.getProperties().getAlias(0));
-
                         return SubscriptionModule.subscribeUnits(unitFilter);
                     }
                 })

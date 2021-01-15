@@ -88,7 +88,6 @@ public class SubscriptionModule {
     }
 
     public static Publisher<List<UnitConfig>> subscribeUnitConfigs(final UnitFilter unitFilter, boolean includeDisabledUnits) throws BCOGraphQLError {
-        System.out.println("Subscribe to registry");
         try {
             final RegistrySubscriptionObserver observer = new RegistrySubscriptionObserver(unitFilter, includeDisabledUnits);
             final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
