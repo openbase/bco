@@ -28,6 +28,8 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
+// this is no longer used since subscriptions endpoints over websockets are just defined in the application.properties file
+@Deprecated
 @Configuration
 @EnableWebSocket
 public class BCOWebSocketConfig implements WebSocketConfigurer {
