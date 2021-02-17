@@ -1047,7 +1047,24 @@ public class Services extends ServiceStateProcessor {
         }
     }
 
-    public static List<String> generateServiceStateStringRepresentation(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType) throws CouldNotPerformException {
+    public static String generateServiceValueStringRepresentation(final MessageOrBuilder serviceStateOrBuilder, final ServiceType serviceType, final boolean failOnUnknownValue) throws CouldNotPerformException {
+        String timestamp;
+        try {
+            timestamp = Long.toString(TimestampProcessor.getTimestamp(serviceStateOrBuilder, TimeUnit.MILLISECONDS));
+        } catch (NotAvailableException ex) {
+            timestamp = "-1";
+        }
+
+        final String valueString = ServiceStateProcessor.getServiceValue(serviceStateOrBuilder).toLowerCase();
+
+        if (failOnUnknownValue && valueString.equals("unknown")) {
+            throw new InvalidStateException("ServiceState value is unknown!");
+        }
+
+        return serviceType.name().toLowerCase() + ", " + timestamp + ", " + "value=" + valueString;
+    }
+
+    public static List<String> generateServiceStateStringRepresentation(final MessageOrBuilder serviceStateOrBuilder, final ServiceType serviceType) throws CouldNotPerformException {
         final List<String> values = new ArrayList<>();
         String timestamp;
         try {
