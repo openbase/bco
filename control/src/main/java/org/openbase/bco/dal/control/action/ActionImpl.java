@@ -264,7 +264,7 @@ public class ActionImpl implements SchedulableAction {
                         }
 
                         // loop as long as task is not canceled.
-                        while (!Thread.interrupted() && (actionTask == null || !actionTask.isCancelled())) {
+                        while (!Thread.interrupted() && (actionTask == null || !actionTask.isCancelled() || getActionState() == State.CANCELING)) {
 
                             try {
                                 // validate action state
@@ -283,12 +283,13 @@ public class ActionImpl implements SchedulableAction {
                                 updateActionStateIfNotCanceled(State.SUBMISSION);
 
                                 // only update requested state if it is an operation state, else throw an exception if not in provider control mode
-                                if (!hasOperationService) {
+                                if (hasOperationService) {
+                                    setRequestedState();
+                                } else {
+                                    // this case is only valid in if we are in provider control mode
                                     if (!JPService.getValue(JPProviderControlMode.class, false)) {
                                         throw new NotAvailableException("Operation service " + serviceDescription.getServiceType().name() + " of unit " + unit);
                                     }
-                                } else {
-                                    setRequestedState();
                                 }
 
                                 final ActionDescription actionDescription = unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
@@ -694,7 +695,7 @@ public class ActionImpl implements SchedulableAction {
 
     private void updateActionStateIfNotCanceled(final ActionState.State state) throws InterruptedException {
         synchronized (actionTaskLock) {
-            if (actionTask.isCancelled()) {
+            if (actionTask.isCancelled() || getActionState() == State.CANCELING) {
                 throw new InterruptedException();
             }
         }
