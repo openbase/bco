@@ -30,6 +30,8 @@ import org.openbase.jul.exception.VerificationFailedException;
  */
 public interface OperationService extends Service {
 
+   OperationService SIMPLE_STATE_ADOPTER = null;
+
     // todo: move methods and its related unit test to a new jul math module
 
     /**
