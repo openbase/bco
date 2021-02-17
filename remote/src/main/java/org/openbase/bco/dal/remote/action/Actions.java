@@ -40,6 +40,10 @@ public class Actions {
         return waitForActionState(actionFuture, State.EXECUTING);
     }
 
+    public static RemoteAction waitForExecution(final Future<ActionDescription> actionFuture, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException, TimeoutException {
+        return waitForActionState(actionFuture, State.EXECUTING, timeout, timeUnit);
+    }
+
     public static RemoteAction waitForActionState(final Future<ActionDescription> actionFuture, final ActionState.State actionState) throws CouldNotPerformException, InterruptedException {
         final RemoteAction remoteAction = new RemoteAction(actionFuture);
         remoteAction.waitForActionState(actionState);
