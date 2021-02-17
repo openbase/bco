@@ -30,12 +30,14 @@ import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.language.MultiLanguageTextType.MultiLanguageText;
 import org.openbase.type.timing.TimestampType.Timestamp;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 public class ServiceStateProcessor {
@@ -45,6 +47,7 @@ public class ServiceStateProcessor {
     public static final String FIELD_NAME_TIMESTAMP = "timestamp";
     public static final String FIELD_NAME_KEY = "key";
     public static final String FIELD_NAME_VALUE = "value";
+    public static final String FIELD_NAME_RESPONSIBLE_ACTION = "responsible_action";
 
     /**
      * Method returns the timestamp of the latest occurrence of the given service state value.
@@ -196,6 +199,7 @@ public class ServiceStateProcessor {
      * @param serviceState the service state that provides the responsible action
      *
      * @return the responsible action.
+     *
      * @throws NotAvailableException in case the state dose not provide any responsible action or if the message is not a valid service state.
      */
     public static ActionDescription getResponsibleAction(final Message serviceState) throws NotAvailableException {
@@ -203,7 +207,7 @@ public class ServiceStateProcessor {
 
         // resolve field
         try {
-            responsibleActionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, "responsible_action");
+            responsibleActionFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, FIELD_NAME_RESPONSIBLE_ACTION);
         } catch (NotAvailableException ex) {
             new FatalImplementationErrorException("Given service state message does not provide the responsible action field!", serviceState, ex);
             throw new NotAvailableException("ActionDescription", ex);
@@ -216,6 +220,32 @@ public class ServiceStateProcessor {
 
         // resolve value
         return (ActionDescription) serviceState.getField(responsibleActionFieldDescriptor);
+    }
+
+    /**
+     * Returns the responsible action builder of the given service state builder.
+     *
+     * @param serviceStateBuilder the service state builder that provides the responsible action builder.
+     *
+     * @return the responsible action builder.
+     *
+     * @throws NotAvailableException in case the state dose not provide any responsible action or if the builder is not a valid service state.
+     */
+    public static ActionDescription.Builder getResponsibleActionBuilder(final Message.Builder serviceStateBuilder) throws NotAvailableException {
+        return ProtoBufBuilderProcessor.getBuilder(serviceStateBuilder, FIELD_NAME_RESPONSIBLE_ACTION, ActionDescription.Builder.class);
+    }
+
+    /**
+     * Returns the action description of the given service state.
+     *
+     * @param serviceState the service state that provides the description.
+     *
+     * @return the responsible action.
+     *
+     * @throws NotAvailableException in case the state dose not provide any description action or if the message is not a valid service state.
+     */
+    public static MultiLanguageText getActionDescription(final Message serviceState) throws NotAvailableException {
+        return ServiceStateProcessor.getResponsibleAction(serviceState).getDescription();
     }
 
     /**
@@ -233,4 +263,27 @@ public class ServiceStateProcessor {
             return alternative.get();
         }
     }
+
+    public static String getServiceValue(final MessageOrBuilder serviceState, final Supplier<String> alternative) {
+        try {
+            return getServiceValue(serviceState);
+        } catch (NotAvailableException ex) {
+            return alternative.get();
+        }
+    }
+
+    /**
+     * Method returns the value of the service state if available.
+     * A value of PowerState could for example be "on".
+     *
+     * @param serviceState the service state used to derive the service value.
+     *
+     * @return the service value as string rep.
+     *
+     * @throws NotAvailableException is thrown in case the service value is not provided by the given service state.
+     */
+    public static String getServiceValue(final MessageOrBuilder serviceState) throws NotAvailableException {
+        return ProtoBufFieldProcessor.getFieldValue(serviceState, "value").toString();
+    }
+
 }
