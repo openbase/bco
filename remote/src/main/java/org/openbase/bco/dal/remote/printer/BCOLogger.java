@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.dal.remote.printer.UnitStatePrinter.Config.PrintFormat;
 import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
@@ -49,7 +50,12 @@ public class BCOLogger extends UnitStatePrinter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BCOLogger.class);
 
     public BCOLogger() throws InstantiationException {
-        super(getTransitionPrintStream());
+        super(getTransitionPrintStream(),
+                new Config()
+                        .setFormat(PrintFormat.HUMAN_READABLE)
+                        .setPrintInitialStates(false)
+                        .setSkipUnknownValues(false));
+
         UnitModelPrinter.printStaticRelations(getModelPrintStream());
     }
 
