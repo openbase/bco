@@ -129,7 +129,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
                 powerState = Power.OFF;
             }
             // to not observe in order to speedup the calls
-            powerSwitchRemote.setPowerState(powerState, parameter);
+            observe(powerSwitchRemote.setPowerState(powerState, parameter));
         }
 
         // make sure unit is still responding
@@ -155,11 +155,6 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
             assertEquals(powerState.getValue(), powerSwitchRemote.requestData().get(1, TimeUnit.SECONDS).getPowerState().getValue());
         } catch (TimeoutException ex) {
             assertTrue("PowerSwitch did not response in time after massive load!", true);
-        }
-
-        // manually cancel all action
-        for (ActionDescription actionDescription : powerSwitchRemote.getActionList()) {
-            powerSwitchRemote.cancelAction(actionDescription).get();
         }
     }
 

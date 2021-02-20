@@ -23,6 +23,7 @@ package org.openbase.bco.dal.test.layer.unit.scene;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
@@ -31,6 +32,7 @@ import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Activation;
@@ -212,6 +214,24 @@ public class SceneRemoteTest extends AbstractBCOTest {
             AbstractBCOTest.tearDownClass();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
+    }
+
+    /**
+     * Method is for unit tests where one has to make sure that all actions are removed from the action stack in order to minimize influence of other tests.
+     *
+     * @throws InterruptedException is thrown if the thread was externally interrupted
+     */
+    @AfterEach
+    @After
+    public void cancelAllOngoingActions() throws InterruptedException {
+        LOGGER.info("Cancel all ongoing actions...");
+        try {
+            for (UnitController<?, ?> deviceController : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
+                deviceController.cancelAllActions();
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not cancel all ongoing actions!", ex, LOGGER);
         }
     }
 

@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.AfterEach;
-import org.openbase.bco.dal.control.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.test.AbstractBCOTest;
@@ -79,7 +78,7 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
         LOGGER.info("Cancel all ongoing actions...");
         try {
             for (UnitController<?, ?> deviceController : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
-                ((AbstractUnitController) deviceController).cancelAllActions();
+                deviceController.cancelAllActions();
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not cancel all ongoing actions!", ex, LOGGER);

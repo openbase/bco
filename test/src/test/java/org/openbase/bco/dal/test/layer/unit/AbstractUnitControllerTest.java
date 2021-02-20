@@ -109,9 +109,6 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     @After
     public void tearDown() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         // cleanup leftover actions which were manually submitted to the controller.
-        for (ActionDescription actionDescription : colorableLightController.getActionList()) {
-            new RemoteAction(actionDescription, adminToken).cancel().get(5, TimeUnit.SECONDS);
-        }
         colorableLightController.cancelAllActions();
     }
 

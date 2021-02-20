@@ -286,15 +286,6 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals("ColorState of location has not been restored through snapshot!", snapshotColorState.getColor().getHsbColor(), rootLocationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor());
         assertEquals("PowerState of location has not been restored through snapshot!", snapshotPowerState.getValue(), rootLocationRemote.getPowerState(UnitType.UNKNOWN).getValue());
         assertEquals("TargetTemperatureState of location has not been restored through snapshot!", snapshotTemperatureState.getTemperature(), rootLocationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature(), 0.5);
-
-
-        // manual cleanup of all snapshot actions because restore snapshot does not offer an action description to cancel its impact.
-        for (ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-            final UnitRemote<?> unit = Units.getUnit(serviceStateDescription.getUnitId(), true);
-            for (ActionDescription actionDescription : unit.getActionList()) {
-                new RemoteAction(actionDescription).cancel().get();
-            }
-        }
     }
 
     @Test(timeout = 5000)
