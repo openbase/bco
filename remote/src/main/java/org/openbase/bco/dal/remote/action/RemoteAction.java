@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.action;
  */
 
 import com.google.protobuf.Message;
+import lombok.NonNull;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
@@ -333,11 +334,11 @@ public class RemoteAction implements Action {
 
         this.actionId = actionDescription.getActionId();
         this.serviceType = actionDescription.getServiceStateDescription().getServiceType();
-        this.targetUnitId = actionDescription.getServiceStateDescription().getUnitId();
 
         // configure target unit if needed. This is the case if this remote action was instantiated via a future object.
-        if (targetUnit == null) {
-            targetUnit = Units.getUnit(targetUnitId, false);
+        if (!ActionDescriptionProcessor.isMultiAction(actionDescription) && targetUnit == null) {
+            this.targetUnitId = actionDescription.getServiceStateDescription().getUnitId();
+            this.targetUnit = Units.getUnit(targetUnitId, false);
         }
 
         synchronized (executionSync) {
@@ -642,7 +643,8 @@ public class RemoteAction implements Action {
                         } catch (InterruptedException ex) {
                             Thread.currentThread().interrupt();
                         } catch (Exception ex) {
-                            // continue with other trails
+                            // continue with other
+                            ExceptionPrinter.printHistory("Could not wait for action description!", ex, LOGGER, LogLevel.DEBUG);
                         } finally {
                             futureObservationTask.cancel(true);
                         }
@@ -735,7 +737,7 @@ public class RemoteAction implements Action {
         }
     }
 
-    private Future<ActionDescription> registerPostActionStateUpdate(final Future<ActionDescription> future, final ActionState.State actionState) {
+    private Future<ActionDescription> registerPostActionStateUpdate(@NonNull final Future<ActionDescription> future, @NonNull final ActionState.State actionState) {
         return FutureProcessor.postProcess((result, time, timeUnit) -> {
 
             // when all sub actions are canceled, than we can mark this intermediary action as canceled as well.
