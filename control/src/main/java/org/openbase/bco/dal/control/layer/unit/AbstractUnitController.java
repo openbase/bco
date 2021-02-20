@@ -1207,14 +1207,14 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // clear auth fields which are in the following recomputed by the given auth values.
             actionDescriptionBuilder.getActionInitiatorBuilder().clear();
 
-            // recover initiator type
+            // if initiator is declared we need to recover it.
             if (actionDescription.getActionInitiator().hasInitiatorType()) {
                 actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(actionDescription.getActionInitiator().getInitiatorType());
             }
 
             // if an authentication token is send replace the initiator in any case
             if (authenticationBaseData != null && authenticationBaseData.getAuthenticationToken() != null) {
-                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authenticationBaseData.getAuthenticationToken().getUserId());
+                ActionDescriptionProcessor.setActionInitiator(actionDescriptionBuilder, authenticationBaseData.getAuthenticationToken().getUserId(), true);
             }
 
             // setup auth fields
@@ -1223,7 +1223,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // if not yet available, setup authenticated instance as action initiator via auth pair.
                 if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthenticatedBy());
+                    ActionDescriptionProcessor.setActionInitiator(actionDescriptionBuilder, authPair.getAuthenticatedBy(), false);
                 }
             }
             if (authPair.getAuthorizedBy() != null) {
@@ -1231,13 +1231,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // if not yet available, setup authorizing instance as action initiator via auth pair.
                 if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
-                    actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(authPair.getAuthorizedBy());
+                    ActionDescriptionProcessor.setActionInitiator(actionDescriptionBuilder, authPair.getAuthorizedBy(), false);
                 }
             }
 
             // if not yet available, setup other as initiator.
             if (!actionDescriptionBuilder.getActionInitiatorBuilder().hasInitiatorId() || actionDescriptionBuilder.getActionInitiatorBuilder().getInitiatorId().isEmpty()) {
-                actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(User.OTHER);
+                ActionDescriptionProcessor.setActionInitiator(actionDescriptionBuilder, User.OTHER, false);
             }
 
             final Future<ActionDescription> actionDescriptionFuture = AbstractUnitController.this.internalApplyActionAuthenticated(authenticatedValue, actionDescriptionBuilder, authenticationBaseData, authPair);
@@ -1988,15 +1988,45 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType) {
         try {
-            if (!operationServiceMap.containsKey(serviceType)) {
-                if (JPService.getProperty(JPProviderControlMode.class).getValue()) {
-                    applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
-                    return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
-                } else {
-                    return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered"));
+
+            // handle default case
+            if (operationServiceMap.containsKey(serviceType)) {
+
+                // resolve operation service impl
+                final OperationService operationService = operationServiceMap.get(serviceType);
+
+                // handle simple state loopback
+                if (operationService == OperationService.SIMPLE_STATE_ADOPTER) {
+                    try {
+                        applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTimeIfMissing(serviceState), serviceType);
+                        return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
+                    } catch (CouldNotPerformException ex) {
+                        return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+                    }
                 }
+
+                // invoke operation service routine
+                return (Future<ActionDescription>) Services.invokeOperationServiceMethod(serviceType, operationService, serviceState);
             }
-            return (Future<ActionDescription>) Services.invokeOperationServiceMethod(serviceType, operationServiceMap.get(serviceType), serviceState);
+
+            // handle provider control mode
+            if (JPService.getValue(JPProviderControlMode.class, false)) {
+
+                // validating time
+                final Message.Builder providerServiceState = TimestampProcessor.updateTimestampWithCurrentTimeIfMissing(serviceState.toBuilder());
+
+                // if provider control enabled for debugging and this action is a provider service only, then we need to reset the initiator type to system
+                // since it would be responsible for an provider state update during normal operation anyway.
+                final ActionDescription.Builder responsibleActionBuilder = ServiceStateProcessor.getResponsibleActionBuilder(providerServiceState);
+                responsibleActionBuilder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+
+                applyDataUpdate(providerServiceState, serviceType);
+                return FutureProcessor.completedFuture(responsibleActionBuilder.build());
+            }
+
+            // handle invalid case
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered for "+ this));
+
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         } catch (Exception ex) {
