@@ -22,6 +22,7 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
+import lombok.NonNull;
 import org.junit.After;
 import org.junit.Assert;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
@@ -127,7 +128,7 @@ public class AbstractBCOTest {
      * @throws CouldNotPerformException is thrown if the action could not be observed.
      * @throws InterruptedException     is throw if the current thread was interrupted. This e.g. happens if the test timed out.
      */
-    public RemoteAction waitForExecution(final Future<ActionDescription> actionFuture, final AuthToken authToken) throws CouldNotPerformException, InterruptedException {
+    public RemoteAction waitForExecution(@NonNull Future<ActionDescription> actionFuture, final AuthToken authToken) throws CouldNotPerformException, InterruptedException {
         final RemoteAction testAction = observe(actionFuture, authToken, true);
         testAction.waitForActionState(State.EXECUTING);
         return testAction;
@@ -392,7 +393,7 @@ public class AbstractBCOTest {
                 cancelTask.get();
             }
         } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not wait for at least on test action!");
+            throw new CouldNotPerformException("Could not wait for at least on test action!", ex);
         }
 
         testActions.clear();
