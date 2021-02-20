@@ -46,17 +46,4 @@ public abstract class AbstractBaseUnitController<D extends AbstractMessage & Ser
     public AbstractBaseUnitController(final DB builder) throws InstantiationException {
         super(builder);
     }
-
-    @Override
-    public Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType) {
-        if (getOperationServiceMap().containsKey(serviceType)) {
-            return super.performOperationService(serviceState, serviceType);
-        }
-        try {
-            super.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
-            return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
-        }
-    }
 }
