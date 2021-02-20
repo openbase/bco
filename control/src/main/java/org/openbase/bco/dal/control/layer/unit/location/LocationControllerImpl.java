@@ -97,6 +97,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
 
         try {
             registerOperationService(ServiceType.STANDBY_STATE_SERVICE, new StandbyStateOperationServiceImpl(this));
+            registerOperationService(ServiceType.EMPHASIS_STATE_SERVICE, SIMPLE_STATE_ADOPTER);
 
             this.presenceDetector = new PresenceDetector();
             this.presenceDetector.addDataObserver(new Observer<DataProvider<PresenceState>, PresenceState>() {
