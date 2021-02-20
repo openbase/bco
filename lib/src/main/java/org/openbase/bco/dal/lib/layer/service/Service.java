@@ -42,5 +42,5 @@ public interface Service {
      * Method returns the unit or remote instance which offers this service.
      * @return
      */
-    ServiceProvider getServiceProvider();
+    ServiceProvider<?> getServiceProvider();
 }
