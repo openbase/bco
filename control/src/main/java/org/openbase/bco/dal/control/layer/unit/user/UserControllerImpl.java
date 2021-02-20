@@ -25,6 +25,7 @@ package org.openbase.bco.dal.control.layer.unit.user;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivityMultiStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.unit.user.UserController;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.registry.remote.Registries;
@@ -85,7 +86,10 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         super(UserData.newBuilder());
         try {
             this.netDeviceDetectorMap = new HashMap<>();
-            registerOperationService(ServiceType.ACTIVITY_MULTI_STATE_SERVICE, new ActivityMultiStateOperationServiceImpl(this));
+            registerOperationService(ACTIVITY_MULTI_STATE_SERVICE, new ActivityMultiStateOperationServiceImpl(this));
+            registerOperationService(LOCAL_POSITION_STATE_SERVICE, OperationService.SIMPLE_STATE_ADOPTER);
+            registerOperationService(USER_TRANSIT_STATE_SERVICE, OperationService.SIMPLE_STATE_ADOPTER);
+            registerOperationService(PRESENCE_STATE_SERVICE, OperationService.SIMPLE_STATE_ADOPTER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
