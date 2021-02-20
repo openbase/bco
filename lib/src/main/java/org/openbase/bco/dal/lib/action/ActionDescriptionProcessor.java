@@ -13,7 +13,6 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
@@ -468,7 +467,11 @@ public class ActionDescriptionProcessor {
      *                                  verified or serialized
      */
     public static ServiceStateDescription generateServiceStateDescription(final Message serviceState, final ServiceType serviceType, final Unit<?> unit) throws CouldNotPerformException {
-        return generateServiceStateDescription(serviceState, serviceType).setUnitId(unit.getId()).build();
+        final ServiceStateDescription.Builder builder = generateServiceStateDescription(serviceState, serviceType);
+        if (unit != null) {
+            builder.setUnitId(unit.getId());
+        }
+        return builder.build();
     }
 
     /**
@@ -558,6 +561,24 @@ public class ActionDescriptionProcessor {
 
     /**
      * Prepare an action description. This sets the timestamp, the action initiator type, the id, labels and descriptions.
+     * <p>
+     * Note: This method is only valid for multi actions since otherwise an unit config shall be passed.
+     *
+     * @param actionDescriptionBuilder the action description builder which is prepared.
+     *
+     * @throws CouldNotPerformException if preparing fails.
+     */
+    public static void prepare(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
+
+        if (!isMultiAction(actionDescriptionBuilder)) {
+            throw new VerificationFailedException("Given action is not an multi action!");
+        }
+
+        prepare(actionDescriptionBuilder, (UnitConfig) null);
+    }
+
+    /**
+     * Prepare an action description. This sets the timestamp, the action initiator type, the id, labels and descriptions.
      *
      * @param actionDescriptionBuilder the action description builder which is prepared.
      * @param unitConfig               the config of the unit on which the action description is applied.
@@ -582,9 +603,7 @@ public class ActionDescriptionProcessor {
     private static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final UnitConfig unitConfig, final Message.Builder serviceStateBuilder) throws CouldNotPerformException {
 
         // setup creation time if still missing
-        if (!TimestampProcessor.hasTimestamp(actionDescriptionBuilder)) {
-            TimestampProcessor.updateTimestampWithCurrentTime(actionDescriptionBuilder);
-        }
+        TimestampProcessor.updateTimestampWithCurrentTimeIfMissing(actionDescriptionBuilder);
 
         // setup service state time if still missing
         if (!TimestampProcessor.hasTimestamp(serviceStateBuilder)) {
@@ -598,11 +617,15 @@ public class ActionDescriptionProcessor {
         actionDescriptionBuilder.setInterruptible(getInterruptible(actionDescriptionBuilder));
         actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
         // note: do not recover the replaceable flag from the other flags because then we loose the information where it comes from but this important to know when building the chain prefix.
-        actionDescriptionBuilder.addAllCategory(getCategoryList(actionDescriptionBuilder));
+
+        // recompute categories
+        final List<Category> categoryList = getCategoryList(actionDescriptionBuilder);
+        actionDescriptionBuilder.clearCategory();
+        actionDescriptionBuilder.addAllCategory(categoryList);
 
         // update initiator type
         if (!actionDescriptionBuilder.getActionInitiator().hasInitiatorType()) {
-            if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty() && actionDescriptionBuilder.getActionInitiator().getInitiatorId() != User.OTHER) {
+            if (actionDescriptionBuilder.getActionInitiator().hasInitiatorId() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().isEmpty() && !actionDescriptionBuilder.getActionInitiator().getInitiatorId().equals(User.OTHER)) {
                 // resolve type via registry
                 final UnitConfig initiatorUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getActionInitiator().getInitiatorId());
                 if ((initiatorUnitConfig.getUnitType() == UnitType.USER && !initiatorUnitConfig.getUserConfig().getSystemUser())) {
@@ -865,6 +888,24 @@ public class ActionDescriptionProcessor {
         return verifyActionDescription(actionDescriptionBuilder, unitConfig, false);
     }
 
+    /**
+     * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message.Builder)}
+     * is called to update the action description. Therefore, this method only allows to verify a builder.
+     * In addition, this method returns a de-serialized and updated service state contained in the action description.
+     * The reason for this is to minimize de-serializing operations because verifying a service state also updates it.
+     * <p>
+     * Note: This method is only valid for multi actions since otherwise an unit config shall be passed.
+     *
+     * @param actionDescriptionBuilder the action description builder which is verified and updated if prepare is set.
+     * @param prepare                  flag determining if the action description should be prepared.
+     *
+     * @return a de-serialized and updated service state builder.
+     *
+     * @throws VerificationFailedException if verifying the action description failed.
+     */
+    public static Message.Builder verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final boolean prepare) throws VerificationFailedException {
+        return verifyActionDescription(actionDescriptionBuilder, (UnitConfig) null, prepare);
+    }
 
     /**
      * Verify an action description. If the prepare flag is set to true, the method {@link #prepare(Builder, UnitConfig, Message.Builder)}
@@ -882,7 +923,7 @@ public class ActionDescriptionProcessor {
      */
     public static Message.Builder verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Unit<?> unit, final boolean prepare) throws VerificationFailedException {
         try {
-            return verifyActionDescription(actionDescriptionBuilder, unit.getConfig(), prepare);
+            return verifyActionDescription(actionDescriptionBuilder, (unit != null ? unit.getConfig() : null), prepare);
         } catch (NotAvailableException ex) {
             throw new VerificationFailedException("Given target unit seems not to be ready!", ex);
         }
@@ -904,23 +945,28 @@ public class ActionDescriptionProcessor {
      */
     public static Message.Builder verifyActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final UnitConfig unitConfig, final boolean prepare) throws VerificationFailedException {
         try {
+
             if (actionDescriptionBuilder == null) {
                 throw new NotAvailableException("ActionDescription");
+            }
+
+            if (unitConfig == null && !isMultiAction(actionDescriptionBuilder)) {
+                throw new VerificationFailedException("Given action is not an multi action, therefore a target unit has to be declared!");
             }
 
             if (!actionDescriptionBuilder.hasServiceStateDescription()) {
                 throw new NotAvailableException("ActionDescription.ServiceStateDescription");
             }
 
-            if (!actionDescriptionBuilder.getServiceStateDescription().hasUnitId() || actionDescriptionBuilder.getServiceStateDescription().getUnitId().isEmpty()) {
+            if (!isMultiAction(actionDescriptionBuilder) && (!actionDescriptionBuilder.getServiceStateDescription().hasUnitId() || actionDescriptionBuilder.getServiceStateDescription().getUnitId().isEmpty())) {
                 throw new NotAvailableException("ActionDescription.ServiceStateDescription.UnitId");
             }
 
-            if (!unitConfig.hasId() || unitConfig.getId().isEmpty()) {
+            if (unitConfig != null && (!unitConfig.hasId() || unitConfig.getId().isEmpty())) {
                 throw new NotAvailableException("executor unit id");
             }
 
-            if (!actionDescriptionBuilder.getServiceStateDescription().getUnitId().equals(unitConfig.getId())) {
+            if (unitConfig != null && !actionDescriptionBuilder.getServiceStateDescription().getUnitId().equals(unitConfig.getId())) {
                 String targetUnitLabel;
                 try {
                     targetUnitLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getServiceStateDescription().getUnitId()).getLabel());
@@ -1000,7 +1046,10 @@ public class ActionDescriptionProcessor {
             String description = languageDescriptionEntry.getValue();
             try {
                 // setup unit label
-                description = description.replace(UNIT_LABEL_KEY, LabelProcessor.getBestMatch(languageDescriptionEntry.getKey(), unitConfig.getLabel()));
+                description = description.replace(UNIT_LABEL_KEY,
+                        (isMultiAction(actionDescriptionBuilder) && unitConfig == null ?
+                                "multiple units" :
+                                LabelProcessor.getBestMatch(languageDescriptionEntry.getKey(), unitConfig.getLabel(), "?")));
 
                 // setup service type
                 description = description.replace(SERVICE_TYPE_KEY, serviceBaseName.toLowerCase());
@@ -1130,6 +1179,21 @@ public class ActionDescriptionProcessor {
         return generateAndSetResponsibleAction(serviceStateBuilder, targetUnit, actionParameterBuilder);
     }
 
+    public static <MB extends Message.Builder> MB generateAndSetResponsibleActionForMultiAction(final MB serviceStateBuilder, final ServiceType serviceType, final ActionDescription cause) throws CouldNotPerformException {
+
+        // prepare action parameter
+        final ActionParameter.Builder actionParameterBuilder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceStateBuilder.build(), serviceType);
+
+        // set cause
+        if (cause != null) {
+            actionParameterBuilder.setCause(cause);
+            actionParameterBuilder.setActionInitiator(cause.getActionInitiator());
+        }
+
+        // generate responsible action
+        return generateAndSetResponsibleAction(serviceStateBuilder, null, actionParameterBuilder, true);
+    }
+
     /**
      * Method generates and set a new responsible action of a service state.
      *
@@ -1141,16 +1205,30 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException is thrown if the setup failed.
      */
     public static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final Unit<?> targetUnit, final ActionParameterOrBuilder actionParameter) throws CouldNotPerformException {
+        return generateAndSetResponsibleAction(serviceStateBuilder, targetUnit, actionParameter, false);
+    }
+
+    /**
+     * Method generates and set a new responsible action of a service state.
+     *
+     * @param serviceStateBuilder the builder where the responsible action should be set for.
+     * @param targetUnit          the unit where this action takes place.
+     * @param multiAction         set to true if this unit is an multi action.
+     *
+     * @return the builder instance in just returned.
+     *
+     * @throws CouldNotPerformException is thrown if the setup failed.
+     */
+    private static <MB extends Message.Builder> MB generateAndSetResponsibleAction(final MB serviceStateBuilder, final Unit<?> targetUnit, final ActionParameterOrBuilder actionParameter, final boolean multiAction) throws CouldNotPerformException {
         try {
 
             // validate and set service state timestamp
-            if (!TimestampProcessor.hasTimestamp(serviceStateBuilder)) {
-                TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder);
-            }
+            TimestampProcessor.updateTimestampWithCurrentTimeIfMissing(serviceStateBuilder);
 
             // generate responsible action
             final Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
             actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(JSON_PROCESSOR.serialize(serviceStateBuilder));
+            actionDescriptionBuilder.setIntermediary(multiAction);
             ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, targetUnit, true);
 
             // register as responsible action
@@ -1244,4 +1322,98 @@ public class ActionDescriptionProcessor {
             return unitId;
         }
     }
+
+    /**
+     * Method checks if this action is a multi action.
+     * A multi action is an action description that just refers to a set of actions registered as action impact or action cause.
+     * Its just a simple form of bundling a set of actions without being a part of the action chain.
+     *
+     * @param actionDescriptionOrBuilder the action description to check.
+     *
+     * @return true if multi action, otherwise false.
+     */
+    public static boolean isMultiAction(final ActionDescriptionOrBuilder actionDescriptionOrBuilder) {
+        return !actionDescriptionOrBuilder.getServiceStateDescription().hasUnitId()
+                && actionDescriptionOrBuilder.getIntermediary()
+                && (actionDescriptionOrBuilder.getActionCauseList().isEmpty() || actionDescriptionOrBuilder.getActionImpactList().isEmpty());
+    }
+
+    /**
+     * Method builds a new multi action or extends an existing one.
+     * A multi action is an action description that just refers to a set of actions registered as action impact.
+     * Its just a simple form of bundling a set of actions without being a part of the action chain.
+     *
+     * @param actionDescriptionBuilder the builder used as baseline to build the multi action.
+     * @param actions                  the actions that are bundled as multi action.
+     *
+     * @return the multi action builder.
+     */
+    public static ActionDescription.Builder buildMultiAction(final ActionDescription.Builder actionDescriptionBuilder, final Iterable<ActionReference> actions) {
+        actionDescriptionBuilder.getServiceStateDescriptionBuilder().clearUnitId();
+        actionDescriptionBuilder.setIntermediary(true);
+        actionDescriptionBuilder.addAllActionImpact(actions);
+        return actionDescriptionBuilder;
+    }
+
+    /**
+     * Method builds a new multi action or extends an existing one.
+     * A multi action is an action description that just refers to a set of actions registered as action impact.
+     * Its just a simple form of bundling a set of actions without being a part of the action chain.
+     *
+     * @param actionDescriptionBuilder the builder used as baseline to build the multi action.
+     * @param action                   the action that is added to this multi action.
+     *
+     * @return the multi action builder.
+     */
+    public static ActionDescription.Builder buildMultiAction(final ActionDescription.Builder actionDescriptionBuilder, final ActionDescription action) {
+        actionDescriptionBuilder.getServiceStateDescriptionBuilder().clearUnitId();
+        actionDescriptionBuilder.setIntermediary(true);
+        actionDescriptionBuilder.addActionImpact(generateActionReference(action));
+        return actionDescriptionBuilder;
+    }
+
+    /**
+     * Set the action initiator id at the given builder instance.
+     *
+     * @param actionDescriptionBuilder the builder to be modified.
+     * @param initiatorId              the id of the new initiator
+     * @param recursive                if flag is true, the new initiator will be set for all action causes as well.
+     *
+     * @return the modified builder instance.
+     */
+    public static ActionDescription.Builder setActionInitiator(final ActionDescription.Builder actionDescriptionBuilder, final String initiatorId, final boolean recursive) {
+        // set on toplevel
+        actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(initiatorId);
+
+        // set on action cause
+        if (recursive) {
+            for (ActionReference.Builder actionCauseBuilder : actionDescriptionBuilder.getActionCauseBuilderList()) {
+                actionCauseBuilder.getActionInitiatorBuilder().setInitiatorId(initiatorId);
+            }
+        }
+        return actionDescriptionBuilder;
+    }
+
+    /**
+     * Set the action initiator type at the given builder instance.
+     *
+     * @param actionDescriptionBuilder the builder to be modified.
+     * @param initiatorType            the type of the new initiator
+     * @param recursive                if flag is true, the new initiator will be set for all action causes as well.
+     *
+     * @return the modified builder instance.
+     */
+    public static ActionDescription.Builder setActionInitiator(final ActionDescription.Builder actionDescriptionBuilder, final InitiatorType initiatorType, final boolean recursive) {
+        // set on toplevel
+        actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorType(initiatorType);
+
+        // set on action cause
+        if (recursive) {
+            for (ActionReference.Builder actionCauseBuilder : actionDescriptionBuilder.getActionCauseBuilderList()) {
+                actionCauseBuilder.getActionInitiatorBuilder().setInitiatorType(initiatorType);
+            }
+        }
+        return actionDescriptionBuilder;
+    }
+
 }
