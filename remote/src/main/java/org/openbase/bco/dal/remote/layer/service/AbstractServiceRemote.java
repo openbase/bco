@@ -34,7 +34,9 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.action.ActionIdGenerator;
 import org.openbase.bco.dal.lib.layer.service.*;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -56,6 +58,7 @@ import org.openbase.jul.schedule.TimeoutSplitter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -180,9 +183,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         final ST serviceState;
         synchronized (syncObject) {
             serviceState = computeServiceState();
+            serviceStateObservable.notifyObservers(serviceState);
+            serviceStateProviderObservable.notifyObservers(serviceState);
         }
-        serviceStateObservable.notifyObservers(serviceState);
-        serviceStateProviderObservable.notifyObservers(serviceState);
         assert serviceStateObservable.isValueAvailable();
     }
 
@@ -194,10 +197,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     @Override
     public ST getData() throws NotAvailableException {
-        if (!serviceStateObservable.isValueAvailable()) {
-            throw new NotAvailableException("Data");
+        synchronized (syncObject) {
+            if (!serviceStateObservable.isValueAvailable()) {
+                throw new NotAvailableException("Data");
+            }
+            return serviceStateObservable.getValue();
         }
-        return serviceStateObservable.getValue();
     }
 
     @Override
@@ -293,6 +298,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                     }
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not request data of all internal unit remotes!", ex), logger, LogLevel.WARN);
                 }
+                updateServiceState();
                 requestDataFuture.complete(getData());
             } catch (InterruptedException | CouldNotPerformException ex) {
                 requestDataFuture.completeExceptionally(ex);
@@ -642,8 +648,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         return serviceType;
     }
 
+    @Override
     public Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
         try {
+            if (actionParameter.hasAuthToken()) {
+                return internalApplyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter), actionParameter.getAuthToken());
+            }
             return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter));
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not apply action!", ex));
@@ -656,6 +666,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription.Builder actionDescriptionBuilder) {
+        return internalApplyAction(actionDescriptionBuilder, null);
+    }
+
+    public Future<ActionDescription> internalApplyAction(final ActionDescription.Builder actionDescriptionBuilder, final AuthToken authToken) {
         try {
             if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
@@ -664,21 +678,32 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             final boolean newSubmission = !actionDescriptionBuilder.getCancel() && !actionDescriptionBuilder.getExtend();
 
             // only setup id of this intermediary action if this is an new submission and responsible unit is declared
-            if (newSubmission && actionDescriptionBuilder.getServiceStateDescription().hasUnitId()) {
+            if (newSubmission) {
+
+                // mark this actions as intermediary
+                actionDescriptionBuilder.setIntermediary(true);
+
+                if (authToken != null) {
+
+                }
 
                 // validate that the action is really a new one
                 if (!actionDescriptionBuilder.getActionId().isEmpty()) {
                     throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
                 }
 
-                // resolve responsible unit
-                final UnitConfig responsibleUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getServiceStateDescription().getUnitId());
+                // only register responsible action in case its not a multi action.
+                if (!ActionDescriptionProcessor.isMultiAction(actionDescriptionBuilder)) {
 
-                // setup new intermediary action
-                ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, responsibleUnitConfig, true);
+                    // resolve target unit
+                    final UnitConfig responsibleUnitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescriptionBuilder.getServiceStateDescription().getUnitId());
 
-                // mark this actions as intermediary
-                actionDescriptionBuilder.setIntermediary(true);
+                    // validate action
+                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, responsibleUnitConfig, true);
+                } else {
+                    // validate action
+                    ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, true);
+                }
             }
 
             // generate and apply impact actions
@@ -690,14 +715,19 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 unitActionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitRemote.getId());
 
                 // update action cause if this is a new submission
-                if (newSubmission && actionDescriptionBuilder.getServiceStateDescription().hasUnitId()) {
+                if (newSubmission) {
                     unitActionDescriptionBuilder.clearActionId();
                     unitActionDescriptionBuilder.clearIntermediary();
+                    unitActionDescriptionBuilder.clearDescription();
                     ActionDescriptionProcessor.updateActionCause(unitActionDescriptionBuilder, actionDescriptionBuilder);
                 }
 
                 // apply action on remote
-                actionTaskList.add(unitRemote.applyAction(unitActionDescriptionBuilder));
+                if (authToken != null) {
+                    actionTaskList.add(unitRemote.applyAction(unitActionDescriptionBuilder, authToken));
+                } else {
+                    actionTaskList.add(unitRemote.applyAction(unitActionDescriptionBuilder));
+                }
             }
 
             // collect results and setup action impact list of intermediary action
@@ -708,9 +738,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                     return actionDescriptionBuilder.build();
                 }
 
+                final boolean multiAction = ActionDescriptionProcessor.isMultiAction(actionDescriptionBuilder);
+
                 for (final Future<ActionDescription> actionTask : input) {
                     try {
-                        ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, actionTask.get());
+                        if (multiAction) {
+                            ActionDescriptionProcessor.buildMultiAction(actionDescriptionBuilder, actionTask.get());
+                        } else {
+                            ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, actionTask.get());
+                        }
                     } catch (ExecutionException ex) {
                         throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
                     }
@@ -919,7 +955,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             for (S service : getServices(unitType)) {
 
                 // do not handle if data is not synced yet.
-                if (!((UnitRemote) service).isDataAvailable()) {
+                if (!((Unit<?>) service).isDataAvailable()) {
                     continue;
                 }
 
@@ -984,20 +1020,24 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     }
 
     protected void setupResponsibleActionForNewAggregatedServiceState(final Message.Builder serviceStateBuilder, ActionDescription latestActionCause) {
-        if (hasServiceRemoteManager()) {
-            try {
+        try {
 
-                if (latestActionCause != null && (!latestActionCause.hasActionId() || latestActionCause.getActionId().isEmpty())) {
-                    logger.warn("Skip latest action since it does not offer an action id!");
-                    latestActionCause = null;
-                }
-
-                // generate and set responsible action and set last action as cause if available.
-                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, getServiceType(), getServiceRemoteManager().getResponsibleUnit(), latestActionCause);
-
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
+            // skip invalid action cause
+            if (latestActionCause != null && (!latestActionCause.hasActionId() || latestActionCause.getActionId().isEmpty())) {
+                logger.warn("Skip latest action since it does not offer an action id!");
+                latestActionCause = null;
             }
+
+            // generate and set responsible action and set last action as cause if available.
+            // in case the service remote manager is not available we need to setup an multi action.
+            if (hasServiceRemoteManager()) {
+                ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, getServiceType(), (hasServiceRemoteManager() ? getServiceRemoteManager().getResponsibleUnit() : null), latestActionCause);
+            } else {
+                ActionDescriptionProcessor.generateAndSetResponsibleActionForMultiAction(serviceStateBuilder, getServiceType(), latestActionCause);
+            }
+
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not generate responsible action for aggregated service state!", ex, logger);
         }
     }
 
@@ -1306,6 +1346,37 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
     public boolean isShutdownInitiated() {
         return shutdownInitiated;
+    }
+
+    /**
+     * Cancels the action referred by the given {@code actionDescription}
+     *
+     * @param actionDescription the action to cancel
+     *
+     * @return the updated action description of the action to cancel.
+     */
+    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription) {
+        try {
+            return new RemoteAction(actionDescription).cancel();
+        } catch (Exception ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
+    }
+
+    /**
+     * Cancels the action referred by the given {@code actionDescription}
+     *
+     * @param actionDescription the action to cancel§
+     * @param authToken         the auth token that should be used for the cancellation.
+     *
+     * @return the updated action description of the action to cancel.
+     */
+    public Future<ActionDescription> cancelAction(final ActionDescription actionDescription, final AuthToken authToken) {
+        try {
+            return new RemoteAction(actionDescription, authToken).cancel();
+        } catch (Exception ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+        }
     }
 
     /**
