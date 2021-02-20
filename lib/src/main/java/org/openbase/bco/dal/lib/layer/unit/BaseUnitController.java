@@ -41,21 +41,4 @@ import java.util.concurrent.Future;
  */
 public interface BaseUnitController<D extends AbstractMessage, DB extends D.Builder<DB>> extends UnitController<D, DB>, BaseUnit<D> {
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param serviceState {@inheritDoc}
-     * @param serviceType  {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     */
-    @Override
-    default Future<ActionDescription> performOperationService(final Message serviceState, final ServiceType serviceType) {
-        try {
-            applyDataUpdate(serviceState, serviceType);
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
-        }
-        return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
-    }
 }
