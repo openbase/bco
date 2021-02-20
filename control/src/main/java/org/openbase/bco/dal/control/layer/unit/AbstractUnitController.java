@@ -748,6 +748,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 userId = User.OTHER;
             }
 
+            if(action.getId().equals(terminatingActionId)) {
+                throw new InvalidStateException("Its not allowed to cancel the termination action!");
+            }
+
             if (!userId.equals(User.OTHER) && Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_GROUP_ALIAS).getAuthorizationGroupConfig().getMemberIdList().contains(userId)) {
                 // user is an admin
                 return;
