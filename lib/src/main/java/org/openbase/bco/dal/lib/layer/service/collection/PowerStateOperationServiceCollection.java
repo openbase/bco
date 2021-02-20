@@ -80,11 +80,11 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
      * Returns on if at least one of the powerServices with given unitType is on
      * and else off.
      *
-     * @param unitType
+     * @param unitType the unit type to filter.
      *
-     * @return
+     * @return the aggregated power state.
      *
-     * @throws NotAvailableException
+     * @throws NotAvailableException is throws
      */
     PowerState getPowerState(final UnitType unitType) throws NotAvailableException;
 }
