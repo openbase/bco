@@ -90,7 +90,6 @@
         <groupId>org.openbase</groupId>
         <artifactId>bco.dal.test</artifactId>
         <version>${dependency.bco.version}</version>
-        <scope>test</scope>
     </dependency>
 </dependencies>
 </project>
