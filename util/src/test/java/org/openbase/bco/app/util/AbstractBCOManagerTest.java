@@ -21,15 +21,19 @@ package org.openbase.bco.app.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.test.AbstractBCOTest;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,6 +100,24 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
             AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
+    }
+
+    /**
+     * Method is for unit tests where one has to make sure that all actions are removed from the action stack in order to minimize influence of other tests.
+     *
+     * @throws InterruptedException is thrown if the thread was externally interrupted
+     */
+    @AfterEach
+    @After
+    public void cancelAllOngoingActions() throws InterruptedException {
+        LOGGER.info("Cancel all ongoing actions...");
+        try {
+            for (UnitController<?, ?> deviceController : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
+                deviceController.cancelAllActions();
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not cancel all ongoing actions!", ex, LOGGER);
         }
     }
 }
