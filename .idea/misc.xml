@@ -20,9 +20,17 @@
         <option value="$PROJECT_DIR$/module/bco.ontology/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.registry/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.authentication/pom.xml" />
+        <option value="$PROJECT_DIR$/../jps/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.registry.editor/pom.xml" />
+        <option value="$PROJECT_DIR$/../bco.api.graphql/pom.xml" />
+        <option value="$PROJECT_DIR$/../bco.app.adhoc/pom.xml" />
       </list>
     </option>
+    <option name="ignoredFiles">
+      <set>
+        <option value="$PROJECT_DIR$/module/bco.app/openapiserver/pom.xml" />
+      </set>
+    </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="false" project-jdk-name="11" project-jdk-type="JavaSDK" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" project-jdk-name="11" project-jdk-type="JavaSDK" />
 </project>
