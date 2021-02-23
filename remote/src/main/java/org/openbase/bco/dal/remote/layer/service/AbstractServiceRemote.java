@@ -183,9 +183,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
         final ST serviceState;
         synchronized (syncObject) {
             serviceState = computeServiceState();
-            serviceStateObservable.notifyObservers(serviceState);
-            serviceStateProviderObservable.notifyObservers(serviceState);
         }
+        serviceStateObservable.notifyObservers(serviceState);
+        serviceStateProviderObservable.notifyObservers(serviceState);
         assert serviceStateObservable.isValueAvailable();
     }
 
@@ -197,12 +197,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     @Override
     public ST getData() throws NotAvailableException {
-        synchronized (syncObject) {
+//        synchronized (syncObject) {
             if (!serviceStateObservable.isValueAvailable()) {
                 throw new NotAvailableException("Data");
             }
             return serviceStateObservable.getValue();
-        }
+//        }
     }
 
     @Override
