@@ -1502,6 +1502,18 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+    protected Action getCurrentAction() throws NotAvailableException {
+        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
+            // todo read only access
+            return scheduledActionList.get(0);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new NotAvailableException("CurrentAction", ex);
+        } catch (Exception ex) {
+            throw new NotAvailableException("CurrentAction", ex);
+        }
+    }
+
     /**
      * @param serviceState    the prototype of the new state.
      * @param serviceType     the service type of the new state.

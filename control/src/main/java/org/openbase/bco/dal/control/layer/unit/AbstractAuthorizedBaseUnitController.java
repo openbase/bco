@@ -26,6 +26,7 @@ import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -121,11 +122,22 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
     }
 
     protected ActionParameter getDefaultActionParameter() {
-        return defaultActionParameter;
+        try {
+            final Action currentAction = getCurrentAction();
+
+            // ignore initiating action in case its outdated.
+            if (currentAction.getLifetime() > TimeUnit.MINUTES.toMillis(30)) {
+                return defaultActionParameter;
+            }
+            return defaultActionParameter.toBuilder().setCause(currentAction.getActionDescription()).setReplaceable(false).build();
+        } catch (NotAvailableException e) {
+            // cause not available
+            return defaultActionParameter;
+        }
     }
 
     protected ActionParameter getDefaultActionParameter(final long executionTimePeriod) {
-        return defaultActionParameter.toBuilder().setExecutionTimePeriod(executionTimePeriod).build();
+        return getDefaultActionParameter().toBuilder().setExecutionTimePeriod(executionTimePeriod).build();
     }
 
     protected AuthToken getToken() {

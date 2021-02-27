@@ -218,10 +218,22 @@ public class ActionDescriptionProcessor {
      * @return the initial initiator of an action as described above.
      */
     public static ActionInitiator getInitialInitiator(final ActionDescriptionOrBuilder actionDescription) {
+        return getInitialActionReference(actionDescription).getActionInitiator();
+    }
+
+    /**
+     * Get an action reference to the last action of the cause chain.
+     * If the action does not have a cause, an action reference for the provided action description is returned.
+     *
+     * @param actionDescription the action description from which the original action reference is resolved.
+     *
+     * @return the initial reference of an action.
+     */
+    public static ActionReference getInitialActionReference(final ActionDescriptionOrBuilder actionDescription) {
         if (actionDescription.getActionCauseList().isEmpty()) {
-            return actionDescription.getActionInitiator();
+            return generateActionReference(actionDescription);
         } else {
-            return actionDescription.getActionCause(actionDescription.getActionCauseCount() - 1).getActionInitiator();
+            return actionDescription.getActionCause(actionDescription.getActionCauseCount() - 1);
         }
     }
 
