@@ -24,6 +24,7 @@ package org.openbase.bco.device.openhab.sitemap.element;
 
 import org.openbase.bco.device.openhab.sitemap.SitemapBuilder;
 import org.openbase.bco.device.openhab.sitemap.SitemapBuilder.SitemapIconType;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -89,30 +90,30 @@ public class LocationElement extends AbstractUnitSitemapElement {
         List<UnitConfig> unitConfigList;
 
         // add scenes
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.SCENE, false);
         sitemap.openFrameContext("Scenen");
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.SCENE)) {
+        final List<UnitConfig> unitConfigScenes = UnitConfigProcessor.sortUnitConfigList(Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.SCENE, true));
+        for (UnitConfig unitConfig : unitConfigScenes) {
             sitemap.append(new GenericUnitSitemapElement(unitConfig));
         }
         sitemap.closeContext();
 
         // add groups
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.UNIT_GROUP, false);
         sitemap.openFrameContext("Gruppen");
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.UNIT_GROUP)) {
+        final List<UnitConfig> unitGroupConfig = UnitConfigProcessor.sortUnitConfigList(Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.UNIT_GROUP, true));
+        for (UnitConfig unitConfig : unitGroupConfig) {
             sitemap.append(new GenericUnitSitemapElement(unitConfig));
         }
         sitemap.closeContext();
 
         // add apps
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.APP, false);
         sitemap.openFrameContext("Apps");
-        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitType(unitConfig.getId(), UnitType.APP)) {
+        final List<UnitConfig> unitAppsConfig = UnitConfigProcessor.sortUnitConfigList(Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.APP, true));
+        for (UnitConfig unitConfig : unitAppsConfig) {
             sitemap.append(new GenericUnitSitemapElement(unitConfig));
         }
         sitemap.closeContext();
 
-        unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.AGENT, false);
+        unitConfigList = UnitConfigProcessor.sortUnitConfigList(Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeRecursive(unitConfig.getId(), UnitType.AGENT, false));
         if (!unitConfigList.isEmpty() || !unitConfig.getLocationConfig().getUnitIdList().isEmpty()) {
             sitemap.openFrameContext("Sonstiges");
             // add agents
