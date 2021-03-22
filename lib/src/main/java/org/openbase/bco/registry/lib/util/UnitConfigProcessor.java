@@ -40,8 +40,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -331,5 +330,10 @@ public class UnitConfigProcessor {
     public static boolean isHostUnitAvailable(final UnitConfigOrBuilder unitConfig) {
         // in case the host unit field is referring the id of the unit itself, then no host unit is registered.
         return unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty() && !unitConfig.getUnitHostId().equals(unitConfig.getId());
+    }
+
+    public static List<UnitConfig> sortUnitConfigList(List<UnitConfig> unitConfigList) {
+        Collections.sort(unitConfigList, Comparator.comparing(o -> LabelProcessor.getBestMatch(o.getLabel(), "?")));
+        return unitConfigList;
     }
 }
