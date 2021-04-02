@@ -59,6 +59,7 @@ import org.openbase.type.domotic.service.ServiceConfigType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
@@ -1503,6 +1504,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
             try {
                 unitConfig = getUnitConfigById(unitConfigId);
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+
+                    if(serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) {
+                        continue;
+                    }
+
                     if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
                         unitConfigList.add(unitConfig);
                     }
@@ -2058,77 +2064,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
     Map<String, IdentifiableMessage<String, UnitConfig, Builder>> getLocationMap() throws CouldNotPerformException;
 
-    /**
-     * Method computes the entire lower part of the action of the given service state modification. It can be used to precompute the impacted units without scheduling any actions.
-     * Since the action are not really executed and only precomputed, the returned list of action descriptions does not include the ids of the actions
-     *
-     * @param serviceStateDescription the description providing the service modification.
-     *
-     * @return a list of action descriptions that represent the impact of the service modification in case it would be applied.
-     */
-    default List<ActionDescription> computeActionImpact(final ServiceStateDescription serviceStateDescription) {
-        final List<ActionDescription> actionImpactList = new ArrayList<>();
-
-        try {
-            final UnitConfig impactedUnitConfig = getUnitConfigById(serviceStateDescription.getUnitId());
-
-            // in case a dal unit is referred those will be an end point and can directly be returned.
-            if (UnitConfigProcessor.isDalUnit(impactedUnitConfig)) {
-                actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
-                return actionImpactList;
-            }
-
-            // for any base unit we have to collect its impact manually.
-            switch (impactedUnitConfig.getUnitType()) {
-                case LOCATION:
-                    for (UnitConfig unitConfig : getUnitConfigsByLocationIdAndUnitTypeInclusiveSuperTypeRecursive(impactedUnitConfig.getId(), serviceStateDescription.getUnitType(), true, true)) {
-
-                        // skip base units
-                        if (UnitConfigProcessor.isBaseUnit(unitConfig)) {
-                            continue;
-                        }
-
-                        actionImpactList.addAll(computeActionImpact(serviceStateDescription.toBuilder().setUnitId(unitConfig.getId()).build()));
-                    }
-                    break;
-                case UNIT_GROUP:
-                    for (String memberId : impactedUnitConfig.getUnitGroupConfig().getMemberIdList()) {
-                        actionImpactList.addAll(computeActionImpact(serviceStateDescription.toBuilder().setUnitId(memberId).build()));
-                    }
-                    break;
-                case SCENE:
-                    // register required action impact
-                    for (ServiceStateDescription impactedServiceStateDescription : impactedUnitConfig.getSceneConfig().getRequiredServiceStateDescriptionList()) {
-                        actionImpactList.addAll(computeActionImpact(impactedServiceStateDescription));
-                    }
-
-                    // register optional action impact
-                    for (ServiceStateDescription impactedServiceStateDescription : impactedUnitConfig.getSceneConfig().getOptionalServiceStateDescriptionList()) {
-                        actionImpactList.addAll(computeActionImpact(impactedServiceStateDescription));
-                    }
-
-                    // register scene itself as impact
-                    actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
-                    break;
-                case APP:
-                case AGENT:
-                    // register unit itself as impact
-                    actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
-                    break;
-                case USER:
-                case AUTHORIZATION_GROUP:
-                case DEVICE:
-                case GATEWAY:
-                default:
-                    // units do not have any impact on other units.
-                    break;
-            }
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not compute action impact of " + serviceStateDescription.getUnitId(), ex, LoggerFactory.getLogger(UnitRegistry.class));
-        }
-
-        return actionImpactList;
-    }
 //    Not yet implemented so temporally removed from interface
 //
 //    /**
