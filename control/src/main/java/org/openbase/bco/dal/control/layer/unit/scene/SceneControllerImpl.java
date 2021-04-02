@@ -28,10 +28,7 @@ import org.openbase.bco.authentication.lib.AuthenticationBaseData;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
-import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
-import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
@@ -184,12 +181,12 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
                     // register required action impact
                     for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getRequiredServiceStateDescriptionList()) {
-                        impactActionList.addAll(Registries.getUnitRegistry().computeActionImpact(serviceStateDescription));
+                        impactActionList.addAll(ServiceStateProcessor.computeActionImpact(serviceStateDescription));
                     }
 
                     // register optional action impact
                     for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getOptionalServiceStateDescriptionList()) {
-                        impactActionList.addAll(Registries.getUnitRegistry().computeActionImpact(serviceStateDescription));
+                        impactActionList.addAll(ServiceStateProcessor.computeActionImpact(serviceStateDescription));
                     }
 
                     if (isActive()) {

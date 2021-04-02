@@ -103,5 +103,11 @@
             <version>${dependency.bco.authentication.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.unit.test</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

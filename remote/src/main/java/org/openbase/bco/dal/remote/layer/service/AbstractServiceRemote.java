@@ -683,10 +683,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                 // mark this actions as intermediary
                 actionDescriptionBuilder.setIntermediary(true);
 
-                if (authToken != null) {
-
-                }
-
                 // validate that the action is really a new one
                 if (!actionDescriptionBuilder.getActionId().isEmpty()) {
                     throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
