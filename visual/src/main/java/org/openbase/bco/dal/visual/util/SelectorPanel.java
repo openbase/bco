@@ -113,15 +113,15 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         // register change observer
         Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
-            SwingUtilities.invokeLater(() -> {
-                updateDynamicComponents();
-            });
+            SwingUtilities.invokeLater(this::updateDynamicComponents);
         });
 
         init = true;
 
-        setEnable(true);
-        updateDynamicComponents();
+        SwingUtilities.invokeLater(() -> {
+            setEnable(true);
+            updateDynamicComponents();
+        });
     }
 
     private void initDynamicComponents() {
