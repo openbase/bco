@@ -58,7 +58,7 @@ public class RootLocationElement extends LocationElement {
         // list location power consumption
         sitemap.openTextContext("Energieverbrauch", SitemapIconType.ENERGY);
         for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION)) {
-            sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
+            sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + " Verbrauch [%.1f Watt]", SitemapIconType.ENERGY);
             sitemap.append(new GenericUnitSitemapElement(unitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE, true));
         }
         sitemap.closeContext();

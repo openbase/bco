@@ -108,7 +108,7 @@ public class GenericUnitSitemapElement extends AbstractUnitSitemapElement {
                 sitemap.addTextElement(getItem(ServiceType.BUTTON_STATE_SERVICE), getLabel() + "[%s]", SitemapIconType.WALLSWITCH);
                 break;
             case POWER_CONSUMPTION_SENSOR:
-                sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Vebrauch [%.1f Watt]", SitemapIconType.ENERGY);
+                sitemap.addTextElement(getItem(ServiceType.POWER_CONSUMPTION_STATE_SERVICE), getLabel() + " Verbrauch [%.1f Watt]", SitemapIconType.ENERGY);
                 break;
             case USER:
                 sitemap.addTextElement(getItem(ServiceType.PRESENCE_STATE_SERVICE), unitConfig.getUserConfig().getFirstName() + " " + unitConfig.getUserConfig().getLastName()  + "[%s]", SitemapIconType.MOTION);
