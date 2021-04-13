@@ -353,13 +353,11 @@ public class ServiceStateProcessor {
                             continue;
                         }
 
-                        System.out.println("Process: UNIT "+ LabelProcessor.getBestMatch(unitConfig.getLabel()));
                         actionImpactList.addAll(computeActionImpact(serviceStateDescription.toBuilder().setUnitId(unitConfig.getId()).build(), processedServiceStates));
                     }
 
                     // register location itself as impact in case its affected by child units through aggregation
                     if(!locationChildUnits.isEmpty()) {
-                        System.out.println("store: UNIT "+ LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(serviceStateDescription.getUnitId()).getLabel()));
                         actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).setIntermediary(true).build());
                     }
 
@@ -370,7 +368,6 @@ public class ServiceStateProcessor {
                     }
 
                     // register group itself as impact
-                    System.out.println("store: UNIT "+ LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(serviceStateDescription.getUnitId()).getLabel()));
                     actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).setIntermediary(true).build());
                     break;
                 case SCENE:
@@ -385,13 +382,11 @@ public class ServiceStateProcessor {
                     }
 
                     // register scene itself as impact
-                    System.out.println("store: UNIT "+ LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(serviceStateDescription.getUnitId()).getLabel()));
                     actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
                     break;
                 case APP:
                 case AGENT:
                     // register unit itself as impact
-                    System.out.println("store: UNIT "+ LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(serviceStateDescription.getUnitId()).getLabel()));
                     actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
                     break;
                 case USER:

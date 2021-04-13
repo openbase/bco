@@ -271,7 +271,6 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
     }
 
     private void submit(final String state) {
-        System.err.println("debug: " + state);
         if (printStream != null) {
             printStream.println(state);
         }
