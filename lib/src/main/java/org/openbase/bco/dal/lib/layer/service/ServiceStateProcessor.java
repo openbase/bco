@@ -318,10 +318,8 @@ public class ServiceStateProcessor {
         // handle termination:
         // make sure duplicated service states are only processed ones.
         if(processedServiceStates.contains(serviceStateDescription)) {
-            System.out.println("SKIP");
             return Collections.emptySet();
         } else {
-            System.out.println("CONTINUE");
             processedServiceStates.add(serviceStateDescription);
         }
 
@@ -337,7 +335,6 @@ public class ServiceStateProcessor {
                 // validate that service is compatible
                 for (ServiceConfig serviceConfig : impactedUnitConfig.getServiceConfigList()) {
                     if (serviceConfig.getServiceDescription().getServiceType() == serviceStateDescription.getServiceType()) {
-                        System.out.println("store: UNIT "+ LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(serviceStateDescription.getUnitId()).getLabel()));
                         actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
                         break;
                     }

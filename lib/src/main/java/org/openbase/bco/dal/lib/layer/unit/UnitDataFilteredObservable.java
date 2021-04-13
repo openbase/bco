@@ -158,7 +158,7 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
                 }
             }
         }
-        LOGGER.trace("For {} let pass Fields[{}]: {}", serviceTempus.name(), fieldsToKeep.toString(), builder.build());
+//        LOGGER.trace("For {} let pass Fields[{}]: {}", serviceTempus.name(), fieldsToKeep.toString(), builder.build());
         return builder;
     }
 }
