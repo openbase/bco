@@ -86,7 +86,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
      */
     @Override
     public M requestStatus() throws CouldNotPerformException {
-        logger.debug("requestStatus of " + this);
+        logger.debug("requestStatus of {}", this);
         try {
             return updateDataToPublish(cloneDataBuilder());
         } catch (RuntimeException ex) {

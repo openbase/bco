@@ -78,7 +78,7 @@ public abstract class AbstractAuthenticatedConfigurableController<M extends Abst
      */
     @Override
     public M requestStatus() throws CouldNotPerformException {
-        logger.debug("requestStatus of " + this);
+        logger.debug("requestStatus of {}", this);
         try {
             return updateDataToPublish(cloneDataBuilder());
         } catch (RuntimeException ex) {
