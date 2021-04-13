@@ -118,6 +118,12 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
      * @throws CouldNotPerformException
      */
     public void applyStateUpdate(final String itemName, final String stateType, final String state, final boolean systemSync) throws CouldNotPerformException {
+
+        // filter empty events
+        if (state == null || state.equalsIgnoreCase(EMPTY_COMMAND_STRING)) {
+            return;
+        }
+
         OpenHABItemNameMetaData metaData;
         try {
             metaData = OpenHABItemProcessor.getMetaData(itemName);
@@ -126,7 +132,16 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
             return;
         }
         try {
-            final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
+            // load controller
+            final String controllerId = Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId();
+
+            // filter all events that are not handled by this instance.
+            if (!unitControllerRegistry.contains(controllerId)) {
+                return;
+            }
+
+            final UnitController<?, ?> unitController = unitControllerRegistry.get(controllerId);
+
             Message.Builder serviceStateBuilder = getServiceData(stateType, state, metaData.getServiceType()).toBuilder();
 
             // update the responsible action to show that it was triggered by openHAB and add other parameters
@@ -139,23 +154,17 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
 
             LOGGER.info("Apply ItemUpdate[" + itemName + "=" + state + "].");
             unitController.applyDataUpdate(serviceStateBuilder, metaData.getServiceType());
-        } catch (NotAvailableException ex) {
-            if (!unitControllerRegistry.isInitiallySynchronized()) {
-                LOGGER.debug("ItemUpdate[" + itemName + "=" + state + "] skipped because controller registry was not ready yet!");
-                return;
-            }
-            throw ex;
+
         } catch (InvalidStateException ex) {
             LOGGER.debug("Ignore state update [" + state + "] for service[" + metaData.getServiceType() + "]", ex);
+        } catch (CouldNotPerformException ex) {
+            LOGGER.warn("Ignore state update [" + state + "] for service[" + metaData.getServiceType() + "]", ex);
         }
     }
 
     private static final String EMPTY_COMMAND_STRING = "null";
 
     public static Message getServiceData(final String stateType, final String commandString, final ServiceType serviceType) throws CouldNotPerformException {
-        if (commandString.equalsIgnoreCase(EMPTY_COMMAND_STRING)) {
-            throw new InvalidStateException("Received null for state update");
-        }
 
         try {
             Command command = null;
