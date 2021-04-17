@@ -57,11 +57,11 @@ public class ServiceAdvertiser implements Shutdownable {
         }
 
 
-        try {
-            domainNameServices.add(JmDNS.create());
-        } catch (IOException ex) {
-            ExceptionPrinter.printHistory("Could not initiate domain name service for default interface!", ex, LOGGER);
-        }
+//        try { // disabled since its not used yet but causes some network service loops. service might be replaced by another implementation.
+//            domainNameServices.add(JmDNS.create());
+//        } catch (IOException ex) {
+//            ExceptionPrinter.printHistory("Could not initiate domain name service for default interface!", ex, LOGGER);
+//        }
 
 //        for (InetAddress localHostLANAddress : getLocalHostLANAddress()) {
 //            System.err.println("interface: "+localHostLANAddress.getHostAddress());
