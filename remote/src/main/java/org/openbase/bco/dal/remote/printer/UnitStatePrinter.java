@@ -223,11 +223,11 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
 
                 // compute related units to filter
                 for (ActionReferenceType.ActionReference cause : responsibleAction.getActionCauseList()) {
-                    relatedUnitIds.add("'" + cause.getServiceStateDescription().getUnitId() + "'");
+                    relatedUnitIds.add("'" + IdResolver.getId(cause.getServiceStateDescription().getUnitId()) + "'");
                 }
 
                 for (ActionReferenceType.ActionReference impact : responsibleAction.getActionImpactList()) {
-                    relatedUnitIds.add("'" + impact.getServiceStateDescription().getUnitId() + "'");
+                    relatedUnitIds.add("'" + IdResolver.getId(impact.getServiceStateDescription().getUnitId()) + "'");
                 }
             }
 
@@ -236,7 +236,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
                     // print technical representation
                     for (String extractServiceState : Services.generateServiceStateStringRepresentation(serviceState, serviceType)) {
                         submit("transition("
-                                + "'" + unit.getId() + "', "
+                                + "'" + IdResolver.getId(unit) + "', "
                                 + "'" + unit.getConfig().getAlias(0) + "', "
                                 + unit.getUnitType().name().toLowerCase() + ", "
                                 + initiator + ", "
@@ -249,7 +249,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
                     try {
                         // submit
                         submit("transition("
-                                + "'" + unit.getConfig().getId() + "', "
+                                + "'" + IdResolver.getId(unit) + "', "
                                 + "'" + unit.getConfig().getAlias(0) + "', "
                                 + unit.getUnitType().name().toLowerCase() + ", "
                                 + initiator + ", "
@@ -260,6 +260,9 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
                     } catch (InvalidStateException ex) {
                         // in case the service value is unknown we just skip the print.
                     }
+                    break;
+                case HUMAN_READABLE:
+                    // already handled above
                     break;
                 default:
                     LOGGER.warn("Unknown format selected! Skip state printing...");
