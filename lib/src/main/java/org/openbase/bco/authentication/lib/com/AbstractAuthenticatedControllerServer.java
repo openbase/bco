@@ -86,7 +86,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
      */
     @Override
     public M requestStatus() throws CouldNotPerformException {
-        logger.debug("requestStatus of {}", this);
+        logger.trace("requestStatus of {}", this);
         try {
             return updateDataToPublish(cloneDataBuilder());
         } catch (RuntimeException ex) {
@@ -102,7 +102,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
 
     @Override
     public AuthenticatedValue requestDataAuthenticated(final TicketAuthenticatorWrapper ticket) throws CouldNotPerformException {
-        logger.debug("requestStatusAuthenticated of " + this);
+        logger.trace("requestStatusAuthenticated of " + this);
         // evaluate the ticket
         final AuthenticationBaseData authenticationBaseData = AuthenticatedServerManager.getInstance().verifyClientServerTicket(ticket);
 
