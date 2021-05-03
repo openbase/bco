@@ -57,7 +57,7 @@ public class BCOTrainDataGeneratorLauncher {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(BCOTrainDataGeneratorLauncher.class);
     private static final Random random = new Random(System.currentTimeMillis());
-    public static final long TIMEOUT = 5000;
+    public static final long TIMEOUT = 2000000000;
 
     public enum TrainCondition {
         PRESENCE_DARK_ON,
@@ -248,7 +248,7 @@ public class BCOTrainDataGeneratorLauncher {
         } catch (InterruptedException e) {
             LOGGER.info("generate canceled by user.");
         } catch (CouldNotPerformException | TimeoutException ex) {
-            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory("Training data generation failed!", ex, LOGGER);
             }
             System.exit(1);
