@@ -238,7 +238,6 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         // register action impact
         for (ActionDescription action : impactActionList) {
-            // todo: the action impact is still not always correct!
             ActionDescriptionProcessor.updateActionImpacts(actionDescriptionBuilder, action);
         }
 
