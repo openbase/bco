@@ -31,8 +31,10 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.dal.remote.printer.UnitStatePrinter.Config.PrintFormat;
+import org.openbase.bco.dal.remote.printer.jp.JPLogFormat;
+import org.openbase.bco.dal.remote.printer.jp.JPLogFormat.LogFormat;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -72,21 +74,15 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
 
     public static class Config {
 
-        public enum PrintFormat {
-            PROLOG_ALL_VALUES,
-            PROLOG_DISCRETE_VALUES,
-            HUMAN_READABLE
-        }
-
-        private PrintFormat format = PrintFormat.PROLOG_ALL_VALUES;
+        private LogFormat format = JPService.getValue(JPLogFormat.class, LogFormat.HUMAN_READABLE);
         private boolean skipUnknownValues = false;
         private boolean printInitialStates = false;
 
-        public PrintFormat getFormat() {
+        public LogFormat getFormat() {
             return format;
         }
 
-        public Config setFormat(PrintFormat format) {
+        public Config setFormat(LogFormat format) {
             this.format = format;
             return this;
         }
@@ -134,7 +130,8 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
         }
     }
 
-    public void init(final Filter<UnitConfig>... filters) throws InitializationException, InterruptedException {
+    @SafeVarargs
+    public final void init(final Filter<UnitConfig>... filters) throws InitializationException, InterruptedException {
         init(Arrays.asList(filters));
     }
 
@@ -181,7 +178,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
     private void print(Unit<?> unit, ServiceType serviceType, Message serviceState) {
 
         // print human readable format
-        if (config.format == PrintFormat.HUMAN_READABLE) {
+        if (config.format == LogFormat.HUMAN_READABLE) {
             try {
                 submit(MultiLanguageTextProcessor.getBestMatch(ServiceStateProcessor.getActionDescription(serviceState)));
             } catch (NotAvailableException e) {
@@ -217,22 +214,22 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
             // in case the responsible action is not available, we use the system as initiator because responsible actions are not available for pure provider services and those are always system generated.
             final String initiator = responsibleAction != null ? ActionDescriptionProcessor.getInitialInitiator(responsibleAction).getInitiatorType().name().toLowerCase() : "system";
 
-            final HashSet<String> relatedUnitIds = new HashSet<>();
+            final HashSet<String> relatedUnitIdServiceTypePair = new HashSet<>();
 
             if (responsibleAction != null) {
 
                 // compute related units to filter
                 for (ActionReferenceType.ActionReference cause : responsibleAction.getActionCauseList()) {
-                    relatedUnitIds.add("'" + IdResolver.getId(cause.getServiceStateDescription().getUnitId()) + "'");
+                    relatedUnitIdServiceTypePair.add("['" + IdResolver.getId(cause.getServiceStateDescription().getUnitId()) + "', "+cause.getServiceStateDescription().getServiceType().name().toLowerCase()+"]");
                 }
 
                 for (ActionReferenceType.ActionReference impact : responsibleAction.getActionImpactList()) {
-                    relatedUnitIds.add("'" + IdResolver.getId(impact.getServiceStateDescription().getUnitId()) + "'");
+                    relatedUnitIdServiceTypePair.add("['" + IdResolver.getId(impact.getServiceStateDescription().getUnitId()) + "', "+impact.getServiceStateDescription().getServiceType().name().toLowerCase()+"]");
                 }
             }
 
             switch (config.format) {
-                case PROLOG_ALL_VALUES:
+                case PROLOG:
                     // print technical representation
                     for (String extractServiceState : Services.generateServiceStateStringRepresentation(serviceState, serviceType)) {
                         submit("transition("
@@ -241,10 +238,10 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
                                 + unit.getUnitType().name().toLowerCase() + ", "
                                 + initiator + ", "
                                 + extractServiceState + ", "
-                                + "[" + StringProcessor.transformCollectionToString(relatedUnitIds, ", ") + "]).");
+                                + "[" + StringProcessor.transformCollectionToString(relatedUnitIdServiceTypePair, ", ") + "]).");
                     }
                     break;
-                case PROLOG_DISCRETE_VALUES:
+                case PROLOG_DISCRETE_VALUES_ONLY:
                     // print technical representation
                     try {
                         // submit
@@ -254,7 +251,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
                                 + unit.getUnitType().name().toLowerCase() + ", "
                                 + initiator + ", "
                                 + Services.generateServiceValueStringRepresentation(serviceState, serviceType, config.skipUnknownValues) + ", "
-                                + "[" + StringProcessor.transformCollectionToString(relatedUnitIds, ", ") + "]).");
+                                + "[" + StringProcessor.transformCollectionToString(relatedUnitIdServiceTypePair, ", ") + "]).");
                     } catch (NotAvailableException ex) {
                         // in case the service value is not available, its not a discrete value and its print will be skipped.
                     } catch (InvalidStateException ex) {
