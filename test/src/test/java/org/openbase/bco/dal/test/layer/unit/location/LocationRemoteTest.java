@@ -659,14 +659,4 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             }
         }
     }
-
-    @Test(timeout = 5000)
-    public void testLocationChain() throws Exception {
-        System.out.println("testLocationChain");
-
-        // wait for data
-        rootLocationRemote.waitForData();
-        final RemoteAction remoteAction = waitForExecution(rootLocationRemote.setPowerState(State.ON));
-        remoteAction.getActionDescription();
-    }
 }
