@@ -59,7 +59,9 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
     public void processData(String id, IdentifiableMessage<String, UnitConfig, Builder> entry, ProtoBufMessageMap<String, UnitConfig, Builder> entryMap, ProtoBufRegistry<String, UnitConfig, Builder> registry) throws CouldNotPerformException, EntryModification {
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        if (unitConfig.getAliasList().isEmpty()) {
+        if (unitConfig.getAliasList().isEmpty() ||
+            unitConfig.getAliasList().stream().noneMatch((it) -> it.startsWith(generateAliasPrefix(unitConfig.getUnitType())))
+        ) {
             Map<UnitType, Integer> copy = null;
             if (registry.isSandbox()) {
                 copy = new HashMap<>(unitTypeAliasNumberMap);
@@ -103,7 +105,11 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
         registerNumber(newNumber, unitType);
 
         // generate and return alias string
-        return StringProcessor.transformUpperCaseToPascalCase(unitType.name()) + ALIAS_NUMBER_SEPARATOR + newNumber;
+        return generateAliasPrefix(unitType) + newNumber;
+    }
+
+    private String generateAliasPrefix(final UnitType unitType) {
+        return StringProcessor.transformUpperCaseToPascalCase(unitType.name()) + ALIAS_NUMBER_SEPARATOR;
     }
 
 
