@@ -82,19 +82,21 @@ public class XMasLightAgent extends AbstractTriggerableAgent {
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
             final UnitConfig unitConfig = super.applyConfigUpdate(config);
+            String relatedSceneAlias = getConfig().getAlias(0)+ "_"+XMAS_SCENE;
 
             // create xmas scene if not available otherwise load config of existing one
             UnitConfig xMasLightSceneConfig = null;
             try {
-                xMasLightSceneConfig = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(XMAS_SCENE, UnitType.SCENE);
+                xMasLightSceneConfig = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(relatedSceneAlias, UnitType.SCENE);
             } catch (final NotAvailableException ex) {
-                final Builder xMasSceneBuilder = UnitConfig.newBuilder();
+                Builder xMasSceneBuilder = UnitConfig.newBuilder();
                 xMasSceneBuilder.setUnitType(UnitType.SCENE);
-                xMasSceneBuilder.addAlias(XMAS_SCENE);
+                xMasSceneBuilder.addAlias(relatedSceneAlias);
                 LabelProcessor.addLabel(xMasSceneBuilder.getLabelBuilder(), Locale.ENGLISH, "XMas Lights");
                 LabelProcessor.addLabel(xMasSceneBuilder.getLabelBuilder(), Locale.GERMAN, "Weihnachtsbeleuchtung");
 
                 try {
+                    // save
                     xMasLightSceneConfig = Registries.getUnitRegistry().registerUnitConfig(xMasSceneBuilder.build()).get(5, TimeUnit.SECONDS);
                 } catch (ExecutionException | TimeoutException exx) {
                     ExceptionPrinter.printHistory("Could not register XMas Light Group", ex, logger);

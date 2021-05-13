@@ -46,7 +46,7 @@ import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +57,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class PresenceLightSceneAgent extends AbstractTriggerableAgent {
 
-    public final static String XMAS_SCENE = "PresenceLightScene";
+    public final static String PRESENCE_LIGHT_SCENE_PREFIX = "PresenceLightScene";
 
     public static final double MIN_ILLUMINANCE_UNTIL_TRIGGER = 100d;
 
@@ -89,27 +89,50 @@ public class PresenceLightSceneAgent extends AbstractTriggerableAgent {
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
             final UnitConfig unitConfig = super.applyConfigUpdate(config);
+            String relatedSceneAlias = getConfig().getAlias(0)+ "_"+PRESENCE_LIGHT_SCENE_PREFIX;
 
-            // create xmas scene if not available otherwise load config of existing one
-            UnitConfig xMasLightSceneConfig = null;
+            // legacy handling to update outdated aliases
             try {
-                xMasLightSceneConfig = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(XMAS_SCENE, UnitType.SCENE);
+                final UnitConfig.Builder outDatedScene = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(PRESENCE_LIGHT_SCENE_PREFIX, UnitType.SCENE).toBuilder();
+
+                // update alias
+                final ArrayList<String> aliases = new ArrayList<>(outDatedScene.getAliasList());
+                aliases.remove(PRESENCE_LIGHT_SCENE_PREFIX);
+                aliases.add(relatedSceneAlias);
+                outDatedScene.clearAlias();
+                outDatedScene.addAllAlias(aliases);
+
+                // save
+                try {
+                    Registries.getUnitRegistry().updateUnitConfig(outDatedScene.build()).get(5, TimeUnit.SECONDS);
+                } catch (ExecutionException | TimeoutException exx) {
+                    ExceptionPrinter.printHistory("Could not register Presence Light Group", exx, logger);
+                }
             } catch (final NotAvailableException ex) {
-                final Builder presenceLightSceneBuilder = UnitConfig.newBuilder();
+                // this should be the normal case so just continue...
+            }
+
+            // create presence scene if not available otherwise load config of existing one
+            UnitConfig presenceLightSceneConfig = null;
+            try {
+                presenceLightSceneConfig = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(relatedSceneAlias, UnitType.SCENE);
+            } catch (final NotAvailableException ex) {
+                Builder presenceLightSceneBuilder = UnitConfig.newBuilder();
+                presenceLightSceneBuilder.addAlias(relatedSceneAlias);
                 presenceLightSceneBuilder.setUnitType(UnitType.SCENE);
-                presenceLightSceneBuilder.addAlias(XMAS_SCENE);
                 LabelProcessor.addLabel(presenceLightSceneBuilder.getLabelBuilder(), Locale.ENGLISH, "Presence Light Scene");
                 LabelProcessor.addLabel(presenceLightSceneBuilder.getLabelBuilder(), Locale.GERMAN, "Anwesenheitslicht Scene");
 
                 try {
-                    xMasLightSceneConfig = Registries.getUnitRegistry().registerUnitConfig(presenceLightSceneBuilder.build()).get(5, TimeUnit.SECONDS);
+                    // save
+                    presenceLightSceneConfig = Registries.getUnitRegistry().registerUnitConfig(presenceLightSceneBuilder.build()).get(5, TimeUnit.SECONDS);
                 } catch (ExecutionException | TimeoutException exx) {
-                    ExceptionPrinter.printHistory("Could not register XMas Light Group", ex, logger);
+                    ExceptionPrinter.printHistory("Could not register Presence Light Group", ex, logger);
                 }
             }
 
-            // load xmas scene
-            presenceScene = Units.getUnit(xMasLightSceneConfig, false, Units.SCENE);
+            // load presence scene
+            presenceScene = Units.getUnit(presenceLightSceneConfig, false, Units.SCENE);
             return unitConfig;
         }
     }
@@ -118,7 +141,7 @@ public class PresenceLightSceneAgent extends AbstractTriggerableAgent {
     protected void trigger(final ActivationState activationState) throws
             CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
 
-        // activate xmas scene
+        // activate presence scene
         switch (activationState.getValue()) {
             case ACTIVE:
                 observe(presenceScene.setActivationState(State.ACTIVE, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)));
