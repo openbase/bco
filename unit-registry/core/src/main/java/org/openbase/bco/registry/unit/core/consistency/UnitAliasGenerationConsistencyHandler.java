@@ -38,10 +38,8 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, Builder> {
 
@@ -105,8 +103,11 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
         }
 
         // make sure default alias is always on top
-        final ArrayList<String> sortedAliasList = new ArrayList<>(unitConfig.getAliasList());
-        sortedAliasList.sort(aliasComparator);
+        final List<String> sortedAliasList = new ArrayList<>(unitConfig.getAliasList())
+            .stream()
+            .sorted(aliasComparator)
+            .distinct()
+            .collect(Collectors.toList());
         if (!sortedAliasList.equals(unitConfig.getAliasList())) {
             unitConfig.clearAlias();
             unitConfig.addAllAlias(sortedAliasList);
