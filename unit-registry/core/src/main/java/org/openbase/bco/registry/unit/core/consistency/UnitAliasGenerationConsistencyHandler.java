@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * #L%
  */
 
+import com.google.protobuf.ProtocolStringList;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -37,6 +38,8 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,9 +61,21 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, Builder> entry, ProtoBufMessageMap<String, UnitConfig, Builder> entryMap, ProtoBufRegistry<String, UnitConfig, Builder> registry) throws CouldNotPerformException, EntryModification {
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        final String aliasPrefix = generateAliasPrefix(unitConfig.getUnitType());
+
+        // create comparator that sorts the default alias on top.
+        final Comparator<String> aliasComparator = (o1, o2) -> {
+            if (o1.startsWith(generateAliasPrefix(unitConfig.getUnitType()))) {
+                return -1000;
+            }
+            if (o2.startsWith(generateAliasPrefix(unitConfig.getUnitType()))) {
+                return 1000;
+            }
+            return o1.compareTo(o2);
+        };
 
         if (unitConfig.getAliasList().isEmpty() ||
-            unitConfig.getAliasList().stream().noneMatch((it) -> it.startsWith(generateAliasPrefix(unitConfig.getUnitType())))
+            unitConfig.getAliasList().stream().noneMatch((it) -> it.startsWith(aliasPrefix))
         ) {
             Map<UnitType, Integer> copy = null;
             if (registry.isSandbox()) {
@@ -76,11 +91,25 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
             }
 
             final String alias = generateAndRegisterAlias(unitConfig.getUnitType());
-            unitConfig.addAlias(alias);
+
+            final ProtocolStringList newAliasList = unitConfig.getAliasList();
+            unitConfig.clearAlias();
+            newAliasList.add(alias);
+            newAliasList.sort(aliasComparator);
+            unitConfig.addAllAlias(newAliasList);
 
             if (registry.isSandbox()) {
                 unitTypeAliasNumberMap = copy;
             }
+            throw new EntryModification(entry.setMessage(unitConfig, this), this);
+        }
+
+        // make sure default alias is always on top
+        final ArrayList<String> sortedAliasList = new ArrayList<>(unitConfig.getAliasList());
+        sortedAliasList.sort(aliasComparator);
+        if (!sortedAliasList.equals(unitConfig.getAliasList())) {
+            unitConfig.clearAlias();
+            unitConfig.addAllAlias(sortedAliasList);
             throw new EntryModification(entry.setMessage(unitConfig, this), this);
         }
     }
