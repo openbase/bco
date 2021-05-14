@@ -66,7 +66,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
-                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> scneRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry,
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
         this.agentRegistry = agentRegistry;
@@ -76,7 +76,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         this.dalUnitRegistry = dalUnitRegistry;
         this.deviceRegistry = deviceRegistry;
         this.locationRegistry = locationRegistry;
-        this.sceneRegistry = scneRegistry;
+        this.sceneRegistry = sceneRegistry;
         this.unitGroupRegistry = unitGroupRegistry;
         this.unitRegistry = unitRegistry;
     }
@@ -86,7 +86,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         UnitConfig.Builder unitGroupUnitConfig = entry.getMessage().toBuilder();
         UnitGroupConfig.Builder unitGroup = unitGroupUnitConfig.getUnitGroupConfigBuilder();
 
-        // check if all member units fullfill the according unit type.
+        // check if all member units fulfill the according unit type.
         boolean modification = false;
         if (unitGroup.getUnitType() != UnitType.UNKNOWN) {
             final List<String> memberIds = new ArrayList<>();
@@ -104,25 +104,31 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
 
         // compute service list
         final HashMap<String, ServiceConfig> serviceConfigMap = new HashMap<>();
-        for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
-            for (ServiceConfig memberServiceConfig : getUnitConfigById(memberId).getServiceConfigList()) {
+        for (String memberId : unitGroup.getMemberIdList()) {
+            serviceLoop: for (ServiceConfig memberServiceConfig : getUnitConfigById(memberId).getServiceConfigList()) {
                 boolean supported = true;
                 for (String memberToCompare : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
                     boolean match = false;
+
+                    // check if member supports the service
                     for (ServiceConfig memberToCompareServiceConfig : getUnitConfigById(memberToCompare).getServiceConfigList()) {
                         if (memberServiceConfig.getServiceDescription().getServiceType() == memberToCompareServiceConfig.getServiceDescription().getServiceType() &&
                                 memberServiceConfig.getServiceDescription().getPattern() == memberToCompareServiceConfig.getServiceDescription().getPattern()) {
                             match = true;
+                            break;
                         }
                     }
-                    supported |= match;
+
+                    // if no match found that skip this service
+                    if(!match) {
+                        continue serviceLoop;
+                    }
                 }
 
                 // store service config if supported but make sure no service type service pattern pair is registered twice.
-                if (supported) {
-                    serviceConfigMap.put(memberServiceConfig.getServiceDescription().getServiceType().name() + memberServiceConfig.getServiceDescription().getPattern(), memberServiceConfig);
-                }
+                serviceConfigMap.put(memberServiceConfig.getServiceDescription().getServiceType().name() + memberServiceConfig.getServiceDescription().getPattern(), memberServiceConfig);
             }
+
             final List<ServiceDescription> originalServices = unitGroup.getServiceDescriptionList();
             unitGroup.clearServiceDescription();
             for (ServiceConfig value : serviceConfigMap.values()) {

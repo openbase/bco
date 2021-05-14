@@ -35,10 +35,7 @@ import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilter;
 import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilterImpl;
 import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.TimeoutException;
-import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -1497,21 +1494,14 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws NotAvailableException
      */
     default List<UnitConfig> getUnitConfigsByLocationIdAndServiceType(final String locationConfigId, final ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
-        List<UnitConfig> unitConfigList = new ArrayList<>();
+        final List<UnitConfig> unitConfigList = new ArrayList<>();
         UnitConfig unitConfig;
 
         for (String unitConfigId : getUnitConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
                 unitConfig = getUnitConfigById(unitConfigId);
-                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-
-                    if(serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) {
-                        continue;
-                    }
-
-                    if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
-                        unitConfigList.add(unitConfig);
-                    }
+                if(isServiceAvailable(serviceType, unitConfig)) {
+                    unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), LoggerFactory.getLogger(UnitRegistry.class));
@@ -1520,6 +1510,59 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         return unitConfigList;
     }
 
+    default boolean isServiceAvailable(final ServiceType serviceType, final UnitConfig unitConfig) {
+        for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+
+            if(serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) {
+                continue;
+            }
+
+            if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
+                if (serviceConfig.getServiceDescription().getAggregated()) {
+                    switch (unitConfig.getUnitType()) {
+                        case LOCATION:
+                            if(unitConfig
+                                .getLocationConfig()
+                                .getUnitIdList()
+                                .stream()
+                                .anyMatch(it -> {
+                                    try {
+                                        return isServiceAvailable(serviceType, getUnitConfigById(it));
+                                    } catch (NotAvailableException exception) {
+                                        return false;
+                                    }
+                                })) {
+                                return true;
+                            }
+                            break;
+                        case UNIT_GROUP:
+                            if(unitConfig
+                                    .getUnitGroupConfig()
+                                    .getMemberIdList()
+                                    .stream()
+                                    .anyMatch(it -> {
+                                        try {
+                                            return isServiceAvailable(serviceType, getUnitConfigById(it));
+                                        } catch (NotAvailableException exception) {
+                                            return false;
+                                        }
+                                    })) {
+                                return true;
+                            }
+                            break;
+                        default:
+                            new FatalImplementationErrorException(
+                                    "Unit["+LabelProcessor.getBestMatch(unitConfig.getLabel(), "?")+"] provides an aggregated service thats not allowed for units of type: "+ unitConfig.getUnitType().name()
+                                    , this
+                            );
+                    }
+                } else {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     /**
      * Method returns all service configurations which are direct or recursive

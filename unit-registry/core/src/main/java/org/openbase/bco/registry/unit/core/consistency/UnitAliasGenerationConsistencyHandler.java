@@ -90,10 +90,10 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
 
             final String alias = generateAndRegisterAlias(unitConfig.getUnitType());
 
-            final ProtocolStringList newAliasList = unitConfig.getAliasList();
-            unitConfig.clearAlias();
+            final List<String> newAliasList = new ArrayList<>(unitConfig.getAliasList());
             newAliasList.add(alias);
             newAliasList.sort(aliasComparator);
+            unitConfig.clearAlias();
             unitConfig.addAllAlias(newAliasList);
 
             if (registry.isSandbox()) {

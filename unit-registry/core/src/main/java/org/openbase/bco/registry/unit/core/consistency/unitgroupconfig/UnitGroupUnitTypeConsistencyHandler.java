@@ -66,7 +66,7 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
 
         // validate if all registered services are included in the unit template
         for (ServiceDescription serviceDescription : serviceDescriptionList) {
-            if (!unitTemplate.getServiceDescriptionList().stream().anyMatch(serviceTemplate -> serviceTemplate.getServiceType() == serviceDescription.getServiceType() &&
+            if (unitTemplate.getServiceDescriptionList().stream().noneMatch(serviceTemplate -> serviceTemplate.getServiceType() == serviceDescription.getServiceType() &&
                     serviceTemplate.getPattern() == serviceDescription.getPattern())) {
                 return false;
             }
@@ -74,7 +74,7 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
 
         //validate if all services of the unit template are registered
         for (ServiceDescription serviceTemplate : unitTemplate.getServiceDescriptionList()) {
-            if (!serviceDescriptionList.stream().anyMatch(serviceDescription -> serviceTemplate.getServiceType() == serviceDescription.getServiceType() &&
+            if (serviceDescriptionList.stream().noneMatch(serviceDescription -> serviceTemplate.getServiceType() == serviceDescription.getServiceType() &&
                     serviceTemplate.getPattern() == serviceDescription.getPattern())) {
                 return false;
             }
