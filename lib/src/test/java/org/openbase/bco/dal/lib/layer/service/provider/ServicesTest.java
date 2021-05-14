@@ -35,7 +35,6 @@ import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStat
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription.Builder;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.List;
 import java.util.Set;
@@ -54,29 +53,24 @@ public class ServicesTest extends AbstractBCORegistryTest {
 
         final Set<ActionDescription> impact = Services.computeActionImpact(serviceStateBuilder.build());
 
+        impact.forEach(
+            it -> Assert.assertNotEquals("Computed impact does not offer an valid action id!", "", it.getActionId())
+        );
+
         final List<String> impactedUnitIdList = impact.stream()
                 .map(it -> it.getServiceStateDescription().getUnitId())
+                .distinct()
                 .sorted()
                 .collect(Collectors.toList());
 
-        final List<String> affectedUnits =
+        final List<String> affectedUnitsUnsorted =
                 unitRegistry.getUnitConfigsByLocationIdAndServiceType(unitRegistry.getRootLocationConfig().getId(), serviceStateBuilder.getServiceType())
                         .stream()
-                        .filter(unitConfig -> !filterEmptyLocations(unitConfig))
                         .map(UnitConfig::getId)
+                        .distinct()
                         .sorted()
                         .collect(Collectors.toList());
 
-        Assert.assertEquals("impacted unit id list differs as expected", affectedUnits, impactedUnitIdList);
-    }
-
-    private boolean filterEmptyLocations(final UnitConfig unitConfig) {
-        try {
-            return unitConfig.getUnitType() == UnitType.LOCATION
-                    && Registries.getUnitRegistry().getUnitConfigsByLocationIdAndUnitTypeInclusiveSuperTypeRecursive(unitConfig.getId(), UnitType.UNKNOWN, true, false).isEmpty();
-        } catch (CouldNotPerformException e) {
-            e.printStackTrace();
-            return false;
-        }
+        Assert.assertEquals("impacted unit id list differs as expected", affectedUnitsUnsorted, impactedUnitIdList);
     }
 }

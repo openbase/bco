@@ -707,12 +707,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static List<UnitRemote<?>> getUnitsByLabelAndType(final String label, final UnitType unitType, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
-        try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitName");
-            }
 
+        if (label == null) {
+            assert false;
+            throw new NotAvailableException("UnitName");
+        }
+
+        try {
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(label, unitType)) {
                 unitRemoteList.add(getUnit(unitConfig, timeout, timeUnit));
@@ -741,12 +742,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static List<UnitRemote<?>> getUnitsByLabel(final String label, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
-        try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitName");
-            }
 
+        if (label == null) {
+            assert false;
+            throw new NotAvailableException("UnitName");
+        }
+
+        try {
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabel(label)) {
                 unitRemoteList.add(getUnit(unitConfig, timeout, timeUnit));
@@ -775,11 +777,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static UnitRemote<?> getUnitByAlias(final String alias, final long timeout, final TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
+
+        if (alias == null) {
+            assert false;
+            throw new NotAvailableException("UnitAlias");
+        }
+
         try {
-            if (alias == null) {
-                assert false;
-                throw new NotAvailableException("UnitAlias");
-            }
             return getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), timeout, timeUnit);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "alias:" + alias, ex);
@@ -805,11 +809,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static <UR extends UnitRemote<?>> UR getUnitByAlias(final String alias, final long timeout, final TimeUnit timeUnit, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+
+        if (alias == null) {
+            assert false;
+            throw new NotAvailableException("UnitAlias");
+        }
+
         try {
-            if (alias == null) {
-                assert false;
-                throw new NotAvailableException("UnitAlias");
-            }
             return castUnitRemote(getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), timeout, timeUnit), unitRemoteClass);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "alias:" + alias, ex);
@@ -844,11 +850,13 @@ public class Units {
      *                               interrupted
      */
     public static UnitRemote<?> getUnit(final String unitId, final boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (unitId == null) {
+            assert false;
+            throw new NotAvailableException("UnitId");
+        }
+
         try {
-            if (unitId == null) {
-                assert false;
-                throw new NotAvailableException("UnitId");
-            }
             return waitForData(getUnitRemote(unitId), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + unitId + "]", ex);
@@ -883,11 +891,13 @@ public class Units {
      *                               interrupted
      */
     public static UnitRemote<?> getUnit(final UnitConfig unitConfig, final boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (unitConfig == null) {
+            assert false;
+            throw new NotAvailableException("UnitConfig");
+        }
+
         try {
-            if (unitConfig == null) {
-                assert false;
-                throw new NotAvailableException("UnitConfig");
-            }
             return waitForData(getUnitRemote(unitConfig), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + unitConfig.getId() + "|" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]", ex);
@@ -1005,12 +1015,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static List<UnitRemote<?>> getUnitsByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
-        try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitName");
-            }
 
+        if (label == null) {
+            assert false;
+            throw new NotAvailableException("Label");
+        }
+
+        try {
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(label, unitType)) {
                 unitRemoteList.add(getUnit(unitConfig, waitForData));
@@ -1041,11 +1052,13 @@ public class Units {
      */
     @Deprecated
     public static UnitRemote<?> getUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (label == null) {
+            assert false;
+            throw new NotAvailableException("UnitName");
+        }
+
         try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitName");
-            }
             final List<UnitConfigType.UnitConfig> unitConfigList = Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(label, unitType);
 
             if (unitConfigList.isEmpty()) {
@@ -1077,12 +1090,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static List<UnitRemote<?>> getUnitsByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
-        try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitName");
-            }
 
+        if (label == null) {
+            assert false;
+            throw new NotAvailableException("UnitName");
+        }
+
+        try {
             final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabel(label)) {
                 unitRemoteList.add(getUnit(unitConfig, waitForData));
@@ -1110,11 +1124,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static UnitRemote<?> getUnitByAlias(final String alias, boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (alias == null) {
+            assert false;
+            throw new NotAvailableException("UnitAlias");
+        }
+
         try {
-            if (alias == null) {
-                assert false;
-                throw new NotAvailableException("UnitAlias");
-            }
             return getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "alias:" + alias, ex);
@@ -1139,11 +1155,13 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
     public static <UR extends UnitRemote<?>> UR getUnitByAlias(final String alias, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+
+        if (alias == null) {
+            assert false;
+            throw new NotAvailableException("UnitAlias");
+        }
+
         try {
-            if (alias == null) {
-                assert false;
-                throw new NotAvailableException("UnitAlias");
-            }
             return castUnitRemote(getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias(alias), waitForData), unitRemoteClass);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "alias:" + alias, ex);
@@ -1204,11 +1222,13 @@ public class Units {
      */
     @Deprecated
     public static UnitRemote<?> getUnitByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (label == null) {
+            assert false;
+            throw new NotAvailableException("UnitName");
+        }
+
         try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitName");
-            }
             final List<UnitConfigType.UnitConfig> unitConfigList = Registries.getUnitRegistry(true).getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
@@ -1311,11 +1331,13 @@ public class Units {
      *                               interrupted.
      */
     public static UnitRemote<?> getUnitByScope(final ScopeType.Scope scope, final boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (scope == null) {
+            assert false;
+            throw new NotAvailableException("UnitScope");
+        }
+
         try {
-            if (scope == null) {
-                assert false;
-                throw new NotAvailableException("UnitScope");
-            }
             return getUnit(Registries.getUnitRegistry(true).getUnitConfigByScope(scope), waitForData);
         } catch (CouldNotPerformException ex) {
             try {
@@ -1353,11 +1375,13 @@ public class Units {
      *                               interrupted.
      */
     public static UnitRemote<?> getUnitByScope(final Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (scope == null) {
+            assert false;
+            throw new NotAvailableException("UnitScope");
+        }
+
         try {
-            if (scope == null) {
-                assert false;
-                throw new NotAvailableException("UnitScope");
-            }
             return getUnitByScope(ScopeTransformer.transform(scope), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + scope + "]", ex);
@@ -1391,11 +1415,13 @@ public class Units {
      *                               interrupted.
      */
     public static UnitRemote<?> getUnitByScope(final String scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+
+        if (scope == null) {
+            assert false;
+            throw new NotAvailableException("UnitScope");
+        }
+
         try {
-            if (scope == null) {
-                assert false;
-                throw new NotAvailableException("UnitScope");
-            }
             return getUnitByScope(ScopeProcessor.generateScope(scope), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + scope + "]", ex);
@@ -1826,16 +1852,17 @@ public class Units {
      *                               interrupted.
      */
     public UnitRemote<?> getUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) throws NotAvailableException, InterruptedException {
-        try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitLabel");
-            }
-            if (locationScope == null) {
-                assert false;
-                throw new NotAvailableException("UnitLocationScope");
-            }
 
+        if (label == null) {
+            assert false;
+            throw new NotAvailableException("UnitLabel");
+        }
+        if (locationScope == null) {
+            assert false;
+            throw new NotAvailableException("UnitLocationScope");
+        }
+
+        try {
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByLabel(label)) {
                 if (ScopeProcessor.generateStringRep(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getScope()).equals(locationScope)) {
                     return getUnit(unitConfig, waitForData);

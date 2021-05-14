@@ -50,6 +50,8 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
 
     String TYPE_FIELD_NAME_ACTION = "action";
 
+    String PRECOMPUTED_ACTION_ID = "PRECOMPUTED_ACTION";
+
     /**
      * The max execution time of an action until the action finishes if it was never extended.
      * The time unit is milliseconds.

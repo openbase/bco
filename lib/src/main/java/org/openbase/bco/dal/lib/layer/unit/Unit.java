@@ -766,45 +766,4 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     Future<AuthenticatedValueType.AuthenticatedValue> queryRecordAuthenticated(final AuthenticatedValueType.AuthenticatedValue databaseQuery);
 
     Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery);
-
-    /**
-     * Method resolves the action that is in any kind related to the given action id.
-     * Related in this case mean any action where the id is directly on the action stack of the unit or its an cause or impact of one of the actions on the stack.
-     *
-     * @param actionId the id of the action to check.
-     *
-     * @return the related action that was found on the stack.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available or no relation could be found.
-     */
-    default ActionDescription resolveRelatedActionDescription(String actionId) throws NotAvailableException {
-        try {
-            for (final ActionDescription actionDescription : getActionList()) {
-
-                // direct resolution
-                if (actionDescription.getActionId().equals(actionId)) {
-                    return actionDescription;
-                }
-
-                // resolve via causes
-                for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
-                    if (actionReference.getActionId().equals(actionId)) {
-                        return actionDescription;
-                    }
-                }
-
-                // resolve via impact
-                for (final ActionReference actionReference : actionDescription.getActionImpactList()) {
-                    if (actionReference.getActionId().equals(actionId)) {
-                        return actionDescription;
-                    }
-                }
-            }
-
-            // no relation found.
-            throw new NotAvailableException("RelatedAction");
-        } catch (NotAvailableException ex) {
-            throw new NotAvailableException("RelatedAction", ex);
-        }
-    }
 }

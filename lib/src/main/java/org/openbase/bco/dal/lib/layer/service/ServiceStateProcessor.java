@@ -27,6 +27,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -36,7 +37,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -301,7 +301,7 @@ public class ServiceStateProcessor {
 
     /**
      * Method computes the entire lower part of the action of the given service state modification. It can be used to precompute the impacted units without scheduling any actions.
-     * Since the action are not really executed and only precomputed, the returned list of action descriptions does not include the ids of the actions
+     * Since the actions are not really executed and only precomputed, the returned list of action descriptions does not include the ids of the actions
      *
      * @param serviceStateDescription the description providing the service modification.
      *
@@ -329,13 +329,33 @@ public class ServiceStateProcessor {
 
             final UnitConfig impactedUnitConfig = Registries.getUnitRegistry().getUnitConfigById(serviceStateDescription.getUnitId());
 
-            // in case a dal unit is referred this will be an end point and can directly be returned.
+            // in case a dal unit is referred this will be an end point and can directly be returned inclusive its influenced locations and groups
             if (UnitConfigProcessor.isDalUnit(impactedUnitConfig)) {
 
                 // validate that service is compatible
                 for (ServiceConfig serviceConfig : impactedUnitConfig.getServiceConfigList()) {
                     if (serviceConfig.getServiceDescription().getServiceType() == serviceStateDescription.getServiceType()) {
-                        actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
+                        actionImpactList.add(buildActionImpact(serviceStateDescription).build());
+
+                        // register all groups that are affected by this unit through service state aggregation
+                        Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.UNIT_GROUP)
+                                .stream()
+                                .filter(it -> it.getUnitGroupConfig().getMemberIdList().contains(impactedUnitConfig.getId()))
+                                .forEach(it -> actionImpactList.add(
+                                        buildActionImpact(
+                                                serviceStateDescription.toBuilder().setUnitId(it.getId()).build()
+                                        ).build()
+                                ));
+
+                        // register all locations that are affected by this unit through service state aggregation
+                        Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.LOCATION)
+                                .stream()
+                                .filter(it -> it.getLocationConfig().getUnitIdList().contains(impactedUnitConfig.getId()))
+                                .forEach(it -> actionImpactList.add(
+                                        buildActionImpact(
+                                                serviceStateDescription.toBuilder().setUnitId(it.getId()).build()
+                                        ).build()
+                                ));
                         break;
                     }
                 }
@@ -358,7 +378,7 @@ public class ServiceStateProcessor {
 
                     // register location itself as impact in case its affected by child units through aggregation
                     if(!locationChildUnits.isEmpty()) {
-                        actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).setIntermediary(true).build());
+                        actionImpactList.add(buildActionImpact(serviceStateDescription).setIntermediary(true).build());
                     }
 
                     break;
@@ -368,7 +388,7 @@ public class ServiceStateProcessor {
                     }
 
                     // register group itself as impact
-                    actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).setIntermediary(true).build());
+                    actionImpactList.add(buildActionImpact(serviceStateDescription).setIntermediary(true).build());
                     break;
                 case SCENE:
                     // register required action impact
@@ -382,12 +402,12 @@ public class ServiceStateProcessor {
                     }
 
                     // register scene itself as impact
-                    actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
+                    actionImpactList.add(buildActionImpact(serviceStateDescription).build());
                     break;
                 case APP:
                 case AGENT:
                     // register unit itself as impact
-                    actionImpactList.add(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
+                    actionImpactList.add(buildActionImpact(serviceStateDescription).build());
                     break;
                 case USER:
                 case AUTHORIZATION_GROUP:
@@ -403,6 +423,13 @@ public class ServiceStateProcessor {
         }
 
         return actionImpactList;
+    }
+
+    private static ActionDescription.Builder buildActionImpact(final ServiceStateDescription serviceStateDescription) {
+        return ActionDescription
+                .newBuilder()
+                .setActionId(Action.PRECOMPUTED_ACTION_ID)
+                .setServiceStateDescription(serviceStateDescription);
     }
 
     public static String serializeServiceState(final Message.Builder serviceStateBuilder, final boolean verify) throws CouldNotPerformException {
