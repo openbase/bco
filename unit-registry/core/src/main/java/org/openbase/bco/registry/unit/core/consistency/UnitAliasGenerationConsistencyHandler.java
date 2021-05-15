@@ -22,7 +22,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * #L%
  */
 
-import com.google.protobuf.ProtocolStringList;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -63,13 +62,17 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
 
         // create comparator that sorts the default alias on top.
         final Comparator<String> aliasComparator = (o1, o2) -> {
-            if (o1.startsWith(generateAliasPrefix(unitConfig.getUnitType()))) {
-                return -1000;
+            final boolean o1StartsWithDefaultPrefix = o1.startsWith(generateAliasPrefix(unitConfig.getUnitType()));
+            final boolean o2StartsWithDefaultPrefix = o2.startsWith(generateAliasPrefix(unitConfig.getUnitType()));
+            if (o1StartsWithDefaultPrefix && o2StartsWithDefaultPrefix) {
+                return o1.compareTo(o2);
+            } else if (o1StartsWithDefaultPrefix) {
+                return -1000+o1.compareTo(o2);
+            } else if (o2StartsWithDefaultPrefix) {
+                return 1000+o1.compareTo(o2);
+            } else {
+                return o1.compareTo(o2);
             }
-            if (o2.startsWith(generateAliasPrefix(unitConfig.getUnitType()))) {
-                return 1000;
-            }
-            return o1.compareTo(o2);
         };
 
         if (unitConfig.getAliasList().isEmpty() ||
