@@ -113,15 +113,15 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         // register change observer
         Registries.getUnitRegistry().addDataObserver((final DataProvider<UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
-            SwingUtilities.invokeLater(() -> {
-                updateDynamicComponents();
-            });
+            SwingUtilities.invokeLater(this::updateDynamicComponents);
         });
 
         init = true;
 
-        setEnable(true);
-        updateDynamicComponents();
+        SwingUtilities.invokeLater(() -> {
+            setEnable(true);
+            updateDynamicComponents();
+        });
     }
 
     private void initDynamicComponents() {
@@ -208,7 +208,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             try {
                 ArrayList<UnitConfigHolder> unitConfigHolderList = new ArrayList<>();
                 final UnitTypeHolder selectedItem = (UnitTypeHolder) unitTypeComboBox.getSelectedItem();
-                UnitType selectedUnitType = (selectedItem.getType() == null ? UnitType.UNKNOWN : selectedItem.getType());
+                final UnitType selectedUnitType = (selectedItem == null || selectedItem.getType() == null ? UnitType.UNKNOWN : selectedItem.getType());
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
                         for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocationId(selectedLocationConfigHolder.getConfig().getId())) {

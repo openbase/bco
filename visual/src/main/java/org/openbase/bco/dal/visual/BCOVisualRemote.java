@@ -76,7 +76,7 @@ public class BCOVisualRemote extends javax.swing.JFrame {
             selectorPanel.addObserver(genericUnitPanel.getUnitConfigObserver());
             init();
             SessionManager.getInstance().addLoginObserver((o, t) -> {
-                updateDynamicComponents();
+                java.awt.EventQueue.invokeAndWait(this::updateDynamicComponents);
             });
             updateDynamicComponents();
         } catch (CouldNotPerformException ex) {
@@ -267,10 +267,24 @@ public class BCOVisualRemote extends javax.swing.JFrame {
 
         BCOLogin.getSession().autoLogin(true);
 
+        BCOVisualRemote bcoVisualRemote;
         /* Create and display the form */
         java.awt.EventQueue.invokeAndWait(() -> {
             try {
-                new BCOVisualRemote().setVisible(true);
+                new BCOVisualRemote();
+            } catch (Exception ex) {
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                }
+                System.exit(1);
+            }
+        });
+
+        java.awt.EventQueue.invokeAndWait(() -> {
+            try {
+                if(!getInstance().isVisible()) {
+                    getInstance().setVisible(true);
+                }
             } catch (Exception ex) {
                 if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                     ExceptionPrinter.printHistory(ex, LOGGER);

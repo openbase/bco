@@ -23,8 +23,9 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.dal.remote.printer.UnitStatePrinter.Config.PrintFormat;
+import org.openbase.bco.dal.remote.printer.jp.JPLogFormat;
 import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
+import org.openbase.bco.dal.remote.printer.jp.JPLogFormat.LogFormat;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -52,7 +53,6 @@ public class BCOLogger extends UnitStatePrinter {
     public BCOLogger() throws InstantiationException {
         super(getTransitionPrintStream(),
                 new Config()
-                        .setFormat(PrintFormat.HUMAN_READABLE)
                         .setPrintInitialStates(false)
                         .setSkipUnknownValues(false));
 
@@ -63,6 +63,7 @@ public class BCOLogger extends UnitStatePrinter {
 
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
+        JPService.registerProperty(JPLogFormat.class);
         JPService.registerProperty(JPOutputDirectory.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPCredentialsDirectory.class);

@@ -7,6 +7,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /*-
  * #%L
@@ -84,7 +86,6 @@ public class ActionDescriptionProcessor {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionDescriptionProcessor.class);
-    private static final ServiceJSonProcessor JSON_PROCESSOR = new ServiceJSonProcessor();
 
     public static ActionParameter.Builder generateDefaultActionParameter(final Message serviceState, final ServiceType serviceType, final UnitType unitType) throws CouldNotPerformException {
         return generateDefaultActionParameter(generateServiceStateDescription(serviceState, serviceType).setUnitType(unitType).build(), true);
@@ -255,28 +256,6 @@ public class ActionDescriptionProcessor {
         return description;
     }
 
-
-//    /**
-//     * Generates an action description according to the configuration of this unit remote.
-//     * The action description is generated using the ActionDescriptionProcessor.
-//     * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
-//     *
-//     * @param serviceState the service attribute that will be applied by this action
-//     * @param serviceType      the service type according to the service attribute
-//     * @param authorized       flag to define if this action should be authorized by the currently authenticated user or should be performed with OTHER rights.
-//     *
-//     * @return the generated action description
-//     *
-//     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
-//     *                                  verified or serialized
-//     */
-//    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceState, final ServiceType serviceType, final boolean authorized) throws CouldNotPerformException {
-//        final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(serviceState, serviceType);
-//        actionDescriptionBuilder.setActionInitiator(detectActionInitiatorId(authorized));
-//        return updateActionDescription(actionDescriptionBuilder, serviceState, serviceType);
-//    }
-//
-
     /**
      * Generates an action description according to the configuration of this unit remote.
      * The action description is generated using the ActionDescriptionProcessor.
@@ -293,34 +272,6 @@ public class ActionDescriptionProcessor {
     public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
         return generateActionDescriptionBuilder(generateDefaultActionParameter(serviceState, serviceType));
     }
-//
-//    /**
-//     * Generates an action description according to the given attributes.
-//     * The action description is generated using the ActionDescriptionProcessor.
-//     * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
-//     *
-//     * @param serviceState the service attribute that will be applied by this action
-//     * @param serviceType      the service type according to the service attribute
-//     * @param unitType         the service type according to the service attribute
-//     * @param authorized       flag to define if this action should be authorized by the currently authenticated user or should be performed with OTHER rights.
-//     *
-//     * @return the generated action description
-//     *
-//     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
-//     *                                  verified or serialized
-//     */
-//    public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceState, ServiceType serviceType, final UnitType unitType, final boolean authorized) throws CouldNotPerformException {
-//
-//        // generate default description
-//        final ActionDescription.Builder actionDescriptionBuilder = generateActionDescriptionBuilder(serviceState, serviceType, authorized);
-//
-//        // update unit type
-//        actionDescriptionBuilder.getServiceStateDescriptionBuilder().setUnitType(unitType);
-//
-//        // return
-//        return actionDescriptionBuilder;
-//    }
-//
 
     /**
      * Generates an action description according to the given attributes.
@@ -339,28 +290,6 @@ public class ActionDescriptionProcessor {
     public static ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceState, ServiceType serviceType, final UnitType unitType) throws CouldNotPerformException {
         return generateActionDescriptionBuilder(generateDefaultActionParameter(serviceState, serviceType, unitType));
     }
-//
-//    /**
-//     * Generates an action description according to the configuration of the given unit.
-//     * The action description is generated using the ActionDescriptionProcessor.
-//     * This method will set the service state description according to the service attribute and service type
-//     * and replace several keys in the description to make it human readable.
-//     * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
-//     *
-//     * @param serviceState the service attribute that will be applied by this action
-//     * @param serviceType      the service type according to the service attribute
-//     * @param unit             the unit to control.
-//     * @param authorized       flag to define if this action should be authrorized by the currently authenticated user.
-//     *
-//     * @return the generated action description
-//     *
-//     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
-//     *                                  verified or serialized
-//     */
-//    public static ActionDescription.Builder generateActionDescriptionBuilderAndUpdate(final Message serviceState, final ServiceType serviceType, final Unit<?> unit, final boolean authorized) throws CouldNotPerformException {
-//        return updateActionDescription(generateActionDescriptionBuilder(serviceState, serviceType, authorized), serviceState, serviceType, unit);
-//    }
-//
 
     /**
      * Generates an action description according to the configuration of the given unit.
@@ -500,7 +429,7 @@ public class ActionDescriptionProcessor {
      */
     public static ServiceStateDescription.Builder generateServiceStateDescription(final Message serviceState, final ServiceType serviceType) throws CouldNotPerformException {
         ServiceStateDescription.Builder serviceStateDescriptionBuilder = ServiceStateDescription.newBuilder();
-        serviceStateDescriptionBuilder.setServiceState(JSON_PROCESSOR.serialize(Services.verifyAndRevalidateServiceState(serviceState)));
+        serviceStateDescriptionBuilder.setServiceState(Services.serializeServiceState(serviceState, true));
         serviceStateDescriptionBuilder.setServiceStateClassName(Services.getServiceStateClassName(serviceState));
         serviceStateDescriptionBuilder.setServiceType(serviceType);
         return serviceStateDescriptionBuilder;
@@ -549,11 +478,15 @@ public class ActionDescriptionProcessor {
      * @return the impacting actions with its impacts updated accordingly.
      */
     public static ActionDescription.Builder updateActionImpacts(final ActionDescription.Builder impactingAction, final ActionDescriptionOrBuilder impactedAction) {
-        if (impactedAction.getActionImpactList().isEmpty()) {
-            impactingAction.addActionImpact(generateActionReference(impactedAction));
-        } else {
-            impactingAction.addAllActionImpact(impactedAction.getActionImpactList());
-        }
+
+        final List<ActionReference> actionImpactList = new ArrayList<>(impactingAction.getActionImpactList());
+
+        actionImpactList.add(generateActionReference(impactedAction));
+        actionImpactList.addAll(impactedAction.getActionImpactList());
+
+        impactingAction.clearActionImpact();
+        impactingAction.addAllActionImpact(actionImpactList.stream().distinct().collect(Collectors.toList()));
+
         return impactingAction;
     }
 
@@ -566,9 +499,9 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException if preparing fails.
      */
     public static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final Unit<?> unit) throws CouldNotPerformException {
-        final Message.Builder serviceStateBuilder = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName()).toBuilder();
+        final Message.Builder serviceStateBuilder = Services.deserializeServiceState(actionDescriptionBuilder.getServiceStateDescription()).toBuilder();
         prepare(actionDescriptionBuilder, unit.getConfig(), serviceStateBuilder);
-        actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(JSON_PROCESSOR.serialize(serviceStateBuilder.build()));
+        actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(Services.serializeServiceState(serviceStateBuilder.build(), false));
     }
 
     /**
@@ -598,9 +531,9 @@ public class ActionDescriptionProcessor {
      * @throws CouldNotPerformException if preparing fails.
      */
     public static void prepare(final ActionDescription.Builder actionDescriptionBuilder, final UnitConfig unitConfig) throws CouldNotPerformException {
-        final Message.Builder serviceStateBuilder = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName()).toBuilder();
+        final Message.Builder serviceStateBuilder = Services.deserializeServiceState(actionDescriptionBuilder.getServiceStateDescription()).toBuilder();
         prepare(actionDescriptionBuilder, unitConfig, serviceStateBuilder);
-        actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(JSON_PROCESSOR.serialize(serviceStateBuilder.build()));
+        actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(Services.serializeServiceState(serviceStateBuilder.build(), false));
     }
 
     /**
@@ -651,7 +584,6 @@ public class ActionDescriptionProcessor {
             }
         }
 
-
         // if the action is not schedulable it is also not interruptible
         if (!actionDescriptionBuilder.getSchedulable()) {
             actionDescriptionBuilder.setInterruptible(false);
@@ -695,6 +627,25 @@ public class ActionDescriptionProcessor {
 
         // generate or update action description
         generateDescription(actionDescriptionBuilder, serviceStateBuilder, unitConfig);
+
+        // compute impact for dal units
+        // such as a light that has an impact on its locations or groups its part of.
+        if (unitConfig != null && actionDescriptionBuilder.getServiceStateDescription().getUnitId().equals(unitConfig.getId())) {
+            Services.computeActionImpact(actionDescriptionBuilder.getServiceStateDescription())
+                    .stream()
+                    .filter(it -> !it.getServiceStateDescription().getUnitId().equals(unitConfig.getId())) // filter origin unit
+                    .filter(impact -> !actionDescriptionBuilder
+                            .getActionCauseList()
+                            .stream()
+                            .anyMatch(cause ->
+                                    (
+                                        cause.getServiceStateDescription().getUnitId().equals(impact.getServiceStateDescription().getUnitId()) &&
+                                        cause.getServiceStateDescription().getServiceType().equals(impact.getServiceStateDescription().getServiceType())
+                                    )
+                            )
+                    )
+                    .forEach(it -> updateActionImpacts(actionDescriptionBuilder, it));
+        }
 
         // update responsible action in service state.
         Services.setResponsibleAction(actionDescriptionBuilder, serviceStateBuilder);
@@ -1013,7 +964,7 @@ public class ActionDescriptionProcessor {
             }
 
             // validate if service state can be deserialized
-            Message serviceState = JSON_PROCESSOR.deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceState(), actionDescriptionBuilder.getServiceStateDescription().getServiceStateClassName());
+            Message serviceState = Services.deserializeServiceState(actionDescriptionBuilder.getServiceStateDescription());
             Message.Builder serviceStateBuilder = Services.verifyAndRevalidateServiceState(serviceState).toBuilder();
 
             // prepare or validate preparation
@@ -1027,7 +978,7 @@ public class ActionDescriptionProcessor {
             }
 
             // Write state back
-            actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(JSON_PROCESSOR.serialize(serviceStateBuilder));
+            actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(Services.serializeServiceState(serviceStateBuilder, false));
 
             // validate that execution time period is set
             if (actionDescriptionBuilder.getExecutionTimePeriod() == 0) {
@@ -1239,7 +1190,7 @@ public class ActionDescriptionProcessor {
 
             // generate responsible action
             final Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
-            actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(JSON_PROCESSOR.serialize(serviceStateBuilder));
+            actionDescriptionBuilder.getServiceStateDescriptionBuilder().setServiceState(Services.serializeServiceState(serviceStateBuilder, false));
             actionDescriptionBuilder.setIntermediary(multiAction);
             ActionDescriptionProcessor.verifyActionDescription(actionDescriptionBuilder, targetUnit, true);
 

@@ -158,10 +158,10 @@ public class UnitModelPrinter {
             }
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
                 outputConsumer.consume("unit("
-                        + "'" + unitConfig.getId() + "', "
+                        + "'" + IdResolver.getId(unitConfig) + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
                         + "'" + unitConfig.getUnitType().name().toLowerCase() + "', "
-                        + "'" + unitConfig.getPlacementConfig().getLocationId() + "', ["
+                        + "'" + IdResolver.getId(unitConfig.getPlacementConfig().getLocationId()) + "', ["
                         + StringProcessor.transformCollectionToString(unitConfig.getLabel().getEntryList(), mapFieldEntry -> mapFieldEntry.getKey() + "='" + mapFieldEntry.getValue(0) + "'", ", ") + "], ["
                         + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() != ServicePattern.OPERATION) + "], ["
                         + StringProcessor.transformCollectionToString(unitConfig.getServiceConfigList(), serviceConfig -> "'" + serviceConfig.getServiceDescription().getServiceType().name().toLowerCase() + "'", ", ", (Filter<ServiceConfig>) serviceConfig -> serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) + "]"
@@ -179,7 +179,7 @@ public class UnitModelPrinter {
             }
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.LOCATION)) {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
-                        + "'" + unitConfig.getId() + "', "
+                        + "'" + IdResolver.getId(unitConfig) + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
                         + "'" + unitConfig.getLocationConfig().getLocationType().name().toLowerCase() + "', ["
                         + StringProcessor.transformCollectionToString(
@@ -199,7 +199,7 @@ public class UnitModelPrinter {
             }
             for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.CONNECTION)) {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
-                        + "'" + unitConfig.getId() + "', "
+                        + "'" + IdResolver.getId(unitConfig) + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
                         + "'" + unitConfig.getConnectionConfig().getConnectionType().name().toLowerCase() + "', ["
                         + StringProcessor.transformCollectionToString(
@@ -211,7 +211,7 @@ public class UnitModelPrinter {
                         unitConfig.getConnectionConfig().getTileIdList(),
                         tile_id -> {
                             try {
-                                return "'" + Registries.getUnitRegistry().getUnitConfigByIdAndUnitType(tile_id, UnitType.LOCATION).getId() + "'";
+                                return "'" + IdResolver.getId(Registries.getUnitRegistry().getUnitConfigByIdAndUnitType(tile_id, UnitType.LOCATION)) + "'";
                             } catch (CouldNotPerformException e) {
                                 return "na";
                             }

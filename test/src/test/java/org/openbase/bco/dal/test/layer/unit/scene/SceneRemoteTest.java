@@ -62,6 +62,7 @@ import org.openbase.jps.preset.JPLogLevel.LogLevel;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
@@ -121,7 +122,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     public static final String SCENE_GROUP = "GroupTriggerScene";
     public static final String COLORABLE_LIGHT_GROUP = "AllColorableLights";
 
-    public static final ActionParameter SCENE_ACTION_PARAM = ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.SECONDS.toMicros(10)).build();
+    public static final ActionParameter SCENE_ACTION_PARAM = ActionParameter.newBuilder().setExecutionTimePeriod(TimeUnit.MINUTES.toMicros(10)).build();
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SceneRemoteTest.class);
     private static final PowerState.State POWER_ON = PowerState.State.ON;
@@ -582,18 +583,26 @@ public class SceneRemoteTest extends AbstractBCOTest {
         int TEST_ITERATIONS = 3;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             System.out.println("Current iteration: " + i);
+
             waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
 
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
+            sceneRemoteOn.requestData().get();
+            sceneRemoteOff.requestData().get();
+
             assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
             assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
             assertEquals("Location on scene is not active", State.ACTIVE, sceneRemoteOn.getActivationState().getValue());
             assertEquals("Location off scene is not inactive", State.INACTIVE, sceneRemoteOff.getActivationState().getValue());
 
             waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
+            sceneRemoteOn.requestData().get();
+            sceneRemoteOff.requestData().get();
+
             assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
             assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
             assertEquals("Location on scene is not inactive", State.INACTIVE, sceneRemoteOn.getActivationState().getValue());
@@ -609,7 +618,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test(timeout = 20000)
-    public void testTestIntermediaryActionCancellationOnSceneDeactivation() throws Exception {
+    public void testIntermediaryActionCancellationOnSceneDeactivation() throws Exception {
         System.out.println("testTestIntermediaryActionCancellationOnSceneDeactivation");
 
         LightRemote internalLight = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, Units.LIGHT);
@@ -628,19 +637,20 @@ public class SceneRemoteTest extends AbstractBCOTest {
         final RemoteAction sceneAction = waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
 
         Assert.assertEquals("Scene action is marked as intermediary one!", false, sceneAction.getActionDescription().getIntermediary());
-
         Assert.assertNotEquals("Scene did not impact any action!", 0, sceneAction.getActionDescription().getActionImpactList().size());
-
 
         // resolve action impact
         List<RemoteAction> actionImpactList = new ArrayList<>();
         for (ActionReference actionReference : sceneAction.getActionDescription().getActionImpactList()) {
-            System.out.println("action impact of scene: " + Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true).getLabel());
-//            actionImpactList.add(new RemoteAction(Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true).resolveRelatedActionDescription(sceneAction.getActionId())));
+            try {
+                actionImpactList.add(new RemoteAction(Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true).resolveRelatedActionDescription(sceneAction.getActionId())));
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory("Can not lookup action["+actionReference.getActionId()+"] of "+sceneAction.getActionId(), ex, LOGGER);
+            }
         }
 
         for (RemoteAction actionImpact : actionImpactList) {
-            actionImpact.waitForRegistration();
+            actionImpact.waitForActionState(ActionState.State.EXECUTING);
             Assert.assertEquals("Impacted action not executing!", ActionStateType.ActionState.State.EXECUTING, actionImpact.getActionState());
         }
 
@@ -661,7 +671,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
                 continue;
             }
 
-            System.out.println("Action on stack: " + actionDescription.getActionState().getValue().name() + " = " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
+            LOGGER.error("Action on stack: " + actionDescription.getActionState().getValue().name() + " = " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
             assertTrue("internalLight has an ongoing action on its stack!", new RemoteAction(actionDescription).isDone());
         }
 
@@ -672,7 +682,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
                 continue;
             }
 
-            System.out.println("Action on stack: " + actionDescription.getActionState().getValue().name() + " = " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
+            LOGGER.error("Action on stack: " + actionDescription.getActionState().getValue().name() + " = " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
             assertTrue("internalPowerSwitch has an ongoing action on its stack!", new RemoteAction(actionDescription).isDone());
         }
     }
@@ -873,6 +883,5 @@ public class SceneRemoteTest extends AbstractBCOTest {
         Thread.sleep(AGGREGATION_TIME);  // let us wait some time to let the aggregation takes place.
         rootLocationRemote.requestData().get();
         Assert.assertEquals("Room is not off!", Power.OFF.getValue(), rootLocationRemote.getPowerState().getValue());
-
     }
 }

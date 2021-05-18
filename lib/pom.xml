@@ -17,7 +17,7 @@
     <licenses>
         <license>
             <name>LGPLv3</name>
-            <url>http://www.gnu.org/licenses/lgpl.html</url>
+            <url>https://www.gnu.org/licenses/lgpl.html</url>
         </license>
     </licenses>
     
@@ -102,6 +102,12 @@
             <artifactId>bco.authentication.lib</artifactId>
             <version>${dependency.bco.authentication.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.unit.test</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -399,8 +399,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testColorableLightControlViaLocation() throws Exception {
         System.out.println("testColorableLightControlViaLocation");
 
-        final List<? extends ColorableLightRemote> colorableLightRemotes = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT);
-        final List<? extends LightRemote> lightRemotes = rootLocationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT);
+        final List<? extends ColorableLightRemote> colorableLightRemotes = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT, true);
+        final List<? extends LightRemote> lightRemotes = rootLocationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT, true);
 
         // ==== TEST SUBTYPES
 

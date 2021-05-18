@@ -25,10 +25,13 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.Session;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.controller.ConfigurableRemote;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import rsb.Scope;
@@ -171,4 +174,16 @@ public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemo
     default Future<ActionDescription> extendAction(final ActionDescription actionDescription) {
         return extendAction(actionDescription, null);
     }
+
+    /**
+     * Method resolves the action that is in any kind related to the given action id.
+     * Related in this case mean any action where the id is directly on the action stack of the unit or its an cause or impact of one of the actions on the stack.
+     *
+     * @param actionId the id of the action to check.
+     *
+     * @return the related action that was found on the stack.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available or no relation could be found.
+     */
+    ActionDescription resolveRelatedActionDescription(String actionId) throws NotAvailableException, InterruptedException;
 }

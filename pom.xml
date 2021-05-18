@@ -49,11 +49,11 @@
     <licenses>
         <license>
             <name>LGPLv3</name>
-            <url>http://www.gnu.org/licenses/lgpl.html</url>
+            <url>https://www.gnu.org/licenses/lgpl.html</url>
         </license>
         <license>
             <name>GPLv3</name>
-            <url>http://www.gnu.org/licenses/gpl.html</url>
+            <url>https://www.gnu.org/licenses/gpl.html</url>
         </license>
     </licenses>
 
@@ -212,6 +212,7 @@
         <skipTests>false</skipTests>
         <java.source.version>8</java.source.version>
         <java.target.version>8</java.target.version>
+        <kotlin.version>1.5.0</kotlin.version>
         <dependency.rta.lib.version>[1.5,1.6-alpha)</dependency.rta.lib.version>
         <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
         <dependency.jul.version>2.0-SNAPSHOT</dependency.jul.version>

@@ -283,7 +283,8 @@ public class RemoteAction implements Action {
                     }
                 }
 
-                return FutureProcessor.allOfInclusiveResultFuture(setActionDescriptionAndStartObservation(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build())), targetUnit.getDataFuture());
+                return FutureProcessor.allOfInclusiveResultFuture(
+                        setActionDescriptionAndStartObservation(targetUnit.applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameterBuilder).build())), targetUnit.getDataFuture());
             }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not execute " + this + "!", ex));
@@ -332,6 +333,10 @@ public class RemoteAction implements Action {
             throw new InvalidStateException("Given action description seems not to refer to an already executed action!", new NotAvailableException("ActionDescription.id"));
         }
 
+        if (PRECOMPUTED_ACTION_ID.equals(actionDescription.getActionId())) {
+            throw new InvalidStateException("Given action is precomputed and can not be observed!");
+        }
+
         this.actionId = actionDescription.getActionId();
         this.serviceType = actionDescription.getServiceStateDescription().getServiceType();
 
@@ -347,6 +352,12 @@ public class RemoteAction implements Action {
             if (actionDescription.getIntermediary()) {
                 // observe impact actions and register callback if available to support action auto extension.
                 for (ActionReference actionReference : actionDescription.getActionImpactList()) {
+
+                    // skip actions references that are only precomputed ones.
+                    if (actionReference.getActionId().equals(Action.PRECOMPUTED_ACTION_ID)) {
+                        continue;
+                    }
+
                     RemoteAction remoteAction = new RemoteAction(actionReference, authToken, autoExtendCheckCallback);
                     remoteAction.addActionDescriptionObserver(impactActionObserver);
                     impactedRemoteActions.add(remoteAction);
@@ -375,6 +386,11 @@ public class RemoteAction implements Action {
         if (!actionReference.hasActionId()) {
             throw new InvalidStateException("Given action description seems not to refer to an already executed action!", new NotAvailableException("ActionDescription.id"));
         }
+
+        if (actionReference.getActionId().equals(PRECOMPUTED_ACTION_ID)) {
+            throw new InvalidStateException("Given action is precomputed and can not be observed!");
+        }
+
         this.actionReference = actionReference;
         this.actionId = actionReference.getActionId();
         this.serviceType = actionReference.getServiceStateDescription().getServiceType();
@@ -651,9 +667,16 @@ public class RemoteAction implements Action {
                     }
                 }
 
+                // if precomputed, than we are not responsible for the cancelation
+                if(PRECOMPUTED_ACTION_ID.equals(actionId)) {
+                    future = FutureProcessor.completedFuture(getActionDescription());
+                    return future;
+                }
+
                 // if already done then skip cancellation
                 if (isDone()) {
                     future = FutureProcessor.completedFuture(getActionDescription());
+                    return future;
                 }
 
                 // handle intermediary action

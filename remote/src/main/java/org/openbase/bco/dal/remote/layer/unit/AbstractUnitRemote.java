@@ -28,6 +28,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
 import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -51,6 +52,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -739,5 +741,54 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     @Override
     public Future<RecordCollectionType.RecordCollection> queryRecord(final QueryType.Query databaseQuery) {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(databaseQuery, RecordCollection.class, SessionManager.getInstance(), authenticatedValue -> queryRecordAuthenticated(authenticatedValue));
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param actionId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws NotAvailableException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public ActionDescription resolveRelatedActionDescription(String actionId) throws NotAvailableException, InterruptedException {
+        try {
+            for (final ActionDescription actionDescription : getActionList()) {
+
+                // direct resolution
+                if (actionDescription.getActionId().equals(actionId)) {
+                    return actionDescription;
+                }
+
+                // resolve via causes
+                for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
+                    if (actionReference.getActionId().equals(actionId)) {
+                        return actionDescription;
+                    }
+                }
+
+                // resolve via impact
+                for (final ActionReference actionReference : actionDescription.getActionImpactList()) {
+
+                    // once the action is only precomputed we need to lookup it from its related unit.
+                    if(actionReference.getActionId().equals(Action.PRECOMPUTED_ACTION_ID)) {
+                        try {
+                            return Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true).resolveRelatedActionDescription(actionId);
+                        } catch (NotAvailableException ex) {
+                            continue;
+                        }
+                    }
+
+                    if (actionReference.getActionId().equals(actionId)) {
+                        return actionDescription;
+                    }
+                }
+            }
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("RelatedAction", ex);
+        }
+        // no relation found.
+        throw new NotAvailableException("RelatedAction of ["+actionId+"]");
     }
 }

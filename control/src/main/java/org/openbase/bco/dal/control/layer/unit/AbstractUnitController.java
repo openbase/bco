@@ -141,7 +141,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
 
     private static final String LOCK_CONSUMER_NOTIFICATION = AbstractUnitController.class.getSimpleName() + ".notifyScheduledActionList(..)";
-    private static final String LOCK_CONSUMER_SCHEDULEING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
+    private static final String LOCK_CONSUMER_SCHEDULING = AbstractUnitController.class.getSimpleName() + ".reschedule(..)";
     private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
     private static final String LOCK_CONSUMER_CANCEL_ACTION = AbstractUnitController.class.getSimpleName() + ".cancelAction(..)";
     private static final String LOCK_CONSUMER_EXTEND_ACTION = AbstractUnitController.class.getSimpleName() + ".extendAction(..)";
@@ -575,7 +575,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             return;
         }
 
-        builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULEING);
+        builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULING);
         try {
             terminatingActionId = "n/a";
 
@@ -933,7 +933,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             throw new ShutdownInProgressException(this);
         }
 
-        builderSetup.lockWrite(LOCK_CONSUMER_SCHEDULEING);
+        builderSetup.lockWrite(LOCK_CONSUMER_SCHEDULING);
         try {
             // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
             actionListNotificationLock.writeLock().lock();
@@ -1743,7 +1743,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             return;
         }
 
-        builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULEING);
+        builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULING);
         try {
             actionListNotificationLock.writeLock().lockInterruptibly();
             try {
