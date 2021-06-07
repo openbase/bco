@@ -33,6 +33,8 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -50,14 +52,14 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/**
+/*
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class BCOTrainDataGeneratorLauncher {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(BCOTrainDataGeneratorLauncher.class);
     private static final Random random = new Random(System.currentTimeMillis());
-    public static final long TIMEOUT = 2000000000;
+    public static final long TIMEOUT = 1000;
 
     public enum TrainCondition {
         PRESENCE_DARK_ON,
@@ -74,6 +76,8 @@ public class BCOTrainDataGeneratorLauncher {
     public static void main(final String[] args) throws JPServiceException {
         BCO.printLogo();
         JPService.registerProperty(JPProviderControlMode.class, true);
+        JPService.registerProperty(JPDebugMode.class, false);
+        JPService.registerProperty(JPVerbose.class, false);
         JPService.parse(args);
 
         BCOLogin.getSession().autoLogin(true);
@@ -83,12 +87,9 @@ public class BCOTrainDataGeneratorLauncher {
             LOGGER.info("waiting for registry synchronization...");
             Registries.waitUntilReady();
 
-            LOGGER.info("init simulation setup");
-
-
             // init
-//            final int trainingSetCounter = 2;
             final int trainingSetCounter = 10;
+            LOGGER.info("init simulation of {} runs with {} conditions.", trainingSetCounter, trainConditions.size());
 
             LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("Location-Adhoc"), true, Units.LOCATION);
             ColorableLightRemote light = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("ColorableLight-Adhoc"), true, Units.COLORABLE_LIGHT);
@@ -118,7 +119,6 @@ public class BCOTrainDataGeneratorLauncher {
             waitUntilNextAction();
 
             LOGGER.info("generate " + trainingSetCounter + " training sets.");
-
             for (int i = 0; i < trainingSetCounter; i++) {
 
                 Collections.shuffle(trainConditions);
@@ -136,109 +136,59 @@ public class BCOTrainDataGeneratorLauncher {
                         // check condition
                         switch (trainCondition) {
                             case ABSENCE_DARK_OFF:
-//                                if (random.nextBoolean()) {
+                                if (conditionOrder()) {
                                     Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     waitBetweenActions();
                                     Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                } else {
-//                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    waitBetweenActions();
-//                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                }
+                                } else {
+                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    waitBetweenActions();
+                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                }
                                 break;
                             case PRESENCE_DARK_ON:
-//                                if (random.nextBoolean()) {
+                                if (conditionOrder()) {
                                     Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     waitBetweenActions();
                                     Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                } else {
-//                                    Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    waitBetweenActions();
-//                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                }
+                                } else {
+                                    Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    waitBetweenActions();
+                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                }
                                 break;
                             case ABSENCE_SUNNY_OFF:
-//                                if (random.nextBoolean()) {
+                                if (conditionOrder()) {
                                     Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     waitBetweenActions();
                                     Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                } else {
-//                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    waitBetweenActions();
-//                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                }
+                                } else {
+                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    waitBetweenActions();
+                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                }
                                 break;
                             case PRESENCE_SUNNY_OFF:
-//                                if (random.nextBoolean()) {
+                                if (conditionOrder()) {
                                     Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
                                     waitBetweenActions();
                                     Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                } else {
-//                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    waitBetweenActions();
-//                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                                }
+                                } else {
+                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    waitBetweenActions();
+                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                }
                                 break;
                         }
                         waitUntilNextAction();
-
-                        // random order
-//                        if (random.nextBoolean()) {
-                        // human leaving the room
-//                        LOGGER.info("absent send " + System.currentTimeMillis());
-//                        Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                        Actions.waitForExecution(location.applyAction(lightState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                        LOGGER.info("absent done " + System.currentTimeMillis());
-                        // and after a while
-
-                        // they is switching the light off.
-//                            Actions.waitForExecution(location.setPowerState(PowerState.State.OFF, UnitType.LIGHT));
-//                        LOGGER.info("off send " + System.currentTimeMillis());
-//                        Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-//                        LOGGER.info("off done " + System.currentTimeMillis());
-//                        } else {
-//
-//                            // human is switching the light off.
-////                            Actions.waitForExecution(location.setPowerState(PowerState.State.OFF, UnitType.LIGHT));
-//                            Actions.waitForExecution(light.setPowerState(PowerState.State.OFF));
-//                            // and after a while
-//                            waitBetweenActions();
-//                            // they is leaving the room
-//                            Actions.waitForExecution(location.applyAction(absentState));
-//                        }
-
-//                        } else {
-//                            // random order
-////                        if (random.nextBoolean()) {
-//                            // human entering the room
-//                            LOGGER.info("present send "+System.currentTimeMillis());
-//                            Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                            Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-//                            LOGGER.info("present done "+System.currentTimeMillis());
-//                            // and after a while
-//                            waitBetweenActions();
-//                            // they is switching the light on.
-////                            Actions.waitForExecution(location.setPowerState(PowerState.State.ON, UnitType.LIGHT));
-//                            LOGGER.info("on send "+System.currentTimeMillis());
-//                            Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
-//                            LOGGER.info("on done "+System.currentTimeMillis());
-//                        } else {
-//                            // human is switching the light on
-////                            Actions.waitForExecution(location.setPowerState(PowerState.State.ON, UnitType.LIGHT));
-//                            Actions.waitForExecution(light.setPowerState(PowerState.State.ON));
-//                            // and after a while
-//                            waitBetweenActions();
-//                            // they is entering the room
-//                            Actions.waitForExecution(location.applyAction(presentState));
-//                        }
                     } catch (CancellationException ex) {
                         ExceptionPrinter.printHistory("generator run skipped!", ex, LOGGER);
                     }
@@ -256,24 +206,27 @@ public class BCOTrainDataGeneratorLauncher {
         System.exit(0);
     }
 
+    private static boolean conditionOrder() {
+        return random.nextBoolean();
+    }
+
     private static void waitBetweenActions() throws InterruptedException {
         TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-        long staticDelay = 5000;
-        int maxRandomOffset = 2500;
+        long staticDelay = 1900;
+        int maxRandomOffset = 1900;
 
         long delay = staticDelay + random.nextInt(maxRandomOffset);
         LOGGER.info("wait {} sec between actions.", timeUnit.toSeconds(delay));
         Thread.sleep(timeUnit.toMillis(delay));
     }
 
-
     private static void waitUntilNextAction() throws InterruptedException {
         TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-        long staticDelay = 10000;
-        int maxRandomOffset = 5000;
+        long staticDelay = 6000;
+        int maxRandomOffset = 6000;
 
         long delay = staticDelay + random.nextInt(maxRandomOffset);
-        LOGGER.info("wait {} sec between actions.", timeUnit.toSeconds(delay));
+        LOGGER.info("wait {} sec until next action.", timeUnit.toSeconds(delay));
         Thread.sleep(timeUnit.toMillis(delay));
     }
 }
