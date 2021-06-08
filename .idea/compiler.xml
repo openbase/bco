@@ -16,10 +16,10 @@
         <module name="jul.communication.tcp" />
         <module name="bco.psc.dummyintent" />
         <module name="bco.dal.lib" />
-        <module name="bco.authentication.lib" />
         <module name="bco.app.cloud.connector" />
         <module name="bco.registry.message.test" />
         <module name="bco.registry.remote" />
+        <module name="authentication.lib" />
         <module name="jul.interface" />
         <module name="bco.app.influxdb.connector" />
         <module name="jul.extension.type.interface" />
@@ -31,6 +31,7 @@
         <module name="bco.psc.control" />
         <module name="bco.psc.lib" />
         <module name="bco.registry.class.core" />
+        <module name="authentication.core" />
         <module name="bco.psc.util" />
         <module name="jul.visual.swing" />
         <module name="bco.registry.template.core" />
@@ -40,13 +41,12 @@
         <module name="bco.registry.activity.test" />
         <module name="bco.psc.ray-extractor" />
         <module name="jul.annotation" />
+        <module name="authentication.test" />
         <module name="bco.registry.unit.test" />
         <module name="bco.registry.class.lib" />
         <module name="bco.app.manager" />
-        <module name="bco.authentication.core" />
         <module name="jul.communication.controller" />
         <module name="bco.registry.template.lib" />
-        <module name="bco.authentication.test" />
         <module name="bco.registry.editor" />
         <module name="bco.bcozy" />
         <module name="bco.eveson" />
@@ -100,6 +100,10 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="authentication" target="1.5" />
+      <module name="authentication.core" target="8" />
+      <module name="authentication.lib" target="8" />
+      <module name="authentication.test" target="8" />
       <module name="bco" target="1.8" />
       <module name="bco.api.graphql" target="11" />
       <module name="bco.app" target="1.5" />

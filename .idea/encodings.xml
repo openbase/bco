@@ -125,6 +125,7 @@
     <file url="file://$PROJECT_DIR$/module/bco.registry/unit-registry/remote" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/unit-registry/remote/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/unit-registry/test" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/unit-registry/test/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/util" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/util/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.stage" charset="UTF-8" />

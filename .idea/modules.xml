@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/authentication.iml" filepath="$PROJECT_DIR$/module/bco.authentication/authentication.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/core/authentication.core.iml" filepath="$PROJECT_DIR$/module/bco.authentication/core/authentication.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/lib/authentication.lib.iml" filepath="$PROJECT_DIR$/module/bco.authentication/lib/authentication.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/test/authentication.test.iml" filepath="$PROJECT_DIR$/module/bco.authentication/test/authentication.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/schedule/bco.iml" filepath="$PROJECT_DIR$/module/jul/schedule/bco.iml" />
       <module fileurl="file://$PROJECT_DIR$/../bco.api.graphql/bco.api.graphql.iml" filepath="$PROJECT_DIR$/../bco.api.graphql/bco.api.graphql.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/bco.app.iml" filepath="$PROJECT_DIR$/module/bco.app/bco.app.iml" />
@@ -15,10 +19,6 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" filepath="$PROJECT_DIR$/module/bco.app/preset/bco.app.preset.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/test/bco.app.test.iml" filepath="$PROJECT_DIR$/module/bco.app/test/bco.app.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.app/util/bco.app.util.iml" filepath="$PROJECT_DIR$/module/bco.app/util/bco.app.util.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/bco.authentication.iml" filepath="$PROJECT_DIR$/module/bco.authentication/bco.authentication.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/core/bco.authentication.core.iml" filepath="$PROJECT_DIR$/module/bco.authentication/core/bco.authentication.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/lib/bco.authentication.lib.iml" filepath="$PROJECT_DIR$/module/bco.authentication/lib/bco.authentication.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/test/bco.authentication.test.iml" filepath="$PROJECT_DIR$/module/bco.authentication/test/bco.authentication.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.bcozy/bco.bcozy.iml" filepath="$PROJECT_DIR$/module/bco.bcozy/bco.bcozy.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/bco.dal.iml" filepath="$PROJECT_DIR$/module/bco.dal/bco.dal.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/control/bco.dal.control.iml" filepath="$PROJECT_DIR$/module/bco.dal/control/bco.dal.control.iml" />
