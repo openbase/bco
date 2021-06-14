@@ -74,7 +74,7 @@ public class UnitConfigFilterImpl implements ListFilter<UnitConfig>, UnitConfigF
             return false;
         }
 
-        // filter by type
+        // filter by alias
         if (properties.getAliasCount() > 0) {
             for (String alias : properties.getAliasList()) {
                 if (!unitConfig.getAliasList().contains(alias)) {
