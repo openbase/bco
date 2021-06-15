@@ -231,11 +231,24 @@ public class ActionDescriptionProcessor {
      * @return the initial reference of an action.
      */
     public static ActionReference getInitialActionReference(final ActionDescriptionOrBuilder actionDescription) {
-        if (actionDescription.getActionCauseList().isEmpty()) {
-            return generateActionReference(actionDescription);
-        } else {
-            return actionDescription.getActionCause(actionDescription.getActionCauseCount() - 1);
+
+        final long now = System.currentTimeMillis();
+
+        // return the first action that is still valid.
+        for (int i = actionDescription.getActionCauseList().size() - 1; i >= 0; i--) {
+            try {
+            final ActionReference actionCause = actionDescription.getActionCause(i);
+            final long pastTime = (now - TimestampProcessor.getTimestamp(actionCause, TimeUnit.MILLISECONDS));
+                if(pastTime <= getExecutionTimePeriod(actionCause, TimeUnit.MICROSECONDS)) {
+                    return actionCause;
+                }
+            } catch (NotAvailableException exception) {
+                exception.printStackTrace();
+            }
         }
+
+        // if no valid cause is listed, we return a reference of the given action.
+        return generateActionReference(actionDescription);
     }
 
     /**
@@ -557,7 +570,7 @@ public class ActionDescriptionProcessor {
 
         // prepare parameters from causes if required.
         // prepare execution time period from cause if not available
-        actionDescriptionBuilder.setExecutionTimePeriod(getExecutionTimePeriod(actionDescriptionBuilder));
+        actionDescriptionBuilder.setExecutionTimePeriod(getExecutionTimePeriod(actionDescriptionBuilder, TimeUnit.MICROSECONDS));
         actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(getInitiatorId(actionDescriptionBuilder));
         actionDescriptionBuilder.setInterruptible(getInterruptible(actionDescriptionBuilder));
         actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
@@ -661,15 +674,32 @@ public class ActionDescriptionProcessor {
      *
      * @throws NotAvailableException if neither the action description nor one of its causes have an execution time period.
      */
-    public static long getExecutionTimePeriod(final ActionDescriptionOrBuilder actionDescription) throws NotAvailableException {
+    public static long getExecutionTimePeriod(final ActionDescriptionOrBuilder actionDescription, TimeUnit timeUnit) throws NotAvailableException {
         if (actionDescription.hasExecutionTimePeriod() || actionDescription.getExecutionTimePeriod() != 0) {
-            return actionDescription.getExecutionTimePeriod();
+            return timeUnit.convert(actionDescription.getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
         }
 
         for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
             if (actionReference.hasExecutionTimePeriod() || actionReference.getExecutionTimePeriod() != 0) {
-                return actionReference.getExecutionTimePeriod();
+                return timeUnit.convert(actionReference.getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
             }
+        }
+
+        throw new NotAvailableException("ExecutionTimePeriod");
+    }
+
+    /**
+     * Get the execution time period of an action.
+     *
+     * @param actionReference the action description of which the execution time period is retrieved.
+     *
+     * @return the execution time period of the action.
+     *
+     * @throws NotAvailableException if neither the action description nor one of its causes have an execution time period.
+     */
+    public static long getExecutionTimePeriod(final ActionReference actionReference, TimeUnit timeUnit) throws NotAvailableException {
+        if (actionReference.hasExecutionTimePeriod() || actionReference.getExecutionTimePeriod() != 0) {
+            return timeUnit.convert(actionReference.getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
         }
 
         throw new NotAvailableException("ExecutionTimePeriod");

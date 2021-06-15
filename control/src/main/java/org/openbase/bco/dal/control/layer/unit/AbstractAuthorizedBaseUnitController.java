@@ -161,11 +161,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         final RemoteAction remoteAction = new RemoteAction(futureAction, getToken(), () -> isValid());
 
         // cleanup done actions
-        for (RemoteAction action : new ArrayList<>(observedTaskList)) {
-            if (action.isDone()) {
-                observedTaskList.remove(action);
-            }
-        }
+        observedTaskList.removeIf(RemoteAction::isDone);
 
         // register new action
         observedTaskList.add(remoteAction);

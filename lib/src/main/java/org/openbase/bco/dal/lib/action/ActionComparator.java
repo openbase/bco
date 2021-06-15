@@ -134,7 +134,7 @@ public class ActionComparator implements Comparator<Action> {
                 }
             }
 
-            // Special handling for apps:
+            // Special handling for apps and agents:
             // The app initially uses human permissions as long as the action which (de-)activated
             // the app is valid. If subsequently, a human wants to overwrite the action of the app, this check
             // makes sure that this is possible by prioritizing the newer action.

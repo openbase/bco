@@ -74,6 +74,7 @@ import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.processing.*;
+import org.openbase.jul.iface.TimedProcessable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
@@ -132,6 +133,8 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
     private static final SessionManager MOCKUP_SESSION_MANAGER = new SessionManager();
+    private static final String TERMINATION_ACTION_NOT_AVAILABLE = "n/a";
+
     /**
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
@@ -165,12 +168,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final ActionComparator actionComparator;
     private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
     private final Map<ServiceType, Message> requestedStateCache;
-    private Map<ServiceType, OperationService> operationServiceMap;
+    private final Map<ServiceType, OperationService> operationServiceMap;
     private UnitTemplate template;
     private boolean initialized = false;
     private String classDescription = "";
-    private ArrayList<SchedulableAction> scheduledActionList;
-    private Timeout scheduleTimeout;
+    private final ArrayList<SchedulableAction> scheduledActionList;
+    private final Timeout scheduleTimeout;
     private boolean infrastructure = false;
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
@@ -542,9 +545,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 String serviceClassName = servicePackage.getName() + "." + serviceDataTypeName + servicePatternName + "Service";
                 try {
                     serviceInterfaceClass = (Class<? extends Service>) Class.forName(serviceClassName);
-                    if (serviceInterfaceClass == null) {
-                        throw new NotAvailableException(serviceInterfaceMapEntry.getKey());
-                    }
                 } catch (ClassNotFoundException | ClassCastException ex) {
                     throw new CouldNotPerformException("Could not load service interface!", ex);
                 }
@@ -577,7 +577,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULING);
         try {
-            terminatingActionId = "n/a";
+            terminatingActionId = TERMINATION_ACTION_NOT_AVAILABLE;
 
             try {
                 // do not register any termination action for infrastructure units, since they should only be modified in especially requested.
@@ -628,7 +628,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionParameter.setPriority(Priority.TERMINATION);
                 actionParameter.addCategory(Category.ECONOMY);
                 actionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
-                actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(Long.MAX_VALUE));
+                actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(TimedProcessable.INFINITY_TIMEOUT));
 
                 final ActionImpl action = new ActionImpl(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build(), this);
                 action.schedule();
@@ -1503,9 +1503,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     protected Action getCurrentAction() throws NotAvailableException {
-        try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
-            // todo read only access
-            return scheduledActionList.get(0);
+        try {
+            builderSetup.lockReadInterruptibly(this);
+            try {
+                return scheduledActionList.get(0);
+            } finally {
+                builderSetup.unlockRead(this);
+            }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new NotAvailableException("CurrentAction", ex);
@@ -1737,12 +1741,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public void cancelAllActions() throws InterruptedException, CouldNotPerformException {
 
-        // skip when not in test mode
-        if (!JPService.testMode()) {
-            new FatalImplementationErrorException("Method only supported in test mode!", "this");
-            return;
-        }
-
         builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULING);
         try {
             actionListNotificationLock.writeLock().lockInterruptibly();
@@ -1959,6 +1957,21 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+        // in test mode we should directly reschedule so the termination action takes place.
+        if(JPService.testMode()) {
+            try {
+                if(!terminatingActionId.equals(TERMINATION_ACTION_NOT_AVAILABLE)) {
+                    getActionById(terminatingActionId, getClass().getSimpleName()).execute().get(3, TimeUnit.SECONDS);
+                }
+            } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
+                ExceptionPrinter.printHistory("Could not reschedule termination action!", ex, logger);
+            }
+        }
+    }
+
     /**
      * Method can be used to register a new operation service for this controller.
      *
@@ -2011,7 +2024,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // resolve operation service impl
                 final OperationService operationService = operationServiceMap.get(serviceType);
 
-                // handle simple state loopback
+                // handle simple state loop back
                 if (operationService == OperationService.SIMPLE_STATE_ADOPTER) {
                     try {
                         applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTimeIfMissing(serviceState), serviceType);

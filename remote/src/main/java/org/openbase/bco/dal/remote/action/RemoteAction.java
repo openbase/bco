@@ -949,17 +949,12 @@ public class RemoteAction implements Action {
     public void waitForActionState(final ActionState.State actionState, final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         final TimeoutSplitter timeSplit = new TimeoutSplitter(timeout, timeUnit);
 
-        // check not required anymore since state history is observed as well.
-//        if (!isNotifiedActionState(actionState)) {
-//            throw new CouldNotPerformException("Cannot wait for state[" + actionState + "] because it is not always notified");
-//        }
-
-        waitForRegistration(timeSplit.getTime(), TimeUnit.MILLISECONDS);
+        waitForRegistration(timeSplit.getTime(), timeSplit.getTimeUnit());
 
         try {
             if (actionDescription.getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    impactedRemoteAction.waitForActionState(actionState, timeSplit.getTime(), TimeUnit.MILLISECONDS);
+                    impactedRemoteAction.waitForActionState(actionState, timeSplit.getTime(), timeSplit.getTimeUnit());
                 }
                 return;
             }
@@ -1075,10 +1070,10 @@ public class RemoteAction implements Action {
         try {
             if (futureObservationTask != null) {
                 try {
-                    if (timeout == 0l || timeUnit.toMillis(timeout) == Timeout.INFINITY_TIMEOUT) {
+                    if (timeout == 0L || timeUnit.toMillis(timeout) == Timeout.INFINITY_TIMEOUT) {
                         futureObservationTask.get();
                     } else {
-                        futureObservationTask.get(timeSplit.getTime(), TimeUnit.MILLISECONDS);
+                        futureObservationTask.get(timeSplit.getTime(), timeSplit.getTimeUnit());
                     }
                 } catch (java.util.concurrent.TimeoutException ex) {
                     throw new org.openbase.jul.exception.TimeoutException();
@@ -1087,7 +1082,7 @@ public class RemoteAction implements Action {
 
             if (getActionDescription().getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
-                    impactedRemoteAction.waitForRegistration(timeSplit.getTime(), TimeUnit.MILLISECONDS);
+                    impactedRemoteAction.waitForRegistration(timeSplit.getTime(), timeSplit.getTimeUnit());
                 }
             }
         } catch (ExecutionException | CancellationException ex) {
