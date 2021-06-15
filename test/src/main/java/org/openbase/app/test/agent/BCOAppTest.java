@@ -71,6 +71,7 @@ public class BCOAppTest extends AbstractBCOTest {
 
             LOGGER.trace("Finally wait for registry...");
             Registries.waitForData();
+
             LOGGER.info("Ready to test...");
 
             BCOLogin.getSession().loginBCOUser();

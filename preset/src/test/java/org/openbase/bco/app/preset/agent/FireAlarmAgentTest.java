@@ -53,8 +53,6 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
 
     public static final String FIRE_ALARM_AGENT_LABEL = "Fire_Alarm_Agent_Unit_Test";
 
-    private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-
     private static final AlarmState ALARM = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
     private static final AlarmState NO_ALARM = AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
     private static final BlindState CLOSED = BlindState.newBuilder().setOpeningRatio(0).build();
@@ -84,12 +82,11 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
         locationRemote.waitForData();
         smokeDetectorRemote.waitForData();
 
-        // create intial values with NO_ALARM, lights off and blindstate to 0
+        // create initial values with NO_ALARM, lights off and blindstate to 0
         smokeDetectorController.applyServiceState(NO_ALARM, ServiceType.SMOKE_ALARM_STATE_SERVICE);
         smokeDetectorStateAwaiter.waitForState((SmokeDetectorData data) -> data.getSmokeAlarmState().getValue() == AlarmState.State.NO_ALARM);
         rollerShutterRemote.setBlindState(CLOSED);
         rollerShutterStateAwaiter.waitForState((RollerShutterData data) -> data.getBlindState().getOpeningRatio() == 0d);
-        locationRemote.setPowerState(OFF).get();
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 

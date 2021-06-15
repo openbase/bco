@@ -25,6 +25,10 @@ package org.openbase.bco.app.preset.agent;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.Test;
 import org.openbase.bco.dal.control.layer.unit.ReedContactController;
+import org.openbase.bco.dal.control.layer.unit.TemperatureControllerController;
+import org.openbase.bco.dal.control.layer.unit.TemperatureSensorController;
+import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
+import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.remote.layer.unit.ReedContactRemote;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -58,10 +62,6 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     public static final String HEATER_ENERGY_SAVING_AGENT_LABEL = "Heater_Energy_Saving_Agent_Unit_Test";
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(HeaterEnergySavingAgentTest.class);
-    private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-
-    private static final ContactState CLOSED = ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
-    private static final ContactState OPEN = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
 
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
@@ -72,8 +72,6 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
     public void testHeaterEnergySavingAgent() throws Exception {
         System.out.println("testHeaterEnergySavingAgent");
 
-        // It can take some time until the execute() method of the agent has finished
-        // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
@@ -81,6 +79,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         ConnectionRemote connectionRemote = Units.getUnitByAlias(MockRegistry.ALIAS_WINDOW_STAIRWAY_HELL_LOOKOUT, true, Units.CONNECTION);
         ReedContactRemote reedContactRemote = Units.getUnitByAlias(MockRegistry.ALIAS_REED_SWITCH_STAIRWAY_HELL_WINDOW, true, Units.REED_CONTACT);
         ReedContactController reedContactController = (ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId());
+        TemperatureControllerController temperatureController = (TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId());
 
         // validate remote controller match
         assertEquals("Controller and remote are not compatible to each other!", reedContactController.getId(), reedContactRemote.getId());
@@ -91,9 +90,9 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         UnitStateAwaiter<TemperatureControllerData, TemperatureControllerRemote> temperatureControllerStateAwaiter = new UnitStateAwaiter<>(temperatureControllerRemote);
         UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter = new UnitStateAwaiter<>(locationRemote);
 
-        // create intial values with reed closed and target temperature at 21.0
-        reedContactController.applyServiceState(CLOSED, ServiceType.CONTACT_STATE_SERVICE);
-        temperatureControllerRemote.setTargetTemperatureState(TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(21.0).build()));
+        // create initial values with reed closed and target temperature at 21.0
+        reedContactController.applyServiceState(States.Contact.CLOSED, ServiceType.CONTACT_STATE_SERVICE);
+        temperatureController.applyServiceState(TemperatureState.newBuilder().setTemperature(21.0).build(), ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
 
         reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.CLOSED);
         connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.CLOSED);
@@ -105,8 +104,8 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("Initial TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] is not 21.0", 21.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
         assertEquals("Initial TargetTemperature of location[" + locationRemote.getLabel() + "] is not 21.0", 21.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
 
-        // test if on open reedsensor target temperature is set to 13.0
-        reedContactController.applyServiceState(OPEN, ServiceType.CONTACT_STATE_SERVICE);
+        // test if on open reed sensor target temperature is set to 13.0
+        reedContactController.applyServiceState(States.Contact.OPEN, ServiceType.CONTACT_STATE_SERVICE);
         reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.OPEN);
         connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.OPEN);
         temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 13.0);

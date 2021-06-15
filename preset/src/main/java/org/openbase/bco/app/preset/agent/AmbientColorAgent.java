@@ -25,7 +25,9 @@ package org.openbase.bco.app.preset.agent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Callable;
 
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.control.layer.unit.agent.AbstractAgentController;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
@@ -46,6 +48,7 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
+import retrofit2.Callback;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -209,7 +212,7 @@ public class AmbientColorAgent extends AbstractAgentController {
     public ActionDescription execute(final ActivationState activationState) throws CouldNotPerformException, InterruptedException {
         System.out.println("execute color agent");
         initColorStates();
-        setExecutionThread();
+        setExecutionThread(() -> new RemoteAction(activationState.getResponsibleAction()).isValid());
         thread.start();
         return activationState.getResponsibleAction();
     }
@@ -240,14 +243,14 @@ public class AmbientColorAgent extends AbstractAgentController {
         }
     }
 
-    private void setExecutionThread() {
+    private void setExecutionThread(final Callable<Boolean> validation) {
         switch (strategy) {
             case ALL:
-                thread = new AllStrategyThread();
+                thread = new AllStrategyThread(validation);
                 break;
             case ONE:
             default:
-                thread = new OneStrategyThread();
+                thread = new OneStrategyThread(validation);
                 break;
         }
     }
@@ -258,6 +261,12 @@ public class AmbientColorAgent extends AbstractAgentController {
 
     private class AllStrategyThread extends Thread {
 
+        private final Callable<Boolean> validation;
+
+        AllStrategyThread(final Callable<Boolean> validation) {
+            this.validation = validation;
+        }
+
         @Override
         public void run() {
             try {
@@ -265,7 +274,7 @@ public class AmbientColorAgent extends AbstractAgentController {
                     throw new InvalidStateException("No service remote available!");
                 }
                 final long delay = holdingTime / colorableLightRemotes.size();
-                while (isExecuting() && !Thread.interrupted()) {
+                while (validation.call() && !Thread.interrupted()) {
                     for (ColorableLightRemote colorRemote : colorableLightRemotes) {
                         try {
                             observe(colorRemote.setColor(choseDifferentElem(colors, colorRemote.getHSBColor()), getDefaultActionParameter()));
@@ -283,6 +292,12 @@ public class AmbientColorAgent extends AbstractAgentController {
 
     private class OneStrategyThread extends Thread {
 
+        private final Callable<Boolean> validation;
+
+        OneStrategyThread(final Callable<Boolean> validation) {
+            this.validation = validation;
+        }
+
         @Override
         public void run() {
             ColorableLightRemote remote = null;
@@ -292,7 +307,7 @@ public class AmbientColorAgent extends AbstractAgentController {
                 }
 
                 System.out.println("start main thread color agent");
-                while (isExecuting() && !Thread.interrupted()) {
+                while (validation.call() && !Thread.interrupted()) {
                     try {
                         remote = choseDifferentElem(colorableLightRemotes, remote);
                         remote.setColor(choseDifferentElem(colors, remote.getHSBColor()));

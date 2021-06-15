@@ -22,10 +22,12 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import org.junit.BeforeClass;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.Test;
 import org.openbase.bco.dal.control.layer.unit.LightSensorController;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Illuminance;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -39,9 +41,13 @@ import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState.State;
@@ -73,10 +79,11 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     public PresenceLightAgentTest() {
     }
 
-    // @BeforeClass //uncomment to enable debug mode
+    //@BeforeClass //uncomment to enable debug mode
     public static void showActionInspector() throws Throwable {
 
-        //JPService.registerProperty(JPDebugMode.class, true);
+        JPService.registerProperty(JPDebugMode.class, true);
+        JPService.registerProperty(JPVerbose.class, true);
 
         // uncomment to visualize action inspector during tests
         String[] args = {};
@@ -116,9 +123,8 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         // create initial values with no_motion and lights off and dark env
         motionDetectorController.applyServiceState(States.Motion.NO_MOTION, ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
-        waitForExecution(locationRemote.setPowerState(OFF));
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
-        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF, 3000);
 
         lightSensorController.applyServiceState(Illuminance.DARK, ServiceType.ILLUMINANCE_STATE_SERVICE);
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getValue() == IlluminanceState.State.DARK);

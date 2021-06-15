@@ -74,7 +74,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         this.deactivationTriggerPool = new TriggerPool();
 
         // used to make sure reschedule is triggered when the emphasis state of the parent location has been changed.
-        this.parentLocationEmphasisRescheduleEventFilter = new RecurrenceEventFilter<Void>(TimeUnit.SECONDS.toMillis(5)) {
+        this.parentLocationEmphasisRescheduleEventFilter = new RecurrenceEventFilter<>(TimeUnit.SECONDS.toMillis(5)) {
             @Override
             public void relay() {
                 try {
@@ -87,7 +87,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         this.emphasisStateObserver = (source, data) -> parentLocationEmphasisRescheduleEventFilter.trigger();
 
         this.activationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
-            logger.debug("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
+            logger.info("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
             synchronized (triggerSync) {
                 try {
                     //triggerInternal(data);
@@ -124,7 +124,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
             }
         };
         this.deactivationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
-            logger.debug("deactivationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
+            logger.info("deactivationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
             synchronized (triggerSync) {
                 try {
                     // deactivate agent if agent is active and deactivation pool is triggering an active state.

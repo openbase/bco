@@ -30,6 +30,11 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPLogLevel;
+import org.openbase.jps.preset.JPLogLevel.LogLevel;
+import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -51,6 +56,12 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
+
+        // enable for debug purpose
+        //        JPService.registerProperty(JPDebugMode.class, true);
+        //        JPService.registerProperty(JPVerbose.class, true);
+        //        JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
+
         BCOAppTest.setUpClass();
     }
 

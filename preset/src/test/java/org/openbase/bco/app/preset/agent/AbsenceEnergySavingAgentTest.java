@@ -37,6 +37,10 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
+import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
+import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -77,8 +81,6 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         UnitStateAwaiter<AgentData, AgentRemote> UnitStateAwaiter = new UnitStateAwaiter<>(agentRemote);
         UnitStateAwaiter.waitForState((AgentData data) -> data.getActivationState().getValue() == ActivationState.State.ACTIVE);
 
-        // It can take some time until the execute() method of the agent has finished
-        // TODO: enable to access controller instances via remoteRegistry to check and wait for the execution of the agent
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
@@ -94,11 +96,18 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         locationRemote.waitForData();
         motionDetectorRemote.waitForData();
 
-        // create intial values with motion and lights on
+        // create initial values with motion and lights on
         motionDetectorController.applyServiceState(MOTION, ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.PRESENT);
-        locationRemote.setPowerState(ON).get();
+
+        final ActionParameter lowPriorityActionParameter = ActionParameter.newBuilder()
+                .setActionInitiator(ActionInitiator.newBuilder().setInitiatorType(InitiatorType.SYSTEM).build())
+                .setPriority(Priority.LOW)
+                .setExecutionTimePeriod(1000000)
+                .build();
+
+        waitForExecution(locationRemote.setPowerState(ON, lowPriorityActionParameter));
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
