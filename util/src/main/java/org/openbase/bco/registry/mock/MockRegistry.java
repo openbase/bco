@@ -46,6 +46,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.binding.BindingConfigType.BindingConfig;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
@@ -597,8 +598,13 @@ public class MockRegistry {
 
     private void registerAgentClasses() throws CouldNotPerformException, InterruptedException {
         try {
+            final AgentClass alarmAgentClass = getAgentClass(LABEL_AGENT_CLASS_FIRE_ALARM);
+
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_ABSENCE_ENERGY_SAVING)).get().getId());
-            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_FIRE_ALARM, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_FIRE_ALARM)).get().getId());
+            AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_FIRE_ALARM, Registries.getClassRegistry().registerAgentClass(
+                    alarmAgentClass.toBuilder()
+                            .setPriority(Priority.HIGH).
+                            build()).get().getId());
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_HEATER_ENERGY_SAVING)).get().getId());
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_ILLUMINATION_LIGHT_SAVING)).get().getId());
             AGENT_CLASS_LABEL_ID_MAP.put(LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER, Registries.getClassRegistry().registerAgentClass(getAgentClass(LABEL_AGENT_CLASS_POWER_STATE_SYNCHRONISER)).get().getId());
