@@ -65,6 +65,7 @@ import java.util.concurrent.*;
 public class RemoteAction implements Action {
 
     public final static long AUTO_EXTENSION_INTERVAL = Action.MAX_EXECUTION_TIME_PERIOD / 2;
+    public final static long INIT_FROM_ACTION_REFERENCE_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RemoteAction.class);
     private final SyncObject executionSync = new SyncObject("ExecutionSync");
@@ -411,15 +412,21 @@ public class RemoteAction implements Action {
                 synchronized (executionSync) {
 
                     // resolve action description via the action reference if already available.
-                    for (final ActionDescription actionDescription : targetUnit.getActionList()) {
-                        if (actionDescription.getActionId().equals(actionReference.getActionId())) {
-                            RemoteAction.this.actionDescription = actionDescription;
-                            break;
-                        }
-                    }
+                    setupActionDescriptionFromActionReference(actionReference);
 
                     if (actionDescription == null) {
-                        throw new InvalidStateException("ActionDescription of unit[" + targetUnit.getLabel(actionReference.getServiceStateDescription().getUnitId()) + "] with action id[" + ActionDescriptionProcessor.toString(actionReference) + "] could not be resolved!");
+                        /* Note:
+                         * If we only have an action reference the target units action list is not necessarily
+                         * synced yet. For example, applying an action on a location remote ensures that all
+                         * remotes in the process of the according location controller are up to date, but not
+                         * the remotes in the process where the location remote runs.
+                         */
+                        targetUnit.requestData().get(INIT_FROM_ACTION_REFERENCE_TIMEOUT, TimeUnit.MILLISECONDS);
+                        setupActionDescriptionFromActionReference(actionReference);
+
+                        if (actionDescription == null) {
+                            throw new InvalidStateException("ActionDescription of unit[" + targetUnit.getLabel(actionReference.getServiceStateDescription().getUnitId()) + "] with action id[" + ActionDescriptionProcessor.toString(actionReference) + "] could not be resolved!");
+                        }
                     }
                 }
             } catch (CouldNotPerformException ex) {
@@ -430,6 +437,15 @@ public class RemoteAction implements Action {
 
         });
         return futureObservationTask;
+    }
+
+    private void setupActionDescriptionFromActionReference(final ActionReference actionReference) throws NotAvailableException {
+        for (final ActionDescription actionDescription : targetUnit.getActionList()) {
+            if (actionDescription.getActionId().equals(actionReference.getActionId())) {
+                RemoteAction.this.actionDescription = actionDescription;
+                break;
+            }
+        }
     }
 
     private void setupActionObservation() throws CouldNotPerformException {
