@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>bco.registry.template.remote</artifactId>
+    <packaging>jar</packaging>
+
+    <name>BCO Registry Template Remote</name>
+    
+    <parent>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.registry.template</artifactId>
+        <version>2.0-SNAPSHOT</version>
+    </parent>    
+    
+    <url>https://github.com/openbase/bco.registry/wiki</url>
+    
+    <licenses>
+        <license>
+            <name>LGPLv3</name>
+            <url>https://www.gnu.org/licenses/lgpl.html</url>
+        </license>
+    </licenses>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${java.source.version}</source>
+                    <target>${java.target.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${dependency.org.codehaus.mojo.license-maven-plugin.version}</version>
+                <configuration>
+                    <licenseName>lgpl_v3</licenseName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>first</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.template.lib</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.storage</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+</project>
