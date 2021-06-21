@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/bco.manager.iml" filepath="$PROJECT_DIR$/bco.manager.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent-manager/bco.manager.agent.iml" filepath="$PROJECT_DIR$/agent-manager/bco.manager.agent.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent-manager/binding/bco.manager.agent.binding.iml" filepath="$PROJECT_DIR$/agent-manager/binding/bco.manager.agent.binding.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent-manager/binding/openhab/bco.manager.agent.binding.openhab.iml" filepath="$PROJECT_DIR$/agent-manager/binding/openhab/bco.manager.agent.binding.openhab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent-manager/core/bco.manager.agent.core.iml" filepath="$PROJECT_DIR$/agent-manager/core/bco.manager.agent.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent-manager/lib/bco.manager.agent.lib.iml" filepath="$PROJECT_DIR$/agent-manager/lib/bco.manager.agent.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent-manager/remote/bco.manager.agent.remote.iml" filepath="$PROJECT_DIR$/agent-manager/remote/bco.manager.agent.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/agent-manager/test/bco.manager.agent.test.iml" filepath="$PROJECT_DIR$/agent-manager/test/bco.manager.agent.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app-manager/bco.manager.app.iml" filepath="$PROJECT_DIR$/app-manager/bco.manager.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app-manager/binding/bco.manager.app.binding.iml" filepath="$PROJECT_DIR$/app-manager/binding/bco.manager.app.binding.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app-manager/binding/openhab/bco.manager.app.binding.openhab.iml" filepath="$PROJECT_DIR$/app-manager/binding/openhab/bco.manager.app.binding.openhab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app-manager/core/bco.manager.app.core.iml" filepath="$PROJECT_DIR$/app-manager/core/bco.manager.app.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app-manager/lib/bco.manager.app.lib.iml" filepath="$PROJECT_DIR$/app-manager/lib/bco.manager.app.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app-manager/remote/bco.manager.app.remote.iml" filepath="$PROJECT_DIR$/app-manager/remote/bco.manager.app.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app-manager/test/bco.manager.app.test.iml" filepath="$PROJECT_DIR$/app-manager/test/bco.manager.app.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/device-manager/bco.manager.device.iml" filepath="$PROJECT_DIR$/device-manager/bco.manager.device.iml" />
+      <module fileurl="file://$PROJECT_DIR$/device-manager/binding/bco.manager.device.binding.iml" filepath="$PROJECT_DIR$/device-manager/binding/bco.manager.device.binding.iml" />
+      <module fileurl="file://$PROJECT_DIR$/device-manager/binding/openhab/bco.manager.device.binding.openhab.iml" filepath="$PROJECT_DIR$/device-manager/binding/openhab/bco.manager.device.binding.openhab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/device-manager/core/bco.manager.device.core.iml" filepath="$PROJECT_DIR$/device-manager/core/bco.manager.device.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/device-manager/lib/bco.manager.device.lib.iml" filepath="$PROJECT_DIR$/device-manager/lib/bco.manager.device.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/device-manager/remote/bco.manager.device.remote.iml" filepath="$PROJECT_DIR$/device-manager/remote/bco.manager.device.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/device-manager/test/bco.manager.device.test.iml" filepath="$PROJECT_DIR$/device-manager/test/bco.manager.device.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/location-manager/bco.manager.location.iml" filepath="$PROJECT_DIR$/location-manager/bco.manager.location.iml" />
+      <module fileurl="file://$PROJECT_DIR$/location-manager/binding/bco.manager.location.binding.iml" filepath="$PROJECT_DIR$/location-manager/binding/bco.manager.location.binding.iml" />
+      <module fileurl="file://$PROJECT_DIR$/location-manager/binding/openhab/bco.manager.location.binding.openhab.iml" filepath="$PROJECT_DIR$/location-manager/binding/openhab/bco.manager.location.binding.openhab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/location-manager/core/bco.manager.location.core.iml" filepath="$PROJECT_DIR$/location-manager/core/bco.manager.location.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/location-manager/lib/bco.manager.location.lib.iml" filepath="$PROJECT_DIR$/location-manager/lib/bco.manager.location.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/location-manager/remote/bco.manager.location.remote.iml" filepath="$PROJECT_DIR$/location-manager/remote/bco.manager.location.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/location-manager/test/bco.manager.location.test.iml" filepath="$PROJECT_DIR$/location-manager/test/bco.manager.location.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/bco.manager.scene.iml" filepath="$PROJECT_DIR$/scene-manager/bco.manager.scene.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/binding/bco.manager.scene.binding.iml" filepath="$PROJECT_DIR$/scene-manager/binding/bco.manager.scene.binding.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/binding/openhab/bco.manager.scene.binding.openhab.iml" filepath="$PROJECT_DIR$/scene-manager/binding/openhab/bco.manager.scene.binding.openhab.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/core/bco.manager.scene.core.iml" filepath="$PROJECT_DIR$/scene-manager/core/bco.manager.scene.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/lib/bco.manager.scene.lib.iml" filepath="$PROJECT_DIR$/scene-manager/lib/bco.manager.scene.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/remote/bco.manager.scene.remote.iml" filepath="$PROJECT_DIR$/scene-manager/remote/bco.manager.scene.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/test/bco.manager.scene.test.iml" filepath="$PROJECT_DIR$/scene-manager/test/bco.manager.scene.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/scene-manager/visual/bco.manager.scene.visual.iml" filepath="$PROJECT_DIR$/scene-manager/visual/bco.manager.scene.visual.iml" />
+      <module fileurl="file://$PROJECT_DIR$/user-manager/bco.manager.user.iml" filepath="$PROJECT_DIR$/user-manager/bco.manager.user.iml" />
+      <module fileurl="file://$PROJECT_DIR$/user-manager/core/bco.manager.user.core.iml" filepath="$PROJECT_DIR$/user-manager/core/bco.manager.user.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/user-manager/lib/bco.manager.user.lib.iml" filepath="$PROJECT_DIR$/user-manager/lib/bco.manager.user.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/user-manager/remote/bco.manager.user.remote.iml" filepath="$PROJECT_DIR$/user-manager/remote/bco.manager.user.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/user-manager/test/bco.manager.user.test.iml" filepath="$PROJECT_DIR$/user-manager/test/bco.manager.user.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/util/bco.manager.util.iml" filepath="$PROJECT_DIR$/util/bco.manager.util.iml" />
+    </modules>
+  </component>
+</project>
