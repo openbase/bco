@@ -3,11 +3,9 @@ package org.openbase.bco.dal.lib.action;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -223,8 +221,8 @@ public class ActionDescriptionProcessor {
     }
 
     /**
-     * Get an action reference to the last action of the cause chain.
-     * If the action does not have a cause, an action reference for the provided action description is returned.
+     * Return the latest action of the cause chain that is still valid.
+     * If the action does not have a cause, an action reference of the provided action description is returned.
      *
      * @param actionDescription the action description from which the original action reference is resolved.
      *
@@ -232,23 +230,29 @@ public class ActionDescriptionProcessor {
      */
     public static ActionReference getInitialActionReference(final ActionDescriptionOrBuilder actionDescription) {
 
-        final long now = System.currentTimeMillis();
-
         // return the first action that is still valid.
         for (int i = actionDescription.getActionCauseList().size() - 1; i >= 0; i--) {
-            try {
             final ActionReference actionCause = actionDescription.getActionCause(i);
-            final long pastTime = (now - TimestampProcessor.getTimestamp(actionCause, TimeUnit.MILLISECONDS));
-                if(pastTime <= getExecutionTimePeriod(actionCause, TimeUnit.MICROSECONDS)) {
-                    return actionCause;
-                }
-            } catch (NotAvailableException exception) {
-                exception.printStackTrace();
+            if (isValid(actionCause)) {
+                return actionCause;
             }
         }
 
         // if no valid cause is listed, we return a reference of the given action.
         return generateActionReference(actionDescription);
+    }
+
+    /**
+     * @param actionCause the action to validate.
+     * @return true in case the given action cause is still based on an valid action.
+     */
+    public static boolean isValid(final ActionReference actionCause) {
+        try {
+            final long pastTime = (System.currentTimeMillis() - TimestampProcessor.getTimestamp(actionCause, TimeUnit.MILLISECONDS));
+            return pastTime <= getExecutionTimePeriod(actionCause, TimeUnit.MICROSECONDS);
+        } catch (CouldNotPerformException ex) {
+            return false;
+        }
     }
 
     /**
@@ -652,8 +656,8 @@ public class ActionDescriptionProcessor {
                             .stream()
                             .anyMatch(cause ->
                                     (
-                                        cause.getServiceStateDescription().getUnitId().equals(impact.getServiceStateDescription().getUnitId()) &&
-                                        cause.getServiceStateDescription().getServiceType().equals(impact.getServiceStateDescription().getServiceType())
+                                            cause.getServiceStateDescription().getUnitId().equals(impact.getServiceStateDescription().getUnitId()) &&
+                                                    cause.getServiceStateDescription().getServiceType().equals(impact.getServiceStateDescription().getServiceType())
                                     )
                             )
                     )
