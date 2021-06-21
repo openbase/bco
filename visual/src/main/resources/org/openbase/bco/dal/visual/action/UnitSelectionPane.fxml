@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="mainPain" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.openbase.bco.dal.visual.action.UnitSelectionPaneController">
+   <children>
+      <VBox prefHeight="122.0" prefWidth="622.0">
+         <children>
+            <HBox prefHeight="58.0" prefWidth="622.0">
+               <children>
+                  <VBox prefHeight="81.0" prefWidth="237.0">
+                     <children>
+                        <Label alignment="BOTTOM_CENTER" contentDisplay="TOP" prefHeight="16.0" prefWidth="230.0" style="-fx-pref-height: 30;" text="Location" textAlignment="CENTER">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <ComboBox fx:id="locationComboBox" prefHeight="26.0" prefWidth="230.0">
+                           <opaqueInsets>
+                              <Insets />
+                           </opaqueInsets>
+                           <VBox.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </VBox.margin>
+                        </ComboBox>
+                     </children>
+                  </VBox>
+                  <VBox layoutX="10.0" layoutY="10.0" prefHeight="81.0" prefWidth="237.0">
+                     <children>
+                        <Label alignment="CENTER" contentDisplay="TOP" prefHeight="16.0" prefWidth="230.0" style="-fx-pref-height: 30;" text="Unit" textAlignment="CENTER">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <ComboBox fx:id="unitTemplateComboBox" prefHeight="26.0" prefWidth="230.0">
+                           <VBox.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </VBox.margin>
+                        </ComboBox>
+                     </children>
+                  </VBox>
+                  <VBox layoutX="10.0" layoutY="10.0" prefHeight="81.0" prefWidth="237.0">
+                     <children>
+                        <Label alignment="CENTER" contentDisplay="TOP" prefHeight="16.0" prefWidth="230.0" style="-fx-pref-height: 30;" text="Service" textAlignment="CENTER">
+                           <font>
+                              <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <ComboBox fx:id="serviceTemplateComboBox" prefHeight="26.0" prefWidth="230.0">
+                           <VBox.margin>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </VBox.margin>
+                        </ComboBox>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <VBox prefHeight="81.0" prefWidth="237.0">
+               <children>
+                  <Label alignment="BOTTOM_CENTER" contentDisplay="TOP" prefHeight="16.0" prefWidth="676.0" style="-fx-pref-height: 30;" text="Selected Instance" textAlignment="CENTER">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="unitComboBox" prefHeight="26.0" prefWidth="737.0">
+                     <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </VBox.margin>
+                  </ComboBox>
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
