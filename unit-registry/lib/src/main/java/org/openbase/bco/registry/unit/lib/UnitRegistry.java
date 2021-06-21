@@ -1517,48 +1517,59 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                 continue;
             }
 
-            if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
-                if (serviceConfig.getServiceDescription().getAggregated()) {
-                    switch (unitConfig.getUnitType()) {
-                        case LOCATION:
-                            if(unitConfig
-                                .getLocationConfig()
-                                .getUnitIdList()
-                                .stream()
-                                .anyMatch(it -> {
-                                    try {
-                                        return isServiceAvailable(serviceType, getUnitConfigById(it));
-                                    } catch (NotAvailableException exception) {
-                                        return false;
-                                    }
-                                })) {
-                                return true;
+            if (!serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
+                continue;
+            }
+
+            // non aggregated service states are always available
+            if (!serviceConfig.getServiceDescription().getAggregated()) {
+                return true;
+            }
+
+            switch (unitConfig.getUnitType()) {
+                case LOCATION:
+                    if(unitConfig
+                        .getLocationConfig()
+                        .getUnitIdList()
+                        .stream()
+                        .anyMatch(it -> {
+                            try {
+                                if(it.equals(unitConfig.getId())) {
+                                    new FatalImplementationErrorException("Location Loop detected!", this);
+                                    return false;
+                                }
+                                return isServiceAvailable(serviceType, getUnitConfigById(it));
+                            } catch (NotAvailableException exception) {
+                                return false;
                             }
-                            break;
-                        case UNIT_GROUP:
-                            if(unitConfig
-                                    .getUnitGroupConfig()
-                                    .getMemberIdList()
-                                    .stream()
-                                    .anyMatch(it -> {
-                                        try {
-                                            return isServiceAvailable(serviceType, getUnitConfigById(it));
-                                        } catch (NotAvailableException exception) {
-                                            return false;
-                                        }
-                                    })) {
-                                return true;
-                            }
-                            break;
-                        default:
-                            new FatalImplementationErrorException(
-                                    "Unit["+LabelProcessor.getBestMatch(unitConfig.getLabel(), "?")+"] provides an aggregated service thats not allowed for units of type: "+ unitConfig.getUnitType().name()
-                                    , this
-                            );
+                        })) {
+                        return true;
                     }
-                } else {
-                    return true;
-                }
+                    break;
+                case UNIT_GROUP:
+                    if(unitConfig
+                            .getUnitGroupConfig()
+                            .getMemberIdList()
+                            .stream()
+                            .anyMatch(it -> {
+                                if(it.equals(unitConfig.getId())) {
+                                    new FatalImplementationErrorException("Unit Group Loop detected!", this);
+                                    return false;
+                                }
+                                try {
+                                    return isServiceAvailable(serviceType, getUnitConfigById(it));
+                                } catch (NotAvailableException exception) {
+                                    return false;
+                                }
+                            })) {
+                        return true;
+                    }
+                    break;
+                default:
+                    new FatalImplementationErrorException(
+                            "Unit["+LabelProcessor.getBestMatch(unitConfig.getLabel(), "?")+"] provides an aggregated service thats not allowed for units of type: "+ unitConfig.getUnitType().name()
+                            , this
+                    );
             }
         }
         return false;
