@@ -220,7 +220,8 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
      * @throws NotAvailableException is thrown when the action state can not be observed yet.
      */
     default long getCreationTime() throws NotAvailableException {
-        return TimeUnit.MICROSECONDS.toMillis(getActionDescription().getTimestamp().getTime());
+        final ActionReference initialAction = ActionDescriptionProcessor.getInitialActionReference(getActionDescription());
+        return TimeUnit.MICROSECONDS.toMillis(initialAction.getTimestamp().getTime());
     }
 
     /**

@@ -28,6 +28,7 @@ import org.openbase.type.domotic.state.BlindStateType;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
@@ -115,5 +116,13 @@ public class States {
     public static class Blind {
         public static final BlindState UP = BlindState.newBuilder().setValue(BlindState.State.UP).build();
         public static final BlindState DOWN = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
+    }
+
+    /**
+     * Contact State Prototypes
+     */
+    public static class Contact {
+        public static final ContactState OPEN = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
+        public static final ContactState CLOSED = ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
     }
 }

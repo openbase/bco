@@ -25,6 +25,7 @@ package org.openbase.bco.dal.lib.action;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.provider.Provider;
+import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
@@ -131,8 +132,16 @@ public class ActionComparator implements Comparator<Action> {
                 if (emphasis != 0) {
                     return emphasis;
                 }
+            }
 
-                //TODO: resolve conflict between agents
+            // Special handling for apps and agents:
+            // The app initially uses human permissions as long as the action which (de-)activated
+            // the app is valid. If subsequently, a human wants to overwrite the action of the app, this check
+            // makes sure that this is possible by prioritizing the newer action.
+            if (initiatorType1 == InitiatorType.HUMAN && initiatorType2 == InitiatorType.HUMAN) {
+                final ActionReference actionReference1 = ActionDescriptionProcessor.getInitialActionReference(action1.getActionDescription());
+                final ActionReference actionReference2 = ActionDescriptionProcessor.getInitialActionReference(action2.getActionDescription());
+                return (int) Math.signum(actionReference2.getTimestamp().getTime() - actionReference1.getTimestamp().getTime());
             }
 
             // resolve conflicts between humans or systems by prioritizing newer actions

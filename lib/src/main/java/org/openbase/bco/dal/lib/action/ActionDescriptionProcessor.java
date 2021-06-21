@@ -3,11 +3,9 @@ package org.openbase.bco.dal.lib.action;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -219,10 +217,41 @@ public class ActionDescriptionProcessor {
      * @return the initial initiator of an action as described above.
      */
     public static ActionInitiator getInitialInitiator(final ActionDescriptionOrBuilder actionDescription) {
-        if (actionDescription.getActionCauseList().isEmpty()) {
-            return actionDescription.getActionInitiator();
-        } else {
-            return actionDescription.getActionCause(actionDescription.getActionCauseCount() - 1).getActionInitiator();
+        return getInitialActionReference(actionDescription).getActionInitiator();
+    }
+
+    /**
+     * Return the latest action of the cause chain that is still valid.
+     * If the action does not have a cause, an action reference of the provided action description is returned.
+     *
+     * @param actionDescription the action description from which the original action reference is resolved.
+     *
+     * @return the initial reference of an action.
+     */
+    public static ActionReference getInitialActionReference(final ActionDescriptionOrBuilder actionDescription) {
+
+        // return the first action that is still valid.
+        for (int i = actionDescription.getActionCauseList().size() - 1; i >= 0; i--) {
+            final ActionReference actionCause = actionDescription.getActionCause(i);
+            if (isValid(actionCause)) {
+                return actionCause;
+            }
+        }
+
+        // if no valid cause is listed, we return a reference of the given action.
+        return generateActionReference(actionDescription);
+    }
+
+    /**
+     * @param actionCause the action to validate.
+     * @return true in case the given action cause is still based on an valid action.
+     */
+    public static boolean isValid(final ActionReference actionCause) {
+        try {
+            final long pastTime = (System.currentTimeMillis() - TimestampProcessor.getTimestamp(actionCause, TimeUnit.MILLISECONDS));
+            return pastTime <= getExecutionTimePeriod(actionCause, TimeUnit.MICROSECONDS);
+        } catch (CouldNotPerformException ex) {
+            return false;
         }
     }
 
@@ -545,7 +574,7 @@ public class ActionDescriptionProcessor {
 
         // prepare parameters from causes if required.
         // prepare execution time period from cause if not available
-        actionDescriptionBuilder.setExecutionTimePeriod(getExecutionTimePeriod(actionDescriptionBuilder));
+        actionDescriptionBuilder.setExecutionTimePeriod(getExecutionTimePeriod(actionDescriptionBuilder, TimeUnit.MICROSECONDS));
         actionDescriptionBuilder.getActionInitiatorBuilder().setInitiatorId(getInitiatorId(actionDescriptionBuilder));
         actionDescriptionBuilder.setInterruptible(getInterruptible(actionDescriptionBuilder));
         actionDescriptionBuilder.setSchedulable(getSchedulable(actionDescriptionBuilder));
@@ -627,8 +656,8 @@ public class ActionDescriptionProcessor {
                             .stream()
                             .anyMatch(cause ->
                                     (
-                                        cause.getServiceStateDescription().getUnitId().equals(impact.getServiceStateDescription().getUnitId()) &&
-                                        cause.getServiceStateDescription().getServiceType().equals(impact.getServiceStateDescription().getServiceType())
+                                            cause.getServiceStateDescription().getUnitId().equals(impact.getServiceStateDescription().getUnitId()) &&
+                                                    cause.getServiceStateDescription().getServiceType().equals(impact.getServiceStateDescription().getServiceType())
                                     )
                             )
                     )
@@ -649,15 +678,32 @@ public class ActionDescriptionProcessor {
      *
      * @throws NotAvailableException if neither the action description nor one of its causes have an execution time period.
      */
-    public static long getExecutionTimePeriod(final ActionDescriptionOrBuilder actionDescription) throws NotAvailableException {
+    public static long getExecutionTimePeriod(final ActionDescriptionOrBuilder actionDescription, TimeUnit timeUnit) throws NotAvailableException {
         if (actionDescription.hasExecutionTimePeriod() || actionDescription.getExecutionTimePeriod() != 0) {
-            return actionDescription.getExecutionTimePeriod();
+            return timeUnit.convert(actionDescription.getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
         }
 
         for (final ActionReference actionReference : actionDescription.getActionCauseList()) {
             if (actionReference.hasExecutionTimePeriod() || actionReference.getExecutionTimePeriod() != 0) {
-                return actionReference.getExecutionTimePeriod();
+                return timeUnit.convert(actionReference.getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
             }
+        }
+
+        throw new NotAvailableException("ExecutionTimePeriod");
+    }
+
+    /**
+     * Get the execution time period of an action.
+     *
+     * @param actionReference the action description of which the execution time period is retrieved.
+     *
+     * @return the execution time period of the action.
+     *
+     * @throws NotAvailableException if neither the action description nor one of its causes have an execution time period.
+     */
+    public static long getExecutionTimePeriod(final ActionReference actionReference, TimeUnit timeUnit) throws NotAvailableException {
+        if (actionReference.hasExecutionTimePeriod() || actionReference.getExecutionTimePeriod() != 0) {
+            return timeUnit.convert(actionReference.getExecutionTimePeriod(), TimeUnit.MICROSECONDS);
         }
 
         throw new NotAvailableException("ExecutionTimePeriod");

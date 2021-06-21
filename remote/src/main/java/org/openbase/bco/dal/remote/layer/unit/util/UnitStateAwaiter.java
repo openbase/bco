@@ -25,11 +25,15 @@ import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TimeoutException;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -71,8 +75,8 @@ public class UnitStateAwaiter<D extends Message, UR extends UnitRemote<D>> {
                     if (stateComparator.equalState(unitRemote.getData())) {
                         return;
                     }
-                    logger.info("State not yet reached. Waiting...");
-                } catch (NotAvailableException ex) {
+                    logger.info("State not yet reached. "+unitRemote.getLabel()+" still in state ["+ MultiLanguageTextProcessor.getBestMatch(unitRemote.getActionList().stream().findFirst().get().getDescription(), "?")+"] Waiting...");
+                } catch (NotAvailableException | java.util.NoSuchElementException ex) {
                     logger.info("Waiting because unit data not available!");
                 }
 
@@ -82,6 +86,16 @@ public class UnitStateAwaiter<D extends Message, UR extends UnitRemote<D>> {
                 timeWaited += System.currentTimeMillis() - currentTime;
                 logger.info("Woke up! Time waited " + timeWaited + "ms");
                 if (timeout != 0 && timeWaited > timeout) {
+
+                    try {
+                        if (stateComparator.equalState(unitRemote.requestData().get(1, TimeUnit.SECONDS))) {
+                            logger.error("State only reached by timeout but change was not notified!");
+                            return;
+                        }
+                    } catch (ExecutionException | java.util.concurrent.TimeoutException ex) {
+                         // continue ...
+                    }
+
                     throw new TimeoutException("Timeout expired!");
                 }
             }
