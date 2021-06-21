@@ -1,8 +1,0 @@
-#!/bin/bash
-
-source bco-launcher
-
-cd spread && docker build -t $SPREAD_DOCKER_NAME . && cd ..
-#cd openhab && docker build -t $OPENHAB_DOCKER_NAME . && cd ..
-cd openhab-binding-rsb && docker build -t $OPENHAB_RSB_BINDING_DOCKER_NAME . && cd ..
-cd bco && docker build -t $BCO_DOCKER_NAME . && cd ..
