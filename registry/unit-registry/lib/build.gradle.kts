@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
-    implementation("org.openbase:rct:[0.18,0.19-alpha)")
+    implementation("org.openbase:rct:[2.0,2.1-alpha)")
     implementation(project(":bco.registry.lib"))
     implementation(project(":bco.registry.class.remote"))
     implementation(project(":bco.registry.template.remote"))

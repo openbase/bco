@@ -52,18 +52,18 @@ gradle-app.setting
 **/*/nbproject
 
 ### Eclipse ###
-*.pydevproject
-.metadata
-.gradle
-bin/
-tmp/
-*.tmp
-*.bak
-*.swp
-*~.nib
-local.properties
-.settings/
-.loadpath
+   *.pydevproject
+   .metadata
+   .gradle
+   bin/
+   tmp/
+   *.tmp
+   *.bak
+   *.swp
+   *~.nib
+   local.properties
+   .settings/
+   .loadpath
 
 # Eclipse Core
 .project
@@ -72,7 +72,7 @@ local.properties
 .externalToolBuilders/
 
 # Locally stored "Eclipse launch configurations"
-*.launch
+   *.launch
 
 # CDT-specific
 .cproject
@@ -129,6 +129,7 @@ local.properties
 .idea/modules
 *.iml
 *.ipr
+.idea/libraries-with-intellij-classes.xml
 
 # CMake
 cmake-build-*/

@@ -10,7 +10,6 @@ dependencies {
     implementation("org.openbase:jul.visual.javafx:2.0-SNAPSHOT")
     implementation(project(":bco.dal.remote"))
     implementation("org.openbase:jul.visual.swing:2.0-SNAPSHOT")
-    implementation("org.openjfx:javafx-swing:11.0.2")
 }
 
 description = "BCO DAL Visualisation"
