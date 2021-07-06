@@ -7,7 +7,8 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:bco.registry.remote:2.0-SNAPSHOT")
+    api(project(":bco.registry.remote"))
+    api(project(":bco.authentication.lib"))
     api("org.openbase:jul.extension.rsb.scope:2.0-SNAPSHOT")
     api("org.openbase:jul.extension.rsb.com:2.0-SNAPSHOT")
     api("org.openbase:jul.extension.rsb.processing:2.0-SNAPSHOT")
@@ -15,9 +16,8 @@ dependencies {
     api("org.openbase:jul.extension.rsb.interface:2.0-SNAPSHOT")
     api("org.openbase:jul.extension.protobuf:2.0-SNAPSHOT")
     api("org.openbase:jul.extension.type.transform:2.0-SNAPSHOT")
-    api("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
-    testImplementation("org.openbase:bco.registry.unit.test:2.0-SNAPSHOT")
+    testImplementation(project(":bco.registry.unit.test"))
 }
 
 description = "BCO DAL Library"

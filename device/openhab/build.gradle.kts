@@ -10,10 +10,11 @@ repositories {
     maven {
         url = uri("https://openhab.jfrog.io/openhab/libs-release")
     }
+    jcenter()
 }
 
 dependencies {
-    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api(project(":bco.dal.control"))
     api("org.glassfish.jersey.core:jersey-client:2.31")
     api("org.glassfish.jersey.inject:jersey-hk2:2.31")
     api("org.glassfish.jersey.media:jersey-media-sse:2.31")

@@ -10,7 +10,7 @@ dependencies {
     api(project(":bco.registry.message.lib"))
     api(project(":bco.registry.unit.remote"))
     api("org.openbase:jul.storage:2.0-SNAPSHOT")
-    api("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
+    api(project(":bco.authentication.lib"))
 }
 
 description = "BCO Registry Message Remote"

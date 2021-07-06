@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api(project(":bco.dal.control"))
     api("io.socket:socket.io-client:1.0.0")
 }
 

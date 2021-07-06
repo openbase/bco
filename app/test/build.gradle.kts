@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:bco.dal.test:2.0-SNAPSHOT")
+    api(project(":bco.dal.test"))
 }
 
 description = "BCO App Test Framework"

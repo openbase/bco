@@ -12,7 +12,7 @@ dependencies {
     api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
     api("org.openbase:jul.extension.type.storage:2.0-SNAPSHOT")
     api("org.openbase:jul.processing:2.0-SNAPSHOT")
-    api("org.openbase:bco.authentication.core:2.0-SNAPSHOT")
+    api(project(":bco.authentication.core"))
 }
 
 description = "BCO Registry Message Core"

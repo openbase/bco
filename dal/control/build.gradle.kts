@@ -9,7 +9,7 @@ plugins {
 dependencies {
     api(project(":bco.dal.lib"))
     api(project(":bco.dal.remote"))
-    api("org.openbase:bco.registry.util:2.0-SNAPSHOT")
+    api(project(":bco.registry.util"))
     api("org.openbase:jul.pattern.trigger:2.0-SNAPSHOT")
     api("com.influxdb:influxdb-client-java:[1.0,1.1-alpha)")
 }

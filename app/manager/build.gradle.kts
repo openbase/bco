@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api(project(":bco.dal.control"))
     api(project(":bco.app.preset"))
     api(project(":bco.app.cloud.connector"))
 }

@@ -7,8 +7,8 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
-    api("org.openbase:bco.openapi:2.0-SNAPSHOT")
+    api(project(":bco.dal.control"))
+    api(project(":bco.app.openapiserver"))
     testImplementation(project(":bco.app.test"))
 }
 

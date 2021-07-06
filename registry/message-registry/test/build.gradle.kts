@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     api(project(":bco.registry.util"))
-    api("org.openbase:bco.authentication.core:2.0-SNAPSHOT")
+    api(project(":bco.authentication.core"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
     testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }

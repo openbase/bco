@@ -12,15 +12,15 @@ application {
 }
 
 dependencies {
-    api("org.openbase:bco.registry.util:2.0-SNAPSHOT")
-    api("org.openbase:bco.device.openhab:2.0-SNAPSHOT")
+    api(project(":bco.registry.util"))
+    api(project(":bco.device.openhab"))
     api(project(":bco.app.manager"))
-    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api(project(":bco.dal.control"))
     api(project(":bco.app.cloud.connector"))
     api(project(":bco.app.influxdb.connector"))
-    api("org.openbase:bco.api.graphql:2.0-SNAPSHOT")
+    api(project(":bco.api.graphql"))
     api("commons-collections:commons-collections:3.2.2")
-    testImplementation("org.openbase:bco.dal.test:2.0-SNAPSHOT")
+    testImplementation(project(":bco.dal.test"))
     testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
 }
 

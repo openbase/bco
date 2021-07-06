@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     api(project(":bco.dal.lib"))
-    api("org.openbase:bco.registry.util:2.0-SNAPSHOT")
+    api(project(":bco.registry.util"))
     api("org.openbase:jul.pattern.trigger:2.0-SNAPSHOT")
 }
 

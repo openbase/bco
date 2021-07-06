@@ -9,7 +9,7 @@ plugins {
 dependencies {
     api(project(":bco.registry.unit.lib"))
     api("org.openbase:jul.storage:2.0-SNAPSHOT")
-    api("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
+    api(project(":bco.authentication.lib"))
 }
 
 description = "BCO Registry Unit Remote"

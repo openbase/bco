@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:bco.registry.util:2.0-SNAPSHOT")
+    api(project(":bco.registry.util"))
     api(project(":bco.dal.remote"))
     api(project(":bco.dal.control"))
     api(project(":bco.dal.visual"))

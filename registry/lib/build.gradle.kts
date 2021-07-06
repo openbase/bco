@@ -9,7 +9,7 @@ plugins {
 dependencies {
     api("org.openbase:jul.storage:2.0-SNAPSHOT")
     api("org.openbase:jul.pattern.launch:2.0-SNAPSHOT")
-    api("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
+    api(project(":bco.authentication.lib"))
     api("org.openbase:jul.extension.type.util:2.0-SNAPSHOT")
     api("org.openbase:jul.communication.controller:2.0-SNAPSHOT")
     api("org.openbase:jul.exception:2.0-SNAPSHOT")
