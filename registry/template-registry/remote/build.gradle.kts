@@ -7,12 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.template.lib"))
-    implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api(project(":bco.registry.template.lib"))
+    api("org.openbase:jul.storage:2.0-SNAPSHOT")
 }
 
 description = "BCO Registry Template Remote"
 
-java {
-    withJavadocJar()
-}

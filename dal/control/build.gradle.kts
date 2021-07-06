@@ -7,15 +7,12 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.dal.lib"))
-    implementation(project(":bco.dal.remote"))
-    implementation("org.openbase:bco.registry.util:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.pattern.trigger:2.0-SNAPSHOT")
-    implementation("com.influxdb:influxdb-client-java:[1.0,1.1-alpha)")
+    api(project(":bco.dal.lib"))
+    api(project(":bco.dal.remote"))
+    api("org.openbase:bco.registry.util:2.0-SNAPSHOT")
+    api("org.openbase:jul.pattern.trigger:2.0-SNAPSHOT")
+    api("com.influxdb:influxdb-client-java:[1.0,1.1-alpha)")
 }
 
 description = "BCO DAL Control"
 
-java {
-    withJavadocJar()
-}

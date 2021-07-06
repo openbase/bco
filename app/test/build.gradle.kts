@@ -7,11 +7,8 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:bco.dal.test:2.0-SNAPSHOT")
+    api("org.openbase:bco.dal.test:2.0-SNAPSHOT")
 }
 
 description = "BCO App Test Framework"
 
-java {
-    withJavadocJar()
-}

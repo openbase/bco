@@ -7,14 +7,11 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.util"))
-    implementation("org.openbase:bco.authentication.core:2.0-SNAPSHOT")
+    api(project(":bco.registry.util"))
+    api("org.openbase:bco.authentication.core:2.0-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
     testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }
 
 description = "BCO Registry Unit Test"
 
-java {
-    withJavadocJar()
-}

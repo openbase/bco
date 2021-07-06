@@ -5,6 +5,7 @@
 plugins {
     `java-library`
     `maven-publish`
+    id("io.freefair.lombok")
 }
 
 repositories {
@@ -12,27 +13,24 @@ repositories {
     maven {
         url = uri("https://mvn.cit-ec.de/nexus/content/repositories/releases/")
     }
-
-    maven {
-        url = uri("https://mvn.cit-ec.de/nexus/content/repositories/snapshots/")
-    }
-
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
 }
 
-dependencies {
-    implementation("org.openbase:jul.exception:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.extension.rsb.com:2.0-SNAPSHOT")
-}
-
 group = "org.openbase"
 version = "2.0-SNAPSHOT"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_16
+    targetCompatibility = sourceCompatibility
     withSourcesJar()
+    withJavadocJar()
+}
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
+    testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }
 
 publishing {

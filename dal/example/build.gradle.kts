@@ -7,11 +7,8 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.dal.remote"))
+    api(project(":bco.dal.remote"))
 }
 
 description = "BCO DAL Example"
 
-java {
-    withJavadocJar()
-}

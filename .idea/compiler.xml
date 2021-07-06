@@ -1,6 +1,232 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="1.6" />
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.20/lombok-1.18.20.jar" />
+        </processorPath>
+        <module name="bco.bco.registry.activity.remote.test" />
+        <module name="bco.bco.dal.visual.main" />
+        <module name="bco.bco.registry.remote.test" />
+        <module name="bco.bco.registry.message.core.main" />
+        <module name="bco.bco.registry.message.test.test" />
+        <module name="bco.bco.device.openhab.main" />
+        <module name="bco.bco.registry.activity.core.main" />
+        <module name="bco.bco.registry.unit.remote.main" />
+        <module name="bco.bco.app.manager.test" />
+        <module name="bco.bco.registry.message.lib.main" />
+        <module name="bco.bco.registry.unit.core.main" />
+        <module name="bco.bco.app.cloud.connector.test" />
+        <module name="bco.bco.dal.remote.test" />
+        <module name="bco.bco.registry.message.remote.main" />
+        <module name="bco.bco.registry.util.main" />
+        <module name="bco.bco.app.openapiserver.test" />
+        <module name="bco.bco.authentication.core.test" />
+        <module name="bco.bco.app.test.test" />
+        <module name="bco.bco.registry.unit.test.main" />
+        <module name="bco.bco.app.influxdb.connector.main" />
+        <module name="bco.bco.registry.message.test.main" />
+        <module name="bco.bco.registry.template.lib.main" />
+        <module name="bco.bco.authentication.test.test" />
+        <module name="bco.bco.app.preset.main" />
+        <module name="bco.bco.registry.activity.lib.main" />
+        <module name="bco.bco.registry.class.core.test" />
+        <module name="bco.bco.registry.class.lib.test" />
+        <module name="bco.bco.registry.unit.test.test" />
+        <module name="bco.bco.registry.lib.main" />
+        <module name="bco.bco.registry.activity.test.test" />
+        <module name="bco.bco.registry.template.core.test" />
+        <module name="bco.bco.app.util.test" />
+        <module name="bco.bco.authentication.core.main" />
+        <module name="bco.bco.registry.util.test" />
+        <module name="bco.bco.dal.example.test" />
+        <module name="bco.bco.app.preset.test" />
+        <module name="bco.bco.registry.class.remote.test" />
+        <module name="bco.bco.app.influxdb.connector.test" />
+        <module name="bco.bco.registry.class.test.main" />
+        <module name="bco.bco.dal.test.test" />
+        <module name="bco.bco.registry.unit.lib.test" />
+        <module name="bco.bco.app.cloud.connector.main" />
+        <module name="bco.bco.authentication.lib.test" />
+        <module name="bco.bco.dal.remote.main" />
+        <module name="bco.bco.device.openhab.test" />
+        <module name="bco.bco.registry.unit.core.test" />
+        <module name="bco.bco.registry.lib.test" />
+        <module name="bco.bco.dal.control.main" />
+        <module name="bco.bco.registry.remote.main" />
+        <module name="bco.bco.registry.template.remote.test" />
+        <module name="bco.bco.registry.activity.test.main" />
+        <module name="bco.bco.app.util.main" />
+        <module name="bco.bco.authentication.test.main" />
+        <module name="bco.bco.registry.template.test.main" />
+        <module name="bco.bco.api.graphql.test" />
+        <module name="bco.bco.registry.activity.lib.test" />
+        <module name="bco.bco.dal.lib.test" />
+        <module name="bco.bco.registry.class.lib.main" />
+        <module name="bco.bco.registry.template.core.main" />
+        <module name="bco.bco.dal.visual.test" />
+        <module name="bco.bco.api.graphql.main" />
+        <module name="bco.bco.registry.template.remote.main" />
+        <module name="bco.bco.registry.template.test.test" />
+        <module name="bco.bco.app.manager.main" />
+        <module name="bco.bco.registry.activity.core.test" />
+        <module name="bco.bco.dal.control.test" />
+        <module name="bco.bco.registry.class.core.main" />
+        <module name="bco.bco.registry.class.test.test" />
+        <module name="bco.bco.authentication.lib.main" />
+        <module name="bco.bco.dal.example.main" />
+        <module name="bco.bco.dal.test.main" />
+        <module name="bco.bco.app.test.main" />
+        <module name="bco.bco.registry.activity.remote.main" />
+        <module name="bco.bco.registry.class.remote.main" />
+        <module name="bco.bco.registry.unit.lib.main" />
+        <module name="bco.bco.registry.message.core.test" />
+        <module name="bco.bco.registry.template.lib.test" />
+        <module name="bco.bco.registry.unit.remote.test" />
+        <module name="bco.bco.app.openapiserver.main" />
+        <module name="bco.bco.registry.message.lib.test" />
+        <module name="bco.bco.dal.lib.main" />
+        <module name="bco.bco.registry.message.remote.test" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="16">
+      <module name="bco.app.bco.app.cloud.connector" target="16" />
+      <module name="bco.app.bco.app.cloud.connector.main" target="16" />
+      <module name="bco.app.bco.app.cloud.connector.test" target="16" />
+      <module name="bco.app.bco.app.influxdb.connector" target="16" />
+      <module name="bco.app.bco.app.influxdb.connector.main" target="16" />
+      <module name="bco.app.bco.app.influxdb.connector.test" target="16" />
+      <module name="bco.app.bco.app.manager" target="16" />
+      <module name="bco.app.bco.app.manager.main" target="16" />
+      <module name="bco.app.bco.app.manager.test" target="16" />
+      <module name="bco.app.bco.app.openapiserver" target="16" />
+      <module name="bco.app.bco.app.openapiserver.main" target="16" />
+      <module name="bco.app.bco.app.openapiserver.test" target="16" />
+      <module name="bco.app.bco.app.preset" target="16" />
+      <module name="bco.app.bco.app.preset.main" target="16" />
+      <module name="bco.app.bco.app.preset.test" target="16" />
+      <module name="bco.app.bco.app.test" target="16" />
+      <module name="bco.app.bco.app.test.main" target="16" />
+      <module name="bco.app.bco.app.test.test" target="16" />
+      <module name="bco.app.bco.app.util" target="16" />
+      <module name="bco.app.bco.app.util.main" target="16" />
+      <module name="bco.app.bco.app.util.test" target="16" />
+      <module name="bco.app.buildSrc" target="16" />
+      <module name="bco.app.buildSrc.main" target="16" />
+      <module name="bco.app.buildSrc.test" target="16" />
+      <module name="bco.authentication.bco.authentication.core" target="1.8" />
+      <module name="bco.authentication.bco.authentication.core.main" target="1.8" />
+      <module name="bco.authentication.bco.authentication.core.test" target="1.8" />
+      <module name="bco.authentication.bco.authentication.lib" target="1.8" />
+      <module name="bco.authentication.bco.authentication.lib.main" target="1.8" />
+      <module name="bco.authentication.bco.authentication.lib.test" target="1.8" />
+      <module name="bco.authentication.bco.authentication.test" target="1.8" />
+      <module name="bco.authentication.bco.authentication.test.main" target="1.8" />
+      <module name="bco.authentication.bco.authentication.test.test" target="1.8" />
+      <module name="bco.authentication.buildSrc" target="16" />
+      <module name="bco.authentication.buildSrc.main" target="16" />
+      <module name="bco.authentication.buildSrc.test" target="16" />
+      <module name="bco.dal.bco.dal.control" target="1.8" />
+      <module name="bco.dal.bco.dal.control.main" target="1.8" />
+      <module name="bco.dal.bco.dal.control.test" target="1.8" />
+      <module name="bco.dal.bco.dal.example" target="1.8" />
+      <module name="bco.dal.bco.dal.example.main" target="1.8" />
+      <module name="bco.dal.bco.dal.example.test" target="1.8" />
+      <module name="bco.dal.bco.dal.lib" target="1.8" />
+      <module name="bco.dal.bco.dal.lib.main" target="1.8" />
+      <module name="bco.dal.bco.dal.lib.test" target="1.8" />
+      <module name="bco.dal.bco.dal.remote" target="1.8" />
+      <module name="bco.dal.bco.dal.remote.main" target="1.8" />
+      <module name="bco.dal.bco.dal.remote.test" target="1.8" />
+      <module name="bco.dal.bco.dal.test" target="1.8" />
+      <module name="bco.dal.bco.dal.test.main" target="1.8" />
+      <module name="bco.dal.bco.dal.test.test" target="1.8" />
+      <module name="bco.dal.bco.dal.visual" target="1.8" />
+      <module name="bco.dal.bco.dal.visual.main" target="1.8" />
+      <module name="bco.dal.bco.dal.visual.test" target="1.8" />
+      <module name="bco.dal.buildSrc" target="16" />
+      <module name="bco.dal.buildSrc.main" target="16" />
+      <module name="bco.dal.buildSrc.test" target="16" />
+      <module name="bco.device.bco.device.openhab" target="1.8" />
+      <module name="bco.device.bco.device.openhab.main" target="1.8" />
+      <module name="bco.device.bco.device.openhab.test" target="1.8" />
+      <module name="bco.device.buildSrc" target="16" />
+      <module name="bco.device.buildSrc.main" target="16" />
+      <module name="bco.device.buildSrc.test" target="16" />
+      <module name="bco.registry.bco.registry.activity.core" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.core.main" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.core.test" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.lib" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.lib.main" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.lib.test" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.remote" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.remote.main" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.remote.test" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.test" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.test.main" target="1.8" />
+      <module name="bco.registry.bco.registry.activity.test.test" target="1.8" />
+      <module name="bco.registry.bco.registry.class.core" target="1.8" />
+      <module name="bco.registry.bco.registry.class.core.main" target="1.8" />
+      <module name="bco.registry.bco.registry.class.core.test" target="1.8" />
+      <module name="bco.registry.bco.registry.class.lib" target="1.8" />
+      <module name="bco.registry.bco.registry.class.lib.main" target="1.8" />
+      <module name="bco.registry.bco.registry.class.lib.test" target="1.8" />
+      <module name="bco.registry.bco.registry.class.remote" target="1.8" />
+      <module name="bco.registry.bco.registry.class.remote.main" target="1.8" />
+      <module name="bco.registry.bco.registry.class.remote.test" target="1.8" />
+      <module name="bco.registry.bco.registry.class.test" target="1.8" />
+      <module name="bco.registry.bco.registry.class.test.main" target="1.8" />
+      <module name="bco.registry.bco.registry.class.test.test" target="1.8" />
+      <module name="bco.registry.bco.registry.lib" target="1.8" />
+      <module name="bco.registry.bco.registry.lib.main" target="1.8" />
+      <module name="bco.registry.bco.registry.lib.test" target="1.8" />
+      <module name="bco.registry.bco.registry.message.core" target="1.8" />
+      <module name="bco.registry.bco.registry.message.core.main" target="1.8" />
+      <module name="bco.registry.bco.registry.message.core.test" target="1.8" />
+      <module name="bco.registry.bco.registry.message.lib" target="1.8" />
+      <module name="bco.registry.bco.registry.message.lib.main" target="1.8" />
+      <module name="bco.registry.bco.registry.message.lib.test" target="1.8" />
+      <module name="bco.registry.bco.registry.message.remote" target="1.8" />
+      <module name="bco.registry.bco.registry.message.remote.main" target="1.8" />
+      <module name="bco.registry.bco.registry.message.remote.test" target="1.8" />
+      <module name="bco.registry.bco.registry.message.test" target="1.8" />
+      <module name="bco.registry.bco.registry.message.test.main" target="1.8" />
+      <module name="bco.registry.bco.registry.message.test.test" target="1.8" />
+      <module name="bco.registry.bco.registry.remote" target="1.8" />
+      <module name="bco.registry.bco.registry.remote.main" target="1.8" />
+      <module name="bco.registry.bco.registry.remote.test" target="1.8" />
+      <module name="bco.registry.bco.registry.template.core" target="1.8" />
+      <module name="bco.registry.bco.registry.template.core.main" target="1.8" />
+      <module name="bco.registry.bco.registry.template.core.test" target="1.8" />
+      <module name="bco.registry.bco.registry.template.lib" target="1.8" />
+      <module name="bco.registry.bco.registry.template.lib.main" target="1.8" />
+      <module name="bco.registry.bco.registry.template.lib.test" target="1.8" />
+      <module name="bco.registry.bco.registry.template.remote" target="1.8" />
+      <module name="bco.registry.bco.registry.template.remote.main" target="1.8" />
+      <module name="bco.registry.bco.registry.template.remote.test" target="1.8" />
+      <module name="bco.registry.bco.registry.template.test" target="1.8" />
+      <module name="bco.registry.bco.registry.template.test.main" target="1.8" />
+      <module name="bco.registry.bco.registry.template.test.test" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.core" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.core.main" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.core.test" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.lib" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.lib.main" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.lib.test" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.remote" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.remote.main" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.remote.test" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.test" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.test.main" target="1.8" />
+      <module name="bco.registry.bco.registry.unit.test.test" target="1.8" />
+      <module name="bco.registry.bco.registry.util" target="1.8" />
+      <module name="bco.registry.bco.registry.util.main" target="1.8" />
+      <module name="bco.registry.bco.registry.util.test" target="1.8" />
+      <module name="bco.registry.buildSrc" target="16" />
+      <module name="bco.registry.buildSrc.main" target="16" />
+      <module name="bco.registry.buildSrc.test" target="16" />
+    </bytecodeTargetLevel>
   </component>
 </project>

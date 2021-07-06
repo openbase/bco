@@ -7,15 +7,12 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.template.lib"))
-    implementation("org.openbase:jul.extension.rsb.scope:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.processing:2.0-SNAPSHOT")
+    api(project(":bco.registry.template.lib"))
+    api("org.openbase:jul.extension.rsb.scope:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
+    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api("org.openbase:jul.processing:2.0-SNAPSHOT")
 }
 
 description = "BCO Registry Template Core"
 
-java {
-    withJavadocJar()
-}

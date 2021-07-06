@@ -7,13 +7,10 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.unit.lib"))
-    implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
-    implementation("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
+    api(project(":bco.registry.unit.lib"))
+    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
 }
 
 description = "BCO Registry Unit Remote"
 
-java {
-    withJavadocJar()
-}

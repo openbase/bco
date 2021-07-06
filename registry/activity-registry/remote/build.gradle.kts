@@ -7,13 +7,10 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.activity.lib"))
-    implementation(project(":bco.registry.template.remote"))
-    implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api(project(":bco.registry.activity.lib"))
+    api(project(":bco.registry.template.remote"))
+    api("org.openbase:jul.storage:2.0-SNAPSHOT")
 }
 
 description = "BCO Registry Activity Remote"
 
-java {
-    withJavadocJar()
-}

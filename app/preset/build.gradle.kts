@@ -7,12 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
     testImplementation(project(":bco.app.test"))
 }
 
 description = "BCO App Preset"
 
-java {
-    withJavadocJar()
-}

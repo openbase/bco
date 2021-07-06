@@ -7,18 +7,15 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.lib"))
-    implementation(project(":bco.registry.activity.remote"))
-    implementation(project(":bco.registry.class.remote"))
-    implementation(project(":bco.registry.template.remote"))
-    implementation(project(":bco.registry.unit.remote"))
-    implementation(project(":bco.registry.message.remote"))
+    api(project(":bco.registry.lib"))
+    api(project(":bco.registry.activity.remote"))
+    api(project(":bco.registry.class.remote"))
+    api(project(":bco.registry.template.remote"))
+    api(project(":bco.registry.unit.remote"))
+    api(project(":bco.registry.message.remote"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
     testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }
 
 description = "BCO Registry Remote"
 
-java {
-    withJavadocJar()
-}

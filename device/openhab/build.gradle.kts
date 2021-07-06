@@ -6,15 +6,19 @@ plugins {
     id("org.openbase.java-conventions")
 }
 
+repositories {
+    maven {
+        url = uri("https://openhab.jfrog.io/openhab/libs-release")
+    }
+}
+
 dependencies {
-    implementation("org.glassfish.jersey.core:jersey-client:2.31")
-    implementation("org.glassfish.jersey.inject:jersey-hk2:2.31")
-    implementation("org.glassfish.jersey.media:jersey-media-sse:2.31")
-    implementation("org.openhab.core.bundles:org.openhab.core.io.rest.core:2.5.0")
+    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api("org.glassfish.jersey.core:jersey-client:2.31")
+    api("org.glassfish.jersey.inject:jersey-hk2:2.31")
+    api("org.glassfish.jersey.media:jersey-media-sse:2.31")
+    api("org.openhab.core.bundles:org.openhab.core.io.rest.core:2.5.0")
 }
 
 description = "BCO Openhab Device Manager"
 
-java {
-    withJavadocJar()
-}

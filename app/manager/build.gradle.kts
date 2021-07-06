@@ -7,13 +7,10 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:bco.dal.control:2.0-SNAPSHOT")
-    implementation(project(":bco.app.preset"))
-    implementation(project(":bco.app.cloud.connector"))
+    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api(project(":bco.app.preset"))
+    api(project(":bco.app.cloud.connector"))
 }
 
 description = "BCO App Manager"
 
-java {
-    withJavadocJar()
-}

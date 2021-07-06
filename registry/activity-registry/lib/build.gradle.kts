@@ -7,12 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
-    implementation(project(":bco.registry.lib"))
+    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api(project(":bco.registry.lib"))
 }
 
 description = "BCO Registry Activity Library"
 
-java {
-    withJavadocJar()
-}

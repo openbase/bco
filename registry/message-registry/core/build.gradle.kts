@@ -7,16 +7,13 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.message.lib"))
-    implementation("org.openbase:jul.extension.rsb.scope:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.extension.type.storage:2.0-SNAPSHOT")
-    implementation("org.openbase:jul.processing:2.0-SNAPSHOT")
-    implementation("org.openbase:bco.authentication.core:2.0-SNAPSHOT")
+    api(project(":bco.registry.message.lib"))
+    api("org.openbase:jul.extension.rsb.scope:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.storage:2.0-SNAPSHOT")
+    api("org.openbase:jul.processing:2.0-SNAPSHOT")
+    api("org.openbase:bco.authentication.core:2.0-SNAPSHOT")
 }
 
 description = "BCO Registry Message Core"
 
-java {
-    withJavadocJar()
-}

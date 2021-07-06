@@ -7,12 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.authentication.core"))
-    implementation(project(":bco.authentication.lib"))
+    api(project(":bco.authentication.core"))
+    api(project(":bco.authentication.lib"))
 }
 
 description = "BCO Authentication Test"
 
-java {
-    withJavadocJar()
-}

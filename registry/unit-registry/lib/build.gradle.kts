@@ -7,17 +7,14 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
-    implementation("org.openbase:rct:[2.0,2.1-alpha)")
-    implementation(project(":bco.registry.lib"))
-    implementation(project(":bco.registry.class.remote"))
-    implementation(project(":bco.registry.template.remote"))
-    implementation(project(":bco.registry.activity.remote"))
-    implementation("org.apache.commons:commons-math3:3.6.1")
+    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api("org.openbase:rct:[2.0,2.1-alpha)")
+    api(project(":bco.registry.lib"))
+    api(project(":bco.registry.class.remote"))
+    api(project(":bco.registry.template.remote"))
+    api(project(":bco.registry.activity.remote"))
+    api("org.apache.commons:commons-math3:3.6.1")
 }
 
 description = "BCO Registry Unit Library"
 
-java {
-    withJavadocJar()
-}

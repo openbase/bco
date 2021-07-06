@@ -7,13 +7,10 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:bco.dal.control:2.0-SNAPSHOT")
-    implementation("org.openbase:bco.openapi:2.0-SNAPSHOT")
+    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api("org.openbase:bco.openapi:2.0-SNAPSHOT")
     testImplementation(project(":bco.app.test"))
 }
 
 description = "BCO OpenAPI Server"
 
-java {
-    withJavadocJar()
-}

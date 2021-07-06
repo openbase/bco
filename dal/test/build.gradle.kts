@@ -7,18 +7,13 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:bco.registry.util:2.0-SNAPSHOT")
-    implementation(project(":bco.dal.remote"))
-    implementation(project(":bco.dal.control"))
-    implementation(project(":bco.dal.visual"))
-    implementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
-    implementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
+    api("org.openbase:bco.registry.util:2.0-SNAPSHOT")
+    api(project(":bco.dal.remote"))
+    api(project(":bco.dal.control"))
+    api(project(":bco.dal.visual"))
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.0")
 }
 
 description = "BCO DAL Test"
 
-java {
-    withJavadocJar()
-}

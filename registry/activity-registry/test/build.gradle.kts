@@ -7,14 +7,11 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.activity.core"))
-    implementation(project(":bco.registry.activity.remote"))
+    api(project(":bco.registry.activity.core"))
+    api(project(":bco.registry.activity.remote"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
     testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }
 
 description = "BCO Registry Activity Test"
 
-java {
-    withJavadocJar()
-}

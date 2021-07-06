@@ -7,12 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.lib"))
-    implementation(project(":bco.registry.unit.remote"))
+    api(project(":bco.registry.lib"))
+    api(project(":bco.registry.unit.remote"))
 }
 
 description = "BCO Registry Message Library"
 
-java {
-    withJavadocJar()
-}

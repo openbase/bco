@@ -7,14 +7,11 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":bco.registry.message.lib"))
-    implementation(project(":bco.registry.unit.remote"))
-    implementation("org.openbase:jul.storage:2.0-SNAPSHOT")
-    implementation("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
+    api(project(":bco.registry.message.lib"))
+    api(project(":bco.registry.unit.remote"))
+    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api("org.openbase:bco.authentication.lib:2.0-SNAPSHOT")
 }
 
 description = "BCO Registry Message Remote"
 
-java {
-    withJavadocJar()
-}

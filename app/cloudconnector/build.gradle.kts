@@ -7,12 +7,9 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:bco.dal.control:2.0-SNAPSHOT")
-    implementation("io.socket:socket.io-client:1.0.0")
+    api("org.openbase:bco.dal.control:2.0-SNAPSHOT")
+    api("io.socket:socket.io-client:1.0.0")
 }
 
 description = "BCO Cloud Connector"
 
-java {
-    withJavadocJar()
-}

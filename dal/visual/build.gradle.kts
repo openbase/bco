@@ -7,13 +7,10 @@ plugins {
 }
 
 dependencies {
-    implementation("org.openbase:jul.visual.javafx:2.0-SNAPSHOT")
-    implementation(project(":bco.dal.remote"))
-    implementation("org.openbase:jul.visual.swing:2.0-SNAPSHOT")
+    api("org.openbase:jul.visual.javafx:2.0-SNAPSHOT")
+    api(project(":bco.dal.remote"))
+    api("org.openbase:jul.visual.swing:2.0-SNAPSHOT")
 }
 
 description = "BCO DAL Visualisation"
 
-java {
-    withJavadocJar()
-}
