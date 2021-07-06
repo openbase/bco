@@ -7,6 +7,13 @@ plugins {
     application
 }
 
+repositories {
+    maven {
+        url = uri("https://openhab.jfrog.io/openhab/libs-release")
+    }
+    jcenter()
+}
+
 application {
     mainClass.set("org.openbase.bco.app.util.launch.BCOTestLauncher")
 }
