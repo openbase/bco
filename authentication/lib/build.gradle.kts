@@ -14,6 +14,4 @@ dependencies {
     api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
     api("org.openbase:jul.extension.protobuf:2.0-SNAPSHOT")
     api("org.openbase:jul.pattern.launch:2.0-SNAPSHOT")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
-    testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }

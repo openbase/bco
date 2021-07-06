@@ -7,8 +7,8 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:jul.visual.javafx:2.0-SNAPSHOT")
     api(project(":bco.dal.remote"))
+    api("org.openbase:jul.visual.javafx:2.0-SNAPSHOT")
     api("org.openbase:jul.visual.swing:2.0-SNAPSHOT")
 }
 

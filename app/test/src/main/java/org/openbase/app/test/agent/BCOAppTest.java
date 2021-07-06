@@ -25,7 +25,6 @@ package org.openbase.app.test.agent;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.jupiter.api.AfterEach;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
@@ -108,7 +107,6 @@ public class BCOAppTest extends AbstractBCOTest {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
-    @AfterEach
     @After
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
