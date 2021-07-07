@@ -3,7 +3,7 @@
  */
 
 plugins {
-    id("org.openbase.java-conventions")
+    id("org.openbase.bco")
 }
 
 dependencies {
