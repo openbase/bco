@@ -65,7 +65,7 @@ public class ServiceDiscoveryDemo {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void disabledMain(String[] args) throws InterruptedException {
         try {
             // Create a JmDNS instance
             JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
