@@ -10,9 +10,9 @@ plugins {
 
 repositories {
     mavenLocal()
-    maven {
+    /*maven {
         url = uri("https://mvn.cit-ec.de/nexus/content/repositories/releases/")
-    }
+    }*/
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
@@ -22,7 +22,7 @@ group = "org.openbase"
 version = "2.0-SNAPSHOT"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_16
+    sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = sourceCompatibility
     withSourcesJar()
     withJavadocJar()

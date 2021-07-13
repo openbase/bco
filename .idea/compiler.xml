@@ -89,7 +89,7 @@
         <module name="bco.bco.registry.message.remote.test" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="16">
+    <bytecodeTargetLevel target="11">
       <module name="bco.app.bco.app.cloud.connector" target="16" />
       <module name="bco.app.bco.app.cloud.connector.main" target="16" />
       <module name="bco.app.bco.app.cloud.connector.test" target="16" />
