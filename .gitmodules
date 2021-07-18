@@ -1,0 +1,7 @@
+[submodule "lib/jul"]
+	path = lib/jul
+    url = https://github.com/openbase/jul.git
+	branch = master
+[submodule "lib/type"]
+	path = lib/type
+	url = https://github.com/openbase/type.git
