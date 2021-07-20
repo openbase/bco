@@ -15,7 +15,7 @@ repositories {
 }
 
 application {
-    mainClass.set("org.openbase.bco.app.util.launch.BCOTestLauncher")
+    mainClass.set("org.openbase.bco.app.util.launch.BCOLauncher")
 }
 
 fun createAdditionalScript(name: String, configureStartScripts: CreateStartScripts.() -> Unit) =
