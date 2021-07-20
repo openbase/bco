@@ -46,6 +46,17 @@ distributions {
     }
 }
 
+
+tasks.register("deploy-bco-dist") {
+    dependsOn("installDist")
+    val bcoDist = System.getenv("BCO_DIST")?:"${System.getenv("HOME")}/usr"
+    val mainDist = distributions.getByName("main").distributionBaseName.get()
+    copy {
+        from(File(project.buildDir, "install/$mainDist"))
+        into(bcoDist)
+    }
+}
+
 application.applicationName = "bco"
 
 dependencies {
@@ -72,4 +83,3 @@ tasks.register("testDeploy") {
         into("${System.getenv("HOME")}/local/bco_tmp")
     }
 }
-
