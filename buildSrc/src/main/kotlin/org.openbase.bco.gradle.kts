@@ -10,9 +10,9 @@ plugins {
 
 repositories {
     mavenLocal()
-    /*maven {
+    maven {
         url = uri("https://mvn.cit-ec.de/nexus/content/repositories/releases/")
-    }*/
+    }
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
