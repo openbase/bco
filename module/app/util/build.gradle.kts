@@ -32,24 +32,21 @@ fun createAdditionalScript(name: String, configureStartScripts: CreateStartScrip
         }
     }
 
-createAdditionalScript("LogoPrinter") {
+createAdditionalScript("bco-logo") {
     mainClass.set("org.openbase.bco.app.util.launch.LogoPrinter")
 }
 
-createAdditionalScript("BCOConsole") {
+createAdditionalScript("bco-console") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
 }
 
 distributions {
     main {
-        distributionBaseName.set("bco-test")
+        distributionBaseName.set("bco")
     }
 }
 
-
-
-application.applicationName = "bco-test"
-//application.
+application.applicationName = "bco"
 
 dependencies {
     api(project(":bco.registry.util"))
