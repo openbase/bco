@@ -66,3 +66,13 @@ dependencies {
 
 description = "BCO App Utility"
 
+tasks.register("testDeploy") {
+    dependsOn("installDist")
+    //println("Copy to ${System.getenv("HOME")}/local/bco_tmp")
+    //println("BCO_DIST: ${BCO_DIST}")
+    copy {
+        from(File(project.buildDir, "install/bco-test"))
+        into("${System.getenv("HOME")}/local/bco_tmp")
+    }
+}
+
