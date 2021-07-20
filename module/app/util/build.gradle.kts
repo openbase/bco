@@ -18,6 +18,39 @@ application {
     mainClass.set("org.openbase.bco.app.util.launch.BCOLauncher")
 }
 
+fun createAdditionalScript(name: String, configureStartScripts: CreateStartScripts.() -> Unit) =
+    tasks.register<CreateStartScripts>("startScripts$name") {
+        configureStartScripts()
+        applicationName = name
+        outputDir = File(project.buildDir, "scripts")
+        classpath = tasks.getByName("jar").outputs.files + configurations.runtimeClasspath.get()
+    }.also {
+        application.applicationDistribution.into("bin") {
+            from(it)
+            //fileMode = 0b000_111_101_101
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+    }
+
+createAdditionalScript("LogoPrinter") {
+    mainClass.set("org.openbase.bco.app.util.launch.LogoPrinter")
+}
+
+createAdditionalScript("BCOConsole") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
+}
+
+distributions {
+    main {
+        distributionBaseName.set("bco-test")
+    }
+}
+
+
+
+application.applicationName = "bco-test"
+//application.
+
 dependencies {
     api(project(":bco.registry.util"))
     api(project(":bco.device.openhab"))
