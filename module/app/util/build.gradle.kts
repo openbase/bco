@@ -36,6 +36,30 @@ createAdditionalScript("bco-logo") {
     mainClass.set("org.openbase.bco.app.util.launch.LogoPrinter")
 }
 
+createAdditionalScript("bco-manager") {
+    mainClass.set("org.openbase.bco.app.util.launch.ManagerLauncher")
+}
+
+createAdditionalScript("bco-test") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOTestLauncher")
+}
+
+createAdditionalScript("bco-print-api") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOInterfacePrinter")
+}
+
+createAdditionalScript("bco-validate") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOSystemValidator")
+}
+
+createAdditionalScript("bco-registry-validate") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCORegistryValidator")
+}
+
+createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOTrainDataGeneratorLauncher")
+}
+
 createAdditionalScript("bco-console") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
 }
