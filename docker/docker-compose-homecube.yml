@@ -1,0 +1,29 @@
+version: "3.7"
+
+volumes:
+  database_data:
+    driver: local
+  customer_data:
+    driver: local
+
+services:
+  mosquitto:
+    build: ./mosquitto
+    image: "prodaso/mosquitto"
+    ports:
+      - "8884:8884"
+  postgres:
+    build: ./postgres
+    image: "prodaso/postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - database_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "prodaso"
+      POSTGRES_PASSWORD: "iMqU8sJk"
+  mailhog:
+    build: "mailhog"
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
