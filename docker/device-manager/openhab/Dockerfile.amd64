@@ -1,5 +1,6 @@
 # Baseline image
-FROM openbaseorg/bco:experimental-amd64
+ARG TAG=latest
+FROM openbaseorg/bco:${TAG}
 
 # Set variables and locales
 ENV \
