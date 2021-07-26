@@ -19,8 +19,8 @@ jobs:
         name: Checkout
         uses: actions/checkout@v2
       -
-        name: Docker meta
-        id: meta
+        name: Docker bco meta
+        id: bco-meta
         uses: docker/metadata-action@v3
         with:
           # list of Docker images to use as base name for tags
@@ -58,16 +58,46 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build and push
+        name: Build and push bco
         uses: docker/build-push-action@v2
         with:
           context: .
-          # args: 
-          #   TAG: ${TAG}
           file: docker/Dockerfile.amd64 
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.bco-meta.outputs.tags }}
+          labels: ${{ steps.bco-meta.outputs.labels }}
+        env:
+          TAG: 3.0-alpha
+      -
+        name: Docker bco device meta
+        id: bco-device-meta
+        uses: docker/metadata-action@v3
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            openbaseorg/bco-device-manager-openhab
+            ghcr.io/openbase/bco-device-manager-openhab
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+      -
+        name: Build and push bco device manager
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker/device-manager/openhab
+          build-args: |
+            TAG=${TAG}
+          file: Dockerfile.amd64 
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.bco-device-meta.outputs.tags }}
+          labels: ${{ steps.bco-device-meta.outputs.labels }}
         env:
           TAG: 3.0-alpha
