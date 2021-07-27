@@ -91,10 +91,10 @@ jobs:
         name: Build and push bco device manager
         uses: docker/build-push-action@v2
         with:
-          context: docker/device-manager/openhab
+          context: ./docker/device-manager/openhab
           build-args: |
             TAG=${TAG}
-          file: Dockerfile.amd64
+          file: ./docker/device-manager/openhab/Dockerfile.amd64
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.bco-device-meta.outputs.tags }}
