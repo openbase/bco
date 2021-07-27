@@ -88,16 +88,18 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
       -
+        uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+      -
         name: Build and push bco device manager
         uses: docker/build-push-action@v2
         with:
           context: ./docker/device-manager/openhab
           build-args: |
-            TAG=${TAG}
+            BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
           file: ./docker/device-manager/openhab/Dockerfile.amd64
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.bco-device-meta.outputs.tags }}
           labels: ${{ steps.bco-device-meta.outputs.labels }}
-        env:
-          TAG: 3.0-alpha
+          

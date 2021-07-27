@@ -1,6 +1,6 @@
 # Baseline image
-ARG TAG=latest-amd64
-FROM openbaseorg/bco:${TAG}
+ARG BCO_BASE_IMAGE_VERSION=latest-amd64
+FROM openbaseorg/bco:${BCO_BASE_IMAGE_VERSION}
 
 # Set variables and locales
 ENV \
