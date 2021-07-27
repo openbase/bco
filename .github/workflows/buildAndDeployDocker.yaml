@@ -57,18 +57,18 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      # -
-      #   name: Build and push bco
-      #   uses: docker/build-push-action@v2
-      #   with:
-      #     context: .
-      #     file: docker/Dockerfile.amd64 
-      #     platforms: linux/amd64,linux/arm64
-      #     push: ${{ github.event_name != 'pull_request' }}
-      #     tags: ${{ steps.bco-meta.outputs.tags }}
-      #     labels: ${{ steps.bco-meta.outputs.labels }}
-      #   env:
-      #     TAG: 3.0-alpha
+      -
+        name: Build and push bco
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: docker/Dockerfile.amd64 
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.bco-meta.outputs.tags }}
+          labels: ${{ steps.bco-meta.outputs.labels }}
+        env:
+          TAG: 3.0-alpha
       -
         name: Docker bco device meta
         id: bco-device-meta
@@ -102,4 +102,3 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.bco-device-meta.outputs.tags }}
           labels: ${{ steps.bco-device-meta.outputs.labels }}
-          
