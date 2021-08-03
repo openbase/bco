@@ -40,12 +40,20 @@ createAdditionalScript("bco-manager") {
     mainClass.set("org.openbase.bco.app.util.launch.ManagerLauncher")
 }
 
+createAdditionalScript("bco-manager-device-openhab") {
+    mainClass.set("org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher")
+}
+
 createAdditionalScript("bco-test") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOTestLauncher")
 }
 
 createAdditionalScript("bco-print-api") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOInterfacePrinter")
+}
+
+createAdditionalScript("bco-stats") {
+    mainClass.set("org.openbase.bco.registry.print.BCORegistryPrinter")
 }
 
 createAdditionalScript("bco-validate") {
@@ -62,6 +70,14 @@ createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
 
 createAdditionalScript("bco-console") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
+}
+
+createAdditionalScript("bco-query") {
+    mainClass.set("org.openbase.bco.registry.print.BCOUnitQueryPrinter")
+}
+
+createAdditionalScript("bco-logger") {
+    mainClass.set("org.openbase.bco.dal.remote.printer.BCOLogger")
 }
 
 distributions {
