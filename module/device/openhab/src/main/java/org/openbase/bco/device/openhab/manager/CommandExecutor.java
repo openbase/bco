@@ -10,12 +10,12 @@ package org.openbase.bco.device.openhab.manager;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,7 +25,6 @@ package org.openbase.bco.device.openhab.manager;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.protobuf.Message;
-import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
@@ -48,6 +47,7 @@ import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openhab.core.types.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +98,6 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
      *
      * @param itemName  the item identifying the unit whose the state should be updated.
      * @param stateType a string serializing the state to be set.
-     *
      * @throws CouldNotPerformException if applying the state update fails.
      */
     public void applyStateUpdate(final String itemName, final String stateType, final String state) throws CouldNotPerformException {
@@ -114,7 +113,6 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
      * @param stateType  defines the type class.
      * @param state      a string serializing the state to be set.
      * @param systemSync flag determining if the state update is the result of a system sync.
-     *
      * @throws CouldNotPerformException
      */
     public void applyStateUpdate(final String itemName, final String stateType, final String state, final boolean systemSync) throws CouldNotPerformException {

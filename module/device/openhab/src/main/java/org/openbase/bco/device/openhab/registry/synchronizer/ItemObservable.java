@@ -23,9 +23,9 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  */
 
 import com.google.gson.JsonObject;
-import org.eclipse.smarthome.core.items.events.ItemAddedEvent;
-import org.eclipse.smarthome.core.items.events.ItemRemovedEvent;
-import org.eclipse.smarthome.core.items.events.ItemUpdatedEvent;
+import org.openhab.core.items.events.ItemAddedEvent;
+import org.openhab.core.items.events.ItemRemovedEvent;
+import org.openhab.core.items.events.ItemUpdatedEvent;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

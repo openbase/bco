@@ -23,9 +23,9 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  */
 
 import com.google.gson.JsonObject;
-import org.eclipse.smarthome.core.thing.events.ThingAddedEvent;
-import org.eclipse.smarthome.core.thing.events.ThingRemovedEvent;
-import org.eclipse.smarthome.core.thing.events.ThingUpdatedEvent;
+import org.openhab.core.thing.events.ThingAddedEvent;
+import org.openhab.core.thing.events.ThingRemovedEvent;
+import org.openhab.core.thing.events.ThingUpdatedEvent;
 
 public class ThingObservable extends AbstractSSEObservable<JsonObject> {
 

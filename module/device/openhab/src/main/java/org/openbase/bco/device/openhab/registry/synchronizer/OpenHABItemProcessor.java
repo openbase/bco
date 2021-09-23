@@ -22,8 +22,8 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.HSBType;
-import org.eclipse.smarthome.core.types.Command;
+import org.openhab.core.library.types.HSBType;
+import org.openhab.core.types.Command;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.core.consistency.UnitAliasGenerationConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -53,7 +53,7 @@ public class OpenHABItemProcessor {
 
 //    enum ItemStateType {
 //        COLOR("Color", HSBType.class),
-//        CONTACT("Contact",org.eclipse.smarthome.core.library.types.RawType),
+//        CONTACT("Contact",org.openhab.core.library.types.RawType),
 //        DATE_TIME("DateTime"),
 //        DIMMER("Dimmer"),
 //        GROUP("Group"),

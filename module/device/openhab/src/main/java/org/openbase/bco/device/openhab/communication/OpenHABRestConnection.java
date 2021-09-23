@@ -10,12 +10,12 @@ package org.openbase.bco.device.openhab.communication;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,11 +23,6 @@ package org.openbase.bco.device.openhab.communication;
  */
 
 import com.google.gson.*;
-import org.eclipse.smarthome.core.internal.service.CommandDescriptionServiceImpl;
-import org.eclipse.smarthome.core.internal.types.CommandDescriptionImpl;
-import org.eclipse.smarthome.core.types.CommandDescription;
-import org.eclipse.smarthome.core.types.CommandDescriptionBuilder;
-import org.eclipse.smarthome.core.types.CommandOption;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -43,6 +38,7 @@ import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState.State;
+import org.openhab.core.types.CommandDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +51,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.sse.InboundSseEvent;
 import javax.ws.rs.sse.SseEventSource;
-import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.RejectedExecutionException;
@@ -107,7 +101,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
                 @Override
                 public boolean shouldSkipClass(Class<?> aClass) {
                     // ignore Command Description because its an interface and can not be serialized without any instance creator.
-                    if(aClass.equals(CommandDescription.class)) {
+                    if (aClass.equals(CommandDescription.class)) {
                         return true;
                     }
                     return false;
@@ -158,7 +152,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             if (connectState == this.openhabConnectionState) {
                 return;
             }
-            LOGGER.trace("Openhab Connection State changed to: "+connectState);
+            LOGGER.trace("Openhab Connection State changed to: " + connectState);
 
             // update state
             this.openhabConnectionState = connectState;
