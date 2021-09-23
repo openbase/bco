@@ -3,13 +3,14 @@ name: Build and Deploy Dockerimage
 on:
   push:
     branches:
-      - 'refactoring/bco-3.0'
-      # - '**'
+      - 'main'
     tags:
       - 'v*.*.*'
   pull_request:
     branches:
-      - 'main'
+      - 'feature/*'
+      - 'bugfix/*'
+      - 'epic/*'
 
 jobs:
   docker:
