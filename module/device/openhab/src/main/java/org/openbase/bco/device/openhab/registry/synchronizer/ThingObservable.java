@@ -29,7 +29,7 @@ import org.openhab.core.thing.events.ThingUpdatedEvent;
 
 public class ThingObservable extends AbstractSSEObservable<JsonObject> {
 
-    private static final String THING_TOPIC_FILTER = "smarthome/things/(.+)";
+    private static final String THING_TOPIC_FILTER = "openhab/things/(.+)";
 
     public ThingObservable() {
         super(THING_TOPIC_FILTER, JsonObject.class);

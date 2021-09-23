@@ -54,8 +54,8 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     public static final String THINGS_TARGET = "things";
     public static final String INBOX_TARGET = "inbox";
     public static final String DISCOVERY_TARGET = "discovery";
-    public static final String EXTENSIONS_TARGET = "extensions";
-    public static final String EXTENSION_BINDING_PREFIX = "binding-";
+    public static final String ADDONS_TARGET = "addons";
+    public static final String ADDONS_BINDING_PREFIX = "binding-";
     public static final String INSTALL_TARGET = "install";
     public static final String UNINSTALL_TARGET = "uninstall";
     public static final String BINDINGS_TARGET = "bindings";
@@ -231,7 +231,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
 
     public void installBinding(final String bindingId) throws CouldNotPerformException {
         LOGGER.debug("Install Binding[" + bindingId + "]");
-        post(EXTENSIONS_TARGET + SEPARATOR + EXTENSION_BINDING_PREFIX + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+        post(ADDONS_TARGET + SEPARATOR + ADDONS_BINDING_PREFIX + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
     public boolean isBindingInstalled(final String bindingId) {
@@ -246,7 +246,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     }
 
     public void uninstallBindings(final String bindingId) throws CouldNotPerformException {
-        post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + UNINSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+        post(ADDONS_TARGET + SEPARATOR + bindingId + SEPARATOR + UNINSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
     // ==========================================================================================================================================

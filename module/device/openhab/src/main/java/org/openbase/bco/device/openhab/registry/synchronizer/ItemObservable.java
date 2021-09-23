@@ -32,7 +32,7 @@ import org.openhab.core.items.events.ItemUpdatedEvent;
  */
 public class ItemObservable extends AbstractSSEObservable<JsonObject> {
 
-    private static final String ITEM_TOPIC_FILTER = "smarthome/items/(.+)";
+    private static final String ITEM_TOPIC_FILTER = "openhab/items/(.+)";
 
     public ItemObservable() {
         super(ITEM_TOPIC_FILTER, JsonObject.class);

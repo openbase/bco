@@ -36,7 +36,7 @@ import org.openhab.core.config.discovery.dto.DiscoveryResultDTO;
 public class InboxAddedObservable extends AbstractSSEObservable<DiscoveryResultDTO> {
 
     private static final String PAYLOAD_KEY = "payload";
-    private static final String INBOX_ADDED_TOPIC_FILTER = "smarthome/inbox/(.+)/added";
+    private static final String INBOX_ADDED_TOPIC_FILTER = "openhab/inbox/(.+)/added";
 
     private final Gson gson;
     private final JsonParser jsonParser;

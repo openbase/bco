@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class OpenHABDeviceManager extends DeviceManagerImpl implements Launchable<Void>, VoidInitializable {
 
-    public static final String ITEM_STATE_TOPIC_FILTER = "smarthome/items/(.+)/state";
+    public static final String ITEM_STATE_TOPIC_FILTER = "openhab/items/(.+)/state";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABDeviceManager.class);
 

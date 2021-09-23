@@ -78,7 +78,7 @@ public class CommandExecutor implements Observer<Object, JsonObject> {
         // extract item name from topic
         final String topic = payload.get(OpenHABRestCommunicator.TOPIC_KEY).getAsString();
 
-        // topic structure: smarthome/items/{itemName}/command
+        // topic structure: openhab/items/{itemName}/command
         final String itemName = topic.split(OpenHABRestCommunicator.TOPIC_SEPARATOR)[2];
 
         // extract payload
