@@ -23,16 +23,16 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  */
 
 import com.google.gson.JsonObject;
-import org.eclipse.smarthome.core.items.events.ItemAddedEvent;
-import org.eclipse.smarthome.core.items.events.ItemRemovedEvent;
-import org.eclipse.smarthome.core.items.events.ItemUpdatedEvent;
+import org.openhab.core.items.events.ItemAddedEvent;
+import org.openhab.core.items.events.ItemRemovedEvent;
+import org.openhab.core.items.events.ItemUpdatedEvent;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ItemObservable extends AbstractSSEObservable<JsonObject> {
 
-    private static final String ITEM_TOPIC_FILTER = "smarthome/items/(.+)";
+    private static final String ITEM_TOPIC_FILTER = "openhab/items/(.+)";
 
     public ItemObservable() {
         super(ITEM_TOPIC_FILTER, JsonObject.class);

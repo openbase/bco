@@ -24,7 +24,7 @@ package org.openbase.bco.device.openhab.registry.diff;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
+import org.openhab.core.io.rest.core.item.EnrichedItemDTO;
 
 public class IdentifiableEnrichedItemDTO implements AbstractIdentifiableDTO<EnrichedItemDTO> {
 

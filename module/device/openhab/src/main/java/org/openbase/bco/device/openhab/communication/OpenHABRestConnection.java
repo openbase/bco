@@ -10,12 +10,12 @@ package org.openbase.bco.device.openhab.communication;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -23,18 +23,17 @@ package org.openbase.bco.device.openhab.communication;
  */
 
 import com.google.gson.*;
-import org.eclipse.smarthome.core.internal.service.CommandDescriptionServiceImpl;
-import org.eclipse.smarthome.core.internal.types.CommandDescriptionImpl;
-import org.eclipse.smarthome.core.types.CommandDescription;
-import org.eclipse.smarthome.core.types.CommandDescriptionBuilder;
-import org.eclipse.smarthome.core.types.CommandOption;
+import org.glassfish.jersey.client.oauth2.OAuth2ClientSupport;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
+import org.openbase.jul.extension.type.processing.MetaConfigProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -43,6 +42,10 @@ import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState.State;
+import org.openbase.type.domotic.unit.UnitConfigType;
+import org.openbase.type.domotic.unit.UnitTemplateType;
+import org.openbase.type.domotic.unit.gateway.GatewayClassType;
+import org.openhab.core.types.CommandDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +58,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.sse.InboundSseEvent;
 import javax.ws.rs.sse.SseEventSource;
-import java.lang.reflect.Type;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.RejectedExecutionException;
@@ -107,7 +108,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
                 @Override
                 public boolean shouldSkipClass(Class<?> aClass) {
                     // ignore Command Description because its an interface and can not be serialized without any instance creator.
-                    if(aClass.equals(CommandDescription.class)) {
+                    if (aClass.equals(CommandDescription.class)) {
                         return true;
                     }
                     return false;
@@ -115,9 +116,14 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             }).create();
             this.jsonParser = new JsonParser();
             this.restClient = ClientBuilder.newClient();
+            try {
+                restClient.register(OAuth2ClientSupport.feature(getToken()));
+            } catch (NotAvailableException ex) {
+                LOGGER.warn("Could not retrieve OpenHAB token from gateway config!", ex);
+            }
             this.restTarget = restClient.target(JPService.getProperty(JPOpenHABURI.class).getValue().resolve(SEPARATOR + REST_TARGET));
             this.setConnectState(State.CONNECTING);
-        } catch (JPNotAvailableException ex) {
+        } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
@@ -158,7 +164,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             if (connectState == this.openhabConnectionState) {
                 return;
             }
-            LOGGER.trace("Openhab Connection State changed to: "+connectState);
+            LOGGER.trace("Openhab Connection State changed to: " + connectState);
 
             // update state
             this.openhabConnectionState = connectState;
@@ -446,5 +452,30 @@ public abstract class OpenHABRestConnection implements Shutdownable {
             topicObservableMap.clear();
             resetConnection();
         }
+    }
+
+
+    private final String OPENHAB_GATEWAY_CLASS_LABEL = "OpenHAB";
+    private final String META_CONFIG_TOKEN_KEY = "TOKEN";
+
+    private final GatewayClassType.GatewayClass findOpenHABGatewayClass() throws CouldNotPerformException {
+        for (GatewayClassType.GatewayClass gatewayClass : Registries.getClassRegistry().getGatewayClasses()) {
+            if (LabelProcessor.contains(gatewayClass.getLabel(), OPENHAB_GATEWAY_CLASS_LABEL)) {
+                return gatewayClass;
+            }
+        }
+
+        throw new NotAvailableException("OpenHAB Gateway Class");
+    }
+
+    private String getToken() throws CouldNotPerformException {
+        final GatewayClassType.GatewayClass openHABGatewayClass = findOpenHABGatewayClass();
+
+        for (UnitConfigType.UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitTemplateType.UnitTemplate.UnitType.GATEWAY)) {
+            if (unitConfig.getGatewayConfig().getGatewayClassId().equals(openHABGatewayClass.getId())) {
+                return MetaConfigProcessor.getValue(unitConfig.getMetaConfig(), META_CONFIG_TOKEN_KEY);
+            }
+        }
+        throw new NotAvailableException("token");
     }
 }

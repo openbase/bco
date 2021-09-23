@@ -10,12 +10,12 @@ package org.openbase.bco.device.openhab.communication;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,19 +25,19 @@ package org.openbase.bco.device.openhab.communication;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
-import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
-import org.eclipse.smarthome.core.items.dto.ItemDTO;
-import org.eclipse.smarthome.core.thing.dto.ThingDTO;
-import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
-import org.eclipse.smarthome.core.types.Command;
-import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
-import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
+import org.openhab.core.config.discovery.dto.DiscoveryResultDTO;
+import org.openhab.core.io.rest.core.item.EnrichedItemDTO;
+import org.openhab.core.io.rest.core.thing.EnrichedThingDTO;
+import org.openhab.core.items.dto.ItemDTO;
+import org.openhab.core.thing.dto.ThingDTO;
+import org.openhab.core.thing.link.dto.ItemChannelLinkDTO;
+import org.openhab.core.types.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +54,8 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     public static final String THINGS_TARGET = "things";
     public static final String INBOX_TARGET = "inbox";
     public static final String DISCOVERY_TARGET = "discovery";
-    public static final String EXTENSIONS_TARGET = "extensions";
-    public static final String EXTENSION_BINDING_PREFIX = "binding-";
+    public static final String ADDONS_TARGET = "addons";
+    public static final String ADDONS_BINDING_PREFIX = "binding-";
     public static final String INSTALL_TARGET = "install";
     public static final String UNINSTALL_TARGET = "uninstall";
     public static final String BINDINGS_TARGET = "bindings";
@@ -203,9 +203,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
 
     /**
      * @param bindingId
-     *
      * @return the discovery timeout in seconds
-     *
      * @throws CouldNotPerformException
      */
     public Integer startDiscovery(final String bindingId) throws CouldNotPerformException {
@@ -233,7 +231,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
 
     public void installBinding(final String bindingId) throws CouldNotPerformException {
         LOGGER.debug("Install Binding[" + bindingId + "]");
-        post(EXTENSIONS_TARGET + SEPARATOR + EXTENSION_BINDING_PREFIX + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+        post(ADDONS_TARGET + SEPARATOR + ADDONS_BINDING_PREFIX + bindingId + SEPARATOR + INSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
     public boolean isBindingInstalled(final String bindingId) {
@@ -248,7 +246,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     }
 
     public void uninstallBindings(final String bindingId) throws CouldNotPerformException {
-        post(EXTENSIONS_TARGET + SEPARATOR + bindingId + SEPARATOR + UNINSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
+        post(ADDONS_TARGET + SEPARATOR + bindingId + SEPARATOR + UNINSTALL_TARGET, "", MediaType.APPLICATION_JSON_TYPE);
     }
 
     // ==========================================================================================================================================

@@ -23,7 +23,7 @@ package org.openbase.bco.device.openhab.manager.transform;
  */
 
 
-import org.eclipse.smarthome.core.types.Command;
+import org.openhab.core.types.Command;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
