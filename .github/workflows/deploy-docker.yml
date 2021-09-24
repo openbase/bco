@@ -3,14 +3,15 @@ name: Build and Deploy Dockerimage
 on:
   push:
     branches:
-      - 'main'
+      - main
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   pull_request:
     branches:
-      - 'feature/*'
-      - 'bugfix/*'
-      - 'epic/*'
+      - "feature/**"
+      - "bugfix/**"
+      - "epic/**"
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   docker:

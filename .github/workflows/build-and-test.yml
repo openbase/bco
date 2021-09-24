@@ -1,0 +1,88 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  pull_request:
+    branches:
+      - "feature/**"
+      - "bugfix/**"
+      - "epic/**"
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  build:
+    name: "Build"
+    timeout-minutes: 10
+
+    if: github.event.pull_request.draft == false
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v2
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v2.1.2
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('build.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+
+      - name: "build backend"
+        run: ./gradlew build -x test
+
+      - name: Upload Gradle reports
+        uses: actions/upload-artifact@v2.2.4
+        if: ${{ failure() }}
+        with:
+          name: Build Backend Reports
+          path: "**/build/reports"
+
+  test:
+    name: "Test"
+    timeout-minutes: 30
+
+    if: github.event.pull_request.draft == false
+    needs: build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v2
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v1
+        with:
+          java-version: 14
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v2.1.2
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('build.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle
+
+      - name: "test backend"
+        run: ./gradlew check
+        env:
+          RUN_LONG_INTEGRATION_TESTS: false
+
+      - name: Upload Gradle reports
+        uses: actions/upload-artifact@v2.2.4
+        if: ${{ failure() }}
+        with:
+          name: Test Backend Reports
+          path: "**/build/reports"
