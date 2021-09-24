@@ -4,6 +4,7 @@
 
 plugins {
     id("org.openbase.bco")
+    application
 }
 
 repositories {
@@ -13,12 +14,17 @@ repositories {
     jcenter()
 }
 
+application {
+    mainClass.set("org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher")
+}
+
 dependencies {
     api(project(":bco.dal.control"))
     api("org.glassfish.jersey.core:jersey-client:2.31")
     api("org.glassfish.jersey.inject:jersey-hk2:2.31")
     api("org.glassfish.jersey.media:jersey-media-sse:2.31")
-    api("org.openhab.core.bundles:org.openhab.core.io.rest.core:2.5.0")
+    api("org.glassfish.jersey.security:oauth2-client:2.31")
+    api("org.openhab.core.bundles:org.openhab.core.io.rest.core:3.1.0")
 }
 
 description = "BCO Openhab Device Manager"

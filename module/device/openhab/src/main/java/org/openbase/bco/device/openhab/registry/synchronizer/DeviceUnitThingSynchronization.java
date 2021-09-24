@@ -10,30 +10,23 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import org.eclipse.smarthome.core.thing.ChannelUID;
-import org.eclipse.smarthome.core.thing.ThingTypeUID;
-import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
-import org.eclipse.smarthome.core.thing.dto.ThingDTO;
-import org.eclipse.smarthome.core.thing.type.ChannelTypeUID;
-import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.registry.clazz.core.consistency.KNXDeviceClassConsistencyHandler;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -51,6 +44,13 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openhab.core.io.rest.core.thing.EnrichedThingDTO;
+import org.openhab.core.thing.ChannelUID;
+import org.openhab.core.thing.ThingTypeUID;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.dto.ChannelDTO;
+import org.openhab.core.thing.dto.ThingDTO;
+import org.openhab.core.thing.type.ChannelTypeUID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -80,7 +80,6 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      *
      * @param synchronizationLock a lock used during a synchronization. This is lock should be shared with
      *                            other synchronization managers so that they will not interfere with each other.
-     *
      * @throws InstantiationException if instantiation fails
      * @throws NotAvailableException  if the unit registry is not available
      */
@@ -98,7 +97,6 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * Update the label and location of a thing belonging to the device unit.
      *
      * @param identifiableMessage the device unit updated
-     *
      * @throws CouldNotPerformException if the thing could not be updated
      */
     @Override
@@ -121,7 +119,6 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * if its the initial sync.
      *
      * @param identifiableMessage the device unit initially registered
-     *
      * @throws CouldNotPerformException if the initial update could not be performed.
      */
     @Override
@@ -153,7 +150,6 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * synchronization with an old BCO registry.
      *
      * @param identifiableMessage the removed device unit
-     *
      * @throws CouldNotPerformException if the thing could not be removed or updated
      */
     @Override
@@ -199,7 +195,6 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * {@inheritDoc}
      *
      * @return a list of device units managed by the unit registry
-     *
      * @throws CouldNotPerformException it the device units are not available
      */
     @Override
@@ -211,7 +206,6 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
      * Verify that the device is managed by openHAB.
      *
      * @param identifiableMessage the device unit checked
-     *
      * @return if the device managed by openHAB
      */
     @Override
@@ -229,7 +223,7 @@ public class DeviceUnitThingSynchronization extends AbstractSynchronizer<String,
                 return true;
             }
         } catch (CouldNotPerformException ex) {
-            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory(new InvalidStateException("Not supported check failed!", ex), logger);
             }
         }

@@ -10,25 +10,18 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import org.eclipse.smarthome.config.discovery.dto.DiscoveryResultDTO;
-import org.eclipse.smarthome.core.items.dto.ItemDTO;
-import org.eclipse.smarthome.core.thing.ThingUID;
-import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
-import org.eclipse.smarthome.core.thing.dto.ThingDTO;
-import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
-import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.device.openhab.communication.OpenHABRestCommunicator;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -52,6 +45,13 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openbase.type.language.LabelType;
+import org.openhab.core.config.discovery.dto.DiscoveryResultDTO;
+import org.openhab.core.io.rest.core.thing.EnrichedThingDTO;
+import org.openhab.core.items.dto.ItemDTO;
+import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.dto.ChannelDTO;
+import org.openhab.core.thing.dto.ThingDTO;
+import org.openhab.core.thing.link.dto.ItemChannelLinkDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,14 +225,14 @@ public class SynchronizationProcessor {
         // filter some gateways that are not supported yet
 //            case "OPENHAB_THING_CLASS = hue:bridge":
 //            case "OPENHAB_THING_CLASS = zwave:serial_zstick":
-                // just continue
+        // just continue
 
         // iterate over all gateway classes
         for (final GatewayClass gatewayClass : Registries.getClassRegistry().getGatewayClasses()) {
 
             // check if the product number already matches
             final String modelId = properties.get(OPENHAB_THING_PROPERTY_KEY_MODEL_ID);
-            if(modelId != null && modelId.equalsIgnoreCase(gatewayClass.getProductNumber())) {
+            if (modelId != null && modelId.equalsIgnoreCase(gatewayClass.getProductNumber())) {
                 return gatewayClass;
             }
 
@@ -261,7 +261,7 @@ public class SynchronizationProcessor {
             }
         }
         // throw exception because gateway class could not be found
-        throw new NotAvailableException("Could not resolve any GatewayClass for Thing[" + thingTypeUID + "] with Label[" + thingLabel + "] given the following Properties["+ StringProcessor.transformCollectionToString(properties.entrySet(), stringStringEntry -> stringStringEntry.getKey() + ":" + stringStringEntry.getValue(),", ") +"]");
+        throw new NotAvailableException("Could not resolve any GatewayClass for Thing[" + thingTypeUID + "] with Label[" + thingLabel + "] given the following Properties[" + StringProcessor.transformCollectionToString(properties.entrySet(), stringStringEntry -> stringStringEntry.getKey() + ":" + stringStringEntry.getValue(), ", ") + "]");
     }
 
     private static DeviceClass resolveDeviceClass(final String thingLabel, final String thingTypeUID, final Map<String, String> properties) throws CouldNotPerformException {
@@ -279,7 +279,7 @@ public class SynchronizationProcessor {
 
             // check if the product number already matches
             final String modelId = properties.get(OPENHAB_THING_PROPERTY_KEY_MODEL_ID);
-            if(modelId != null && modelId.equalsIgnoreCase(deviceClass.getProductNumber())) {
+            if (modelId != null && modelId.equalsIgnoreCase(deviceClass.getProductNumber())) {
                 return deviceClass;
             }
 
@@ -307,21 +307,21 @@ public class SynchronizationProcessor {
             }
         }
         // throw exception because device class could not be found
-        throw new NotAvailableException("Could not resolve any DeviceClass for Thing[" + thingTypeUID + "] with Label[" + thingLabel + "] given the following Properties["+ StringProcessor.transformCollectionToString(properties.entrySet(), stringStringEntry -> stringStringEntry.getKey() + ":" + stringStringEntry.getValue(),", ") +"]");
+        throw new NotAvailableException("Could not resolve any DeviceClass for Thing[" + thingTypeUID + "] with Label[" + thingLabel + "] given the following Properties[" + StringProcessor.transformCollectionToString(properties.entrySet(), stringStringEntry -> stringStringEntry.getKey() + ":" + stringStringEntry.getValue(), ", ") + "]");
     }
 
     private static boolean match(final String thingClassKey, final Map<String, String> properties, final LabelType.Label label) {
 
         final String[] thingKeyVaulePair = thingClassKey.split(":");
         if (thingKeyVaulePair.length != 2) {
-            LOGGER.warn("Invalid thing class key found for "+LabelProcessor.getBestMatch(label, "?")+ "! Class will be ignored.");
+            LOGGER.warn("Invalid thing class key found for " + LabelProcessor.getBestMatch(label, "?") + "! Class will be ignored.");
             return false;
         }
 
         // check for matches
         for (Entry<String, String> keyValueEntry : properties.entrySet()) {
             // if key matches than check entry
-            if(keyValueEntry.getKey().equalsIgnoreCase(thingKeyVaulePair[0])) {
+            if (keyValueEntry.getKey().equalsIgnoreCase(thingKeyVaulePair[0])) {
                 if (keyValueEntry.getValue().equalsIgnoreCase(thingKeyVaulePair[1])) {
                     return true;
                 }

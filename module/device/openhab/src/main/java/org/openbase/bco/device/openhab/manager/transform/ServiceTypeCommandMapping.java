@@ -10,20 +10,18 @@ package org.openbase.bco.device.openhab.manager.transform;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import org.eclipse.smarthome.core.library.types.*;
-import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -32,11 +30,13 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.SyncObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.configuration.MetaConfigType.MetaConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openhab.core.library.types.*;
+import org.openhab.core.types.Command;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,9 +67,7 @@ public class ServiceTypeCommandMapping {
      * Get a set of command classes which can be handled by a service type.
      *
      * @param serviceType the service type for which the command classes are resolved.
-     *
      * @return a set of command classes that can be handled by the service type.
-     *
      * @throws NotAvailableException if no command classes are available for the service type.
      */
     public static Set<Class<? extends Command>> getCommandClasses(final ServiceType serviceType) throws NotAvailableException {
