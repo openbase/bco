@@ -51,7 +51,7 @@ public class BCOTestLauncher {
         AbstractLauncher.main(BCO.class, args,
                 AuthenticatorLauncher.class,
 
-                /**
+                /*
                  * Registry *
                  */
                 TemplateRegistryLauncher.class,
@@ -61,7 +61,7 @@ public class BCOTestLauncher {
                 UnitRegistryLauncher.class,
                 MessageRegistryLauncher.class,
 
-                /**
+                /*
                  * Manager *
                  */
                 AgentManagerLauncher.class,
@@ -71,7 +71,7 @@ public class BCOTestLauncher {
                 SceneManagerLauncher.class,
                 UserManagerLauncher.class
 
-                /**
+                /*
                  * API Launcher
                  */
 //                BcoApiGraphQlLauncher.class
