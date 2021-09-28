@@ -34,6 +34,7 @@
         <module name="bco.bco.registry.class.core.test" />
         <module name="bco.bco.registry.class.lib.test" />
         <module name="bco.bco.registry.unit.test.test" />
+        <module name="org.openbase.bco.bco.app.base.test" />
         <module name="bco.bco.registry.lib.main" />
         <module name="bco.bco.registry.activity.test.test" />
         <module name="bco.bco.registry.template.core.test" />
@@ -74,6 +75,7 @@
         <module name="bco.bco.dal.control.test" />
         <module name="bco.bco.registry.class.core.main" />
         <module name="bco.bco.registry.class.test.test" />
+        <module name="org.openbase.bco.bco.app.base.main" />
         <module name="bco.bco.authentication.lib.main" />
         <module name="bco.bco.dal.example.main" />
         <module name="bco.bco.dal.test.main" />
