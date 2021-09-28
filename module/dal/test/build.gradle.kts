@@ -11,8 +11,7 @@ dependencies {
     api(project(":bco.dal.remote"))
     api(project(":bco.dal.control"))
     api(project(":bco.dal.visual"))
-    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.0")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.0")
+    testImplementation(kotlin("test"))
 }
 
 description = "BCO DAL Test"

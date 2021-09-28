@@ -9,13 +9,14 @@ import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerT
 import org.openbase.bco.dal.test.layer.unit.location.LocationRemoteTest
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.jul.exception.printer.ExceptionPrinter
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.*
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE
 import org.openbase.type.domotic.state.PowerStateType.PowerState
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType.*
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT
 import org.slf4j.LoggerFactory
 
-@Slf4j
 class ActionChainTest : AbstractBCOLocationManagerTest() {
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     @Test(timeout = 5000)
     @Throws(Exception::class)
