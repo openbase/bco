@@ -4,6 +4,7 @@
 
 plugins {
     id("org.openbase.bco")
+    application
 }
 
 repositories {
@@ -11,6 +12,10 @@ repositories {
         url = uri("https://openhab.jfrog.io/openhab/libs-release")
     }
     jcenter()
+}
+
+application {
+    mainClass.set("org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher")
 }
 
 dependencies {
