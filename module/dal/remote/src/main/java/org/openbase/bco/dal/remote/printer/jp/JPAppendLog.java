@@ -22,45 +22,30 @@ package org.openbase.bco.dal.remote.printer.jp;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.printer.jp.JPLogFormat.LogFormat;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jps.preset.AbstractJPEnum;
-import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jps.preset.AbstractJPBoolean;
 
-import java.util.Arrays;
-
-public class JPLogFormat extends AbstractJPEnum<LogFormat> {
-
-    /**
-     * The valid values.
-     */
-    public enum LogFormat {
-        PROLOG,
-        PROLOG_DISCRETE_VALUES_ONLY,
-        HUMAN_READABLE
-    }
+public class JPAppendLog extends AbstractJPBoolean {
 
     /**
      * Command line argument strings.
      */
-    public static final String[] COMMAND_IDENTIFIERS = {"--log-format", "--print-format"};
+    public static final String[] COMMAND_IDENTIFIERS = {"--append"};
 
     /**
      * Constructor for the JPPrintFormat class.
      */
-    public JPLogFormat() {
+    public JPAppendLog() {
         super(COMMAND_IDENTIFIERS);
     }
 
     @Override
-    protected LogFormat getPropertyDefaultValue() throws JPNotAvailableException {
-        return LogFormat.HUMAN_READABLE;
+    protected Boolean getPropertyDefaultValue() {
+        return true;
     }
 
     @Override
     public String getDescription() {
-        return "Defines the format (e.g.: "
-                + StringProcessor.transformCollectionToString(Arrays.asList(LogFormat.values()), Enum::name, ", ")
-                +") used to print the logs";
+        return "Defines if the output files should be replaced or the logs be appended.";
     }
 }

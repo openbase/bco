@@ -23,9 +23,7 @@ package org.openbase.bco.dal.remote.printer;
  */
 
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.dal.remote.printer.jp.JPLogFormat;
-import org.openbase.bco.dal.remote.printer.jp.JPOutputDirectory;
-import org.openbase.bco.dal.remote.printer.jp.JPLogFormat.LogFormat;
+import org.openbase.bco.dal.remote.printer.jp.*;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -40,10 +38,7 @@ import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 
 public class BCOLogger extends UnitStatePrinter {
 
@@ -53,8 +48,8 @@ public class BCOLogger extends UnitStatePrinter {
     public BCOLogger() throws InstantiationException {
         super(getTransitionPrintStream(),
                 new Config()
-                        .setPrintInitialStates(false)
-                        .setSkipUnknownValues(false));
+                        .setPrintInitialStates(JPService.getValue(JPPrintInitialServiceStates.class, false))
+                        .setSkipUnknownValues(JPService.getValue(JPSkipUnknownStates.class, false)));
 
         UnitModelPrinter.printStaticRelations(getModelPrintStream());
     }
@@ -64,6 +59,9 @@ public class BCOLogger extends UnitStatePrinter {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPLogFormat.class);
+        JPService.registerProperty(JPPrintInitialServiceStates.class);
+        JPService.registerProperty(JPSkipUnknownStates.class);
+        JPService.registerProperty(JPAppendLog.class);
         JPService.registerProperty(JPOutputDirectory.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
@@ -99,8 +97,13 @@ public class BCOLogger extends UnitStatePrinter {
             if (!JPService.getProperty(JPOutputDirectory.class).isParsed()) {
                 return System.out;
             }
-            return new PrintStream(new FileOutputStream(new File(JPService.getProperty(JPOutputDirectory.class).getValue(), "bco-model.pl"), false));
-        } catch (FileNotFoundException | JPNotAvailableException ex) {
+            final Boolean append = JPService.getValue(JPAppendLog.class, true);
+            File logfile = new File(JPService.getProperty(JPOutputDirectory.class).getValue(), "bco-model.pl");
+            if (!logfile.exists()) {
+                logfile.createNewFile();
+            }
+            return new PrintStream(new FileOutputStream(logfile, append));
+        } catch (IOException | JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Error while loading model file, use system out instead.", ex, LOGGER);
             return System.out;
         }
@@ -111,8 +114,13 @@ public class BCOLogger extends UnitStatePrinter {
             if (!JPService.getProperty(JPOutputDirectory.class).isParsed()) {
                 return System.out;
             }
-            return new PrintStream(new FileOutputStream(new File(JPService.getProperty(JPOutputDirectory.class).getValue(), "transitions.pl"), false));
-        } catch (FileNotFoundException | JPNotAvailableException ex) {
+            final Boolean append = JPService.getValue(JPAppendLog.class, true);
+            File logfile = new File(JPService.getProperty(JPOutputDirectory.class).getValue(), "transitions.pl");
+            if (!logfile.exists()) {
+                logfile.createNewFile();
+            }
+            return new PrintStream(new FileOutputStream(logfile, append));
+        } catch (IOException | JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Error while loading transitions file, use system out instead.", ex, LOGGER);
             return System.out;
         }
