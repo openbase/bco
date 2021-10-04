@@ -7,6 +7,14 @@ ORANGE='\033[0;33m'
 BLUE='\033[0;34m'
 WHITE='\033[0;37m'
 
+export BCO_DIST="${BCO_DIST:=$HOME/usr/}"
+
+if [ ! -d ${BCO_DIST} ]; then
+    echo "No bco distribution found at: ${BCO_DIST}"
+    echo "Please define the distribution installation target directory by setting the $BCO_DIST environment variable."
+    exit 255
+fi
+
 APP_NAME='bco'
 APP_NAME=${BLUE}${APP_NAME}${NC}
 echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
@@ -14,7 +22,7 @@ echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
 ./gradlew \
     build \
-    testDeploy \
+    deploy-bco-dist \
     --exclude-task test \
     --exclude-task javaDoc \
     --parallel \
