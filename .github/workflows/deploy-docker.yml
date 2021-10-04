@@ -15,6 +15,7 @@ on:
 
 jobs:
   docker:
+    if: github.event.label.name == 'prebuild-docker'
     runs-on: ubuntu-latest
     steps:
       -
