@@ -10,7 +10,7 @@ WHITE='\033[0;37m'
 APP_NAME='bco'
 APP_NAME=${BLUE}${APP_NAME}${NC}
 echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
-gradle clean --quiet $@ &&
+./gradlew clean --quiet $@ &&
 echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
 ./gradlew \
     build \
