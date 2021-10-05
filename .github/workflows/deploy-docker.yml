@@ -105,3 +105,36 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.bco-device-meta.outputs.tags }}
           labels: ${{ steps.bco-device-meta.outputs.labels }}
+      -
+        name: Docker bco demo meta
+        id: bco-demo-meta
+        uses: docker/metadata-action@v3
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            openbaseorg/bco-demo
+            ghcr.io/openbase/bco-demo
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+      -
+        uses: benjlevesque/short-sha@v1.2
+        id: short-sha
+      -
+        name: Build and push bco demo
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker/bco-demo
+          build-args: |
+            BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
+          file: ./docker/bco-demo/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.bco-demo-meta.outputs.tags }}
+          labels: ${{ steps.bco-demo-meta.outputs.labels }}

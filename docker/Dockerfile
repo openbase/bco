@@ -1,3 +1,5 @@
+ARG DEBIAN_FRONTEND=noninteractive
+
 # Install dependencies
 FROM ubuntu:latest AS builder
 
@@ -43,7 +45,6 @@ COPY --from=builder /workspace/module/app/util/build/install/bco/lib /usr/lib/
 # Install runtime deps
 ## gosu: required to switch to another user ofter entrypoint is started as root.
 ## tini: required to forward app signals such as sigint.
-ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
     apt install -y software-properties-common && \
     apt update && \
