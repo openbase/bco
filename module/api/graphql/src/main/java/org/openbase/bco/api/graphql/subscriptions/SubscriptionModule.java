@@ -45,12 +45,14 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitDataType;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.reactivestreams.Publisher;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 public class SubscriptionModule {
+
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(SubscriptionModule.class);
 
     //TODO: what is a good strategy here
     private static BackpressureStrategy BACKPRESSURE_STRATEGY = BackpressureStrategy.BUFFER;

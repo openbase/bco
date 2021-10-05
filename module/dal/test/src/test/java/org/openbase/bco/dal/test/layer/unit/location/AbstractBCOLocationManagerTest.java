@@ -41,10 +41,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-@Slf4j
 public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
     
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AbstractBCOLocationManagerTest.class);
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(AbstractBCOLocationManagerTest.class);
 
     protected static DeviceManagerLauncher deviceManagerLauncher;
     protected static LocationManagerLauncher locationManagerLauncher;
@@ -64,7 +63,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch().get();
         } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, log);
         }
     }
 
@@ -82,7 +81,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
             }
             AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, log);
         }
     }
 

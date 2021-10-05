@@ -28,6 +28,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -36,8 +37,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 @Component
-@Slf4j
 public class BCOUnitBatchLoader implements BatchLoader<String, UnitConfig> {
+
+    private final org.slf4j.Logger log = LoggerFactory.getLogger(getClass());
 
     private final UnitRegistry unitRegistry;
 
