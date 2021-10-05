@@ -40,6 +40,6 @@ public class JPPrintInitialServiceStates extends AbstractJPBoolean {
 
     @Override
     public String getDescription() {
-        return "Defines if the logging should be start with printing the initial service states of each registered unit.";
+        return "Defines if the logging should start with printing the initial service states of each registered unit.";
     }
 }

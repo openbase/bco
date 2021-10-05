@@ -40,6 +40,6 @@ public class JPSkipUnknownStates extends AbstractJPBoolean {
 
     @Override
     public String getDescription() {
-        return "Defines if the logging should be start with printing the current service state of each registered unit.";
+        return "Defines whether unknown service states should be logged or skipped."
     }
 }
