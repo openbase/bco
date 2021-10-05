@@ -28,4 +28,4 @@ echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
     --parallel \
     --quiet \
     $@ &&
-echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} installed to ${WHITE}${prefix}${NC}"
+echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} installed to ${WHITE}${BCO_DIST}${NC}"
