@@ -40,6 +40,6 @@ public class JPSkipUnknownStates extends AbstractJPBoolean {
 
     @Override
     public String getDescription() {
-        return "Defines whether unknown service states should be logged or skipped."
+        return "Defines whether unknown service states should be logged or skipped.";
     }
 }
