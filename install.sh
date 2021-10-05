@@ -21,7 +21,6 @@ echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 ./gradlew clean --quiet $@ &&
 echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
 ./gradlew \
-    build \
     deploy-bco-dist \
     --exclude-task test \
     --exclude-task javaDoc \
