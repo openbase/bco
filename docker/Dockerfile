@@ -1,5 +1,3 @@
-ARG DEBIAN_FRONTEND=noninteractive
-
 # Install dependencies
 FROM ubuntu:latest AS builder
 
@@ -17,18 +15,15 @@ RUN apt update && \
             wget && \
     apt clean
 
-# Setup Gradle Wrapper
-COPY ../gradlew /workspace/
-COPY ../gradle /workspace/gradle
-RUN ./gradlew --version
-
 # Copy repo into working directory
 COPY . .
 
+# Setup Gradle Wrapper
+RUN ./gradlew --version
 
 # Build jul
-RUN ./init-lib.sh && \
-    cd lib/jul && \
+RUN ./init-lib.sh
+RUN cd lib/jul && \
     prefix="/tmp/" ./install.sh -Dmaven.javadoc.skip=true
 
 # Build bco
