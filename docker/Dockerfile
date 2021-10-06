@@ -15,18 +15,15 @@ RUN apt update && \
             wget && \
     apt clean
 
-# Setup Gradle Wrapper
-COPY ../gradlew /workspace/
-COPY ../gradle /workspace/gradle
-RUN ./gradlew --version
-
 # Copy repo into working directory
 COPY . .
 
+# Setup Gradle Wrapper
+RUN ./gradlew --version
 
 # Build jul
-RUN ./init-lib.sh && \
-    cd lib/jul && \
+RUN ./init-lib.sh
+RUN cd lib/jul && \
     prefix="/tmp/" ./install.sh -Dmaven.javadoc.skip=true
 
 # Build bco
@@ -43,7 +40,6 @@ COPY --from=builder /workspace/module/app/util/build/install/bco/lib /usr/lib/
 # Install runtime deps
 ## gosu: required to switch to another user ofter entrypoint is started as root.
 ## tini: required to forward app signals such as sigint.
-ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
     apt install -y software-properties-common && \
     apt update && \
@@ -76,7 +72,7 @@ ENV \
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.docker.dockerfile="/Dockerfile.amd64" \
+    org.label-schema.docker.dockerfile="docker/Dockerfile" \
     org.label-schema.license="GPL3" \
     org.label-schema.name="bco" \
     org.label-schema.vendor="openbase.org" \
@@ -85,7 +81,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.url="https://www.basecubeone.org" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-type="Git" \
-    org.label-schema.vcs-url="https://github.com/openbase/bco.package.docker.git" \
+    org.label-schema.vcs-url="https://github.com/openbase/bco.git" \
     maintainer="Divine Threepwood <divine@openbase.org>"
 
     

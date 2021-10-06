@@ -11,11 +11,11 @@ on:
   pull_request:
     branches:
       - dev
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [opened, labeled, synchronize, reopened, ready_for_review]
 
 jobs:
   docker:
-    if: github.event.label.name == 'prebuild docker image'
+    if: contains(github.event.pull_request.labels.*.name, 'prebuild docker image')
     runs-on: ubuntu-latest
     steps:
       -
@@ -65,7 +65,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: docker/Dockerfile.amd64 
+          file: docker/Dockerfile 
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.bco-meta.outputs.tags }}
@@ -100,8 +100,38 @@ jobs:
           context: ./docker/device-manager/openhab
           build-args: |
             BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
-          file: ./docker/device-manager/openhab/Dockerfile.amd64
+          file: ./docker/device-manager/openhab/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.bco-device-meta.outputs.tags }}
           labels: ${{ steps.bco-device-meta.outputs.labels }}
+      -
+        name: Docker bco demo meta
+        id: bco-demo-meta
+        uses: docker/metadata-action@v3
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            openbaseorg/bco-demo
+            ghcr.io/openbase/bco-demo
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+      -
+        name: Build and push bco demo
+        uses: docker/build-push-action@v2
+        with:
+          context: ./docker/bco-demo
+          build-args: |
+            BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
+          file: ./docker/bco-demo/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.bco-demo-meta.outputs.tags }}
+          labels: ${{ steps.bco-demo-meta.outputs.labels }}

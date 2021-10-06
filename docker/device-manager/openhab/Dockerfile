@@ -1,14 +1,6 @@
-FROM alpine AS builder
-
-# Download QEMU, see https://github.com/docker/hub-feedback/issues/1261
-ENV QEMU_URL https://github.com/balena-io/qemu/releases/download/v3.0.0%2Bresin/qemu-3.0.0+resin-arm.tar.gz
-RUN apk add curl && curl -L ${QEMU_URL} | tar zxvf - -C . --strip-components 1
-
 # Baseline image
-FROM openbaseorg/bco:experimental-arm32
-
-# Add QEMU
-COPY --from=builder qemu-arm-static /usr/bin
+ARG BCO_BASE_IMAGE_VERSION=latest-amd64
+FROM openbaseorg/bco:${BCO_BASE_IMAGE_VERSION}
 
 # Set variables and locales
 ENV \
@@ -19,7 +11,7 @@ ENV \
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.build-date=$BUILD_DATE \
-    org.label-schema.docker.dockerfile="/device-manager/openhab/Dockerfile.arm32" \
+    org.label-schema.docker.dockerfile="/docker/device-manager/openhab/Dockerfile" \
     org.label-schema.license="GPL3" \
     org.label-schema.name="bco-device-manager-openhab" \
     org.label-schema.vendor="openbase.org" \
@@ -28,7 +20,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.url="https://www.basecubeone.org" \
     org.label-schema.vcs-ref=$VCS_REF \
     org.label-schema.vcs-type="Git" \
-    org.label-schema.vcs-url="https://github.com/openbase/bco.package.docker.git" \
+    org.label-schema.vcs-url="https://github.com/openbase/bco.git" \
     maintainer="Divine Threepwood <divine@openbase.org>"
 
 # Expose volume
