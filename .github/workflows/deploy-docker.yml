@@ -15,7 +15,7 @@ on:
 
 jobs:
   docker:
-    if: contains(github.event.pull_request.labels.*.name, 'prebuild docker image')
+    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
     runs-on: ubuntu-latest
     steps:
       -
