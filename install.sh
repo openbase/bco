@@ -22,6 +22,7 @@ echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
 ./gradlew \
     deploy-bco-dist \
+    publishToMavenLocal \
     --exclude-task test \
     --exclude-task javaDoc \
     --parallel \
