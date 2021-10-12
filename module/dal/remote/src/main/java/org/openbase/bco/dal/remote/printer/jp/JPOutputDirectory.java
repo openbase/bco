@@ -33,7 +33,6 @@ import java.io.File;
 
 public class JPOutputDirectory extends AbstractJPDirectory {
 
-
     public static final String[] COMMAND_IDENTIFIERS = {"--out",};
     public static final FileHandler.ExistenceHandling EXISTENCE_HANDLING = ExistenceHandling.CanExist;
     public static final FileHandler.AutoMode AUTO_MODE = FileHandler.AutoMode.Off;
@@ -49,12 +48,11 @@ public class JPOutputDirectory extends AbstractJPDirectory {
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("log");
+        return new File("out");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies a file to write the logging to instead printing it to the standard output channel.";
+        return "Specifies the output directory.";
     }
-
 }

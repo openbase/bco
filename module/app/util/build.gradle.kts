@@ -76,6 +76,10 @@ createAdditionalScript("bco-query") {
     mainClass.set("org.openbase.bco.registry.print.BCOUnitQueryPrinter")
 }
 
+createAdditionalScript("bco-query-label") {
+    mainClass.set("org.openbase.bco.registry.print.BCOQueryLabelPrinter")
+}
+
 createAdditionalScript("bco-logger") {
     mainClass.set("org.openbase.bco.dal.remote.printer.BCOLogger")
 }
