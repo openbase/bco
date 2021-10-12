@@ -100,7 +100,7 @@ public class BCOUnitQueryPrinter {
             // print by unit type
             unitConfigs.clear();
             for (final UnitType unitType : UnitType.values()) {
-                if (unitType.name().toLowerCase().equals(query.toLowerCase())) {
+                if (unitType.name().equalsIgnoreCase(query)) {
                     unitConfigs.addAll(Registries.getUnitRegistry().getUnitConfigsByUnitType(unitType));
                     break;
                 }
