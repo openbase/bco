@@ -1,8 +1,10 @@
 package org.openbase.bco.registry.print
 
-import org.openbase.jps.core.JPService
+import org.openbase.bco.registry.print.BCOUnitQueryPrinter.ConsoleColors
+import org.openbase.bco.registry.print.BCOUnitQueryPrinter.printUnit
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.bco.registry.remote.login.BCOLogin
+import org.openbase.jps.core.JPService
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.exception.NotAvailableException
 import org.openbase.jul.exception.printer.ExceptionPrinter
@@ -10,10 +12,8 @@ import org.openbase.jul.extension.type.processing.LabelProcessor
 import org.openbase.jul.extension.type.processing.ScopeProcessor
 import org.openbase.jul.processing.StringProcessor
 import org.openbase.jul.processing.StringProcessor.Alignment.RIGHT
-import java.lang.InterruptedException
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State.ENABLED
-import java.lang.Exception
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import kotlin.system.exitProcess
 
 /*
@@ -40,7 +40,8 @@ import kotlin.system.exitProcess
  * @author [Divine Threepwood](mailto:divine@openbase.org)
  */
 object BCOQueryLabelPrinter {
-    const val APP_NAME = "bco-id-to-label"
+    const val APP_NAME = "bco-query-label"
+
     @JvmStatic
     fun main(args: Array<String>) {
         var resultsFound = false
@@ -109,13 +110,12 @@ object BCOQueryLabelPrinter {
 
     private fun printHelp() {
         println()
-        println("Usage:     " + APP_NAME + " [options] -- [UNIT_ID / UNIT_ALIAS]")
+        println("Usage:     $APP_NAME [options] -- [UNIT_ID / UNIT_ALIAS]")
         println()
-        println("Example:   \"+APP_NAME+\" ColorableLight-8")
-        println("           \"+APP_NAME+\" 844a5b35-4b9c-4db2-9d22-4842db77bc95")
-        println("           bco-query -v colorablelight-12")
+        println("Example:   $APP_NAME ColorableLight-8")
+        println("           $APP_NAME 844a5b35-4b9c-4db2-9d22-4842db77bc95")
         println()
-        println("Print:     \${LABEL} @ \${LOCATION} \${SCOPE}")
+        println("Print:     \${LABEL} @ \${LOCATION}")
         println()
     }
 
@@ -125,10 +125,9 @@ object BCOQueryLabelPrinter {
         // calculate max unit label length
         val maxUnitLabelLength = LabelProcessor.getBestMatch(unitConfig.label).length
         val maxLocationUnitLabelLength = getLocationLabel(unitConfig).length
-        val maxScopeLength = ScopeProcessor.generateStringRep(unitConfig.scope).length
 
         // print
-        printUnit(unitConfig, maxUnitLabelLength, maxLocationUnitLabelLength, maxScopeLength)
+        printUnit(unitConfig, maxUnitLabelLength, maxLocationUnitLabelLength)
     }
 
     @Throws(CouldNotPerformException::class)
@@ -136,7 +135,6 @@ object BCOQueryLabelPrinter {
         unitConfig: UnitConfig,
         maxUnitLabelLength: Int,
         maxLocationUnitLabelLength: Int,
-        maxScopeLength: Int
     ) {
         val prefix: String
         val suffix: String
@@ -147,16 +145,15 @@ object BCOQueryLabelPrinter {
             prefix = ConsoleColors.RED
             suffix = " (" + ConsoleColors.YELLOW + "DISABLED" + ConsoleColors.RESET + ")"
         }
-        println(
-            prefix
-                    + StringProcessor.fillWithSpaces(
+        println(prefix
+            + StringProcessor.fillWithSpaces(
                 LabelProcessor.getBestMatch(unitConfig.label),
                 maxUnitLabelLength,
                 RIGHT
             )
-                    + " @ " + StringProcessor.fillWithSpaces(getLocationLabel(unitConfig), maxLocationUnitLabelLength)
-                    + ConsoleColors.RESET
-                    + suffix
+            + " @ " + StringProcessor.fillWithSpaces(getLocationLabel(unitConfig), maxLocationUnitLabelLength)
+            + ConsoleColors.RESET
+            + suffix
         )
     }
 
@@ -168,81 +165,5 @@ object BCOQueryLabelPrinter {
         } catch (ex: CouldNotPerformException) {
             "?"
         }
-    }
-
-    // TODO: move to jul
-    object ConsoleColors {
-        // Reset
-        const val RESET = "\u001b[0m" // Text Reset
-
-        // Regular Colors
-        const val BLACK = "\u001b[0;30m" // BLACK
-        const val RED = "\u001b[0;31m" // RED
-        const val GREEN = "\u001b[0;32m" // GREEN
-        const val YELLOW = "\u001b[0;33m" // YELLOW
-        const val BLUE = "\u001b[0;34m" // BLUE
-        const val PURPLE = "\u001b[0;35m" // PURPLE
-        const val CYAN = "\u001b[0;36m" // CYAN
-        const val WHITE = "\u001b[0;37m" // WHITE
-
-        // Bold
-        const val BLACK_BOLD = "\u001b[1;30m" // BLACK
-        const val RED_BOLD = "\u001b[1;31m" // RED
-        const val GREEN_BOLD = "\u001b[1;32m" // GREEN
-        const val YELLOW_BOLD = "\u001b[1;33m" // YELLOW
-        const val BLUE_BOLD = "\u001b[1;34m" // BLUE
-        const val PURPLE_BOLD = "\u001b[1;35m" // PURPLE
-        const val CYAN_BOLD = "\u001b[1;36m" // CYAN
-        const val WHITE_BOLD = "\u001b[1;37m" // WHITE
-
-        // Underline
-        const val BLACK_UNDERLINED = "\u001b[4;30m" // BLACK
-        const val RED_UNDERLINED = "\u001b[4;31m" // RED
-        const val GREEN_UNDERLINED = "\u001b[4;32m" // GREEN
-        const val YELLOW_UNDERLINED = "\u001b[4;33m" // YELLOW
-        const val BLUE_UNDERLINED = "\u001b[4;34m" // BLUE
-        const val PURPLE_UNDERLINED = "\u001b[4;35m" // PURPLE
-        const val CYAN_UNDERLINED = "\u001b[4;36m" // CYAN
-        const val WHITE_UNDERLINED = "\u001b[4;37m" // WHITE
-
-        // Background
-        const val BLACK_BACKGROUND = "\u001b[40m" // BLACK
-        const val RED_BACKGROUND = "\u001b[41m" // RED
-        const val GREEN_BACKGROUND = "\u001b[42m" // GREEN
-        const val YELLOW_BACKGROUND = "\u001b[43m" // YELLOW
-        const val BLUE_BACKGROUND = "\u001b[44m" // BLUE
-        const val PURPLE_BACKGROUND = "\u001b[45m" // PURPLE
-        const val CYAN_BACKGROUND = "\u001b[46m" // CYAN
-        const val WHITE_BACKGROUND = "\u001b[47m" // WHITE
-
-        // High Intensity
-        const val BLACK_BRIGHT = "\u001b[0;90m" // BLACK
-        const val RED_BRIGHT = "\u001b[0;91m" // RED
-        const val GREEN_BRIGHT = "\u001b[0;92m" // GREEN
-        const val YELLOW_BRIGHT = "\u001b[0;93m" // YELLOW
-        const val BLUE_BRIGHT = "\u001b[0;94m" // BLUE
-        const val PURPLE_BRIGHT = "\u001b[0;95m" // PURPLE
-        const val CYAN_BRIGHT = "\u001b[0;96m" // CYAN
-        const val WHITE_BRIGHT = "\u001b[0;97m" // WHITE
-
-        // Bold High Intensity
-        const val BLACK_BOLD_BRIGHT = "\u001b[1;90m" // BLACK
-        const val RED_BOLD_BRIGHT = "\u001b[1;91m" // RED
-        const val GREEN_BOLD_BRIGHT = "\u001b[1;92m" // GREEN
-        const val YELLOW_BOLD_BRIGHT = "\u001b[1;93m" // YELLOW
-        const val BLUE_BOLD_BRIGHT = "\u001b[1;94m" // BLUE
-        const val PURPLE_BOLD_BRIGHT = "\u001b[1;95m" // PURPLE
-        const val CYAN_BOLD_BRIGHT = "\u001b[1;96m" // CYAN
-        const val WHITE_BOLD_BRIGHT = "\u001b[1;97m" // WHITE
-
-        // High Intensity backgrounds
-        const val BLACK_BACKGROUND_BRIGHT = "\u001b[0;100m" // BLACK
-        const val RED_BACKGROUND_BRIGHT = "\u001b[0;101m" // RED
-        const val GREEN_BACKGROUND_BRIGHT = "\u001b[0;102m" // GREEN
-        const val YELLOW_BACKGROUND_BRIGHT = "\u001b[0;103m" // YELLOW
-        const val BLUE_BACKGROUND_BRIGHT = "\u001b[0;104m" // BLUE
-        const val PURPLE_BACKGROUND_BRIGHT = "\u001b[0;105m" // PURPLE
-        const val CYAN_BACKGROUND_BRIGHT = "\u001b[0;106m" // CYAN
-        const val WHITE_BACKGROUND_BRIGHT = "\u001b[0;107m" // WHITE
     }
 }
