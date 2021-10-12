@@ -268,7 +268,7 @@ public class BCOUnitQueryPrinter {
         System.out.println("           bco-query 844a5b35-4b9c-4db2-9d22-4842db77bc95");
         System.out.println("           bco-query -v colorablelight-12");
         System.out.println();
-        System.out.println("Print:     ${ID} ${LABEL} @ ${LOCATION} ${SCOPE}");
+        System.out.println("Print:     ${ID} ${LABEL} @ ${LOCATION}");
         System.out.println();
     }
 
