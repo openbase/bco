@@ -11,7 +11,6 @@ dependencies {
     api(project(":bco.dal.remote"))
     api(project(":bco.dal.control"))
     api(project(":bco.dal.visual"))
-    testImplementation(kotlin("test"))
 }
 
 description = "BCO DAL Test"
