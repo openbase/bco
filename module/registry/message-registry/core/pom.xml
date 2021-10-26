@@ -82,11 +82,11 @@
             <artifactId>bco.registry.message.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rsb.scope</artifactId>
-            <version>${dependency.jul.version}</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.openbase</groupId>-->
+<!--            <artifactId>jul.extension.rsb.scope</artifactId>-->
+<!--            <version>${dependency.jul.version}</version>-->
+<!--        </dependency>-->
          <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.type.processing</artifactId>

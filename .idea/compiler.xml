@@ -1,6 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="11" />
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="jul.visual.javafx" />
+        <module name="jul.audio" />
+        <module name="jul.storage" />
+        <module name="jul.processing" />
+        <module name="jul.exception" />
+        <module name="type" />
+        <module name="jul.extension.type.util" />
+        <module name="jul.communication.tcp" />
+        <module name="jul.pattern" />
+        <module name="jul.processing.xml" />
+        <module name="jul.extension.type.transform" />
+        <module name="jul.interface" />
+        <module name="jul.extension.type.interface" />
+        <module name="jul.communication" />
+        <module name="jul.pattern.controller" />
+        <module name="jul.pattern.launch" />
+        <module name="jul.schedule" />
+        <module name="jul.visual.swing" />
+        <module name="jul.annotation" />
+        <module name="jul.processing.json" />
+        <module name="jul.extension.protobuf" />
+        <module name="jul.pattern.trigger" />
+        <module name="jul.extension.type.storage" />
+        <module name="jul.communication.controller" />
+        <module name="jul.extension.type.processing" />
+        <module name="jul.communication.mqtt" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="11">
+      <module name="jul.extension.rsb" target="1.8" />
+      <module name="jul.extension.rsb.com" target="1.8" />
+      <module name="jul.extension.rsb.container" target="1.8" />
+      <module name="jul.extension.rsb.interface" target="1.8" />
+      <module name="jul.extension.rsb.processing" target="1.8" />
+      <module name="jul.extension.rsb.scope" target="1.8" />
+      <module name="jul.extension.rsb.util" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
