@@ -24,8 +24,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.VideoRgbSource;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceData;
 
 /**
@@ -33,10 +31,6 @@ import org.openbase.type.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceD
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class VideoRgbSourceController extends AbstractDALUnitController<VideoRgbSourceData, VideoRgbSourceData.Builder> implements VideoRgbSource {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoRgbSourceData.getDefaultInstance()));
-    }
 
     public VideoRgbSourceController(final HostUnitController hostUnitController, VideoRgbSourceData.Builder builder) throws CouldNotPerformException {
         super(hostUnitController, builder);

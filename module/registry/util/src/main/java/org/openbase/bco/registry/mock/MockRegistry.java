@@ -22,7 +22,7 @@ package org.openbase.bco.registry.mock;
  * #L%
  */
 
-import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -172,7 +172,7 @@ public class MockRegistry {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockRegistry.class);
     public static UnitConfig testUser;
     private static AuthenticatorLauncher authenticatorLauncher;
-    private static AuthenticatorController authenticatorController;
+    private static AuthenticationController authenticationController;
 
     private static ActivityRegistryLauncher activityRegistryLauncher;
     private static ClassRegistryLauncher classRegistryLauncher;
@@ -188,8 +188,8 @@ public class MockRegistry {
                 try {
                     authenticatorLauncher = new AuthenticatorLauncher();
                     authenticatorLauncher.launch().get();
-                    authenticatorController = authenticatorLauncher.getLaunchable();
-                    authenticatorController.waitForActivation();
+                    authenticationController = authenticatorLauncher.getLaunchable();
+                    authenticationController.waitForActivation();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }

@@ -46,6 +46,6 @@ public class JPActivityRegistryScope extends JPScope {
 
     @Override
 	public String getDescription() {
-		return "Setup the activity registry scope which is used for the rsb communication.";
+		return "Setup the activity registry scope which is used for the communication.";
     }
 }

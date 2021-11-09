@@ -24,9 +24,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.Handle;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.HandleStateType.HandleState;
 import org.openbase.type.domotic.unit.dal.HandleDataType.HandleData;
 
 /**
@@ -34,11 +31,6 @@ import org.openbase.type.domotic.unit.dal.HandleDataType.HandleData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class HandleController extends AbstractDALUnitController<HandleData, HandleData.Builder> implements Handle {
-    
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
-    }
     
     public HandleController(final HostUnitController hostUnitController, final HandleData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

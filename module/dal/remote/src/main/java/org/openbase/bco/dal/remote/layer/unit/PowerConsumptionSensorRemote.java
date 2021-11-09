@@ -23,8 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import org.openbase.type.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 
@@ -32,11 +30,6 @@ import org.openbase.type.domotic.unit.dal.PowerConsumptionSensorDataType.PowerCo
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensorData> implements PowerConsumptionSensor {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
-    }
 
     public PowerConsumptionSensorRemote() {
         super(PowerConsumptionSensorData.class);

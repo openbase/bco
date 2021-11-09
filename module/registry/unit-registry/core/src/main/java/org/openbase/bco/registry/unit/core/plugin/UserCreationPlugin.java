@@ -22,15 +22,13 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 
-import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPTestMode;
 import org.openbase.jul.exception.*;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
@@ -183,7 +181,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
 
     private void registerAdminAtAuthenticator(final String adminId) throws CouldNotPerformException {
-        final String initialRegistrationPassword = AuthenticatorController.getInitialPassword();
+        final String initialRegistrationPassword = AuthenticationController.getInitialPassword();
 
         // verify initial password
         if (initialRegistrationPassword == null) {

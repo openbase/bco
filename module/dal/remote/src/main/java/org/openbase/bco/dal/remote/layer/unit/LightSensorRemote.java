@@ -28,9 +28,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.LightSensor;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.unit.dal.LightSensorDataType.LightSensorData;
 
 /**
@@ -38,11 +35,6 @@ import org.openbase.type.domotic.unit.dal.LightSensorDataType.LightSensorData;
  * @author pleminoq
  */
 public class LightSensorRemote extends AbstractUnitRemote<LightSensorData> implements LightSensor {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightSensorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IlluminanceState.getDefaultInstance()));
-    }
 
     public LightSensorRemote() {
         super(LightSensorData.class);

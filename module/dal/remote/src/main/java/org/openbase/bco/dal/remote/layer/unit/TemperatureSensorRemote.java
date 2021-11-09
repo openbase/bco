@@ -23,20 +23,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
 import org.openbase.type.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensorData> implements TemperatureSensor {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
-    }
 
     public TemperatureSensorRemote() {
         super(TemperatureSensorData.class);

@@ -44,6 +44,6 @@ public class JPTemplateRegistryScope extends JPScope {
 
     @Override
     public String getDescription() {
-        return "Setup the template registry scope which is used for the rsb communication.";
+        return "Setup the template registry scope which is used for the communication.";
     }
 }

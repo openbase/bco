@@ -25,10 +25,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.Monitor;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
-import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.unit.dal.MonitorDataType.MonitorData;
 
 /**
@@ -36,12 +32,6 @@ import org.openbase.type.domotic.unit.dal.MonitorDataType.MonitorData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MonitorController extends AbstractDALUnitController<MonitorData, MonitorData.Builder> implements Monitor {
-    
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MonitorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
-    }
     
     public MonitorController(final HostUnitController hostUnitController, final MonitorData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

@@ -27,9 +27,9 @@ import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.communication.controller.RPCUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -102,7 +102,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      */
     @Override
     public Future<AuthenticatedValue> connect(final AuthenticatedValue authenticatedValue) {
-        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
     /**
@@ -145,7 +145,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      */
     @Override
     public Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) {
-        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
     /**
@@ -166,7 +166,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      */
     @Override
     public Future<AuthenticatedValue> remove(final AuthenticatedValue authenticatedValue) {
-        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
     /**
@@ -189,7 +189,7 @@ public class CloudConnectorRemote extends AppRemoteAdapter implements CloudConne
      */
     @Override
     public Future<AuthenticatedValue> setAuthorizationToken(final AuthenticatedValue authenticatedValue) {
-        return RPCHelper.callRemoteMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(authenticatedValue, getAppRemote(), AuthenticatedValue.class);
     }
 
     /**

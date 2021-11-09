@@ -31,27 +31,20 @@ import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.communication.controller.AbstractConfigurableController;
-import org.openbase.jul.communication.controller.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.io.Serializable;
 
 public abstract class AbstractAuthenticatedConfigurableController<M extends AbstractMessage & Serializable, MB extends M.Builder<MB>, CONFIG extends Message> extends AbstractConfigurableController<M, MB, CONFIG> implements AuthenticatedRequestable {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-    }
 
     public AbstractAuthenticatedConfigurableController(MB builder) throws InstantiationException {
         super(builder);
@@ -65,8 +58,8 @@ public abstract class AbstractAuthenticatedConfigurableController<M extends Abst
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(AuthenticatedRequestable.class, this, server);
+    public void registerMethods(final RPCServer server) throws CouldNotPerformException {
+        server.registerMethods(AuthenticatedRequestable.class, this);
     }
 
     /**

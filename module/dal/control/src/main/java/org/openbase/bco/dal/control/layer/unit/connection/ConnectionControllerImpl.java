@@ -46,13 +46,10 @@ import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ContactStateType.ContactState;
 import org.openbase.type.domotic.state.DoorStateType.DoorState;
-import org.openbase.type.domotic.state.PassageStateType.PassageState;
 import org.openbase.type.domotic.state.WindowStateType.WindowState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -61,13 +58,6 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ConnectionControllerImpl extends AbstractBaseUnitController<ConnectionData, ConnectionData.Builder> implements ConnectionController {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DoorState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PassageState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(WindowState.getDefaultInstance()));
-    }
 
     /**
      * Enumeration describing the relation between the position of a reed contact relative to a door.

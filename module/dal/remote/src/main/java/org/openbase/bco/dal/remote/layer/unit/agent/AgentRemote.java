@@ -24,10 +24,6 @@ package org.openbase.bco.dal.remote.layer.unit.agent;
 
 import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.type.domotic.state.EmphasisStateType.EmphasisState;
 import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData;
 
 /**
@@ -35,12 +31,6 @@ import org.openbase.type.domotic.unit.agent.AgentDataType.AgentData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(EmphasisState.getDefaultInstance()));
-    }
 
     public AgentRemote() {
         super(AgentData.class);

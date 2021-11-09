@@ -23,20 +23,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.ReedContact;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ContactStateType.ContactState;
 import org.openbase.type.domotic.unit.dal.ReedContactDataType.ReedContactData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ReedContactRemote extends AbstractUnitRemote<ReedContactData> implements ReedContact {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedContactData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
-    }
 
     public ReedContactRemote() {
         super(ReedContactData.class);

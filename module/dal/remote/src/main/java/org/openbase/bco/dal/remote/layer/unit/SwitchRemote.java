@@ -23,9 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Switch;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.SwitchStateType.SwitchState;
 import org.openbase.type.domotic.unit.dal.SwitchDataType.SwitchData;
 
 /**
@@ -33,11 +30,6 @@ import org.openbase.type.domotic.unit.dal.SwitchDataType.SwitchData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SwitchRemote extends AbstractUnitRemote<SwitchData> implements Switch {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SwitchData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SwitchState.getDefaultInstance()));
-    }
 
     public SwitchRemote() {
         super(SwitchData.class);

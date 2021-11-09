@@ -41,7 +41,6 @@ import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessageMap;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
@@ -54,6 +53,7 @@ import org.openbase.jul.schedule.TimeoutSplitter;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
 import org.openbase.rct.Transform;
 import org.openbase.type.communication.ScopeType;
+import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType;
@@ -61,8 +61,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1374,46 +1372,6 @@ public class Units {
      * @throws InterruptedException  is thrown in case the thread is externally
      *                               interrupted.
      */
-    public static UnitRemote<?> getUnitByScope(final Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
-
-        if (scope == null) {
-            assert false;
-            throw new NotAvailableException("UnitScope");
-        }
-
-        try {
-            return getUnitByScope(ScopeTransformer.transform(scope), waitForData);
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Unit[" + scope + "]", ex);
-        }
-    }
-
-    /**
-     * Method establishes a connection to the unit referred by the given unit
-     * scope. The returned unit remote object is fully synchronized with the
-     * unit controller and all states locally cached. Use the
-     * {@code waitForData} flag to block the current thread until the unit
-     * remote is fully synchronized with the unit controller during the startup
-     * phase. This synchronization is just done once and the current thread will
-     * not block if the unit remote was already synchronized before. To force a
-     * resynchronization call
-     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
-     * remote instance. Please avoid polling unit states! If you want to get
-     * informed about unit config or unit data state changes, please register
-     * new config or data observer on this remote instance.
-     *
-     * @param scope       the scope to identify the unit.
-     * @param waitForData if this flag is set to true the current thread will
-     *                    block until the unit remote is fully synchronized with the unit
-     *                    controller.
-     *
-     * @return a new or cached unit remote which can be used to control the unit
-     * or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
-     */
     public static UnitRemote<?> getUnitByScope(final String scope, boolean waitForData) throws NotAvailableException, InterruptedException {
 
         if (scope == null) {
@@ -1682,32 +1640,6 @@ public class Units {
      * or request all current unit states.
      */
     public static Future<UnitRemote<?>> getFutureUnitByScope(final ScopeType.Scope scope, boolean waitForData) {
-        return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
-    }
-
-    /**
-     * Method establishes a connection to the unit referred by the given unit
-     * scope. The returned unit remote object is fully synchronized with the
-     * unit controller and all states locally cached. Use the
-     * {@code waitForData} flag to block the current thread until the unit
-     * remote is fully synchronized with the unit controller during the startup
-     * phase. This synchronization is just done once and the current thread will
-     * not block if the unit remote was already synchronized before. To force a
-     * resynchronization call
-     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
-     * remote instance. Please avoid polling unit states! If you want to get
-     * informed about unit config or unit data state changes, please register
-     * new config or data observer on this remote instance.
-     *
-     * @param scope       the scope to identify the unit.
-     * @param waitForData if this flag is set to true the current thread will
-     *                    block until the unit remote is fully synchronized with the unit
-     *                    controller.
-     *
-     * @return a new or cached unit remote which can be used to control the unit
-     * or request all current unit states.
-     */
-    public static Future<UnitRemote<?>> getFutureUnitByScope(final Scope scope, boolean waitForData) {
         return GlobalCachedExecutorService.submit(() -> getUnitByScope(scope, waitForData));
     }
 

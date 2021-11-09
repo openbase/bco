@@ -39,16 +39,13 @@ import org.openbase.bco.registry.template.lib.jp.JPTemplateRegistryScope;
 import org.openbase.bco.registry.template.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.communication.controller.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
@@ -66,14 +63,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class TemplateRegistryController extends AbstractRegistryController<TemplateRegistryData, TemplateRegistryData.Builder> implements TemplateRegistry, Manageable<ScopeType.Scope> {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TransactionValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemplateRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityTemplate.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ServiceTemplate.getDefaultInstance()));
-    }
 
     private final ProtoBufFileSynchronizedRegistry<String, ActivityTemplate, ActivityTemplate.Builder, TemplateRegistryData.Builder> activityTemplateRemoteRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, TemplateRegistryData.Builder> serviceTemplateRemoteRegistry;
@@ -177,9 +166,9 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
-        RPCHelper.registerInterface(TemplateRegistry.class, this, server);
+        server.registerMethods(TemplateRegistry.class, this);
     }
 
     @Override

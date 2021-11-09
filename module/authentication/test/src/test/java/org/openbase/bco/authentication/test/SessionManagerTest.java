@@ -26,7 +26,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -70,7 +70,7 @@ public class SessionManagerTest extends AuthenticationTest {
             LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder();
             loginCredentials.setId("InitialUserId");
             loginCredentials.setSymmetric(true);
-            loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+            loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticationController.getInitialPassword())));
             AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
             CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {

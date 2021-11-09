@@ -23,10 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.SmokeDetector;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
-import org.openbase.type.domotic.state.SmokeStateType.SmokeState;
 import org.openbase.type.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
 
 /**
@@ -34,12 +30,6 @@ import org.openbase.type.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorDat
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SmokeDetectorRemote extends AbstractUnitRemote<SmokeDetectorData> implements SmokeDetector {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeDetectorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
-    }
 
     public SmokeDetectorRemote() {
         super(SmokeDetectorData.class);

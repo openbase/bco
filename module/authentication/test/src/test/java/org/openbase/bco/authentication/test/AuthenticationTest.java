@@ -26,7 +26,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -39,26 +39,26 @@ import org.openbase.jps.core.JPService;
  */
 public class AuthenticationTest {
 
-    static AuthenticatorController authenticatorController;
+    static AuthenticationController authenticationController;
     static byte[] serviceServerSecretKey = EncryptionHelper.generateKey();
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
         CachedAuthenticationRemote.prepare();
-        authenticatorController = new AuthenticatorController(MockCredentialStore.getInstance(), serviceServerSecretKey);
-        authenticatorController.init();
-        authenticatorController.activate();
-        authenticatorController.waitForActivation();
+        authenticationController = new AuthenticationController(MockCredentialStore.getInstance(), serviceServerSecretKey);
+        authenticationController.init();
+        authenticationController.activate();
+        authenticationController.waitForActivation();
 
-        Assert.assertTrue("Initial password has not been generated despite an empty registry", AuthenticatorController.getInitialPassword() != null);
+        Assert.assertTrue("Initial password has not been generated despite an empty registry", AuthenticationController.getInitialPassword() != null);
     }
 
     @AfterClass
     public static void tearDownClass() {
         CachedAuthenticationRemote.shutdown();
-        if (authenticatorController != null) {
-            authenticatorController.shutdown();
+        if (authenticationController != null) {
+            authenticationController.shutdown();
         }
         AuthenticatedServerManager.shutdown();
         SessionManager.getInstance().shutdown();

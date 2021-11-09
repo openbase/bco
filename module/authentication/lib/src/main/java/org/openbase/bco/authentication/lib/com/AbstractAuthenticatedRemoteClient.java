@@ -23,30 +23,28 @@ package org.openbase.bco.authentication.lib.com;
  */
 
 import com.google.protobuf.Message;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.communication.controller.AbstractRemoteClient;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.type.communication.EventType.Event;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
-import rsb.Event;
-import rsb.Handler;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-
 import java.util.concurrent.*;
+import java.util.logging.Handler;
 
 public abstract class AbstractAuthenticatedRemoteClient<M extends Message> extends AbstractRemoteClient<M> {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-    }
 
     /**
      * Observer updating data on login changes.
@@ -77,21 +75,34 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
     }
 
     @Override
-    protected Handler generateHandler() {
+    protected Function1<Event, Unit> generateHandler() {
         return new AuthenticatedUpdateHandler();
     }
 
     @Override
-    protected Future<Event> internalRequestStatus() {
+    protected Future<M> internalRequestStatus() {
         try {
-            if (SessionManager.getInstance().isLoggedIn()) {
-                final Event event = new Event(TicketAuthenticatorWrapper.class, SessionManager.getInstance().initializeServiceServerRequest());
-                return new ReLoginFuture<>(getRemoteServer().callAsync(AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD, event), SessionManager.getInstance());
+            final SessionManager sessionManager = SessionManager.getInstance();
+            if (sessionManager.isLoggedIn()) {
+                final Future<AuthenticatedValue> authenticatedValueFuture = getRpcClient().callMethod(
+                        AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
+                        AuthenticatedValue.class,
+                        sessionManager.initializeServiceServerRequest()
+                );
+                final ReLoginFuture<AuthenticatedValue> reloginFuture = new ReLoginFuture<>(
+                        authenticatedValueFuture,
+                        sessionManager
+                );
+                return new AuthenticatedValueFuture<>(reloginFuture,
+                        getDataClass(),
+                        sessionManager.initializeServiceServerRequest(),
+                        sessionManager
+                );
             } else {
                 return super.internalRequestStatus();
             }
         } catch (RejectedException ex) {
-            return FutureProcessor.canceledFuture(Event.class, ex);
+            return FutureProcessor.canceledFuture(getDataClass(), ex);
         }
     }
 
@@ -107,13 +118,13 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
         super.deactivate();
     }
 
-    private class AuthenticatedUpdateHandler implements Handler {
+    private class AuthenticatedUpdateHandler implements Function1<Event, Unit> {
 
         @Override
-        public void internalNotify(Event event) {
+        public Unit invoke(Event event) {
             try {
-                if (event.getData() != null) {
-                    otherData = (M) event.getData();
+                if (event.hasPayload()) {
+                    otherData = event.getPayload().unpack(getDataClass());
                     if (SessionManager.getInstance().isLoggedIn()) {
                         // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
                         GlobalCachedExecutorService.submit((Callable<Void>) () -> {
@@ -143,8 +154,11 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
                     applyEventUpdate(event);
                 }
             } catch (Exception ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);
+                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);
+                }
             }
+            return null;
         }
     }
 }

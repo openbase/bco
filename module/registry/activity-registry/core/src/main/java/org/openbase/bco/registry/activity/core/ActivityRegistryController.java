@@ -32,15 +32,12 @@ import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.communication.controller.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
@@ -55,12 +52,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ActivityRegistryController extends AbstractRegistryController<ActivityRegistryData, ActivityRegistryData.Builder> implements ActivityRegistry, Manageable<ScopeType.Scope> {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TransactionValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityConfig.getDefaultInstance()));
-    }
 
     private final ProtoBufFileSynchronizedRegistry<String, ActivityConfig, ActivityConfig.Builder, ActivityRegistryData.Builder> activityConfigRegistry;
 
@@ -138,9 +129,9 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
-        RPCHelper.registerInterface(ActivityRegistry.class, this, server);
+        server.registerMethods(ActivityRegistry.class, this);
     }
 
     /**

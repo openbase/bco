@@ -24,23 +24,13 @@ package org.openbase.bco.dal.remote.layer.unit.gateway;
 
 import org.openbase.bco.dal.lib.layer.unit.gateway.Gateway;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.type.domotic.state.AvailabilityStateType.AvailabilityState;
 import org.openbase.type.domotic.unit.gateway.GatewayDataType.GatewayData;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class GatewayRemote extends AbstractUnitRemote<GatewayData> implements Gateway {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GatewayData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AvailabilityState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
 
     public GatewayRemote() {
         super(GatewayData.class);

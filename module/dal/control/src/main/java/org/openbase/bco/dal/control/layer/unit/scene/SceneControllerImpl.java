@@ -52,7 +52,6 @@ import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.TimeoutSplitter;
-import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
@@ -71,8 +70,6 @@ import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData;
 import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -87,12 +84,6 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
     // Action registration timeout in ms.
     public static final long ACTION_REGISTRATION_TIMEOUT = 15000;
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescriptionType.ActionDescription.getDefaultInstance()));
-    }
 
     private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
     private final Set<ButtonRemote> buttonRemoteSet;

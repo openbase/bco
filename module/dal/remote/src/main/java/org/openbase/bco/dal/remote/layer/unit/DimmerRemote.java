@@ -1,10 +1,6 @@
 package org.openbase.bco.dal.remote.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.unit.Dimmer;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
 
 /*
@@ -33,12 +29,6 @@ import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimmer {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
-    }
 
     public DimmerRemote() {
         super(DimmerData.class);

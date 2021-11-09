@@ -33,15 +33,14 @@ import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.communication.controller.RPCHelper;
+import org.openbase.jul.communication.config.CommunicatorConfig;
+import org.openbase.jul.communication.iface.CommunicatorFactory;
+import org.openbase.jul.communication.iface.RPCServer;
+import org.openbase.jul.communication.mqtt.CommunicatorFactoryImpl;
+import org.openbase.jul.communication.mqtt.DefaultCommunicatorConfig;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -54,8 +53,6 @@ import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.T
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -67,21 +64,17 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {
-    // todo release: validate name (AuthenticatorController vs. AuthenticationRemote)
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserClientPair.getDefaultInstance()));
-    }
+public class AuthenticationController implements AuthenticationService, Launchable<Void>, VoidInitializable {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticationController.class);
     private static final String STORE_FILENAME = "server_credential_store.json";
     private static final String TICKET_GRANTING_KEY = "ticket_granting_key";
     private static final String SERVICE_SERVER_SECRET_KEY = "service_server_secret_key";
 
-    private RSBLocalServer server;
+    private final CommunicatorFactory factory = CommunicatorFactoryImpl.Companion.getInstance();
+    private final CommunicatorConfig defaultCommunicatorConfig = DefaultCommunicatorConfig.Companion.getInstance();
+
+    private RPCServer server;
     private WatchDog serverWatchDog;
 
     private final CredentialStore credentialStore;
@@ -93,20 +86,20 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private byte[] ticketGrantingServiceSecretKey = null;
     private byte[] serviceServerSecretKey;
 
-    public AuthenticatorController() throws InitializationException {
+    public AuthenticationController() throws InitializationException {
         this(new CredentialStore(), EncryptionHelper.generateKey());
     }
 
-    public AuthenticatorController(CredentialStore credentialStore) throws InitializationException {
+    public AuthenticationController(CredentialStore credentialStore) throws InitializationException {
         this(credentialStore, EncryptionHelper.generateKey());
     }
 
-    public AuthenticatorController(byte[] serviceServerPrivateKey) throws InitializationException {
+    public AuthenticationController(byte[] serviceServerPrivateKey) throws InitializationException {
         this(new CredentialStore(), serviceServerPrivateKey);
     }
 
-    public AuthenticatorController(CredentialStore credentialStore, byte[] serviceServerPrivateKey) throws InitializationException {
-        this.server = new NotInitializedRSBLocalServer();
+    public AuthenticationController(CredentialStore credentialStore, byte[] serviceServerPrivateKey) throws InitializationException {
+        this.server = null;
 
         this.credentialStore = credentialStore;
         this.serviceServerSecretKey = serviceServerPrivateKey;
@@ -114,19 +107,20 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         try {
             this.ticketValidityTime = JPService.getProperty(JPSessionTimeout.class).getValue();
         } catch (JPNotAvailableException ex) {
-            throw new InitializationException(AuthenticatorController.class, ex);
+            throw new InitializationException(AuthenticationController.class, ex);
         }
     }
 
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(
-                    ScopeTransformer.transform(JPService.getProperty(JPAuthenticationScope.class).getValue()),
-                    RSBSharedConnectionConfig.getParticipantConfig());
+            server = factory.createRPCServer(
+                    JPService.getProperty(JPAuthenticationScope.class).getValue(),
+                    defaultCommunicatorConfig
+            );
 
             // register rpc methods.
-            RPCHelper.registerInterface(AuthenticationService.class, this, server);
+            server.registerMethods(AuthenticationService.class, this);
 
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
@@ -245,7 +239,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 if(userCredentials != null && clientCredentials != null) {
                     if (!userCredentials.getSymmetric() && !clientCredentials.getSymmetric()) {
-                        throw new NotSupportedException("Login with two asymmetric keys", AuthenticatorController.class);
+                        throw new NotSupportedException("Login with two asymmetric keys", AuthenticationController.class);
                     }
                 }
 

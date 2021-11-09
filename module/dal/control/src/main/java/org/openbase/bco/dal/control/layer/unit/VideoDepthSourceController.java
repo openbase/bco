@@ -24,8 +24,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.VideoDepthSource;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSourceData;
 
 /**
@@ -33,10 +31,6 @@ import org.openbase.type.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSou
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class VideoDepthSourceController extends AbstractDALUnitController<VideoDepthSourceData, VideoDepthSourceData.Builder> implements VideoDepthSource {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoDepthSourceData.getDefaultInstance()));
-    }
 
     public VideoDepthSourceController(final HostUnitController hostUnitController, VideoDepthSourceData.Builder builder) throws CouldNotPerformException {
         super(hostUnitController, builder);

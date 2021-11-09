@@ -24,9 +24,6 @@ package org.openbase.bco.dal.remote.layer.unit.app;
 
 import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.app.AppDataType.AppData;
 
 /**
@@ -34,11 +31,6 @@ import org.openbase.type.domotic.unit.app.AppDataType.AppData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AppRemote extends AbstractUnitRemote<AppData> implements App {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
 
     public AppRemote() {
         super(AppData.class);

@@ -62,29 +62,12 @@
             <artifactId>bco.registry.remote</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.openbase</groupId>-->
-<!--            <artifactId>jul.extension.rsb.com</artifactId>-->
-<!--            <version>${dependency.jul.version}</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.openbase</groupId>-->
-<!--            <artifactId>jul.extension.rsb.processing</artifactId>-->
-<!--            <version>${dependency.jul.version}</version>-->
-<!--            <type>jar</type>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.type.processing</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.openbase</groupId>-->
-<!--            <artifactId>jul.extension.rsb.interface</artifactId>-->
-<!--            <version>${dependency.jul.version}</version>-->
-<!--            <type>jar</type>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.protobuf</artifactId>

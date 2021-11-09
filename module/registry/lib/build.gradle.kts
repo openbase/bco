@@ -13,7 +13,6 @@ dependencies {
     api("org.openbase:jul.extension.type.util:2.0-SNAPSHOT")
     api("org.openbase:jul.communication.controller:2.0-SNAPSHOT")
     api("org.openbase:jul.exception:2.0-SNAPSHOT")
-    api("org.openbase:jul.extension.rsb.com:2.0-SNAPSHOT")
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
     testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }

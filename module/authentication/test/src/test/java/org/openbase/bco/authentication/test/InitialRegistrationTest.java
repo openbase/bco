@@ -22,15 +22,12 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +56,7 @@ public class InitialRegistrationTest extends AuthenticationTest {
         LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder();
         loginCredentials.setId(userId);
         loginCredentials.setSymmetric(true);
-        loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+        loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticationController.getInitialPassword())));
         AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
 

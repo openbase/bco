@@ -23,10 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Monitor;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
-import org.openbase.type.domotic.state.StandbyStateType.StandbyState;
 import org.openbase.type.domotic.unit.dal.MonitorDataType.MonitorData;
 
 /**
@@ -34,12 +30,6 @@ import org.openbase.type.domotic.unit.dal.MonitorDataType.MonitorData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Monitor {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MonitorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
-    }
 
     public MonitorRemote() {
         super(MonitorData.class);
