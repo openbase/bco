@@ -9,6 +9,7 @@ plugins {
 dependencies {
     api(project(":bco.authentication.core"))
     api(project(":bco.authentication.lib"))
+    api("org.testcontainers:testcontainers:1.16.2")
 }
 
 description = "BCO Authentication Test"
