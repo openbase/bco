@@ -7,7 +7,7 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api("org.openbase:jul.storage:_")
     api(project(":bco.registry.lib"))
 }
 

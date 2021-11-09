@@ -8,9 +8,9 @@ plugins {
 
 dependencies {
     api(project(":bco.registry.unit.lib"))
-    api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
-    api("org.openbase:jul.extension.type.storage:2.0-SNAPSHOT")
-    api("org.openbase:jul.processing:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.processing:_")
+    api("org.openbase:jul.extension.type.storage:_")
+    api("org.openbase:jul.processing:_")
     api(project(":bco.authentication.core"))
 }
 

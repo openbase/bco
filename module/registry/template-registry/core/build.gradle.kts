@@ -8,9 +8,9 @@ plugins {
 
 dependencies {
     api(project(":bco.registry.template.lib"))
-    api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
-    api("org.openbase:jul.storage:2.0-SNAPSHOT")
-    api("org.openbase:jul.processing:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.processing:_")
+    api("org.openbase:jul.storage:_")
+    api("org.openbase:jul.processing:_")
 }
 
 description = "BCO Registry Template Core"

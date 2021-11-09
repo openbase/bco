@@ -9,9 +9,9 @@ plugins {
 dependencies {
     api(project(":bco.registry.remote"))
     api(project(":bco.authentication.lib"))
-    api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
-    api("org.openbase:jul.extension.protobuf:2.0-SNAPSHOT")
-    api("org.openbase:jul.extension.type.transform:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.processing:_")
+    api("org.openbase:jul.extension.protobuf:_")
+    api("org.openbase:jul.extension.type.transform:_")
     testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
     testImplementation(project(":bco.registry.unit.test"))
 }

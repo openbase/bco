@@ -9,9 +9,9 @@ plugins {
 dependencies {
     api(project(":bco.registry.class.lib"))
     api(project(":bco.registry.template.remote"))
-    api("org.openbase:jul.extension.type.processing:2.0-SNAPSHOT")
-    api("org.openbase:jul.extension.type.storage:2.0-SNAPSHOT")
-    api("org.openbase:jul.processing:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.processing:_")
+    api("org.openbase:jul.extension.type.storage:_")
+    api("org.openbase:jul.processing:_")
 }
 
 description = "BCO Registry Class Core"

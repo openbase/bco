@@ -9,7 +9,7 @@ plugins {
 dependencies {
     api(project(":bco.registry.message.lib"))
     api(project(":bco.registry.unit.remote"))
-    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api("org.openbase:jul.storage:_")
     api(project(":bco.authentication.lib"))
 }
 

@@ -8,8 +8,8 @@ plugins {
 
 dependencies {
     api(project(":bco.dal.remote"))
-    api("org.openbase:jul.visual.javafx:2.0-SNAPSHOT")
-    api("org.openbase:jul.visual.swing:2.0-SNAPSHOT")
+    api("org.openbase:jul.visual.javafx:_")
+    api("org.openbase:jul.visual.swing:_")
 }
 
 description = "BCO DAL Visualisation"
