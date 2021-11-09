@@ -109,3 +109,13 @@ project(":bco.app.influxdb.connector").projectDir = file("module/app/influxdbcon
 project(":bco.app.test").projectDir = file("module/app/test")
 
 project(":bco.device.openhab").projectDir = file("module/device/openhab")
+
+pluginManagement {
+    plugins {
+        id("de.fayard.refreshVersions") version "0.23.0"
+    }
+}
+
+plugins {
+    id("de.fayard.refreshVersions")
+}
