@@ -22,8 +22,6 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticationController;
@@ -58,8 +56,6 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
 
-    private AuthenticatedControllerServerTestImpl communicationService;
-    private AuthenticatedRemoteClientTestImpl remoteService;
 
     public AuthenticatedCommunicationTest() {
 
@@ -82,28 +78,6 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
     }
 
-    @Before
-    public void setUp() throws Exception {
-        communicationService = new AuthenticatedControllerServerTestImpl();
-        remoteService = new AuthenticatedRemoteClientTestImpl();
-
-        communicationService.init(SCOPE);
-        remoteService.init(SCOPE);
-
-        communicationService.activate();
-        remoteService.activate();
-
-        // wait for initial synchronization
-        // otherwise, it can finish sync tasks after updating the controller in tests
-        remoteService.requestData().get();
-    }
-
-    @After
-    public void tearDown() {
-        remoteService.shutdown();
-        communicationService.shutdown();
-    }
-
     /**
      * Test of communication between authenticated communication and remote service.
      *
@@ -111,15 +85,13 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
      */
     @Test(timeout = 10000)
     public void testCommunication() throws Exception {
-        LOGGER.info("Start communication test");
-
-        UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
+        final UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
         otherAgentConfig.setId("OtherAgent");
         otherAgentConfig.setUnitType(UnitType.AGENT);
         Permission.Builder otherPermission = otherAgentConfig.getPermissionConfigBuilder().getOtherPermissionBuilder();
         otherPermission.setRead(true).setWrite(false).setAccess(true);
 
-        UnitConfig.Builder userAgentConfig = UnitConfig.newBuilder();
+        final UnitConfig.Builder userAgentConfig = UnitConfig.newBuilder();
         userAgentConfig.setId("UserAgent");
         userAgentConfig.setUnitType(UnitType.AGENT);
         userAgentConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false).setAccess(false).setWrite(false);
@@ -129,11 +101,18 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         final List<UnitConfig> expectedAgentsLoggedOut = List.of(otherAgentConfig.build());
         final List<UnitConfig> expectedAgentsLoggedIn = List.of(otherAgentConfig.build(), userAgentConfig.build());
 
-        LOGGER.info("Register agents");
-        try (ClosableDataBuilder<Builder> dataBuilder = communicationService.getDataBuilderInterruptible(this)) {
-            dataBuilder.getInternalBuilder().addAgentUnitConfig(otherAgentConfig);
-            dataBuilder.getInternalBuilder().addAgentUnitConfig(userAgentConfig);
-        }
+        final UnitRegistryData.Builder dataBuilder = UnitRegistryData.newBuilder()
+                .addAgentUnitConfig(otherAgentConfig)
+                .addAgentUnitConfig(userAgentConfig);
+        AuthenticatedControllerServerTestImpl communicationService = new AuthenticatedControllerServerTestImpl(dataBuilder);
+        communicationService.init(SCOPE);
+        communicationService.activate();
+
+        AuthenticatedRemoteClientTestImpl remoteService = new AuthenticatedRemoteClientTestImpl();
+        remoteService.init(SCOPE);
+        remoteService.activate();
+
+        LOGGER.info("Start communication test");
 
         LOGGER.info("Synchronize remote...");
         UnitRegistryData data = remoteService.requestData().get();
@@ -170,8 +149,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
                 expectedAgentsLoggedOut,
                 data.getAgentUnitConfigList()
         );
-        assertTrue(remoteService.getData().getAgentUnitConfigList().contains(otherAgentConfig.build()));
-        assertTrue(!remoteService.getData().getAgentUnitConfigList().contains(userAgentConfig.build()));
+
+        remoteService.shutdown();
+        communicationService.shutdown();
     }
 
     private static class AuthenticatedControllerServerTestImpl extends AbstractAuthenticatedControllerServer<UnitRegistryData, Builder> {
@@ -181,8 +161,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
          *
          * @throws InstantiationException if the creation fails
          */
-        public AuthenticatedControllerServerTestImpl() throws InstantiationException {
-            super(UnitRegistryData.newBuilder());
+        public AuthenticatedControllerServerTestImpl(UnitRegistryData.Builder dataBuilder) throws InstantiationException {
+            super(dataBuilder);
         }
 
         @Override
