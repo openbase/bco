@@ -28,6 +28,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.communication.jp.JPComHost;
 import org.openbase.jul.communication.jp.JPComPort;
+import org.openbase.jul.communication.mqtt.SharedMqttClient;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -67,6 +68,7 @@ public class MqttIntegrationTest {
 
     @AfterClass
     public static void tearDownClass() throws IOException {
+        SharedMqttClient.INSTANCE.waitForShutdown();
         broker.stop();
         Files.delete(mosquittoConfig);
     }
