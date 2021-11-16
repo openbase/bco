@@ -25,6 +25,7 @@ package org.openbase.bco.registry.unit.test;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -52,14 +53,9 @@ import java.util.Set;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractBCORegistryTest {
+public abstract class AbstractBCORegistryTest extends MqttIntegrationTest {
 
     final Logger logger = LoggerFactory.getLogger(getClass());
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-    }
 
     @Before
     public void setUp() throws Exception {
