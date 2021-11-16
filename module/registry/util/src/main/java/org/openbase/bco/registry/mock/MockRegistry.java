@@ -25,6 +25,7 @@ package org.openbase.bco.registry.mock;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
@@ -200,6 +201,7 @@ public class MockRegistry {
                 task.get();
             }
             registryStartupTasks.clear();
+            CachedAuthenticationRemote.prepare();
 
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
@@ -462,6 +464,7 @@ public class MockRegistry {
         AuthenticatedServerManager.shutdown();
 
         Registries.shutdown();
+        CachedAuthenticationRemote.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
