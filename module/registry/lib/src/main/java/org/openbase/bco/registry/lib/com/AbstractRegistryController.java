@@ -38,10 +38,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
-import org.openbase.jul.storage.registry.ConsistencyHandler;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.RegistryController;
+import org.openbase.jul.storage.registry.*;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
@@ -214,7 +211,7 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     @Override
     public void registerMethods(final RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
-        server.registerMethods(RegistryController.class, this);
+        server.registerMethods(RegistryService.class, this);
     }
 
     @Override
