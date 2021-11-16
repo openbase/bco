@@ -222,27 +222,6 @@
         <dependency.com.influxdb.influxdb-client-java.version>[1.0,1.1-alpha)</dependency.com.influxdb.influxdb-client-java.version>
         <dependency.org.junit.jupiter.version>[5.6,5.7-alpha)</dependency.org.junit.jupiter.version>
     </properties>
-    
-    <repositories>
-        <repository>
-            <id>citec-releases</id>
-            <name>CITEC Maven Repository Server</name>
-            <url>https://mvn.cit-ec.de/nexus/content/repositories/releases/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>citec-snapshots</id>
-            <name>CITEC Maven Repository Server</name>
-            <url>https://mvn.cit-ec.de/nexus/content/repositories/snapshots/</url>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>

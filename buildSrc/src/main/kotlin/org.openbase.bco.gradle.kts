@@ -13,9 +13,6 @@ plugins {
 repositories {
     mavenLocal()
     maven {
-        url = uri("https://mvn.cit-ec.de/nexus/content/repositories/releases/")
-    }
-    maven {
         url = uri("https://oss.sonatype.org/content/groups/public/")
     }
     mavenCentral()
