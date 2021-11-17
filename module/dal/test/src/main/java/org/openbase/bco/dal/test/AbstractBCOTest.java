@@ -26,6 +26,7 @@ import lombok.NonNull;
 import org.junit.After;
 import org.junit.Assert;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
+import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -48,7 +49,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AbstractBCOTest {
+public class AbstractBCOTest extends MqttIntegrationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractBCOTest.class);
 
@@ -58,6 +59,7 @@ public class AbstractBCOTest {
 
     public static void setUpClass() throws Throwable {
         try {
+            MqttIntegrationTest.setUpClass();
             JPService.setupJUnitTestMode();
             mockRegistry = MockRegistryHolder.newMockRegistry();
             Units.reinitialize();
@@ -70,6 +72,7 @@ public class AbstractBCOTest {
         try {
             Units.reset(AbstractBCOTest.class);
             MockRegistryHolder.shutdownMockRegistry();
+            MqttIntegrationTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

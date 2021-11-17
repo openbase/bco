@@ -45,7 +45,7 @@ public class MqttIntegrationTest {
     public static GenericContainer<?> broker;
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         mosquittoConfig = Files.createTempFile("mosquitto_", ".conf");
         Files.write(mosquittoConfig, Arrays.asList(
                 "allow_anonymous true",
@@ -67,7 +67,7 @@ public class MqttIntegrationTest {
     }
 
     @AfterClass
-    public static void tearDownClass() throws IOException {
+    public static void tearDownClass() throws Throwable {
         SharedMqttClient.INSTANCE.waitForShutdown();
         broker.stop();
         Files.delete(mosquittoConfig);
