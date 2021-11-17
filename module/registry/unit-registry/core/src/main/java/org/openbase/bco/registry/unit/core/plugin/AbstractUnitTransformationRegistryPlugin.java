@@ -84,7 +84,7 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
                 } catch (TransformerException ex) {
                     exception = ex;
                     // try again if needed
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                 }
             }
             throw new TimeoutException("Transformation not published in time!", exception);
