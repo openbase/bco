@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     api("org.openbase:jul.storage:_")
-    api("org.openbase:rct:[2.0,2.1-alpha)")
+    api("org.openbase:rct:_")
     api(project(":bco.registry.lib"))
     api(project(":bco.registry.class.remote"))
     api(project(":bco.registry.template.remote"))
