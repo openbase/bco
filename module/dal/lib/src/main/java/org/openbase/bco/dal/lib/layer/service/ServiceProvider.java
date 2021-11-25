@@ -52,6 +52,7 @@ public interface ServiceProvider<ST extends Message> extends Identifiable<String
      *
      * @return a future which gives feedback about the action execution state.
      */
+    @RPCMethod(legacy = true)
     Future<ActionDescription> applyAction(final ActionDescription actionDescription);
 
     @RPCMethod
@@ -75,7 +76,6 @@ public interface ServiceProvider<ST extends Message> extends Identifiable<String
      *
      * @return a future which gives feedback about the action execution state.
      */
-    @RPCMethod(legacy = true)
     default Future<ActionDescription> applyAction(final ActionParameterOrBuilder actionParameter) {
         try {
             final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter);
