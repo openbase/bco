@@ -31,6 +31,7 @@ import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -69,6 +70,7 @@ public abstract class AbstractAuthenticatedConfigurableController<M extends Abst
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
+    @RPCMethod
     @Override
     public M requestStatus() throws CouldNotPerformException {
         logger.trace("requestStatus of {}", this);

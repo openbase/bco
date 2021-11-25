@@ -95,10 +95,11 @@ public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG e
         try {
             final SessionManager sessionManager = SessionManager.getInstance();
             if (sessionManager.isLoggedIn()) {
+                final TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.initializeServiceServerRequest();
                 final Future<AuthenticatedValue> authenticatedValueFuture = getRpcClient().callMethod(
                                 AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
                                 AuthenticatedValue.class,
-                                sessionManager.initializeServiceServerRequest()
+                        ticketAuthenticatorWrapper
                         );
                 final ReLoginFuture<AuthenticatedValue> reloginFuture = new ReLoginFuture<>(
                         authenticatedValueFuture,
@@ -106,7 +107,7 @@ public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG e
                 );
                 return new AuthenticatedValueFuture<>(reloginFuture,
                         getDataClass(),
-                        sessionManager.initializeServiceServerRequest(),
+                        ticketAuthenticatorWrapper,
                         sessionManager
                 );
             } else {
