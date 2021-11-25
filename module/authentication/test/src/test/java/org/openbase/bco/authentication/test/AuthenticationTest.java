@@ -44,7 +44,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
     static byte[] serviceServerSecretKey = EncryptionHelper.generateKey();
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         MqttIntegrationTest.setUpClass();
 
         JPService.setupJUnitTestMode();

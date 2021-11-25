@@ -28,10 +28,9 @@ import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
@@ -47,8 +46,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -63,7 +61,6 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
-
         powerSwitchRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, PowerSwitchRemote.class);
     }
 
@@ -72,9 +69,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test(timeout = 3000)
     public void testSetPowerState() throws Exception {
-        System.out.println("testSetPowerState");
         waitForExecution(powerSwitchRemote.setPowerState(Power.ON));
         assertEquals("Power state has not been set in time!", Power.ON.getValue(), powerSwitchRemote.getData().getPowerState().getValue());
     }
@@ -84,10 +80,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test(timeout = 3000)
     public void testGetPowerState() throws Exception {
-        System.out.println("testGetPowerState");
-
         // apply service state
         final UnitController<?, ?> unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId());
         unitController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
@@ -154,7 +148,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         try {
             assertEquals(powerState.getValue(), powerSwitchRemote.requestData().get(1, TimeUnit.SECONDS).getPowerState().getValue());
         } catch (TimeoutException ex) {
-            assertTrue("PowerSwitch did not response in time after massive load!", true);
+            fail("PowerSwitch did not response in time after massive load!");
         }
     }
 
@@ -165,12 +159,10 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      */
     @Test(timeout = 15000)
     public void testPowerStateServiceCancellationPerformance() throws Exception {
-        System.out.println("testPowerStateServiceCancellationPerformance");
-
         final Random random = new Random();
         final ActionParameter parameter = ActionParameter.newBuilder().setExecutionTimePeriod(100000000).build();
         final ArrayList<RemoteAction> actionList = new ArrayList<>();
-        final ArrayList<Future> submissionTask = new ArrayList<>();
+        final ArrayList<Future<?>> submissionTask = new ArrayList<>();
 
         for (int i = 0; i < 100; i++) {
             submissionTask.add(GlobalCachedExecutorService.submit(() -> {
@@ -187,7 +179,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         }
 
         // wait until submission tasks are done
-        for (Future future : submissionTask) {
+        for (Future<?> future : submissionTask) {
             future.get(5, TimeUnit.SECONDS);
         }
 
@@ -233,15 +225,13 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         // invert state
         final PowerState powerState = powerSwitchRemote.getPowerState().getValue() == Power.ON.getValue() ? Power.OFF : Power.ON;
 
-        System.out.println("set powerstate");
-
         waitForExecution(powerSwitchRemote.setPowerState(powerState));
 
         // make sure the final state is correctly applied.
         try {
             assertEquals(powerState.getValue(), powerSwitchRemote.requestData().get(1, TimeUnit.SECONDS).getPowerState().getValue());
         } catch (TimeoutException ex) {
-            assertTrue("PowerSwitch did not response in time after massive load!", true);
+            fail("PowerSwitch did not response in time after massive load!");
         }
     }
 }

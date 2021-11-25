@@ -29,7 +29,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.TokenGenerator;

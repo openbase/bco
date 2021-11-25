@@ -61,7 +61,7 @@ public class SessionManagerTest extends AuthenticationTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         AuthenticationTest.setUpClass();
         clientStore = new MockClientStore();
 

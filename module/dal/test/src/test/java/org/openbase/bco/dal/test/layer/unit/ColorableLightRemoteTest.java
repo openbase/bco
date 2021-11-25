@@ -30,7 +30,7 @@ import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.communication.jp.JPComLegacyMode;
@@ -81,6 +81,13 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
     }
 
+    @AfterClass
+    public static void tearDownClass() throws Throwable {
+        AbstractBCODeviceManagerTest.tearDownClass();
+
+        JPService.registerProperty(JPComLegacyMode.class, false);
+    }
+
     @Before
     public void setUp() throws InitializationException, InvalidStateException {
 
@@ -109,6 +116,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if an error occurs
      */
+    @Ignore
     @Test(timeout = 15000)
     public void testControllingViaLightRemote() throws Exception {
         System.out.println("testControllingViaLightRemote");

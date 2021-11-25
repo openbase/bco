@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.test;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -56,13 +57,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
 
-
-    public AuthenticatedCommunicationTest() {
-
-    }
-
+    @BeforeAll
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         AuthenticationTest.setUpClass();
 
         // register a user from which a ticket can be validated

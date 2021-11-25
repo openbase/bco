@@ -21,20 +21,18 @@ package org.openbase.bco.dal.test.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
 import org.junit.Assert;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import org.junit.Before;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.type.processing.TimestampJavaTimeTransform;
-import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;

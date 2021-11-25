@@ -24,7 +24,10 @@ package org.openbase.bco.dal.test;
 
 import lombok.NonNull;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -57,7 +60,9 @@ public class AbstractBCOTest extends MqttIntegrationTest {
 
     private final List<RemoteAction> testActions = Collections.synchronizedList(new ArrayList<>());
 
+    @BeforeClass
     public static void setUpClass() throws Throwable {
+        System.out.println("AbstractBCOTest setup class...");
         try {
             MqttIntegrationTest.setUpClass();
             JPService.setupJUnitTestMode();
@@ -68,9 +73,11 @@ public class AbstractBCOTest extends MqttIntegrationTest {
         }
     }
 
+    @AfterClass
     public static void tearDownClass() throws Throwable {
         try {
             Units.reset(AbstractBCOTest.class);
+            SessionManager.getInstance().completeLogout();
             MockRegistryHolder.shutdownMockRegistry();
             MqttIntegrationTest.tearDownClass();
         } catch (Throwable ex) {

@@ -22,7 +22,6 @@ package org.openbase.bco.dal.test.layer.unit.location;
  * #L%
  */
 
-import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -32,7 +31,6 @@ import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
