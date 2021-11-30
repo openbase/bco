@@ -86,7 +86,7 @@ public class BCOLauncher {
         /**
          * API Launcher
          */
-//        launcher.add(BcoApiGraphQlLauncher.class);
+        launcher.add(BcoApiGraphQlLauncher.class);
 
         /**
          * Configure dynamic Device Manager Launcher
