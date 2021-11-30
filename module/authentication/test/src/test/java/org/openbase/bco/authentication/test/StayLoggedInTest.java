@@ -90,11 +90,7 @@ public class StayLoggedInTest extends AuthenticationTest {
             CachedAuthenticationRemote.getRemote().validateClientServerTicket(wrapper).get();
             fail("No exception thrown even though the session should have timed out");
         } catch (ExecutionException ex) {
-            System.out.println("Ex: " + ex);
-            System.out.println("Ex: " + ex.getCause());
-            System.out.println("Is of class: " + ex.getCause().getClass().getSimpleName());
             assertTrue(ex.getCause().getMessage().contains("SessionExpired"));
-            //assertTrue("Task did not fail because of session expired exception", ExceptionProcessor.getInitialCause(ex) instanceof SessionExpiredException);
         } finally {
             ExceptionPrinter.setBeQuit(false);
         }

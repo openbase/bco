@@ -62,7 +62,6 @@ public class AbstractBCOTest extends MqttIntegrationTest {
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        System.out.println("AbstractBCOTest setup class...");
         try {
             MqttIntegrationTest.setUpClass();
             JPService.setupJUnitTestMode();
