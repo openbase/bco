@@ -26,13 +26,12 @@ import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jul.communication.jp.JPComHost;
+import org.openbase.jul.communication.jp.JPComPort;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.processing.StringProcessor.Alignment;
@@ -196,9 +195,8 @@ public class BCORegistryPrinter {
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
-        JPService.registerProperty(JPRSBHost.class);
-        JPService.registerProperty(JPRSBPort.class);
-        JPService.registerProperty(JPRSBTransport.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPComPort.class);
 
         try {
             JPService.parseAndExitOnError(args);

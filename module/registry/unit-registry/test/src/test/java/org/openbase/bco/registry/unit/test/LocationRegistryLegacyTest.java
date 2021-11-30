@@ -28,13 +28,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.communication.jp.JPComLegacyMode;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
-import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
-import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig;
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 
@@ -51,12 +49,12 @@ public class LocationRegistryLegacyTest extends AbstractBCORegistryTest {
 
     @BeforeClass
     public static void setupProperties() throws Exception {
-        JPService.registerProperty(JPRSBLegacyMode.class, true);
+        JPService.registerProperty(JPComLegacyMode.class, true);
     }
 
     @AfterClass
     public static void removeProperties() throws Exception {
-        JPService.registerProperty(JPRSBLegacyMode.class, false);
+        JPService.registerProperty(JPComLegacyMode.class, false);
     }
 
     private static UnitConfig.Builder getLocationUnitBuilder(final String label) {

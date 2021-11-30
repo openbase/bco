@@ -22,12 +22,14 @@ package org.openbase.bco.dal.remote.layer.unit.object;
  * #L%
  */
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.type.communication.EventType.Event;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
-import rsb.Handler;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -81,7 +83,7 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public void addHandler(Handler handler, boolean wait) {
+    public void addHandler(Function1<Event, Unit> handler, boolean wait) {
         // dummy has no function
     }
 
@@ -115,32 +117,32 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public <R> Future<R> callMethodAsync(String methodName) {
+    public <R> Future<R> callMethodAsync(String methodName, Class<R> returnClazz) {
         return (Future<R>) FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
     }
 
     @Override
-    public <R> R callMethod(String methodName) throws CouldNotPerformException, InterruptedException {
+    public <R> R callMethod(String methodName, Class<R> returnClazz) throws CouldNotPerformException, InterruptedException {
         throw new NotSupportedException("Method[callMethod]", this);
     }
 
     @Override
-    public <R, T> R callMethod(String methodName, T argument) throws CouldNotPerformException, InterruptedException {
+    public <R, T> R callMethod(String methodName, Class<R> returnClazz, T argument) throws CouldNotPerformException, InterruptedException {
         throw new NotSupportedException("Method[callMethod]", this);
     }
 
     @Override
-    public <R> R callMethod(String methodName, long timeout) throws CouldNotPerformException, InterruptedException {
-        throw new NotSupportedException("callMethod[applyAction]", this);
+    public <R> R callMethod(String methodName, Class<R> returnClazz, long timeout) throws CouldNotPerformException, InterruptedException {
+        throw new NotSupportedException("Method[callMethod]", this);
     }
 
     @Override
-    public <R, T> R callMethod(String methodName, T argument, long timeout) throws CouldNotPerformException, InterruptedException {
-        throw new NotSupportedException("callMethod[applyAction]", this);
+    public <R, T> R callMethod(String methodName, Class<R> returnClazz, T argument, long timeout) throws CouldNotPerformException, InterruptedException {
+        throw new NotSupportedException("Method[callMethod]", this);
     }
 
     @Override
-    public <R, T> Future<R> callMethodAsync(String methodName, T argument) {
+    public <R, T> Future<R> callMethodAsync(String methodName, Class<R> returnClazz, T argument) {
         return (Future<R>) FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
     }
 

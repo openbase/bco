@@ -120,6 +120,11 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
      */
     private void saveStore() {
         try {
+            // do not save file if not yet initialized.
+            if(storeFile == null) {
+                return;
+            }
+
             // save into file
             fileProcessor.serialize(save(map), storeFile);
         } catch (CouldNotPerformException ex) {

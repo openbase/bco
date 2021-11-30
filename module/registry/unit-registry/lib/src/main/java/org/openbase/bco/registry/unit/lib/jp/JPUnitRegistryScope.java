@@ -45,6 +45,6 @@ public class JPUnitRegistryScope extends JPScope {
 
     @Override
     public String getDescription() {
-        return "Setup the unit registry scope which is used for the rsb communication.";
+        return "Setup the unit registry scope which is used for the communication.";
     }
 }

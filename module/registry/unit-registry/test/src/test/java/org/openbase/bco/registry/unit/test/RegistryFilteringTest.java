@@ -55,17 +55,10 @@ import static org.junit.Assert.assertTrue;
  */
 public class RegistryFilteringTest extends AbstractBCORegistryTest {
 
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        AbstractBCORegistryTest.setUpClass();
-        JPService.registerProperty(JPAuthentication.class, true);
-    }
-
-
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        SessionManager.getInstance().logout();
+        SessionManager.getInstance().completeLogout();
     }
 
     @Test(timeout = 10000)

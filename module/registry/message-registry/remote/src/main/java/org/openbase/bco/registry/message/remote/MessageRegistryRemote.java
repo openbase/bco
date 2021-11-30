@@ -31,7 +31,7 @@ import org.openbase.bco.registry.message.lib.jp.JPMessageRegistryScope;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.communication.controller.RPCHelper;
+import org.openbase.jul.communication.controller.RPCUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -41,8 +41,6 @@ import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.communication.UserMessageType.UserMessage;
 import org.openbase.type.domotic.registry.MessageRegistryDataType.MessageRegistryData;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.util.List;
 import java.util.concurrent.Future;
@@ -51,12 +49,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistryData> implements MessageRegistry, RegistryRemote<MessageRegistryData> {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MessageRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserMessage.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
-    }
 
     private final SynchronizedRemoteRegistry<String, UserMessage, UserMessage.Builder> userMessageRemoteRegistry;
 
@@ -110,7 +102,7 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
 
     @Override
     public Future<AuthenticatedValue> registerUserMessageAuthenticated(AuthenticatedValue authenticatedValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     /**
@@ -169,7 +161,7 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
 
     @Override
     public Future<AuthenticatedValue> updateUserMessageAuthenticated(final AuthenticatedValue authenticatedValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     @Override
@@ -179,7 +171,7 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
 
     @Override
     public Future<AuthenticatedValue> removeUserMessageAuthenticated(final AuthenticatedValue authenticatedValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     @Override

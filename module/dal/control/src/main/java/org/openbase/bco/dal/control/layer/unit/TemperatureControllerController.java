@@ -25,9 +25,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 
 /**
@@ -35,11 +32,6 @@ import org.openbase.type.domotic.unit.dal.TemperatureControllerDataType.Temperat
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class TemperatureControllerController extends AbstractDALUnitController<TemperatureControllerData, TemperatureControllerData.Builder> implements TemperatureController {
-    
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureControllerData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
-    }
     
     public TemperatureControllerController(final HostUnitController hostUnitController, final TemperatureControllerData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

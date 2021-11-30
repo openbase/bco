@@ -34,9 +34,6 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,10 +41,6 @@ import java.util.List;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder, UnitController<?, ?>> implements DeviceController {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
-    }
 
     public AbstractDeviceController() throws InstantiationException {
         super(DeviceData.newBuilder());

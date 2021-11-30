@@ -36,12 +36,10 @@ import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.communication.controller.RPCHelper;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.ListFilter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -50,8 +48,6 @@ import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPai
 import org.openbase.type.domotic.communication.UserMessageType.UserMessage;
 import org.openbase.type.domotic.registry.MessageRegistryDataType.MessageRegistryData;
 import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,12 +58,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MessageRegistryController extends AbstractRegistryController<MessageRegistryData, MessageRegistryData.Builder> implements MessageRegistry {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MessageRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserMessage.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
-    }
 
     public final static UserMessageIdGenerator USER_MESSAGE_ID_GENERATOR = new UserMessageIdGenerator();
 
@@ -135,9 +125,9 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
     }
 
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
-        RPCHelper.registerInterface(MessageRegistry.class, this, server);
+        server.registerMethods(MessageRegistry.class, this);
     }
 
     @Override

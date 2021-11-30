@@ -25,9 +25,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.ReedContact;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ContactStateType.ContactState;
 import org.openbase.type.domotic.unit.dal.ReedContactDataType.ReedContactData;
 
 /**
@@ -35,11 +32,6 @@ import org.openbase.type.domotic.unit.dal.ReedContactDataType.ReedContactData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ReedContactController extends AbstractDALUnitController<ReedContactData, ReedContactData.Builder> implements ReedContact {
-    
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedContactData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
-    }
     
     public ReedContactController(final HostUnitController hostUnitController, ReedContactData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

@@ -25,10 +25,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
-import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
 
 /**
@@ -36,12 +32,6 @@ import org.openbase.type.domotic.unit.dal.TemperatureSensorDataType.TemperatureS
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureSensorController extends AbstractDALUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensor {
-    
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
-    }
     
     public TemperatureSensorController(final HostUnitController hostUnitController, final TemperatureSensorData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

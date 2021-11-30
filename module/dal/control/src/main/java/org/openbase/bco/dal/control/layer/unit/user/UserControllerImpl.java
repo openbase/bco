@@ -46,12 +46,9 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.ActivityMultiStateType.ActivityMultiState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
-import org.openbase.type.domotic.state.UserTransitStateType.UserTransitState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.user.UserDataType.UserData;
 import org.slf4j.LoggerFactory;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -69,13 +66,6 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 public class UserControllerImpl extends AbstractBaseUnitController<UserData, UserData.Builder> implements UserController {
 
     public static final String NET_DEVICE_VARIABLE_IDENTIFIER = "NET_DEVICE";
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityMultiState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserTransitState.getDefaultInstance()));
-    }
 
     private final Object netDeviceDetectorMapLock = new SyncObject("NetDeviceDetectorMapLock");
     private final Map<String, NetDeviceDetector> netDeviceDetectorMap;

@@ -53,7 +53,7 @@ public class StayLoggedInTest extends AuthenticationTest {
     private static final long SESSION_TIMEOUT = 500;
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         // set the session timeout and use the super method for initialization
         JPService.registerProperty(JPSessionTimeout.class, SESSION_TIMEOUT);
         AuthenticationTest.setUpClass();
@@ -90,7 +90,7 @@ public class StayLoggedInTest extends AuthenticationTest {
             CachedAuthenticationRemote.getRemote().validateClientServerTicket(wrapper).get();
             fail("No exception thrown even though the session should have timed out");
         } catch (ExecutionException ex) {
-            assertTrue("Task did not fail because of session expired exception", ExceptionProcessor.getInitialCause(ex) instanceof SessionExpiredException);
+            assertTrue(ex.getCause().getMessage().contains("SessionExpired"));
         } finally {
             ExceptionPrinter.setBeQuit(false);
         }

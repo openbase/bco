@@ -26,11 +26,11 @@ import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteClient;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.communication.controller.RPCUtils;
 import org.openbase.jul.communication.controller.jp.JPScope;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
@@ -122,7 +122,7 @@ public abstract class AbstractRegistryRemote<M extends Message> extends Abstract
                 return false;
             }
             ping().get(1000, TimeUnit.MILLISECONDS);
-            return RPCHelper.callRemoteMethod(this, Boolean.class).get(1000, TimeUnit.MILLISECONDS);
+            return RPCUtils.callRemoteServerMethod(this, Boolean.class).get(1000, TimeUnit.MILLISECONDS);
         } catch (ExecutionException | TimeoutException ex) {
             ExceptionPrinter.printHistory("Could not check if registry is ready!", ex, logger);
             return false;
@@ -141,7 +141,7 @@ public abstract class AbstractRegistryRemote<M extends Message> extends Abstract
     public void waitUntilReady() throws InterruptedException, CouldNotPerformException {
         try {
             waitForData();
-            RPCHelper.callRemoteMethod(this, Void.class).get();
+            RPCUtils.callRemoteServerMethod(this, Void.class).get();
         } catch (final CouldNotPerformException | ExecutionException | CancellationException ex) {
             throw new CouldNotPerformException("Could not wait until " + this + " is ready!", ex);
         }

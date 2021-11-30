@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.test.layer.unit.device;
+package org.openbase.bco.dal.test;
 
 /*-
  * #%L
@@ -25,10 +25,8 @@ package org.openbase.bco.dal.test.layer.unit.device;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.jupiter.api.AfterEach;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
@@ -72,7 +70,6 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
-    @AfterEach
     @After
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");

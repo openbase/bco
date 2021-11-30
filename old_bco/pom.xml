@@ -110,7 +110,7 @@
                         </program>
                         <program>
                             <mainClass>org.openbase.bco.app.util.launch.BCOInterfacePrinter</mainClass>
-                            <id>bco-print-interface-rsb</id>
+                            <id>bco-print-api</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

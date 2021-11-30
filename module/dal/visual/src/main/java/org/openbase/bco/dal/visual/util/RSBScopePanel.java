@@ -24,10 +24,11 @@ package org.openbase.bco.dal.visual.util;
 import java.awt.Color;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.type.communication.ScopeType.Scope;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
 
 /**
  *
@@ -55,8 +56,8 @@ public class RSBScopePanel extends javax.swing.JPanel {
         observable.removeObserver(observer);
     }
 
-    public Scope getScope() {
-        return new Scope(scopeTextField.getText());
+    public Scope getScope() throws CouldNotPerformException {
+        return ScopeProcessor.generateScope(scopeTextField.getText());
     }
 
     /**
@@ -150,7 +151,7 @@ public class RSBScopePanel extends javax.swing.JPanel {
 //        });
 //        worker.execute();
 
-            observable.notifyObservers(new Scope(scopeTextField.getText()));
+            observable.notifyObservers(ScopeProcessor.generateScope(scopeTextField.getText()));
             scopeTextField.setForeground(Color.GREEN.darker().darker().darker());
             scopeTextField.setEnabled(true);
         } catch (CouldNotPerformException ex) {

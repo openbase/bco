@@ -25,15 +25,14 @@ package org.openbase.bco.authentication.lib;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.communication.config.CommunicatorConfig;
+import org.openbase.jul.communication.controller.RPCUtils;
+import org.openbase.jul.communication.iface.CommunicatorFactory;
+import org.openbase.jul.communication.iface.RPCClient;
+import org.openbase.jul.communication.mqtt.CommunicatorFactoryImpl;
+import org.openbase.jul.communication.mqtt.DefaultCommunicatorConfig;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.rsb.com.NotInitializedRSBRemoteServer;
-import org.openbase.jul.communication.controller.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
-import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
@@ -41,8 +40,6 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.util.concurrent.Future;
 
@@ -51,28 +48,25 @@ import java.util.concurrent.Future;
  */
 public class AuthenticationRemote implements AuthenticationService, Manageable<Void>, VoidInitializable {
 
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserClientPair.getDefaultInstance()));
-    }
+    private final CommunicatorFactory factory = CommunicatorFactoryImpl.Companion.getInstance();
+    private final CommunicatorConfig defaultCommunicatorConfig = DefaultCommunicatorConfig.Companion.getInstance();
 
-    private RSBRemoteServer remoteServer;
+    private RPCClient rpcClient;
     private WatchDog serverWatchDog;
 
     public AuthenticationRemote() {
-        this.remoteServer = new NotInitializedRSBRemoteServer();
+        this.rpcClient = null;
     }
 
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(
-                    ScopeTransformer.transform(JPService.getProperty(JPAuthenticationScope.class).getValue()),
-                    RSBSharedConnectionConfig.getParticipantConfig());
+            rpcClient = factory.createRPCClient(
+                JPService.getProperty(JPAuthenticationScope.class).getValue(),
+                defaultCommunicatorConfig
+            );
 
-            serverWatchDog = new WatchDog(remoteServer, "AuthenticatorWatchDog");
+            serverWatchDog = new WatchDog(rpcClient, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -90,7 +84,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
 
     @Override
     public boolean isActive() {
-        return remoteServer.isActive();
+        return rpcClient.isActive();
     }
 
     public void waitForActivation() throws CouldNotPerformException, InterruptedException {
@@ -110,7 +104,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(final UserClientPair userClientPair) {
-        return RPCHelper.callRemoteServerMethod(userClientPair, remoteServer, TicketSessionKeyWrapper.class);
+        return RPCUtils.callRemoteServerMethod(userClientPair, rpcClient, TicketSessionKeyWrapper.class);
     }
 
     /**
@@ -122,7 +116,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<TicketSessionKeyWrapper> requestClientServerTicket(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-        return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketSessionKeyWrapper.class);
+        return RPCUtils.callRemoteServerMethod(ticketAuthenticatorWrapper, rpcClient, TicketSessionKeyWrapper.class);
     }
 
     /**
@@ -134,7 +128,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-        return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketAuthenticatorWrapper.class);
+        return RPCUtils.callRemoteServerMethod(ticketAuthenticatorWrapper, rpcClient, TicketAuthenticatorWrapper.class);
     }
 
     /**
@@ -146,7 +140,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<AuthenticatedValue> changeCredentials(final AuthenticatedValue authenticatedValue) {
-        return RPCHelper.callRemoteServerMethod(authenticatedValue, remoteServer, AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(authenticatedValue, rpcClient, AuthenticatedValue.class);
     }
 
     /**
@@ -158,7 +152,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<AuthenticatedValue> register(final AuthenticatedValue authenticatedValue) {
-        return RPCHelper.callRemoteServerMethod(authenticatedValue, remoteServer, AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(authenticatedValue, rpcClient, AuthenticatedValue.class);
     }
 
     /**
@@ -170,7 +164,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<AuthenticatedValue> removeUser(final AuthenticatedValue authenticatedValue) {
-        return RPCHelper.callRemoteServerMethod(authenticatedValue, remoteServer, AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(authenticatedValue, rpcClient, AuthenticatedValue.class);
     }
 
     /**
@@ -182,7 +176,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<AuthenticatedValue> setAdministrator(final AuthenticatedValue AuthenticatedValue) {
-        return RPCHelper.callRemoteServerMethod(AuthenticatedValue, remoteServer, AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(AuthenticatedValue, rpcClient, AuthenticatedValue.class);
     }
 
     /**
@@ -194,7 +188,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<AuthenticatedValue> requestServiceServerSecretKey(final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-        return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(ticketAuthenticatorWrapper, rpcClient, AuthenticatedValue.class);
     }
 
     /**
@@ -206,7 +200,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<Boolean> isAdmin(final String userId) {
-        return RPCHelper.callRemoteServerMethod(userId, remoteServer, Boolean.class);
+        return RPCUtils.callRemoteServerMethod(userId, rpcClient, Boolean.class);
     }
 
     /**
@@ -218,6 +212,6 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
      */
     @Override
     public Future<Boolean> hasUser(final String userOrClientId) {
-        return RPCHelper.callRemoteServerMethod(userOrClientId, remoteServer, Boolean.class);
+        return RPCUtils.callRemoteServerMethod(userOrClientId, rpcClient, Boolean.class);
     }
 }

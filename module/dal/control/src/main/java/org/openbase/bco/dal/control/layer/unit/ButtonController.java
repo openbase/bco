@@ -28,11 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Timeout;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState.State;
@@ -46,11 +42,6 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
     public final static String META_CONFIG_AUTO_RESET_BUTTON_STATE = "AUTO_RESET_BUTTON_STATE";
 
     public static final long DEAULT_TRIGGER_TIMEOUT = 300;
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
-    }
 
     private ButtonState buttonDataToReset;
 

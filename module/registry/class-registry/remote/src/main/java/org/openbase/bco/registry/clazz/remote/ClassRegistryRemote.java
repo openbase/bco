@@ -30,17 +30,15 @@ import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPReadOnly;
+import org.openbase.jul.communication.controller.RPCUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
 import org.openbase.type.domotic.registry.ClassRegistryDataType.ClassRegistryData;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
@@ -54,15 +52,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryData> implements ClassRegistry, RegistryRemote<ClassRegistryData>, DataProvider<ClassRegistryData> {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TransactionValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClassRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GatewayClass.getDefaultInstance()));
-    }
 
     private final SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> agentClassRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, AppClass, AppClass.Builder> appClassRemoteRegistry;
@@ -219,7 +208,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> registerDeviceClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -270,7 +259,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> updateDeviceClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -287,7 +276,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> removeDeviceClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -353,7 +342,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> registerAgentClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -404,7 +393,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> updateAgentClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -421,7 +410,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> removeAgentClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -499,7 +488,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> registerAppClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -550,7 +539,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> updateAppClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -567,7 +556,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> removeAppClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -660,7 +649,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> registerGatewayClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -711,7 +700,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> updateGatewayClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -728,7 +717,7 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
 
     @Override
     public Future<TransactionValue> removeGatewayClassVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**

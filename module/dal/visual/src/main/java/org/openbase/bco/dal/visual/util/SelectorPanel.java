@@ -28,7 +28,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -629,7 +628,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 public Void call() {
                     try {
                         scopeTextField.setForeground(Color.BLACK);
-                        Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
+                        Scope scope = ScopeProcessor.generateScope(scopeTextField.getText());
                         unitConfigObservable.notifyObservers(Registries.getUnitRegistry().getUnitConfigByScope(scope));
                         scopeTextField.setText(ScopeProcessor.generateStringRep(unitConfigObservable.getValue().getScope()));
                     } catch (CouldNotPerformException ex) {
@@ -679,7 +678,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         String text = scopeTextField.getText().toLowerCase();
 
         try {
-            Scope scope = ScopeTransformer.transform(new rsb.Scope(text));
+            Scope scope = ScopeProcessor.generateScope(text);
             Registries.getUnitRegistry().getUnitConfigByScope(scope);
             validScope = true;
         } catch (CouldNotPerformException | IllegalArgumentException | NullPointerException ex) {

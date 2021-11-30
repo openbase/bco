@@ -25,9 +25,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 
 /**
@@ -35,11 +32,6 @@ import org.openbase.type.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerSwitchController extends AbstractDALUnitController<PowerSwitchData, PowerSwitchData.Builder> implements PowerSwitch {
-    
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerSwitchData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-    }
     
     public PowerSwitchController(final HostUnitController hostUnitController, final PowerSwitchData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

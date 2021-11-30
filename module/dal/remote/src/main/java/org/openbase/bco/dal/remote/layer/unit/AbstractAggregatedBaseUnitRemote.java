@@ -33,12 +33,12 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.layer.service.ServiceRemoteFactoryImpl;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.communication.controller.RPCUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -156,7 +156,7 @@ public abstract class AbstractAggregatedBaseUnitRemote<D extends Message> extend
             if (!isServiceAggregated(serviceType)) {
                 return super.applyActionAuthenticated(authenticatedValue);
             }
-            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+            return RPCUtils.callRemoteServerMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(AuthenticatedValue.class, ex);
         }

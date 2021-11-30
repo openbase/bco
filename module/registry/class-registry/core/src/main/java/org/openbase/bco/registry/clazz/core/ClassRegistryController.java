@@ -9,17 +9,14 @@ import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.communication.controller.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
 import org.openbase.type.domotic.registry.ClassRegistryDataType.ClassRegistryData;
 import org.openbase.type.domotic.unit.agent.AgentClassType.AgentClass;
@@ -55,15 +52,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ClassRegistryController extends AbstractRegistryController<ClassRegistryData, ClassRegistryData.Builder> implements ClassRegistry, DataProvider<ClassRegistryData>, Shutdownable {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TransactionValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClassRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(GatewayClass.getDefaultInstance()));
-    }
 
     private ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, ClassRegistryData.Builder> agentClassRegistry;
     private ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, ClassRegistryData.Builder> appClassRegistry;
@@ -171,9 +159,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
-        RPCHelper.registerInterface(ClassRegistry.class, this, server);
+        server.registerMethods(ClassRegistry.class, this);
     }
 
     /**

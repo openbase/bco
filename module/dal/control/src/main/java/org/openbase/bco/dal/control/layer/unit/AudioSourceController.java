@@ -23,10 +23,7 @@ package org.openbase.bco.dal.control.layer.unit;
  */
 import org.openbase.bco.dal.lib.layer.unit.AudioSource;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
-import org.openbase.bco.dal.lib.layer.unit.VideoRgbSource;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.dal.AudioSourceDataType.AudioSourceData;
 
 /**
@@ -35,9 +32,6 @@ import org.openbase.type.domotic.unit.dal.AudioSourceDataType.AudioSourceData;
  */
 public class AudioSourceController extends AbstractDALUnitController<AudioSourceData, AudioSourceData.Builder> implements AudioSource {
 
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AudioSourceData.getDefaultInstance()));
-    }
 
     public AudioSourceController(final HostUnitController hostUnitController, AudioSourceData.Builder builder) throws CouldNotPerformException {
         super(hostUnitController, builder);

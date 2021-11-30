@@ -46,6 +46,6 @@ public class JPAuthenticationScope extends JPScope {
 
     @Override
     public String getDescription() {
-        return "Setup the authentication scope which is used for the rsb communication.";
+        return "Setup the authentication scope which is used for the communication.";
     }
 }

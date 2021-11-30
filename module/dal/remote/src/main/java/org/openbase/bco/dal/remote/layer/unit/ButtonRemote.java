@@ -23,9 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.Button;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
 
 /**
@@ -33,11 +30,6 @@ import org.openbase.type.domotic.unit.dal.ButtonDataType.ButtonData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ButtonRemote extends AbstractUnitRemote<ButtonData> implements Button {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
-    }
 
     public ButtonRemote() {
         super(ButtonData.class);

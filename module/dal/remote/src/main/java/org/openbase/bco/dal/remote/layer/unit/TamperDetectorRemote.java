@@ -23,20 +23,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TamperDetectorRemote extends AbstractUnitRemote<TamperDetectorData> implements TamperDetector {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperDetectorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
-    }
 
     public TamperDetectorRemote() {
         super(TamperDetectorData.class);

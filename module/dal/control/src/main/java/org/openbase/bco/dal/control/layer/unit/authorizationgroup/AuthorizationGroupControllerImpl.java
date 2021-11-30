@@ -25,15 +25,9 @@ package org.openbase.bco.dal.control.layer.unit.authorizationgroup;
 import org.openbase.bco.dal.control.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroupController;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
 public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController<AuthorizationGroupData, AuthorizationGroupData.Builder> implements AuthorizationGroupController {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupData.getDefaultInstance()));
-    }
 
     public AuthorizationGroupControllerImpl() throws InstantiationException {
         super(AuthorizationGroupData.newBuilder());

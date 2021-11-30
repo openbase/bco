@@ -7,13 +7,12 @@ plugins {
 }
 
 dependencies {
-    api("org.openbase:jul.storage:2.0-SNAPSHOT")
-    api("org.openbase:jul.pattern.launch:2.0-SNAPSHOT")
+    api("org.openbase:jul.storage:_")
+    api("org.openbase:jul.pattern.launch:_")
     api(project(":bco.authentication.lib"))
-    api("org.openbase:jul.extension.type.util:2.0-SNAPSHOT")
-    api("org.openbase:jul.communication.controller:2.0-SNAPSHOT")
-    api("org.openbase:jul.exception:2.0-SNAPSHOT")
-    api("org.openbase:jul.extension.rsb.com:2.0-SNAPSHOT")
+    api("org.openbase:jul.extension.type.util:_")
+    api("org.openbase:jul.communication.controller:_")
+    api("org.openbase:jul.exception:_")
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
     testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }

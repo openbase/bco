@@ -9,6 +9,7 @@ plugins {
 dependencies {
     api(project(":bco.dal.control"))
     api("io.socket:socket.io-client:1.0.0")
+    testImplementation(project(":bco.authentication.test"))
 }
 
 description = "BCO Cloud Connector"

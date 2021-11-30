@@ -25,9 +25,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import org.openbase.type.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
 
 /**
@@ -35,11 +32,6 @@ import org.openbase.type.domotic.unit.dal.PowerConsumptionSensorDataType.PowerCo
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerConsumptionSensorController extends AbstractDALUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensor {
-    
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
-    }
     
     public PowerConsumptionSensorController(final HostUnitController hostUnitController, final PowerConsumptionSensorData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

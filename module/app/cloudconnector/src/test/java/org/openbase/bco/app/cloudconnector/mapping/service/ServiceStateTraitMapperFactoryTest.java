@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Trait;
 import org.openbase.bco.app.cloudconnector.mapping.unit.UnitTypeMapping;
+import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -43,7 +44,7 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ServiceStateTraitMapperFactoryTest {
+public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceStateTraitMapperFactoryTest.class);
 

@@ -25,25 +25,17 @@ package org.openbase.bco.dal.remote.layer.unit;
 import com.google.protobuf.Message;
 import org.junit.*;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
-import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 
 public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
-    }
 
     /**
      * Test of getBatteryLevel method, of class BatteryRemote.

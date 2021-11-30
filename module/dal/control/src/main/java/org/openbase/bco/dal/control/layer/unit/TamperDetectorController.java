@@ -25,20 +25,12 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.TamperDetector;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TamperDetectorController extends AbstractDALUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetector {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperDetectorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
-    }
 
     public TamperDetectorController(final HostUnitController hostUnitController, final TamperDetectorData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

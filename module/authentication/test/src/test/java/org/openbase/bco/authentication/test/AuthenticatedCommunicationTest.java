@@ -10,35 +10,32 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.junit.jupiter.api.BeforeAll;
+import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedControllerServer;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteClient;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsType;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
-import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData.Builder;
@@ -46,6 +43,9 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
+import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 public class AuthenticatedCommunicationTest extends AuthenticationTest {
@@ -57,15 +57,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
 
-    private AuthenticatedControllerServer communicationService;
-    private AuthenticatedRemoteClient remoteService;
-
-    public AuthenticatedCommunicationTest() {
-
-    }
-
+    @BeforeAll
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         AuthenticationTest.setUpClass();
 
         // register a user from which a ticket can be validated
@@ -76,27 +70,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         LoginCredentialsType.LoginCredentials.Builder loginCredentials = LoginCredentialsType.LoginCredentials.newBuilder();
         loginCredentials.setId(USER_ID);
         loginCredentials.setSymmetric(true);
-        loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+        loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticationController.getInitialPassword())));
         AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        communicationService = new AuthenticatedControllerServer();
-        remoteService = new AuthenticatedRemoteClient();
-
-        communicationService.init(SCOPE);
-        remoteService.init(SCOPE);
-
-        communicationService.activate();
-        remoteService.activate();
-    }
-
-    @After
-    public void tearDown() {
-        remoteService.shutdown();
-        communicationService.shutdown();
     }
 
     /**
@@ -104,63 +80,86 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 20000)
+    @Test(timeout = 10000)
     public void testCommunication() throws Exception {
-        UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
+        final UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
         otherAgentConfig.setId("OtherAgent");
         otherAgentConfig.setUnitType(UnitType.AGENT);
         Permission.Builder otherPermission = otherAgentConfig.getPermissionConfigBuilder().getOtherPermissionBuilder();
         otherPermission.setRead(true).setWrite(false).setAccess(true);
 
-        UnitConfig.Builder userAgentConfig = UnitConfig.newBuilder();
+        final UnitConfig.Builder userAgentConfig = UnitConfig.newBuilder();
         userAgentConfig.setId("UserAgent");
         userAgentConfig.setUnitType(UnitType.AGENT);
         userAgentConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false).setAccess(false).setWrite(false);
         userAgentConfig.getPermissionConfigBuilder().getOwnerPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
         userAgentConfig.getPermissionConfigBuilder().setOwnerId(USER_ID);
 
+        final List<UnitConfig> expectedAgentsLoggedOut = List.of(otherAgentConfig.build());
+        final List<UnitConfig> expectedAgentsLoggedIn = List.of(otherAgentConfig.build(), userAgentConfig.build());
+
+        final UnitRegistryData.Builder dataBuilder = UnitRegistryData.newBuilder()
+                .addAgentUnitConfig(otherAgentConfig)
+                .addAgentUnitConfig(userAgentConfig);
+        AuthenticatedControllerServerTestImpl communicationService = new AuthenticatedControllerServerTestImpl(dataBuilder);
+        communicationService.init(SCOPE);
+        communicationService.activate();
+
+        AuthenticatedRemoteClientTestImpl remoteService = new AuthenticatedRemoteClientTestImpl();
+        remoteService.init(SCOPE);
+        remoteService.activate();
+
         LOGGER.info("Start communication test");
 
-        try (ClosableDataBuilder<Builder> dataBuilder = communicationService.getDataBuilderInterruptible(this)) {
-            dataBuilder.getInternalBuilder().addAgentUnitConfig(otherAgentConfig);
-            dataBuilder.getInternalBuilder().addAgentUnitConfig(userAgentConfig);
-        }
-
-
         LOGGER.info("Synchronize remote...");
-        remoteService.requestData().get();
-        LOGGER.info("Synchronizing remote finished!");
+        UnitRegistryData data = remoteService.requestData().get();
+        LOGGER.info("Synchronizing remote finished! " + data.getAgentUnitConfigCount() + " agents");
 
-        assertTrue(remoteService.getData().getAgentUnitConfigList().contains(otherAgentConfig.build()));
-        assertTrue(!remoteService.getData().getAgentUnitConfigList().contains(userAgentConfig.build()));
+        assertEquals(
+                "Without being logged in only the 'OtherAgent' should be visible by the remote.",
+                expectedAgentsLoggedOut,
+                data.getAgentUnitConfigList()
+        );
 
         LOGGER.info("Login!");
         SessionManager.getInstance().loginUser(USER_ID, USER_PASSWORD, false);
         LOGGER.info("Synchronize remote...");
-        remoteService.requestData().get();
-        LOGGER.info("Synchronizing remote finished!");
+        data = remoteService.requestData().get();
+        LOGGER.info("Synchronizing remote finished! " + data.getAgentUnitConfigCount() + " agents");
 
+        assertEquals(
+                "Being logged in both agens should be visible by the remote.",
+                expectedAgentsLoggedIn,
+                data.getAgentUnitConfigList()
+        );
+        //expectedAgents.add(userAgentConfig.build());
         assertTrue(remoteService.getData().getAgentUnitConfigList().contains(otherAgentConfig.build()));
         assertTrue(remoteService.getData().getAgentUnitConfigList().contains(userAgentConfig.build()));
 
         SessionManager.getInstance().logout();
         LOGGER.info("Synchronize remote...");
-        remoteService.requestData().get();
-        LOGGER.info("Synchronizing remote finished!");
+        data = remoteService.requestData().get();
+        LOGGER.info("Synchronizing remote finished! " + data.getAgentUnitConfigCount() + " agents");
 
-        assertTrue(remoteService.getData().getAgentUnitConfigList().contains(otherAgentConfig.build()));
-        assertTrue(!remoteService.getData().getAgentUnitConfigList().contains(userAgentConfig.build()));
+        assertEquals(
+                "Only 'OtherAgent' should be visible again after logging out.",
+                expectedAgentsLoggedOut,
+                data.getAgentUnitConfigList()
+        );
+
+        remoteService.shutdown();
+        communicationService.shutdown();
     }
 
-    private class AuthenticatedControllerServer extends AbstractAuthenticatedControllerServer<UnitRegistryData, Builder> {
+    private static class AuthenticatedControllerServerTestImpl extends AbstractAuthenticatedControllerServer<UnitRegistryData, Builder> {
 
         /**
          * Create a communication service.
          *
          * @throws InstantiationException if the creation fails
          */
-        public AuthenticatedControllerServer() throws InstantiationException {
-            super(UnitRegistryData.newBuilder());
+        public AuthenticatedControllerServerTestImpl(UnitRegistryData.Builder dataBuilder) throws InstantiationException {
+            super(dataBuilder);
         }
 
         @Override
@@ -173,9 +172,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
                 }
             }
             if (userClientPair.getClientId().isEmpty() && userClientPair.getUserId().isEmpty()) {
-                assertTrue(dataBuilder.build().getAgentUnitConfigCount() < 2);
+                assertTrue("Other permissions should only show the OtherAgent", dataBuilder.build().getAgentUnitConfigCount() < 2);
             } else {
-                assertTrue(dataBuilder.build().getAgentUnitConfigCount() == 2);
+                assertEquals("For a logged in user both agents should be visible", 2, dataBuilder.build().getAgentUnitConfigCount());
             }
             return dataBuilder.build();
         }
@@ -189,22 +188,11 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
             return unitConfig.getPermissionConfig().getOtherPermission().getRead();
         }
 
-        @Override
-        public UnitRegistryData requestStatus() throws CouldNotPerformException {
-            return super.requestStatus();
-        }
-
-        @Override
-        public AuthenticatedValue requestDataAuthenticated(TicketAuthenticatorWrapper ticket) throws CouldNotPerformException {
-            return super.requestDataAuthenticated(ticket);
-        }
-
-
     }
 
-    private class AuthenticatedRemoteClient extends AbstractAuthenticatedRemoteClient<UnitRegistryData> {
+    private static class AuthenticatedRemoteClientTestImpl extends AbstractAuthenticatedRemoteClient<UnitRegistryData> {
 
-        public AuthenticatedRemoteClient() {
+        public AuthenticatedRemoteClientTestImpl() {
             super(UnitRegistryData.class);
         }
     }

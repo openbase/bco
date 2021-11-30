@@ -23,9 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
-import org.openbase.jul.exception.CouldNotPerformException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
@@ -37,11 +34,6 @@ import java.util.concurrent.Future;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class RollerShutterRemote extends AbstractUnitRemote<RollerShutterData> implements RollerShutter {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollerShutterData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindState.getDefaultInstance()));
-    }
 
     public RollerShutterRemote() {
         super(RollerShutterData.class);

@@ -25,9 +25,6 @@ package org.openbase.bco.dal.control.layer.unit;
 import org.openbase.bco.dal.lib.layer.unit.HostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 import org.openbase.jul.exception.InstantiationException;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 
 /**
@@ -35,11 +32,6 @@ import org.openbase.type.domotic.unit.dal.RollerShutterDataType.RollerShutterDat
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class RollerShutterController extends AbstractDALUnitController<RollerShutterData, RollerShutterData.Builder> implements RollerShutter {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollerShutterData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindState.getDefaultInstance()));
-    }
 
     public RollerShutterController(final HostUnitController hostUnitController, final RollerShutterData.Builder builder) throws InstantiationException {
         super(hostUnitController, builder);

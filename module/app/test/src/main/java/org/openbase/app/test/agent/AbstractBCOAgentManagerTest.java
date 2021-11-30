@@ -54,22 +54,6 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected UnitConfig agentConfig = null;
     protected AgentRemote agentRemote = null;
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-
-        // enable for debug purpose
-        //        JPService.registerProperty(JPDebugMode.class, true);
-        //        JPService.registerProperty(JPVerbose.class, true);
-        //        JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
-
-        BCOAppTest.setUpClass();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        BCOAppTest.tearDownClass();
-    }
-
     @Before
     public void setUp() throws Exception {
         try {

@@ -23,8 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.AudioSource;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.dal.AudioSourceDataType.AudioSourceData;
 
 /**
@@ -32,10 +30,6 @@ import org.openbase.type.domotic.unit.dal.AudioSourceDataType.AudioSourceData;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AudioSourceRemote extends AbstractUnitRemote<AudioSourceData> implements AudioSource {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AudioSourceData.getDefaultInstance()));
-    }
 
     public AudioSourceRemote() {
         super(AudioSourceData.class);

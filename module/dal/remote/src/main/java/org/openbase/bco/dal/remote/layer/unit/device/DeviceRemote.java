@@ -23,9 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit.device;
  */
 import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
@@ -33,11 +30,6 @@ import org.openbase.type.domotic.unit.device.DeviceDataType.DeviceData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRemote extends AbstractUnitRemote<DeviceData> implements Device {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
 
     public DeviceRemote() {
         super(DeviceData.class);

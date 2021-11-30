@@ -26,23 +26,19 @@ import com.google.protobuf.AbstractMessage;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedControllerServer;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.communication.controller.jp.JPScope;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.pattern.ChangeListener;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
-import org.openbase.jul.storage.registry.ConsistencyHandler;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.RegistryController;
+import org.openbase.jul.storage.registry.*;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
@@ -213,9 +209,9 @@ public abstract class AbstractRegistryController<M extends AbstractMessage & Ser
     }
 
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
-        RPCHelper.registerInterface(RegistryController.class, this, server);
+        server.registerMethods(RegistryService.class, this);
     }
 
     @Override

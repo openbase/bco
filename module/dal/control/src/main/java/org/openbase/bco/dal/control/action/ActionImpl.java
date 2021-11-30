@@ -464,16 +464,15 @@ public class ActionImpl implements SchedulableAction {
                     updateActionStateWhileHoldingWriteLock(State.CANCELED);
                 }
 
-                // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
-                try {
-                    unit.updateTransactionId();
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update transaction id", ex, LOGGER);
-                }
-
                 // notify transaction id change
                 try {
                     if (!unit.isDataBuilderWriteLockedByCurrentThread()) {
+                        // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
+                        try {
+                            unit.updateTransactionId();
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory("Could not update transaction id", ex, LOGGER);
+                        }
                         unit.notifyChange();
                     }
                 } catch (CouldNotPerformException ex) {

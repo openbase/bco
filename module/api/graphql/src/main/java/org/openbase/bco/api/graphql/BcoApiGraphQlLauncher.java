@@ -26,7 +26,8 @@ import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jul.extension.rsb.com.jp.*;
+import org.openbase.jul.communication.jp.JPComHost;
+import org.openbase.jul.communication.jp.JPComPort;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 public class BcoApiGraphQlLauncher extends AbstractLauncher<BcoApiGraphQlSpringLaunchable>  {
@@ -39,9 +40,8 @@ public class BcoApiGraphQlLauncher extends AbstractLauncher<BcoApiGraphQlSpringL
     protected void loadProperties() {
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
-        JPService.registerProperty(JPRSBHost.class);
-        JPService.registerProperty(JPRSBPort.class);
-        JPService.registerProperty(JPRSBTransport.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPComPort.class);
     }
 
     /**

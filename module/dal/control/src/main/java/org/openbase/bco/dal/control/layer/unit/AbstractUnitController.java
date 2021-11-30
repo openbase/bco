@@ -60,7 +60,8 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.communication.controller.RPCHelper;
+import org.openbase.jul.communication.controller.RPCUtils;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -70,8 +71,6 @@ import org.openbase.jul.extension.protobuf.BuilderSyncSetup.NotificationStrategy
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.iface.ScopeProvider;
 import org.openbase.jul.extension.type.processing.*;
 import org.openbase.jul.iface.TimedProcessable;
@@ -89,12 +88,10 @@ import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameterOrBuilder;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
-import org.openbase.type.domotic.action.SnapshotType;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.database.QueryType;
-import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -109,8 +106,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.timing.TimestampType.Timestamp;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 
 import java.io.Serializable;
 import java.util.*;
@@ -148,17 +143,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private static final String LOCK_CONSUMER_INDEX_LOOKUP = AbstractUnitController.class.getSimpleName() + ".getSchedulingIndex()";
     private static final String LOCK_CONSUMER_CANCEL_ACTION = AbstractUnitController.class.getSimpleName() + ".cancelAction(..)";
     private static final String LOCK_CONSUMER_EXTEND_ACTION = AbstractUnitController.class.getSimpleName() + ".extendAction(..)";
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
-
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AggregatedServiceState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Query.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RecordCollection.getDefaultInstance()));
-    }
 
     final BuilderSyncSetup<DB> builderSetup;
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
@@ -501,10 +485,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     }
 
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(final RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
 
-        RPCHelper.registerInterface(Unit.class, this, server);
+        server.registerMethods(Unit.class, this);
 
         // collect and register service interface methods via unit templates
         HashMap<String, ServiceDescription> serviceInterfaceMap = new HashMap<>();
@@ -554,7 +538,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     throw new CouldNotPerformException("Interface[" + serviceInterfaceClass.getName() + "] is not supported by " + this);
                 }
 
-                RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);
+                server.registerMethods((Class) serviceInterfaceClass, this);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
@@ -667,14 +651,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             // If this action was received unencrypted from a remote instance, its authority can not be guaranteed.
             // In this case we perform an unauthorized action.
             for (StackTraceElement stackTraceElement : Thread.currentThread().getStackTrace()) {
-                if (stackTraceElement.getClassName().equals(RPCHelper.class.getName())) {
-                    logger.info("incoming unauthorized action: " + builder.toString());
-
-                    // handle legacy case for UIs without authentication support.
-                    if (JPService.getValue(JPRSBLegacyMode.class, false)) {
-                        builder.getActionInitiatorBuilder().setInitiatorType(InitiatorType.HUMAN);
-                    }
-
+                if (stackTraceElement.getClassName().equals(RPCUtils.class.getName())) {
+                    logger.warn("incoming unauthorized action: " + builder.toString());
                     return applyUnauthorizedAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(builder).build());
                 }
             }

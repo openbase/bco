@@ -24,23 +24,13 @@ package org.openbase.bco.dal.remote.layer.unit.authorizationgroup;
 
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
-import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AuthorizationGroupRemote extends AbstractUnitRemote<AuthorizationGroupData> implements AuthorizationGroup {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
 
     public AuthorizationGroupRemote() {
         super(AuthorizationGroupData.class);

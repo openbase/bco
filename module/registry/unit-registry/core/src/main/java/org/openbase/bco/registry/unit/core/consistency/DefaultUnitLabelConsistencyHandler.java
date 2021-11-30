@@ -23,19 +23,15 @@ package org.openbase.bco.registry.unit.core.consistency;
  */
 
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.HashMap;
@@ -74,29 +70,6 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
 
         if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
             throw new NotAvailableException("unit.placement.locationId");
-        }
-
-        // only check that labels are unique per location (below) if in legacy mode
-        if (!JPService.getValue(JPRSBLegacyMode.class, false)) {
-            return;
-        }
-
-        // check if every label of this unit are unique for its location
-        for (Label.MapFieldEntry mapEntry : unitConfig.getLabel().getEntryList()) {
-            for (final String label : mapEntry.getValueList()) {
-                final String key = generateKey(label, mapEntry.getKey(), unitConfig);
-
-                if (unitMap.containsKey(key)) {
-                    final String typeName = StringProcessor.transformUpperCaseToPascalCase(unitConfig.getUnitType().name());
-                    throw new InvalidStateException(
-                            typeName + "[" + UnitConfigProcessor.getDefaultAlias(unitConfig, "?") + "] and " +
-                                    typeName + "[" + unitMap.get(key).getAlias(0) +
-                                    "] are registered with the same label according to the generated key[" +
-                                    key + "].");
-                }
-
-                unitMap.put(key, unitConfig);
-            }
         }
     }
 

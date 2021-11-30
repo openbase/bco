@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     api(project(":bco.registry.lib"))
-    api("org.openbase:jul.storage:2.0-SNAPSHOT")
+    api("org.openbase:jul.storage:_")
 }
 
 description = "BCO Registry Template Library"

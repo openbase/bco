@@ -25,16 +25,13 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.Session;
-import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.controller.ConfigurableRemote;
 import org.openbase.type.communication.ScopeType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import rsb.Scope;
 
 import java.util.concurrent.Future;
 
@@ -54,16 +51,6 @@ public interface UnitRemote<M extends Message> extends Unit<M>, ConfigurableRemo
      * @throws InterruptedException    is thrown in case the thread is externally interrupted.
      */
     void init(ScopeType.Scope scope) throws InitializationException, InterruptedException;
-
-    /**
-     * Method initializes this unit remote instance via it's remote controller scope.
-     *
-     * @param scope the scope which is used to reach the remote controller.
-     *
-     * @throws InitializationException is thrown in case the remote could not be initialized with the given scope.
-     * @throws InterruptedException    is thrown in case the thread is externally interrupted.
-     */
-    void init(Scope scope) throws InitializationException, InterruptedException;
 
     /**
      * Method initializes this unit remote instance via the given id.

@@ -31,12 +31,11 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.app.AbstractAppController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.communication.controller.RPCHelper;
+import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -91,11 +90,11 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
+    public void registerMethods(RPCServer server) throws CouldNotPerformException {
         super.registerMethods(server);
 
-        // additionally register method for connecting to cloud
-        RPCHelper.registerInterface(CloudConnector.class, this, server);
+        // additionally, register method for connecting to cloud
+        server.registerMethods(CloudConnector.class, this);
     }
 
     private void createAuthenticationToken() throws CouldNotPerformException, InterruptedException {

@@ -30,7 +30,9 @@ import org.openbase.bco.device.openhab.registry.OpenHABConfigSynchronizerLaunche
 import org.openbase.bco.device.openhab.sitemap.OpenHABSitemapSynchronizerLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jul.extension.rsb.com.jp.*;
+import org.openbase.jul.communication.jp.JPComHost;
+import org.openbase.jul.communication.jp.JPComLegacyMode;
+import org.openbase.jul.communication.jp.JPComPort;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDeviceManager> {
@@ -44,11 +46,9 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
         JPService.registerProperty(JPOpenHABURI.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
-        JPService.registerProperty(JPRSBHost.class);
-        JPService.registerProperty(JPRSBPort.class);
-        JPService.registerProperty(JPRSBLegacyMode.class);
-        JPService.registerProperty(JPRSBTransport.class);
-        JPService.registerProperty(JPRSBThreadPooling.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPComPort.class);
+        JPService.registerProperty(JPComLegacyMode.class);
     }
 
     /**

@@ -48,7 +48,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote<Message>> ext
     private RS unitRemote;
 
     /**
-     * Creates new form RSBViewService
+     * Creates new form UnitRemoteView
      */
     public UnitRemoteView() {
         this.initComponents();

@@ -33,10 +33,10 @@ import org.openbase.bco.dal.remote.layer.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.communication.controller.RPCRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.RSBRemote;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -130,7 +130,7 @@ public class BCOInterfacePrinter {
 
         try {
             System.out.println("==================================================");
-            System.out.println("BaseCubeOne - Registry (Service Discovery) RSB API ");
+            System.out.println("BaseCubeOne - Registry (Service Discovery) API ");
             System.out.println("==================================================");
             System.out.println();
             System.out.println("General Information:");
@@ -138,10 +138,10 @@ public class BCOInterfacePrinter {
             System.out.println(AnsiColor.colorize("    Registry Scope Structure:", SUB_HEADLINE));
             System.out.println(colorize("        / registry / <RegistryName> / <CommunicationPattern> : <RegistryDataType>"));
             System.out.println();
-            System.out.println(AnsiColor.colorize("    Each registry publishes status changes via a dedecated rsb informer on the following status scope:", SUB_HEADLINE));
+            System.out.println(AnsiColor.colorize("    Each registry publishes status changes via a dedicated publisher on the following status scope:", SUB_HEADLINE));
             System.out.println(colorize("        / <RegistryScope> / status"));
             System.out.println();
-            System.out.println(AnsiColor.colorize("    Each registry provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:", SUB_HEADLINE));
+            System.out.println(AnsiColor.colorize("    Each registry provides a set of remote procedure call (rpc) methods accessible by their control scope:", SUB_HEADLINE));
             System.out.println(colorize("        / <RegistryScope> / ctrl"));
             System.out.println();
             System.out.println();
@@ -167,7 +167,7 @@ public class BCOInterfacePrinter {
 
                 System.out.println("    " + AnsiColor.colorize(registry.getName(), UNIT_TYPE_COLOR) + colorize(" : " + unitDataType));
 
-                final String scope = ScopeProcessor.generateStringRep(((RSBRemote) registry).getScope());
+                final String scope = ScopeProcessor.generateStringRep(((RPCRemote) registry).getScope());
                 for (final Method method : detectRPCMethods(registry)) {
                     final String params = detectParameterType(method);
                     final String returnType = detectReturnType(method);
@@ -180,7 +180,7 @@ public class BCOInterfacePrinter {
             Registries.waitForData();
             final ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
             System.out.println("===========================================================");
-            System.out.println(colorize("BaseCubeOne - DAL (Domotic Abstract Layer) RSB API"));
+            System.out.println(colorize("BaseCubeOne - DAL (Domotic Abstract Layer) API"));
             System.out.println("===========================================================");
             System.out.println();
             System.out.println("General Information:");
@@ -188,10 +188,10 @@ public class BCOInterfacePrinter {
             System.out.println(AnsiColor.colorize("    Unit Scope Structure:", SUB_HEADLINE));
             System.out.println(colorize("        / <LocationScope> / <UnitType> / <UnitLabel> / <CommunicationPattern> : <UnitDataType>"));
             System.out.println();
-            System.out.println(AnsiColor.colorize("    Each unit publishes status changes via a dedecated rsb informer on the following status scope:", SUB_HEADLINE));
+            System.out.println(AnsiColor.colorize("    Each unit publishes status changes via a dedicated publisher on the following status scope:", SUB_HEADLINE));
             System.out.println(colorize("        / <UnitScope> / status"));
             System.out.println();
-            System.out.println(AnsiColor.colorize("    Each unit provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:", SUB_HEADLINE));
+            System.out.println(AnsiColor.colorize("    Each unit provides a set of remote procedure call (rpc) methods accessible by there control scope:", SUB_HEADLINE));
             System.out.println(colorize("        / <UnitScope> / ctrl"));
             System.out.println();
             System.out.println();
@@ -237,7 +237,7 @@ public class BCOInterfacePrinter {
                     }
                     System.out.println();
                 } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extract rsb interface of :" + unitType.name()), System.err);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extract interface of :" + unitType.name()), System.err);
                 }
             }
         } catch (InterruptedException ex) {

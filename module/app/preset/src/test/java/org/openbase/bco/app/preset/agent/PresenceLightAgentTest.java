@@ -96,9 +96,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 30000)
-    public void testPreseceLightAgent() throws Exception {
-        System.out.println("testPreseceLightAgent");
-
+    public void testPresenceLightAgent() throws Exception {
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
         ColorableLightRemote colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT).get(0);
         MotionDetectorRemote motionDetectorRemote = locationRemote.getUnits(UnitType.MOTION_DETECTOR, true, Units.MOTION_DETECTOR).get(0);

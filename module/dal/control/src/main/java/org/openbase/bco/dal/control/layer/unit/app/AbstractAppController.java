@@ -33,9 +33,6 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
 import org.openbase.type.domotic.unit.app.AppDataType.AppData.Builder;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.app.AppDataType.AppData;
 
@@ -47,11 +44,6 @@ import java.util.List;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public abstract class AbstractAppController extends AbstractAuthorizedBaseUnitController<AppData, Builder> implements AppController {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
 
     private final OperationServiceFactory operationServiceFactory;
     private final UnitDataSourceFactory unitDataSourceFactory;

@@ -30,14 +30,12 @@ import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPReadOnly;
+import org.openbase.jul.communication.controller.RPCUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.communication.controller.RPCHelper;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
 import org.openbase.jul.pattern.controller.Remote;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
 import org.openbase.type.domotic.communication.TransactionValueType.TransactionValue;
@@ -51,12 +49,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegistryData> implements ActivityRegistry, Remote<ActivityRegistryData> {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TransactionValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityRegistryData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityConfig.getDefaultInstance()));
-    }
 
     private final SynchronizedRemoteRegistry<String, ActivityConfig, ActivityConfig.Builder> activityConfigRemoteRegistry;
 
@@ -96,7 +88,7 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
 
     @Override
     public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -112,7 +104,7 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
 
     @Override
     public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**
@@ -128,7 +120,7 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
 
     @Override
     public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(transactionValue, this, TransactionValue.class), this);
     }
 
     /**

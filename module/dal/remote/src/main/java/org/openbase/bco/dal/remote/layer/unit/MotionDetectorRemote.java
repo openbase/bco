@@ -23,20 +23,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData> implements MotionDetector {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionDetectorData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
-    }
 
     public MotionDetectorRemote() {
         super(MotionDetectorData.class);

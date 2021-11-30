@@ -23,10 +23,6 @@ package org.openbase.bco.dal.remote.layer.unit.connection;
  */
 import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import org.openbase.type.domotic.state.ContactStateType.ContactState;
-import org.openbase.type.domotic.state.HandleStateType.HandleState;
 import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
@@ -34,12 +30,6 @@ import org.openbase.type.domotic.unit.connection.ConnectionDataType.ConnectionDa
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ConnectionRemote extends AbstractUnitRemote<ConnectionData> implements Connection {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
-    }
 
     public ConnectionRemote() {
         super(ConnectionData.class);

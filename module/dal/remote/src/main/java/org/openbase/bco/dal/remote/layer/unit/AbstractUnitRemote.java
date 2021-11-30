@@ -38,12 +38,11 @@ import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.communication.controller.RPCHelper;
+import org.openbase.jul.communication.controller.RPCUtils;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
@@ -57,7 +56,6 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.database.QueryType;
-import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -71,10 +69,6 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.slf4j.LoggerFactory;
-import rsb.Scope;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -88,15 +82,6 @@ import java.util.concurrent.TimeUnit;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AggregatedServiceState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Query.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RecordCollection.getDefaultInstance()));
-    }
 
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
@@ -202,23 +187,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     public void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
             init(Registries.getUnitRegistry().getUnitConfigByScope(scope));
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param scope
-     *
-     * @throws org.openbase.jul.exception.InitializationException
-     * @throws java.lang.InterruptedException
-     */
-    @Override
-    public void init(final Scope scope) throws InitializationException, InterruptedException {
-        try {
-            this.init(ScopeTransformer.transform(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -614,7 +582,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     @Override
     public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(authenticatedValue, this, AuthenticatedValue.class), this);
     }
 
     @Override
@@ -667,7 +635,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) {
-        return new TransactionSynchronizationFuture<>(RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class), this);
+        return new TransactionSynchronizationFuture<>(RPCUtils.callRemoteServerMethod(authenticatedSnapshot, this, AuthenticatedValue.class), this);
     }
 
     @Override
@@ -725,7 +693,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
 
     public Future<AuthenticatedValue> queryAggregatedServiceStateAuthenticated(final AuthenticatedValue databaseQuery) {
-        return RPCHelper.callRemoteMethod(databaseQuery, this, AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(databaseQuery, this, AuthenticatedValue.class);
     }
 
     @Override
@@ -735,7 +703,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     }
 
     public Future<AuthenticatedValue> queryRecordAuthenticated(final AuthenticatedValue databaseQuery) {
-        return RPCHelper.callRemoteMethod(databaseQuery, this, AuthenticatedValue.class);
+        return RPCUtils.callRemoteServerMethod(databaseQuery, this, AuthenticatedValue.class);
     }
 
     @Override

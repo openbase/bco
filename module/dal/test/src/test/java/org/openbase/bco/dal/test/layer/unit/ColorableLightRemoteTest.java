@@ -24,25 +24,20 @@ package org.openbase.bco.dal.test.layer.unit;
 
 import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
-import org.openbase.bco.dal.test.layer.unit.device.AbstractBCODeviceManagerTest;
+import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jps.preset.JPLogLevel;
-import org.openbase.jps.preset.JPLogLevel.LogLevel;
+import org.openbase.jul.communication.jp.JPComLegacyMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
@@ -76,7 +71,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
 
         // legacy mode needed for testLegacyRemoteCallGetColor() test.
-        JPService.registerProperty(JPRSBLegacyMode.class, true);
+        JPService.registerProperty(JPComLegacyMode.class, true);
 
         // enable to get debug logging
         // JPService.registerProperty(JPDebugMode.class, true);
@@ -84,6 +79,13 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
         AbstractBCODeviceManagerTest.setUpClass();
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Throwable {
+        AbstractBCODeviceManagerTest.tearDownClass();
+
+        JPService.registerProperty(JPComLegacyMode.class, false);
     }
 
     @Before
@@ -114,6 +116,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if an error occurs
      */
+    @Ignore
     @Test(timeout = 15000)
     public void testControllingViaLightRemote() throws Exception {
         System.out.println("testControllingViaLightRemote");
@@ -228,7 +231,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(61).setSaturation(0.23).setBrightness(0.37).build();
         final RemoteAction action = waitForExecution(colorableLightRemote.setColor(color));
-        ColorState colorResult = (ColorState) colorableLightRemote.callMethodAsync("getColorState").get();
+        ColorState colorResult = colorableLightRemote.callMethodAsync("getColorState", ColorState.class).get();
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorResult.getColor().getHsbColor());
 
         // cancel manual action

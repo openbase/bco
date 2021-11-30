@@ -23,18 +23,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import org.openbase.bco.dal.lib.layer.unit.VideoDepthSource;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
 import org.openbase.type.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSourceData;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class VideoDepthSourceRemote extends AbstractUnitRemote<VideoDepthSourceData> implements VideoDepthSource {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(VideoDepthSourceData.getDefaultInstance()));
-    }
 
     public VideoDepthSourceRemote() {
         super(VideoDepthSourceData.class);

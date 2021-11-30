@@ -37,10 +37,10 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorController> {
+public class AuthenticatorLauncher extends AbstractLauncher<AuthenticationController> {
 
     public AuthenticatorLauncher() throws InstantiationException {
-        super(AuthenticationService.class, AuthenticatorController.class);
+        super(AuthenticationService.class, AuthenticationController.class);
     }
 
     @Override

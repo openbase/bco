@@ -26,8 +26,8 @@ import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.communication.jp.JPComLegacyMode;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.com.jp.JPRSBLegacyMode;
 import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -37,7 +37,7 @@ public class GenericUnitScopeGenerator implements UnitScopeGenerator {
 
     public synchronized static UnitScopeGenerator getInstance() {
         if (instance == null) {
-            if (JPService.getValue(JPRSBLegacyMode.class, false)) {
+            if (JPService.getValue(JPComLegacyMode.class, false)) {
                 instance = new UnitLabelScopeGenerator();
             } else {
                 instance = new UnitIdScopeGenerator();

@@ -94,8 +94,8 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
             }
         }
 
-        String deviceScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + "device" + "/"+motionSensorConfig.getAlias(0).toLowerCase()+"/";
-        String expectedUnitScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + batteryUnitConfig.getAlias(0).toLowerCase() + "/";
+        String deviceScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + "device" + "/"+motionSensorConfig.getAlias(0).toLowerCase();
+        String expectedUnitScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + batteryUnitConfig.getAlias(0).toLowerCase();
 
         assertEquals("Device scope is not set properly", deviceScope, ScopeProcessor.generateStringRep(motionSensorConfig.getScope()));
         assertEquals("Device has not the correct number of units", 1, motionSensorConfig.getDeviceConfig().getUnitIdCount());
