@@ -68,7 +68,8 @@ ENV \
     BCO_LOGS="/home/bco/data/log" \
     BCO_BINARY="/usr/bin/bco" \
     BCO_OPTIONS="" \
-    JAVA_VERSION="11"
+    JAVA_VERSION="11" \
+    JAVA_OPTS="--add-opens java.base/java.util=ALL-UNNAMED"
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.build-date=$BUILD_DATE \

@@ -9,6 +9,18 @@ The project is split into different sub-module and each of these sub-module is s
 * [Contribution](https://basecubeone.org/developer/contribution.html)  
 * [Community](https://openbase.org)
 
+## How to build BCO
+
+Once you locally cloned the repo you can build BCO via gradle.
+Thus, you have to change into the project root folder e.g. `~/workspace/openbase/bco` and perform `./gradlew build`.
+
+## How to start BCO
+
+BCO is optimized for the long term java development kit 17, however some used dependencies still not support JDK 17.
+Therefore, you have to set the following JVM option to properly start bco: `--add-opens java.base/java.util=ALL-UNNAMED`
+
+You can do this via the environment variable `JAVA_OPTS="--add-opens java.base/java.util=ALL-UNNAMED"` or by declaring the vm option via IDEA.
+
 ## Update Gradle Dependencies
 
 We are using a plugin called `Gradle refreshVersions` to manage all our backend dependencies. Thus, all dependencies
