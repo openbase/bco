@@ -77,7 +77,7 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
                     if (transformation.equalsWithoutTime(GlobalTransformReceiver.getInstance().lookupTransform(targetFrame, sourceFrame, System.currentTimeMillis()))) {
                         // was published
                         if (!JPService.testMode() && JPService.verboseMode()) {
-                            logger.info("Published " + targetFrame + " to " + sourceFrame);
+                            logger.debug("Published " + targetFrame + " to " + sourceFrame);
                         }
                         return;
                     }
