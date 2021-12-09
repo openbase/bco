@@ -43,7 +43,6 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        System.out.println("AbstractBCODeviceManagerTest setup class...");
         try {
             AbstractBCOTest.setUpClass();
 
