@@ -23,7 +23,7 @@ FROM openbaseorg/bco:${BCO_BASE_IMAGE_VERSION}
 ENV \
     JAVA_OPTS="" \
     OPENHAB_CONF="/etc/openhab2" \
-    BCO_OPTIONS="--db /usr/share/bco/db" \
+    BCO_OPTIONS="--db /tmp/bco/db" \
     BCO_MODULE_PREPARE_SCRIPT="bco-module-prepare.sh"
 
 # Basic build-time metadata as defined at http://label-schema.org
@@ -47,7 +47,7 @@ RUN ln -s /usr/local/bin/${BCO_MODULE_PREPARE_SCRIPT} && \
 
 # # Install db
 RUN mkdir -p /usr/share/bco/
-COPY --from=builder /workspace/db /usr/share/bco/
+COPY --from=builder /workspace/db /usr/share/bco/db/
 
 # Configure healthcheck
 # todo: make sure only device offered by this device manager are checked
