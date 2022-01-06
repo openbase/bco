@@ -22,7 +22,7 @@ COPY . .
 RUN ./gradlew --version
 
 # Build jul
-RUN ./init-lib.sh
+RUN ./prepare.sh
 RUN cd lib/jul && \
     prefix="/tmp/" ./install.sh -Dmaven.javadoc.skip=true
 
