@@ -76,10 +76,6 @@ class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegis
         if (unitConfig.aliasList.isEmpty() ||
             unitConfig.aliasList.stream().noneMatch { it: String -> it.startsWith(aliasPrefix) }
         ) {
-            var copy: MutableMap<UnitType, Int>? = null
-            if (registry.isSandbox) {
-                copy = HashMap(unitTypeAliasNumberMap)
-            }
             if (updateNeeded) {
                 try {
                     updateUnitTypeAliasNumberMap()
@@ -93,9 +89,6 @@ class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegis
             newAliasList.sortWith(aliasComparator)
             unitConfig.clearAlias()
             unitConfig.addAllAlias(newAliasList)
-            if (registry.isSandbox) {
-                unitTypeAliasNumberMap = copy
-            }
             throw EntryModification(entry.setMessage(unitConfig, this), this)
         }
 
