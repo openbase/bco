@@ -11,7 +11,6 @@ repositories {
     maven {
         url = uri("https://openhab.jfrog.io/openhab/libs-release")
     }
-    jcenter()
 }
 
 application {
@@ -72,6 +71,10 @@ createAdditionalScript("bco-console") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
 }
 
+createAdditionalScript("bco-visual-remote") {
+    mainClass.set("org.openbase.bco.dal.visual.BCOVisualRemote")
+}
+
 createAdditionalScript("bco-query") {
     mainClass.set("org.openbase.bco.registry.print.BCOUnitQueryPrinter")
 }
@@ -114,6 +117,7 @@ dependencies {
     api(project(":bco.app.cloud.connector"))
     api(project(":bco.app.influxdb.connector"))
     api(project(":bco.api.graphql"))
+    api(project(":bco.dal.visual"))
     api("commons-collections:commons-collections:3.2.2")
     testImplementation(project(":bco.dal.test"))
     testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")

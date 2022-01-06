@@ -32,6 +32,9 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPVerbose;
+import org.openbase.jul.communication.jp.JPComHost;
+import org.openbase.jul.communication.jp.JPComPort;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InvalidStateException;
@@ -336,6 +339,9 @@ public class BCOConsole {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPComPort.class);
+        JPService.registerProperty(JPVerbose.class);
         JPService.parseAndExitOnError(args);
 
         try {
