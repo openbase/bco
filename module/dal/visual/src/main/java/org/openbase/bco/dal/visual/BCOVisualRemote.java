@@ -31,6 +31,9 @@ import org.openbase.bco.registry.lib.jp.JPBCOAutoLoginUser;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPVerbose;
+import org.openbase.jul.communication.jp.JPComHost;
+import org.openbase.jul.communication.jp.JPComPort;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.InstantiationException;
@@ -260,9 +263,11 @@ public class BCOVisualRemote extends javax.swing.JFrame {
 
         //</editor-fold>
         JPService.setApplicationName(BCOVisualRemote.class);
-        JPService.registerProperty(JPAuthentication.class);
         JPService.registerProperty(JPBCOAutoLoginUser.class);
         JPService.registerProperty(JPProviderControlMode.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPComPort.class);
+        JPService.registerProperty(JPVerbose.class);
         JPService.parseAndExitOnError(args);
 
         BCOLogin.getSession().autoLogin(true);
