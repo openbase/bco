@@ -22,13 +22,18 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
+import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProto;
+import com.google.protobuf.DescriptorProtos.EnumValueDescriptorProtoOrBuilder;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.Message;
+import com.google.protobuf.Message.Builder;
 import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
+import lombok.val;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
@@ -38,6 +43,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
@@ -46,6 +52,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -69,6 +76,7 @@ import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceStateOrBuilder;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.MotionStateType.MotionStateOrBuilder;
+import org.openbase.type.domotic.state.PowerStateType;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerStateOrBuilder;
@@ -326,6 +334,22 @@ public class Services extends ServiceStateProcessor {
     }
 
     /**
+     * Method generates a new service state builder related to the given {@code serviceType} and initializes this instance with the {@code stateValue} derived from the given {@code stateValueString}.
+     *
+     * @param serviceType the service type of the service state.
+     * @param stateValueString a string representation of a compatible state value related to the given service state.
+     * @return a new service state initialized with the state value.
+     * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
+     */
+    public static Message.Builder generateServiceStateBuilder(final ServiceType serviceType, String stateValueString) throws CouldNotPerformException {
+        final Message.Builder serviceStateBuilder = generateServiceStateBuilder(serviceType);
+        final FieldDescriptor serviceStateValueFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "value");
+        final EnumValueDescriptor serviceStateValue = serviceStateValueFieldDescriptor.getEnumType().findValueByName(stateValueString);
+        serviceStateBuilder.setField(serviceStateValueFieldDescriptor, serviceStateValue);
+        return serviceStateBuilder;
+    }
+
+    /**
      * Method generates a new service state builder related to the given {@code serviceType} and initializes this instance with the given {@code stateValue}.
      *
      * @param <SC>              the service class of the service state.
@@ -394,6 +418,32 @@ public class Services extends ServiceStateProcessor {
     }
 
     /**
+     * Method detects and returns the service state enum class.
+     *
+     * @param serviceType the given service type to resolve the enum class.
+     * @return the service state class.
+     * @throws NotAvailableException is thrown in case the class could not be detected.
+     */
+    public static Class<? extends Enum> getServiceStateEnumClass(final ServiceType serviceType) throws NotAvailableException {
+        try {
+            return getServiceStateEnumClass(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("CommunicationType for ServiceType[" + serviceType + "]", ex);
+        }
+    }
+
+    public static String getServiceStateName(final CommunicationType communicationType) throws NotAvailableException {
+        try {
+            if (communicationType == CommunicationType.UNKNOWN) {
+                throw new InvalidStateException("CommunicationType is not configured in ServiceTemplate!");
+            }
+            return StringProcessor.transformUpperCaseToPascalCase(communicationType.name());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("CommunicationType", communicationType.name(), ex);
+        }
+    }
+
+    /**
      * Method detects and returns the service state class.
      *
      * @param communicationType the communication type to resolve the service state class.
@@ -401,21 +451,33 @@ public class Services extends ServiceStateProcessor {
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends Message> getServiceStateClass(final CommunicationType communicationType) throws NotAvailableException {
-        String serviceStateName;
-        try {
-            if (communicationType == CommunicationType.UNKNOWN) {
-                throw new InvalidStateException("CommunicationType is not configured in ServiceTemplate!");
-            }
-            serviceStateName = StringProcessor.transformUpperCaseToPascalCase(communicationType.name());
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("CommunicationType", communicationType.name(), ex);
-        }
-
+        final String serviceStateName = getServiceStateName(communicationType);
         final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName;
         try {
             return (Class<? extends Message>) Class.forName(serviceClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
             throw new NotAvailableException("ServiceStateClass", serviceClassName, new CouldNotPerformException("Could not detect class!", ex));
+        }
+    }
+
+    /**
+     * Method detects and returns the service state value enum class.
+     *
+     * @param communicationType the communication type to resolve the service state enum class.
+     * @return the class of the service state enum.
+     * @throws NotAvailableException is thrown in case the enum could not be detected.
+     */
+    public static Class<? extends Enum<?>> getServiceStateEnumClass(final CommunicationType communicationType) throws NotAvailableException {
+        final String serviceStateName = getServiceStateName(communicationType);
+        final String serviceEnumClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName + "$State";
+        try {
+            final Class<?> clazz = Class.forName(serviceEnumClassName);
+            if (!clazz.isEnum()) {
+                throw new VerificationFailedException("Given Class["+clazz.getName()+"] is not an enum!");
+            }
+            return (Class<? extends Enum<?>>) clazz;
+        } catch (NullPointerException | ClassNotFoundException | ClassCastException | CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceStateClass", serviceEnumClassName, new CouldNotPerformException("Could not detect enum class!", ex));
         }
     }
 
@@ -869,6 +931,13 @@ public class Services extends ServiceStateProcessor {
             dataTypes.add(fieldDescriptor.getName() + "=" + stateType);
         }
         return dataTypes;
+    }
+
+    public static Label generateServiceStateLabel(ServiceStateDescription serviceStateDescription) throws CouldNotPerformException {
+        return generateServiceStateLabel(
+                deserializeServiceState(serviceStateDescription),
+                serviceStateDescription.getServiceType()
+        );
     }
 
     public static Label generateServiceStateLabel(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType) {
