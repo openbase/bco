@@ -24,10 +24,17 @@ RUN ./gradlew --version
 # Build jul
 RUN ./prepare.sh
 RUN cd lib/jul && \
-    prefix="/tmp/" ./install.sh -Dmaven.javadoc.skip=true
+    prefix="/tmp/" ./install.sh \
+    -Dmaven.javadoc.skip=true \
+    -Dmaven.wagon.http.retryHandler.count=3 \
+    -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false \
+    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
 
 # Build bco
-RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
+RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace \
+    -Dmaven.wagon.http.retryHandler.count=3 \
+    -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false \
+    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
 
 # Switch to baseline image
 FROM ubuntu:latest
