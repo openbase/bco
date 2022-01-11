@@ -940,7 +940,19 @@ public class Services extends ServiceStateProcessor {
         );
     }
 
+    public static Label generateServiceStateLabel(ServiceStateDescription serviceStateDescription, boolean discreteOnly) throws CouldNotPerformException {
+        return generateServiceStateLabel(
+                deserializeServiceState(serviceStateDescription),
+                serviceStateDescription.getServiceType(),
+                discreteOnly
+        );
+    }
+
     public static Label generateServiceStateLabel(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType) {
+        return generateServiceStateLabel(serviceStateOrBuilder, serviceType, false);
+    }
+
+    public static Label generateServiceStateLabel(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType, boolean discreteOnly) {
         try {
             final Label.Builder labelBuilder = Label.newBuilder();
             switch (serviceType) {
@@ -1023,40 +1035,39 @@ public class Services extends ServiceStateProcessor {
                     LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, brightness).build();
                     LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, brightness).build();
                     return labelBuilder.build();
-
                 case COLOR_STATE_SERVICE:
                     final Color color = ((ColorStateOrBuilder) serviceStateOrBuilder).getColor();
                     return ColorStateToLabelTransformer.computeColorLabelFromColor(color);
                 case ILLUMINANCE_STATE_SERVICE:
                     final IlluminanceState.State illuminanceStateValue = ((IlluminanceStateOrBuilder) serviceStateOrBuilder).getValue();
-                    final String illuminance = ((int) (((IlluminanceStateOrBuilder) serviceStateOrBuilder).getIlluminance())) + " Lux";
-                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, illuminanceStateValue.name().toLowerCase() + " " + illuminance);
+                    final String illuminance = discreteOnly ? "" : " (" + ((int) (((IlluminanceStateOrBuilder) serviceStateOrBuilder).getIlluminance())) + " Lux)";
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, illuminanceStateValue.name().toLowerCase() + illuminance);
                     switch (illuminanceStateValue) {
                         case DARK:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dunkel " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dunkel" + illuminance).build();
                         case DUSKY:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dämmernd " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dämmernd" + illuminance).build();
                         case SHADY:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "schattig " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "schattig" + illuminance).build();
                         case SUNNY:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "sonnig " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "sonnig" + illuminance).build();
                         case UNKNOWN:
                         default:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt" + illuminance).build();
                     }
                 case BATTERY_STATE_SERVICE:
                     final BatteryState.State batteryStateValue = ((BatteryStateOrBuilder) serviceStateOrBuilder).getValue();
-                    final String level = ((int) (((BatteryStateOrBuilder) serviceStateOrBuilder).getLevel() * 100d)) + " %";
-                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, batteryStateValue.name().toLowerCase() + " " + level);
+                    final String level = discreteOnly ? "" : " (" + ((int) (((BatteryStateOrBuilder) serviceStateOrBuilder).getLevel() * 100d)) + " %)";
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, batteryStateValue.name().toLowerCase() + level);
                     switch (batteryStateValue) {
                         case INSUFFICIENT:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unzureichend " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unzureichend" + level).build();
                         case CRITICAL:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "kritisch " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "kritisch" + level).build();
                         case LOW:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "gering " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "gering" + level).build();
                         case OK:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "ok " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "ok" + level).build();
                         case UNKNOWN:
                         default:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt " + level).build();
