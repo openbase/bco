@@ -41,12 +41,8 @@ import java.util.stream.Collectors
  */
 class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegistry) :
     AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, Builder>() {
-    private var unitTypeAliasNumberMap: MutableMap<UnitType, Int>?
+    private var unitTypeAliasNumberMap: MutableMap<UnitType, Int> = mutableMapOf()
     private var updateNeeded = true
-
-    init {
-        unitTypeAliasNumberMap = HashMap()
-    }
 
     @Throws(CouldNotPerformException::class, EntryModification::class)
     override fun processData(
@@ -107,6 +103,7 @@ class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegis
 
     @Throws(CouldNotPerformException::class)
     private fun updateUnitTypeAliasNumberMap() {
+        unitTypeAliasNumberMap.clear()
         for (unitConfig in unitRegistry.getUnitConfigsFiltered(false)) {
             registerAlias(unitConfig)
         }
