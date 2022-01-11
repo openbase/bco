@@ -177,7 +177,7 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
 
     private void print(Unit<?> unit, ServiceType serviceType, Message serviceState) {
 
-        // print human readable format
+        // print human-readable format
         if (config.format == LogFormat.HUMAN_READABLE) {
             try {
                 submit(MultiLanguageTextProcessor.getBestMatch(ServiceStateProcessor.getActionDescription(serviceState)));

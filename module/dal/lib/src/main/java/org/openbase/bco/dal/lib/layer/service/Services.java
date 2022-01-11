@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.JavaType;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
@@ -46,6 +47,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
+import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -54,7 +56,6 @@ import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationStateOrBuilder;
 import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
 import org.openbase.type.domotic.state.BatteryStateType.BatteryStateOrBuilder;
-import org.openbase.type.domotic.state.BrightnessStateType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessStateOrBuilder;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
@@ -70,9 +71,7 @@ import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceStateOrBu
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.MotionStateType.MotionStateOrBuilder;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerStateOrBuilder;
-import org.openbase.type.domotic.state.PresenceStateType;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceStateOrBuilder;
 import org.openbase.type.domotic.state.TamperStateType.TamperState;
@@ -326,6 +325,22 @@ public class Services extends ServiceStateProcessor {
     }
 
     /**
+     * Method generates a new service state builder related to the given {@code serviceType} and initializes this instance with the {@code stateValue} derived from the given {@code stateValueString}.
+     *
+     * @param serviceType the service type of the service state.
+     * @param stateValueString a string representation of a compatible state value related to the given service state.
+     * @return a new service state initialized with the state value.
+     * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
+     */
+    public static Message.Builder generateServiceStateBuilder(final ServiceType serviceType, String stateValueString) throws CouldNotPerformException {
+        final Message.Builder serviceStateBuilder = generateServiceStateBuilder(serviceType);
+        final FieldDescriptor serviceStateValueFieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "value");
+        final EnumValueDescriptor serviceStateValue = serviceStateValueFieldDescriptor.getEnumType().findValueByName(stateValueString);
+        serviceStateBuilder.setField(serviceStateValueFieldDescriptor, serviceStateValue);
+        return serviceStateBuilder;
+    }
+
+    /**
      * Method generates a new service state builder related to the given {@code serviceType} and initializes this instance with the given {@code stateValue}.
      *
      * @param <SC>              the service class of the service state.
@@ -394,6 +409,32 @@ public class Services extends ServiceStateProcessor {
     }
 
     /**
+     * Method detects and returns the service state enum class.
+     *
+     * @param serviceType the given service type to resolve the enum class.
+     * @return the service state class.
+     * @throws NotAvailableException is thrown in case the class could not be detected.
+     */
+    public static Class<? extends Enum> getServiceStateEnumClass(final ServiceType serviceType) throws NotAvailableException {
+        try {
+            return getServiceStateEnumClass(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("CommunicationType for ServiceType[" + serviceType + "]", ex);
+        }
+    }
+
+    public static String getServiceStateName(final CommunicationType communicationType) throws NotAvailableException {
+        try {
+            if (communicationType == CommunicationType.UNKNOWN) {
+                throw new InvalidStateException("CommunicationType is not configured in ServiceTemplate!");
+            }
+            return StringProcessor.transformUpperCaseToPascalCase(communicationType.name());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("CommunicationType", communicationType.name(), ex);
+        }
+    }
+
+    /**
      * Method detects and returns the service state class.
      *
      * @param communicationType the communication type to resolve the service state class.
@@ -401,21 +442,33 @@ public class Services extends ServiceStateProcessor {
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends Message> getServiceStateClass(final CommunicationType communicationType) throws NotAvailableException {
-        String serviceStateName;
-        try {
-            if (communicationType == CommunicationType.UNKNOWN) {
-                throw new InvalidStateException("CommunicationType is not configured in ServiceTemplate!");
-            }
-            serviceStateName = StringProcessor.transformUpperCaseToPascalCase(communicationType.name());
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("CommunicationType", communicationType.name(), ex);
-        }
-
+        final String serviceStateName = getServiceStateName(communicationType);
         final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName;
         try {
             return (Class<? extends Message>) Class.forName(serviceClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
             throw new NotAvailableException("ServiceStateClass", serviceClassName, new CouldNotPerformException("Could not detect class!", ex));
+        }
+    }
+
+    /**
+     * Method detects and returns the service state value enum class.
+     *
+     * @param communicationType the communication type to resolve the service state enum class.
+     * @return the class of the service state enum.
+     * @throws NotAvailableException is thrown in case the enum could not be detected.
+     */
+    public static Class<? extends Enum<?>> getServiceStateEnumClass(final CommunicationType communicationType) throws NotAvailableException {
+        final String serviceStateName = getServiceStateName(communicationType);
+        final String serviceEnumClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName + "$State";
+        try {
+            final Class<?> clazz = Class.forName(serviceEnumClassName);
+            if (!clazz.isEnum()) {
+                throw new VerificationFailedException("Given Class["+clazz.getName()+"] is not an enum!");
+            }
+            return (Class<? extends Enum<?>>) clazz;
+        } catch (NullPointerException | ClassNotFoundException | ClassCastException | CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceStateClass", serviceEnumClassName, new CouldNotPerformException("Could not detect enum class!", ex));
         }
     }
 
@@ -871,7 +924,26 @@ public class Services extends ServiceStateProcessor {
         return dataTypes;
     }
 
+    public static Label generateServiceStateLabel(ServiceStateDescription serviceStateDescription) throws CouldNotPerformException {
+        return generateServiceStateLabel(
+                deserializeServiceState(serviceStateDescription),
+                serviceStateDescription.getServiceType()
+        );
+    }
+
+    public static Label generateServiceStateLabel(ServiceStateDescription serviceStateDescription, boolean discreteOnly) throws CouldNotPerformException {
+        return generateServiceStateLabel(
+                deserializeServiceState(serviceStateDescription),
+                serviceStateDescription.getServiceType(),
+                discreteOnly
+        );
+    }
+
     public static Label generateServiceStateLabel(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType) {
+        return generateServiceStateLabel(serviceStateOrBuilder, serviceType, false);
+    }
+
+    public static Label generateServiceStateLabel(MessageOrBuilder serviceStateOrBuilder, ServiceType serviceType, boolean discreteOnly) {
         try {
             final Label.Builder labelBuilder = Label.newBuilder();
             switch (serviceType) {
@@ -954,40 +1026,39 @@ public class Services extends ServiceStateProcessor {
                     LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, brightness).build();
                     LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, brightness).build();
                     return labelBuilder.build();
-
                 case COLOR_STATE_SERVICE:
                     final Color color = ((ColorStateOrBuilder) serviceStateOrBuilder).getColor();
                     return ColorStateToLabelTransformer.computeColorLabelFromColor(color);
                 case ILLUMINANCE_STATE_SERVICE:
                     final IlluminanceState.State illuminanceStateValue = ((IlluminanceStateOrBuilder) serviceStateOrBuilder).getValue();
-                    final String illuminance = ((int) (((IlluminanceStateOrBuilder) serviceStateOrBuilder).getIlluminance())) + " Lux";
-                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, illuminanceStateValue.name().toLowerCase() + " " + illuminance);
+                    final String illuminance = discreteOnly ? "" : " (" + ((int) (((IlluminanceStateOrBuilder) serviceStateOrBuilder).getIlluminance())) + " Lux)";
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, illuminanceStateValue.name().toLowerCase() + illuminance);
                     switch (illuminanceStateValue) {
                         case DARK:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dunkel " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dunkel" + illuminance).build();
                         case DUSKY:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dämmernd " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "dämmernd" + illuminance).build();
                         case SHADY:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "schattig " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "schattig" + illuminance).build();
                         case SUNNY:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "sonnig " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "sonnig" + illuminance).build();
                         case UNKNOWN:
                         default:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt " + illuminance).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt" + illuminance).build();
                     }
                 case BATTERY_STATE_SERVICE:
                     final BatteryState.State batteryStateValue = ((BatteryStateOrBuilder) serviceStateOrBuilder).getValue();
-                    final String level = ((int) (((BatteryStateOrBuilder) serviceStateOrBuilder).getLevel() * 100d)) + " %";
-                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, batteryStateValue.name().toLowerCase() + " " + level);
+                    final String level = discreteOnly ? "" : " (" + ((int) (((BatteryStateOrBuilder) serviceStateOrBuilder).getLevel() * 100d)) + " %)";
+                    LabelProcessor.addLabel(labelBuilder, Locale.ENGLISH, batteryStateValue.name().toLowerCase() + level);
                     switch (batteryStateValue) {
                         case INSUFFICIENT:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unzureichend " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unzureichend" + level).build();
                         case CRITICAL:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "kritisch " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "kritisch" + level).build();
                         case LOW:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "gering " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "gering" + level).build();
                         case OK:
-                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "ok " + level).build();
+                            return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "ok" + level).build();
                         case UNKNOWN:
                         default:
                             return LabelProcessor.addLabel(labelBuilder, Locale.GERMAN, "unbekannt " + level).build();

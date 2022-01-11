@@ -116,7 +116,7 @@ public abstract class AbstractDALUnitController<M extends AbstractMessage & Seri
     }
 
     @Override
-    public synchronized void deactivate() throws InterruptedException, CouldNotPerformException {
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
 
         // deactivate data source
