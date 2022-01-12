@@ -41,12 +41,7 @@ import java.util.stream.Collectors
  */
 class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegistry) :
     AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, Builder>() {
-    private var unitTypeAliasNumberMap: MutableMap<UnitType, Int>?
-    private var updateNeeded = true
-
-    init {
-        unitTypeAliasNumberMap = HashMap()
-    }
+    private var unitTypeAliasNumberMap: MutableMap<UnitType, Int> = mutableMapOf()
 
     @Throws(CouldNotPerformException::class, EntryModification::class)
     override fun processData(
@@ -76,7 +71,7 @@ class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegis
         if (unitConfig.aliasList.isEmpty() ||
             unitConfig.aliasList.stream().noneMatch { it: String -> it.startsWith(aliasPrefix) }
         ) {
-            if (updateNeeded) {
+            if (unitTypeAliasNumberMap.isEmpty()) {
                 try {
                     updateUnitTypeAliasNumberMap()
                 } catch (ex: CouldNotPerformException) {
@@ -107,20 +102,19 @@ class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegis
 
     @Throws(CouldNotPerformException::class)
     private fun updateUnitTypeAliasNumberMap() {
-        for (unitConfig in unitRegistry.getUnitConfigsFiltered(false)) {
-            registerAlias(unitConfig)
-        }
+       unitRegistry.getUnitConfigsFiltered(false)
+           .onEach { registerAlias(it) }
     }
 
     private fun generateAndRegisterAlias(unitType: UnitType): String {
 
         // init if not exist
-        if (!unitTypeAliasNumberMap!!.containsKey(unitType)) {
-            unitTypeAliasNumberMap!![unitType] = 0
+        if (!unitTypeAliasNumberMap.containsKey(unitType)) {
+            unitTypeAliasNumberMap[unitType] = 0
         }
 
         // generate next number
-        val newNumber = unitTypeAliasNumberMap!![unitType]!! + 1
+        val newNumber = unitTypeAliasNumberMap[unitType]!! + 1
 
         // register number
         registerNumber(newNumber, unitType)
@@ -144,7 +138,7 @@ class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegis
         if (split.size != 2) {
             return
         }
-        if (split[0] != StringProcessor.transformUpperCaseToPascalCase(unitType.name)) {
+        if (split.first() != StringProcessor.transformUpperCaseToPascalCase(unitType.name)) {
             return
         }
         try {
@@ -155,13 +149,13 @@ class UnitAliasGenerationConsistencyHandler (private val unitRegistry: UnitRegis
     }
 
     private fun registerNumber(number: Int, unitType: UnitType) {
-        if (!unitTypeAliasNumberMap!!.containsKey(unitType) || unitTypeAliasNumberMap!![unitType]!! < number) {
-            unitTypeAliasNumberMap!![unitType] = number
+        if (!unitTypeAliasNumberMap.containsKey(unitType) || unitTypeAliasNumberMap[unitType]!! < number) {
+            unitTypeAliasNumberMap[unitType] = number
         }
     }
 
     override fun reset() {
-        updateNeeded = true
+        unitTypeAliasNumberMap.clear()
     }
 
     companion object {
