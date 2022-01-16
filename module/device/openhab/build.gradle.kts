@@ -11,7 +11,7 @@ repositories {
     maven {
         url = uri("https://openhab.jfrog.io/openhab/libs-release")
     }
-    jcenter()
+    mavenCentral()
 }
 
 application {
