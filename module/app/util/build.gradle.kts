@@ -118,7 +118,7 @@ dependencies {
     api(project(":bco.app.influxdb.connector"))
     api(project(":bco.api.graphql"))
     api(project(":bco.dal.visual"))
-    api("commons-collections:commons-collections:3.2.2")
+    api("commons-collections:commons-collections:_")
     testImplementation(project(":bco.dal.test"))
     testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
 }

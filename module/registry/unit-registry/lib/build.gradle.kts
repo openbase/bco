@@ -13,7 +13,7 @@ dependencies {
     api(project(":bco.registry.class.remote"))
     api(project(":bco.registry.template.remote"))
     api(project(":bco.registry.activity.remote"))
-    api("org.apache.commons:commons-math3:3.6.1")
+    api("org.apache.commons:commons-math3:_")
 }
 
 description = "BCO Registry Unit Library"

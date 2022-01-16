@@ -54,8 +54,8 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticationContro
 
     /**
      * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws java.lang.InterruptedException is thrown when the thread was externally interrupted.
+     * @throws org.openbase.jul.exception.CouldNotPerformException thrown in case the launcher could not be started.
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
         BCO.printLogo();
