@@ -1,6 +1,13 @@
 # Install dependencies
 FROM ubuntu:latest AS builder
 
+ENV \
+    JAVA_OPTS="" \
+    LC_ALL="en_US.UTF-8" \
+    LANG="en_US.UTF-8" \
+    LANGUAGE="en_US.UTF-8" \
+    JAVA_VERSION="11"
+
 WORKDIR /workspace
 
 # Setup build deps
@@ -12,6 +19,8 @@ RUN apt update && \
             git \
             rsync \
             curl \
+            locales \
+            locales-all \
             wget && \
     apt clean
 
@@ -75,8 +84,7 @@ ENV \
     BCO_LOGS="/home/bco/data/log" \
     BCO_BINARY="/usr/bin/bco" \
     BCO_OPTIONS="" \
-    JAVA_VERSION="11" \
-    JAVA_OPTS="--add-opens java.base/java.util=ALL-UNNAMED"
+    JAVA_VERSION="11"
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.build-date=$BUILD_DATE \
