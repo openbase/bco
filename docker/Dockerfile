@@ -1,5 +1,5 @@
 # Install dependencies
-FROM ubuntu:latest AS builder
+FROM ubuntu:focal-20211006 AS builder
 
 ENV \
     JAVA_OPTS="" \
