@@ -71,9 +71,9 @@ createAdditionalScript("bco-console") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
 }
 
-createAdditionalScript("bco-visual-remote") {
-    mainClass.set("org.openbase.bco.dal.visual.BCOVisualRemote")
-}
+//createAdditionalScript("bco-visual-remote") {
+//    mainClass.set("org.openbase.bco.dal.visual.BCOVisualRemote")
+//}
 
 createAdditionalScript("bco-query") {
     mainClass.set("org.openbase.bco.registry.print.BCOUnitQueryPrinter")
@@ -92,7 +92,6 @@ distributions {
         distributionBaseName.set("bco")
     }
 }
-
 
 tasks.register("deploy-bco-dist") {
     dependsOn("installDist")
