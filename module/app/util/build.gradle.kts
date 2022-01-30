@@ -63,9 +63,9 @@ createAdditionalScript("bco-validate") {
 //    mainClass.set("org.openbase.bco.app.util.launch.BCORegistryValidator")
 //}
 
-//createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
-//    mainClass.set("org.openbase.bco.app.util.launch.BCOTrainDataGeneratorLauncher")
-//}
+createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOTrainDataGeneratorLauncher")
+}
 
 createAdditionalScript("bco-console") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
