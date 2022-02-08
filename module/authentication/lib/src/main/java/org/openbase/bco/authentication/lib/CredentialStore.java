@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -36,7 +36,6 @@ import org.openbase.type.domotic.authentication.LoginCredentialsEncodedCollectio
 import org.openbase.type.domotic.authentication.LoginCredentialsEncodedType.LoginCredentialsEncoded;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 
@@ -69,7 +68,7 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
         try {
             return getEntry(userId);
         } catch (NotAvailableException ex) {
-            throw new NotAvailableException("User", userId, "No credentials for user with Id["+userId+"] found in credential store. " +
+            throw new NotAvailableException("User", userId, "No credentials for user with Id[" + userId + "] found in credential store. " +
                     "This can be caused by a broken credential store. In this case try to reset the store by calling: " +
                     JPService.getApplicationName() + " " + JPResetCredentials.COMMAND_IDENTIFIERS[0]);
         }
