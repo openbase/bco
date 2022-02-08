@@ -1,3 +1,4 @@
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
 
 plugins {
     id("org.openbase.bco")
@@ -6,6 +7,7 @@ plugins {
 }
 
 dependencies {
+
     api(project(":bco.dal.remote"))
     api("org.springframework.boot:spring-boot-starter-webflux:_")
     api("com.graphql-java-kickstart:graphql-spring-boot-starter:_") {
@@ -14,11 +16,20 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-jetty:_")
     api(Spring.boot.webflux)
     api("org.springframework:spring-webmvc:_")
-    api("com.google.api.graphql:rejoiner:_") {
-        exclude(group = "com.google.inject", module = "guice")
-        exclude(group = "com.graphql-java", module = "graphql-java")
-        exclude(group = "com.google.inject.extensions", module = "guice-multibindings")
-    }
+
+    api( rootProject.files("lib/external/rejoiner-0.5.0-bco.jar"))
+    api( rootProject.files("lib/external/rejoiner-guice-0.5.0-bco.jar"))
+// disabled since rejoiner is linked locally.
+//    api("com.google.api.graphql:rejoiner-guice:_") {
+//        exclude(group = "com.google.inject", module = "guice")
+//        exclude(group = "com.graphql-java", module = "graphql-java")
+//        exclude(group = "com.google.inject.extensions", module = "guice-multibindings")
+//    }
+//    api("com.google.api.graphql:rejoiner:_") {
+//        exclude(group = "com.google.inject", module = "guice")
+//        exclude(group = "com.graphql-java", module = "graphql-java")
+//        exclude(group = "com.google.inject.extensions", module = "guice-multibindings")
+//    }
     api("com.google.inject.extensions:guice-multibindings:_")
     api("com.google.inject:guice:_")
     api("com.google.guava:guava:_")

@@ -166,7 +166,7 @@ public abstract class AbstractProtectedStore<DT, SDT> implements Shutdownable {
             return map.get(id);
         }
 
-        throw new NotAvailableException("Entry with key[" + id + "]");
+        throw new NotAvailableException("Entry with key[" + id + "].");
     }
 
     /**

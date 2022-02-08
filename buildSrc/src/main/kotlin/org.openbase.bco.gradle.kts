@@ -15,6 +15,7 @@ repositories {
     maven {
         url = uri("https://oss.sonatype.org/content/groups/public/")
     }
+    google()
     mavenCentral()
 }
 

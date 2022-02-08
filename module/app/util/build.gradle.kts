@@ -64,7 +64,7 @@ createAdditionalScript("bco-validate") {
 //}
 
 createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
-    mainClass.set("org.openbase.bco.app.util.launch.BCOTrainDataGeneratorLauncher")
+    mainClass.set("org.openbase.bco.app.util.launch.BCOAdhocTrainDataGeneratorLauncher")
 }
 
 createAdditionalScript("bco-console") {

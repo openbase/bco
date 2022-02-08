@@ -24,6 +24,8 @@ package org.openbase.bco.authentication.lib;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -34,6 +36,7 @@ import org.openbase.type.domotic.authentication.LoginCredentialsEncodedCollectio
 import org.openbase.type.domotic.authentication.LoginCredentialsEncodedType.LoginCredentialsEncoded;
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Map;
 
@@ -63,7 +66,13 @@ public class CredentialStore extends AbstractProtectedStore<LoginCredentials, Lo
      * @throws NotAvailableException if not credentials for the user are saved in the store.
      */
     public LoginCredentials getCredentials(final String userId) throws NotAvailableException {
-        return getEntry(userId);
+        try {
+            return getEntry(userId);
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("User", userId, "No credentials for user with Id["+userId+"] found in credential store. " +
+                    "This can be caused by a broken credential store. In this case try to reset the store by calling: " +
+                    JPService.getApplicationName() + " " + JPResetCredentials.COMMAND_IDENTIFIERS[0]);
+        }
     }
 
     /**
