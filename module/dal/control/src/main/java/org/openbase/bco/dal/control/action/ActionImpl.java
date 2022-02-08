@@ -780,6 +780,11 @@ public class ActionImpl implements SchedulableAction {
                 actionDescriptionBuilder.setTerminationTimestamp(TimestampProcessor.getCurrentTimestamp());
             }
 
+            // make sure that state changes to finishing states, scheduled and executing always trigger a notification
+            if (isNotifiedActionState(state)) {
+                unit.notifyScheduledActionList();
+            }
+
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
         }
@@ -787,11 +792,6 @@ public class ActionImpl implements SchedulableAction {
         // notify about state change to wakeup all wait methods.
         synchronized (executionStateChangeSync) {
             executionStateChangeSync.notifyAll();
-        }
-
-        // make sure that state changes to finishing states, scheduled and executing always trigger a notification
-        if (isNotifiedActionState(state)) {
-            unit.notifyScheduledActionList();
         }
     }
 
