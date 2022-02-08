@@ -15,6 +15,7 @@ repositories {
     maven {
         url = uri("https://oss.sonatype.org/content/groups/public/")
     }
+    google()
     mavenCentral()
 }
 
@@ -29,8 +30,8 @@ java {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:_")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:_")
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
     testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }

@@ -55,9 +55,9 @@ import java.util.concurrent.TimeoutException;
 /*
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class BCOTrainDataGeneratorLauncher {
+public class BCOAdhocTrainDataGeneratorLauncher {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(BCOTrainDataGeneratorLauncher.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(BCOAdhocTrainDataGeneratorLauncher.class);
     private static final Random random = new Random(System.currentTimeMillis());
     public static final long TIMEOUT = 1000;
 

@@ -501,7 +501,7 @@ public class ActionImpl implements SchedulableAction {
                     try {
                         unit.reschedule();
                     } catch (CouldNotPerformException ex) {
-                        // if the reschedule is not possible because of an system shutdown everything is fine, otherwise its a controller error and there is no need to inform the remote about any error if the cancellation was successful.
+                        // if the reschedule is not possible because of a system shutdown everything is fine, otherwise its a controller error and there is no need to inform the remote about any error if the cancellation was successful.
                         if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                             ExceptionPrinter.printHistory("Reschedule of " + unit + " failed after action cancellation!", ex, LOGGER);
                         }

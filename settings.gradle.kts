@@ -112,7 +112,8 @@ project(":bco.device.openhab").projectDir = file("module/device/openhab")
 
 pluginManagement {
     plugins {
-        id("de.fayard.refreshVersions") version "0.23.0"
+        id("de.fayard.refreshVersions") version "0.40.0"
+////                                # available:"0.40.1"
     }
 }
 
