@@ -2,12 +2,8 @@ package org.openbase.bco.authentication.core;
 
 import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.BCO;
-import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
-import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
-import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
+import org.openbase.bco.authentication.lib.jp.*;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
@@ -45,7 +41,7 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticationContro
 
     @Override
     protected void loadProperties() {
-        JPService.registerProperty(JPPrefix.class);
+        JPService.registerProperty(JPBCODistributionDirectory.class);
         JPService.registerProperty(JPAuthenticationScope.class);
         JPService.registerProperty(JPResetCredentials.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
@@ -54,8 +50,8 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticationContro
 
     /**
      * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
+     * @throws java.lang.InterruptedException is thrown when the thread was externally interrupted.
+     * @throws org.openbase.jul.exception.CouldNotPerformException thrown in case the launcher could not be started.
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
         BCO.printLogo();

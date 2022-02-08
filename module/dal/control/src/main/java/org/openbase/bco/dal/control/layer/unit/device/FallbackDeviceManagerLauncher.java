@@ -22,12 +22,12 @@ package org.openbase.bco.dal.control.layer.unit.device;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.jp.JPBCODistributionDirectory;
 import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 /**
@@ -42,7 +42,7 @@ public class FallbackDeviceManagerLauncher extends AbstractLauncher<FallbackDevi
 
     @Override
     public void loadProperties() {
-        JPService.registerProperty(JPPrefix.class);
+        JPService.registerProperty(JPBCODistributionDirectory.class);
         JPService.registerProperty(JPUnitRegistryScope.class);
         JPService.registerProperty(JPClassRegistryScope.class);
     }

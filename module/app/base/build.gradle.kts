@@ -4,7 +4,7 @@
 
 plugins {
     id("org.openbase.bco")
-//    id("org.graalvm.buildtools.native").version("0.9.4")
+//    id("org.graalvm.buildtools.native")
     application
 }
 
@@ -57,7 +57,7 @@ dependencies {
     api(project(":bco.app.cloud.connector"))
     api(project(":bco.app.influxdb.connector"))
     api(project(":bco.api.graphql"))
-    api("commons-collections:commons-collections:3.2.2")
+    api("commons-collections:commons-collections:_")
     testImplementation(project(":bco.dal.test"))
     testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
 }

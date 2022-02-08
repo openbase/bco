@@ -23,10 +23,10 @@ package org.openbase.bco.device.openhab.sitemap;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.jp.JPBCODistributionDirectory;
 import org.openbase.bco.device.openhab.jp.JPOpenHABSitemap;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
@@ -41,7 +41,7 @@ public class OpenHABSitemapSynchronizerLauncher extends AbstractLauncher<Sitemap
 
     @Override
     protected void loadProperties() {
-        JPService.registerProperty(JPPrefix.class);
+        JPService.registerProperty(JPBCODistributionDirectory.class);
         JPService.registerProperty(JPOpenHABSitemap.class);
     }
 

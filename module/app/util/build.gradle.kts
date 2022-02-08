@@ -64,7 +64,7 @@ createAdditionalScript("bco-registry-validate") {
 }
 
 createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
-    mainClass.set("org.openbase.bco.app.util.launch.BCOTrainDataGeneratorLauncher")
+    mainClass.set("org.openbase.bco.app.util.launch.BCOAdhocTrainDataGeneratorLauncher")
 }
 
 createAdditionalScript("bco-console") {
@@ -93,7 +93,6 @@ distributions {
     }
 }
 
-
 tasks.register("deploy-bco-dist") {
     dependsOn("installDist")
     val bcoDist = System.getenv("BCO_DIST")?:"${System.getenv("HOME")}/usr"
@@ -118,7 +117,7 @@ dependencies {
     api(project(":bco.app.influxdb.connector"))
     api(project(":bco.api.graphql"))
     api(project(":bco.dal.visual"))
-    api("commons-collections:commons-collections:3.2.2")
+    api("commons-collections:commons-collections:_")
     testImplementation(project(":bco.dal.test"))
     testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
 }
