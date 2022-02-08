@@ -35,9 +35,9 @@ createAdditionalScript("bco-logo") {
     mainClass.set("org.openbase.bco.app.util.launch.LogoPrinter")
 }
 
-//createAdditionalScript("bco-manager") {
-//    mainClass.set("org.openbase.bco.app.util.launch.ManagerLauncher")
-//}
+createAdditionalScript("bco-manager") {
+    mainClass.set("org.openbase.bco.app.util.launch.ManagerLauncher")
+}
 
 createAdditionalScript("bco-manager-device-openhab") {
     mainClass.set("org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher")
@@ -47,9 +47,9 @@ createAdditionalScript("bco-test") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOTestLauncher")
 }
 
-//createAdditionalScript("bco-print-api") {
-//    mainClass.set("org.openbase.bco.app.util.launch.BCOInterfacePrinter")
-//}
+createAdditionalScript("bco-print-api") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOInterfacePrinter")
+}
 
 createAdditionalScript("bco-stats") {
     mainClass.set("org.openbase.bco.registry.print.BCORegistryPrinter")
@@ -59,9 +59,9 @@ createAdditionalScript("bco-validate") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOSystemValidator")
 }
 
-//createAdditionalScript("bco-registry-validate") {
-//    mainClass.set("org.openbase.bco.app.util.launch.BCORegistryValidator")
-//}
+createAdditionalScript("bco-registry-validate") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCORegistryValidator")
+}
 
 createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOAdhocTrainDataGeneratorLauncher")
@@ -71,17 +71,17 @@ createAdditionalScript("bco-console") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOConsole")
 }
 
-//createAdditionalScript("bco-visual-remote") {
-//    mainClass.set("org.openbase.bco.dal.visual.BCOVisualRemote")
-//}
+createAdditionalScript("bco-visual-remote") {
+    mainClass.set("org.openbase.bco.dal.visual.BCOVisualRemote")
+}
 
 createAdditionalScript("bco-query") {
     mainClass.set("org.openbase.bco.registry.print.BCOUnitQueryPrinter")
 }
 
-//createAdditionalScript("bco-query-label") {
-//    mainClass.set("org.openbase.bco.registry.print.BCOQueryLabelPrinter")
-//}
+createAdditionalScript("bco-query-label") {
+    mainClass.set("org.openbase.bco.registry.print.BCOQueryLabelPrinter")
+}
 
 createAdditionalScript("bco-logger") {
     mainClass.set("org.openbase.bco.dal.remote.printer.BCOLogger")
