@@ -26,7 +26,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.exception.JPValidationException;
 import org.openbase.jps.preset.AbstractJPDirectory;
-import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jps.tools.FileHandler;
 
 import java.io.File;
@@ -47,13 +46,13 @@ public class JPBCOShareDirectory extends AbstractJPDirectory {
      */
     public JPBCOShareDirectory() {
         super(COMMAND_IDENTIFIERS, EXISTENCE_HANDLING, AUTO_MODE);
-        registerDependingProperty(JPPrefix.class);
+        registerDependingProperty(JPBCODistributionDirectory.class);
     }
 
     @Override
     public File getParentDirectory() throws JPServiceException {
         // declare default parent
-        return JPService.getProperty(JPPrefix.class).getValue();
+        return JPService.getProperty(JPBCODistributionDirectory.class).getValue();
     }
 
     @Override

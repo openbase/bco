@@ -8,7 +8,7 @@ plugins {
 
 dependencies {
     api(project(":bco.dal.control"))
-    api("io.socket:socket.io-client:1.0.0")
+    api("io.socket:socket.io-client:_")
     testImplementation(project(":bco.authentication.test"))
 }
 

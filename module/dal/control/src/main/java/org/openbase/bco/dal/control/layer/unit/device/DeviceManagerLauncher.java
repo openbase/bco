@@ -21,6 +21,7 @@ package org.openbase.bco.dal.control.layer.unit.device;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.lib.jp.JPBCODistributionDirectory;
 import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
@@ -28,7 +29,6 @@ import org.openbase.bco.dal.lib.layer.unit.device.DeviceManager;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPPrefix;
 
 /**
  *
@@ -42,7 +42,7 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerImpl> {
 
     @Override
     public void loadProperties() {
-        JPService.registerProperty(JPPrefix.class);
+        JPService.registerProperty(JPBCODistributionDirectory.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.registerProperty(JPBenchmarkMode.class);
         JPService.registerProperty(JPProviderControlMode.class);

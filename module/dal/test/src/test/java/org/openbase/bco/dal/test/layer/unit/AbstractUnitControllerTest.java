@@ -110,7 +110,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         colorableLightController.cancelAllActions();
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void applyDataStateUpdateTest() {
         try {
             colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
@@ -137,7 +137,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void applyCustomDataStateUpdateTest() {
         try {
             for (int i = 0; i < 10; i++) {
@@ -173,7 +173,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void applyCustomDataStateFeedbackLoopTest() {
         try {
             colorableLightController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
@@ -217,7 +217,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void rejectUpdateWhenStateIsCompatibleTest() {
         try {
             final RemoteAction mainAction = waitForExecution(colorableLightRemote.setColorState(Color.BLUE));
@@ -265,7 +265,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test
+    @Test(timeout = 30000)
     public void futureSyncTest() throws InterruptedException, ExecutionException, TimeoutException, CouldNotPerformException {
 
         String anotherColorableLightId = null;

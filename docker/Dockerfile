@@ -1,5 +1,12 @@
 # Install dependencies
-FROM ubuntu:latest AS builder
+FROM ubuntu:focal-20211006 AS builder
+
+ENV \
+    JAVA_OPTS="" \
+    LC_ALL="en_US.UTF-8" \
+    LANG="en_US.UTF-8" \
+    LANGUAGE="en_US.UTF-8" \
+    JAVA_VERSION="11"
 
 WORKDIR /workspace
 
@@ -12,6 +19,8 @@ RUN apt update && \
             git \
             rsync \
             curl \
+            locales \
+            locales-all \
             wget && \
     apt clean
 
@@ -25,16 +34,10 @@ RUN ./gradlew --version
 RUN ./prepare.sh
 RUN cd lib/jul && \
     prefix="/tmp/" ./install.sh \
-    -Dmaven.javadoc.skip=true \
-    -Dmaven.wagon.http.retryHandler.count=3 \
-    -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false \
-    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
+    -Dmaven.javadoc.skip=true
 
 # Build bco
-RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace \
-    -Dmaven.wagon.http.retryHandler.count=3 \
-    -Dhttp.keepAlive=false -Dmaven.wagon.http.pool=false \
-    -Dmaven.wagon.httpconnectionManager.ttlSeconds=120
+RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
 
 # Switch to baseline image
 FROM ubuntu:latest
@@ -75,8 +78,7 @@ ENV \
     BCO_LOGS="/home/bco/data/log" \
     BCO_BINARY="/usr/bin/bco" \
     BCO_OPTIONS="" \
-    JAVA_VERSION="11" \
-    JAVA_OPTS="--add-opens java.base/java.util=ALL-UNNAMED"
+    JAVA_VERSION="11"
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.build-date=$BUILD_DATE \
