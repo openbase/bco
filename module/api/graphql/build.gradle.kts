@@ -14,6 +14,9 @@ dependencies {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
     }
     api("org.springframework.boot:spring-boot-starter-jetty:_")
+    implementation("org.springframework.boot:spring-boot-starter-websocket:_") {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
+    }
     api(Spring.boot.webflux)
     api("org.springframework:spring-webmvc:_")
 
