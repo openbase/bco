@@ -683,7 +683,7 @@ public class RemoteAction implements Action {
                     }
                 }
 
-                // if precomputed, than we are not responsible for the cancelation
+                // if precomputed, then we are not responsible for the cancelation
                 if(PRECOMPUTED_ACTION_ID.equals(actionId)) {
                     future = FutureProcessor.completedFuture(getActionDescription());
                     return future;

@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -70,6 +71,7 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
+    @Before
     @After
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");

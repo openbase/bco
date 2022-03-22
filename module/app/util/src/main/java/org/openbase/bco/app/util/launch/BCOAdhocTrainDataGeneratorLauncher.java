@@ -23,10 +23,12 @@ package org.openbase.bco.app.util.launch;
  */
 
 import org.openbase.bco.authentication.lib.BCO;
+import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -38,6 +40,8 @@ import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.communication.jp.JPComPort;
+import org.openbase.jul.communication.jp.JPComHost;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
@@ -73,19 +77,23 @@ public class BCOAdhocTrainDataGeneratorLauncher {
     /**
      * @param args the command line arguments
      */
-    public static void main(final String[] args) throws JPServiceException {
+    public static void main(final String[] args) throws JPServiceException, CouldNotPerformException {
         BCO.printLogo();
+        JPService.registerProperty(JPComPort.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPBCOHomeDirectory.class);
         JPService.registerProperty(JPProviderControlMode.class, true);
         JPService.registerProperty(JPDebugMode.class, false);
         JPService.registerProperty(JPVerbose.class, false);
         JPService.parse(args);
 
-        BCOLogin.getSession().autoLogin(true);
-
         try {
             LOGGER.info("please make sure bco is started with the --provider-control flag, otherwise no provider services can be synthesised.");
             LOGGER.info("waiting for registry synchronization...");
             Registries.waitUntilReady();
+
+            LOGGER.info("authenticate...");
+            BCOLogin.getSession().loginUserViaUsername("admin", "admin", true);
 
             // init
             final int trainingSetCounter = 10;
@@ -93,6 +101,7 @@ public class BCOAdhocTrainDataGeneratorLauncher {
 
             LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("Location-Adhoc"), true, Units.LOCATION);
             ColorableLightRemote light = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("ColorableLight-Adhoc"), true, Units.COLORABLE_LIGHT);
+            LightSensorRemote lightSensor = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("LightSensor-Adhoc"), true, Units.LIGHT_SENSOR);
 
             final ActionDescription absentState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     PresenceState.newBuilder().setValue(PresenceState.State.ABSENT).build(),
@@ -106,11 +115,11 @@ public class BCOAdhocTrainDataGeneratorLauncher {
             final ActionDescription darkState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     IlluminanceState.newBuilder().setValue(IlluminanceState.State.DARK).build(),
                     ServiceType.ILLUMINANCE_STATE_SERVICE,
-                    location).build();
+                    lightSensor).build();
             final ActionDescription sunnyState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     IlluminanceState.newBuilder().setValue(IlluminanceState.State.SUNNY).build(),
                     ServiceType.ILLUMINANCE_STATE_SERVICE,
-                    location).build();
+                    lightSensor).build();
 
             LOGGER.info("prepare setup...");
             Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);

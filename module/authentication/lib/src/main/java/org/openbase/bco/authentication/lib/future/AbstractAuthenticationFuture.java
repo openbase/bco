@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.lib.future;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
@@ -106,7 +107,9 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
                     }, 1, 5, TimeUnit.SECONDS);
                     Shutdownable.registerShutdownHook(() -> responseVerificationFuture.cancel(true));
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not initialize task which makes sure that authenticated response are verified", ex, LoggerFactory.getLogger(AbstractAuthenticationFuture.class));
+                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                        ExceptionPrinter.printHistory("Could not initialize task which makes sure that authenticated response are verified", ex, LoggerFactory.getLogger(AbstractAuthenticationFuture.class));
+                    }
                 }
             }
             authenticatedFutureList.add(this);

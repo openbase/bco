@@ -1,4 +1,5 @@
 rootProject.name = "bco"
+
 include("authentication")
 include("registry")
 include("dal")
@@ -97,9 +98,7 @@ project(":bco.dal.control").projectDir = file("module/dal/control")
 project(":bco.dal.lib").projectDir = file("module/dal/lib")
 project(":bco.dal.visual").projectDir = file("module/dal/visual")
 project(":bco.dal.test").projectDir = file("module/dal/test")
-
 project(":bco.api.graphql").projectDir = file("module/api/graphql")
-
 project(":bco.app.manager").projectDir = file("module/app/manager")
 project(":bco.app.util").projectDir = file("module/app/util")
 project(":bco.app.base").projectDir = file("module/app/base")
@@ -110,10 +109,12 @@ project(":bco.app.test").projectDir = file("module/app/test")
 
 project(":bco.device.openhab").projectDir = file("module/device/openhab")
 
+// includeBuild("lib/type") // not supported yet since its not a gradle project
+includeBuild("lib/jul")
+
 pluginManagement {
     plugins {
-        id("de.fayard.refreshVersions") version "0.40.0"
-////                                # available:"0.40.1"
+        id("de.fayard.refreshVersions") version "0.40.1"
     }
 }
 

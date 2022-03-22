@@ -200,6 +200,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         this.addDataObserver(ServiceTempus.REQUESTED, (source, data) -> {
             // update requested state cache and create timeouts
             for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+
                 // skip if the service is not an operation service
                 if (serviceDescription.getPattern() != OPERATION) {
                     continue;
@@ -1121,6 +1122,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
+    public void initRescheduling() {
+        try {
+            scheduleTimeout.restart(3, TimeUnit.MILLISECONDS);
+        } catch (CouldNotPerformException ex) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not init rescheduling!", ex, logger);
+            }
+        }
+    }
+
     /**
      * Update the action list in the data builder and notify.
      * <p>
@@ -1379,7 +1390,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public void applyDataUpdate(Message newState, final ServiceType serviceType) throws CouldNotPerformException {
-
         try {
             if (!builderSetup.tryLockWrite(5, TimeUnit.SECONDS, this)) {
                 throw new InvalidStateException("Unit seems to be stuck!");

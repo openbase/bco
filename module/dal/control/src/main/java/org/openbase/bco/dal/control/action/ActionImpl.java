@@ -464,15 +464,16 @@ public class ActionImpl implements SchedulableAction {
                     updateActionStateWhileHoldingWriteLock(State.CANCELED);
                 }
 
+                // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
+                try {
+                    unit.updateTransactionId();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update transaction id", ex, LOGGER);
+                }
+
                 // notify transaction id change
                 try {
                     if (!unit.isDataBuilderWriteLockedByCurrentThread()) {
-                        // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
-                        try {
-                            unit.updateTransactionId();
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Could not update transaction id", ex, LOGGER);
-                        }
                         unit.notifyChange();
                     }
                 } catch (CouldNotPerformException ex) {
@@ -507,7 +508,6 @@ public class ActionImpl implements SchedulableAction {
                         }
                     }
                     return getActionDescription();
-
                 });
             } catch (RejectedExecutionException ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel " + this, ex));
@@ -780,6 +780,11 @@ public class ActionImpl implements SchedulableAction {
                 actionDescriptionBuilder.setTerminationTimestamp(TimestampProcessor.getCurrentTimestamp());
             }
 
+            // make sure that state changes to finishing states, scheduled and executing always trigger a notification
+            if (isNotifiedActionState(state)) {
+                unit.notifyScheduledActionList();
+            }
+
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
         }
@@ -787,11 +792,6 @@ public class ActionImpl implements SchedulableAction {
         // notify about state change to wakeup all wait methods.
         synchronized (executionStateChangeSync) {
             executionStateChangeSync.notifyAll();
-        }
-
-        // make sure that state changes to finishing states, scheduled and executing always trigger a notification
-        if (isNotifiedActionState(state)) {
-            unit.notifyScheduledActionList();
         }
     }
 

@@ -12,11 +12,11 @@ plugins {
 
 repositories {
     mavenLocal()
+    mavenCentral()
+    google()
     maven {
         url = uri("https://oss.sonatype.org/content/groups/public/")
     }
-    google()
-    mavenCentral()
 }
 
 group = "org.openbase"
