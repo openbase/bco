@@ -1127,7 +1127,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             scheduleTimeout.restart(3, TimeUnit.MILLISECONDS);
         } catch (CouldNotPerformException ex) {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
-                ExceptionPrinter.printHistory("Could not rinit rescheduling!", ex, logger);
+                ExceptionPrinter.printHistory("Could not init rescheduling!", ex, logger);
             }
         }
     }
