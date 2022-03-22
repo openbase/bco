@@ -23,6 +23,7 @@ package org.openbase.bco.app.util.launch;
  */
 
 import org.openbase.bco.authentication.lib.BCO;
+import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.remote.action.Actions;
@@ -38,6 +39,8 @@ import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.communication.jp.JPComPort;
+import org.openbase.jul.communication.jp.JPComHost;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
@@ -73,14 +76,17 @@ public class BCOAdhocTrainDataGeneratorLauncher {
     /**
      * @param args the command line arguments
      */
-    public static void main(final String[] args) throws JPServiceException {
+    public static void main(final String[] args) throws JPServiceException, CouldNotPerformException {
         BCO.printLogo();
+        JPService.registerProperty(JPComPort.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPBCOHomeDirectory.class);
         JPService.registerProperty(JPProviderControlMode.class, true);
         JPService.registerProperty(JPDebugMode.class, false);
         JPService.registerProperty(JPVerbose.class, false);
         JPService.parse(args);
 
-        BCOLogin.getSession().autoLogin(true);
+        BCOLogin.getSession().loginUserViaUsername("admin", "admin", true);
 
         try {
             LOGGER.info("please make sure bco is started with the --provider-control flag, otherwise no provider services can be synthesised.");
