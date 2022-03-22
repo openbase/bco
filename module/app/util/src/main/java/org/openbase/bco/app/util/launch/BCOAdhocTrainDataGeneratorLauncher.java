@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -91,7 +92,6 @@ public class BCOAdhocTrainDataGeneratorLauncher {
             LOGGER.info("waiting for registry synchronization...");
             Registries.waitUntilReady();
 
-
             LOGGER.info("authenticate...");
             BCOLogin.getSession().loginUserViaUsername("admin", "admin", true);
 
@@ -101,6 +101,7 @@ public class BCOAdhocTrainDataGeneratorLauncher {
 
             LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("Location-Adhoc"), true, Units.LOCATION);
             ColorableLightRemote light = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("ColorableLight-Adhoc"), true, Units.COLORABLE_LIGHT);
+            LightSensorRemote lightSensor = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("LightSensor-Adhoc"), true, Units.LIGHT_SENSOR);
 
             final ActionDescription absentState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     PresenceState.newBuilder().setValue(PresenceState.State.ABSENT).build(),
@@ -114,11 +115,11 @@ public class BCOAdhocTrainDataGeneratorLauncher {
             final ActionDescription darkState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     IlluminanceState.newBuilder().setValue(IlluminanceState.State.DARK).build(),
                     ServiceType.ILLUMINANCE_STATE_SERVICE,
-                    location).build();
+                    lightSensor).build();
             final ActionDescription sunnyState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     IlluminanceState.newBuilder().setValue(IlluminanceState.State.SUNNY).build(),
                     ServiceType.ILLUMINANCE_STATE_SERVICE,
-                    location).build();
+                    lightSensor).build();
 
             LOGGER.info("prepare setup...");
             Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
