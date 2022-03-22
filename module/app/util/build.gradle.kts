@@ -87,6 +87,10 @@ createAdditionalScript("bco-logger") {
     mainClass.set("org.openbase.bco.dal.remote.printer.BCOLogger")
 }
 
+createAdditionalScript("bco-actions") {
+    mainClass.set("org.openbase.bco.dal.visual.action.BCOActionInspectorLauncher")
+}
+
 distributions {
     main {
         distributionBaseName.set("bco")
