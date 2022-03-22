@@ -86,12 +86,14 @@ public class BCOAdhocTrainDataGeneratorLauncher {
         JPService.registerProperty(JPVerbose.class, false);
         JPService.parse(args);
 
-        BCOLogin.getSession().loginUserViaUsername("admin", "admin", true);
-
         try {
             LOGGER.info("please make sure bco is started with the --provider-control flag, otherwise no provider services can be synthesised.");
             LOGGER.info("waiting for registry synchronization...");
             Registries.waitUntilReady();
+
+
+            LOGGER.info("authenticate...");
+            BCOLogin.getSession().loginUserViaUsername("admin", "admin", true);
 
             // init
             final int trainingSetCounter = 10;
