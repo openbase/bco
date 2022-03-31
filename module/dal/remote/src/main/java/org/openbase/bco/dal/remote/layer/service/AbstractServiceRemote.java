@@ -677,7 +677,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
 
             final boolean newSubmission = !actionDescriptionBuilder.getCancel() && !actionDescriptionBuilder.getExtend();
 
-            // only setup id of this intermediary action if this is an new submission and responsible unit is declared
+            // only setup id of this intermediary action if this is a new submission and responsible unit is declared
             if (newSubmission) {
 
                 // mark this actions as intermediary
@@ -688,7 +688,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
                     throw new InvalidStateException("Action[" + actionDescriptionBuilder + "] has been applied twice which is an invalid operation!");
                 }
 
-                // only register responsible action in case its not a multi action.
+                // only register responsible action in case it`s not a multi action.
                 if (!ActionDescriptionProcessor.isMultiAction(actionDescriptionBuilder)) {
 
                     // resolve target unit

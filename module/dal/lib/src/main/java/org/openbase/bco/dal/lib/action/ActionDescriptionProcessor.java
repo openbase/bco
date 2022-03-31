@@ -1294,7 +1294,7 @@ public class ActionDescriptionProcessor {
         return "Action["
                 + (actionDescription.hasActionId() ? actionDescription.getActionId() + "|" : "")
                 + (actionDescription.hasIntermediary() ? "Intermediary:" + actionDescription.getIntermediary() + "|" : "")
-                + "Unit:" + resolveUnitLabel(actionDescription.getServiceStateDescription().getUnitId())
+                + "Unit:" + resolveUnitLabel(actionDescription.getServiceStateDescription().getUnitId()) + "|"
                 + (actionDescription.hasServiceStateDescription() ? (actionDescription.getServiceStateDescription().getServiceType().name() + "=" + actionDescription.getServiceStateDescription().getServiceState() + "|") : "")
                 + "State:" + actionDescription.getActionState().getValue().name()
                 + "]";

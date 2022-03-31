@@ -27,6 +27,7 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
+import lombok.val;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalIdentifiedProcessable;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
@@ -148,7 +149,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final Observer<DataProvider<UnitRegistryData>, UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable<ServiceStateProvider<Message>, Message>>> serviceTempusServiceTypeObservableMap;
-    private final ReentrantReadWriteLock actionListNotificationLock = new ReentrantReadWriteLock();
     private final ActionComparator actionComparator;
     private final SyncObject requestedStateCacheSync = new SyncObject("RequestedStateCacheSync");
     private final Map<ServiceType, Message> requestedStateCache;
@@ -225,6 +225,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 logger.debug("Reschedule by timer.");
                 try {
                     reschedule();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
                 } catch (CouldNotPerformException ex) {
                     if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not reschedule via timer!", ex), logger, LogLevel.WARN);
@@ -688,8 +690,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
-    public SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException {
-        builderSetup.lockRead(lockConsumer);
+    public SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException, InterruptedException {
+        builderSetup.lockReadInterruptibly(lockConsumer);
         try {
             // lookup action to cancel
             for (SchedulableAction action : scheduledActionList) {
@@ -792,6 +794,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 } catch (NotAvailableException ex) {
                     // if the action is not any longer available, then it can be marked as canceled to inform the remote instance.
                     return FutureProcessor.completedFuture(actionDescription.toBuilder().setActionState(ActionState.newBuilder().setValue(State.CANCELED).build()).build());
+                } catch (InterruptedException e) {
+                    return FutureProcessor.canceledFuture(ActionDescription.class, e);
                 }
 
                 // validate permissions
@@ -814,7 +818,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     protected Future<ActionDescription> extendAction(final ActionDescription actionDescription, final String authenticatedId) {
         try {
-            builderSetup.lockWrite(LOCK_CONSUMER_EXTEND_ACTION);
+            builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_EXTEND_ACTION);
             try {
                 // retrieve action
                 final SchedulableAction actionToExtend = getActionById(actionDescription.getActionId(), LOCK_CONSUMER_EXTEND_ACTION);
@@ -841,6 +845,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 // unlock and notify
                 builderSetup.unlockWrite();
             }
+        } catch (InterruptedException ex) {
+            return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not extend Action[" + actionDescription.getActionId() + "]", ex));
         }
@@ -864,16 +870,16 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             }
 
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | InterruptedException ex) {
             FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
 
         return FutureProcessor.completedFuture(actionToSchedule.getActionDescription());
     }
 
-    private int getSchedulingIndex(Action action) {
+    private int getSchedulingIndex(Action action) throws InterruptedException {
 
-        builderSetup.lockRead(LOCK_CONSUMER_INDEX_LOOKUP);
+        builderSetup.lockReadInterruptibly(LOCK_CONSUMER_INDEX_LOOKUP);
         try {
             return scheduledActionList.indexOf(action);
         } finally {
@@ -890,7 +896,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
-    public Action reschedule() throws CouldNotPerformException {
+    public Action reschedule() throws CouldNotPerformException, InterruptedException {
         return reschedule(null);
     }
 
@@ -905,17 +911,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
-    private Action reschedule(final SchedulableAction actionToSchedule) throws CouldNotPerformException {
+    private Action reschedule(final SchedulableAction actionToSchedule) throws CouldNotPerformException, InterruptedException {
 
         // avoid scheduling during shutdown
         if (isShutdownInProgress()) {
             throw new ShutdownInProgressException(this);
         }
 
-        builderSetup.lockWrite(LOCK_CONSUMER_SCHEDULING);
+        builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULING);
         try {
-            // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
-            actionListNotificationLock.writeLock().lock();
             try {
                 // cancel timer if still running because it will be restarted at the end of the schedule anyway.
                 if (!scheduleTimeout.isExpired()) {
@@ -1068,7 +1072,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                         }
                     }
 
-                    // execute action with highest ranking if it is not already the currently executing one.
+                    // execute action with the highest ranking if it is not already the currently executing one.
                     if (nextAction != currentAction) {
 
                         // abort current action before executing the next one.
@@ -1104,8 +1108,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
                 }
             } finally {
-                actionListNotificationLock.writeLock().unlock();
-
                 // sync action list but do not notify since builder is still locked.
                 try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
                     // sync
@@ -1115,9 +1117,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 }
             }
         } finally {
-            // unlock the builder setup but only notify if this is not just a recursive rescheduling
-            // where the notification will done anyway as soon as the last rescheduling call hits this point.
-            //builderSetup.unlockWrite(!actionListNotificationLock.isWriteLockedByCurrentThread());
             builderSetup.unlockWrite();
         }
     }
@@ -1137,31 +1136,22 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * <p>
      * Note: The sync and notification is skip if the unit is currently rescheduling actions or the write lock is still hold.
      */
-    public void notifyScheduledActionList() {
+    public void notifyScheduledActionList() throws InterruptedException {
 
         // skip notification when builder setup is locked since then the notification is performed anyway.
-        if (!builderSetup.tryLockWrite(LOCK_CONSUMER_NOTIFICATION)) {
+        if(!builderSetup.tryLockWrite(10, TimeUnit.SECONDS, LOCK_CONSUMER_NOTIFICATION)) {
+            logger.warn("Skip action list sync since builder setup is busy.");
+            // todo: we might want to mark the data object as dirty, since the action list is not up to date in this case.
             return;
         }
         try {
-            // lock the notification lock so that action state changes applied during rescheduling do not trigger notifications
-            if (!actionListNotificationLock.writeLock().tryLock()) {
-                // skip since notification will be performed when lock is unlocked anyway.
-                logger.debug("skip action list notification.");
-                return;
-            }
-            try {
-                try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
-                    // sync
-                    syncActionList(dataBuilder.getInternalBuilder());
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    return;
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
-                }
-            } finally {
-                actionListNotificationLock.writeLock().unlock();
+            try (final ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
+                // sync
+                syncActionList(dataBuilder.getInternalBuilder());
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Could not update action list!", ex, logger);
             }
         } finally {
             builderSetup.unlockWrite();
@@ -1369,22 +1359,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
 
 
-        // reject all actions on stack
-        // wait at least 2 sec until all scheduling routines are finished.
-        try {
-            final boolean success = actionListNotificationLock.writeLock().tryLock(2, TimeUnit.SECONDS);
-            try {
-                for (SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
-                    schedulableAction.reject();
-                }
-            } finally {
-                if (success) {
-                    actionListNotificationLock.writeLock().unlock();
-                }
+        for (SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
+            if(!schedulableAction.isDone()) {
+                schedulableAction.reject();
             }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            // skip action rejection on interrupt to speedup the shutdown...
         }
     }
 
@@ -1399,61 +1377,61 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             try {
                 try (ClosableDataBuilder<DB> dataBuilder = getDataBuilderInterruptible(this)) {
                     final DB internalBuilder = dataBuilder.getInternalBuilder();
-
-                    // compute new state by resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
                     try {
-                        newState = computeNewState(newState, serviceType, internalBuilder);
-                    } catch (RejectedException ex) {
-                        // update not required since its compatible with the currently applied state, therefore we just skip the update.
-                        ExceptionPrinter.printHistory("update not required since its compatible with the currently applied state, therefore we just skip the update", ex, logger, LogLevel.DEBUG);
-                        return;
+                        // compute new state by resolving requested value, detecting hardware feedback loops of already applied states and handling the rescheduling process.
+                        try {
+                            newState = computeNewState(newState, serviceType, internalBuilder);
+                        } catch (RejectedException ex) {
+                            // update not required since its compatible with the currently applied state, therefore we just skip the update.
+                            ExceptionPrinter.printHistory("update not required since its compatible with the currently applied state, therefore we just skip the update", ex, logger, LogLevel.DEBUG);
+                            return;
+                        }
+
+                        // verify the service state
+                        newState = Services.verifyAndRevalidateServiceState(newState);
+
+                        // move current state to last state
+                        updateLastWithCurrentState(serviceType, internalBuilder);
+
+                        // copy latestValueOccurrence map from current state, only if available
+                        try {
+                            Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
+                            Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
+                            newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+                        } catch (NotAvailableException ex) {
+                            // skip last value update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
+                        }
+
+                        // log state transition
+                        if (logger.isInfoEnabled()) {
+                            final String from = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder), serviceType));
+                            final String to = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType));
+                            logger.info(getLabel("?") + " is updated " + (from.isEmpty() ? "" : "from " + from + " ") + "to " + to + ".");
+                        }
+
+                        if (!Services.hasResponsibleAction(newState)) {
+                            StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
+                        }
+
+                        // update the current state
+                        Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
+
+                        // Update timestamps
+                        updatedAndValidateTimestamps(serviceType, internalBuilder);
+
+                        // do custom state depending update in sub classes
+                        applyCustomDataUpdate(internalBuilder, serviceType);
+
+                    } finally {
+                        // sync updated action list
+                        syncActionList(internalBuilder);
                     }
-
-                    // verify the service state
-                    newState = Services.verifyAndRevalidateServiceState(newState);
-
-                    // move current state to last state
-                    updateLastWithCurrentState(serviceType, internalBuilder);
-
-                    // copy latestValueOccurrence map from current state, only if available
-                    try {
-                        Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
-                        Message oldServiceState = Services.invokeProviderServiceMethod(serviceType, internalBuilder);
-                        newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
-                    } catch (NotAvailableException ex) {
-                        // skip last value update if field is missing because some states do not contain latest value occurrences (ColorState, PowerConsumptionState, ...)
-                    }
-
-                    // log state transition
-                    if (logger.isInfoEnabled()) {
-                        final String from = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(Services.invokeProviderServiceMethod(serviceType, internalBuilder), serviceType));
-                        final String to = LabelProcessor.getBestMatch(Services.generateServiceStateLabel(newState, serviceType));
-                        logger.info(getLabel("?") + " is updated " + (from.isEmpty() ? "" : "from " + from + " ") + "to " + to + ".");
-                    }
-
-                    if (!Services.hasResponsibleAction(newState)) {
-                        StackTracePrinter.printStackTrace("Applied data update does not offer an responsible action!", logger, LogLevel.WARN);
-                    }
-
-                    // update the current state
-                    Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
-
-                    // Update timestamps
-                    updatedAndValidateTimestamps(serviceType, internalBuilder);
-
-                    // do custom state depending update in sub classes
-                    applyCustomDataUpdate(internalBuilder, serviceType);
-
-                    // sync updated action list
-                    syncActionList(dataBuilder.getInternalBuilder());
                 }
-
             } finally {
                 builderSetup.unlockWrite(NotificationStrategy.AFTER_LAST_RELEASE);
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            return;
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply Service[" + serviceType.name() + "] Update[" + newState + "] for " + this + "!", ex);
         }
@@ -1516,7 +1494,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @throws RejectedException        in case the state would not change anything compared to the current one.
      * @throws CouldNotPerformException if the state could not be computed.
      */
-    private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, RejectedException {
+    private Message computeNewState(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, RejectedException, InterruptedException {
         try {
             // if the given state is a provider service, than no further steps have to be performed
             // because only operation service actions can be remapped
@@ -1583,7 +1561,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     continue;
                 }
 
-                // when priorities are both available but they do not match, than it can not be the same action.
+                // when priorities are both available, but they do not match, then it can not be the same action.
                 final ActionDescription responsibleAction = ServiceStateProcessor.getResponsibleAction(serviceState);
                 if (action.getActionDescription().hasPriority() &&
                         responsibleAction.hasPriority() &&
@@ -1622,8 +1600,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 if (requestedStateCache.containsKey(serviceType) && Services.isCompatible(serviceState, serviceType, requestedStateCache.get(serviceType))) {
 
                     // there are two reasons why we can reach this state
-                    // 1. The incoming state update is just an update of an further affected state..
-                    // 2. Its just an additional synchronization update
+                    // 1. The incoming state update is just an update of a further affected state.
+                    // 2. It`s just an additional synchronization update
                     // in case we are compatible with the current state we don't care about the update.
                     return serviceState;
                 }
@@ -1668,7 +1646,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         }
     }
 
-    private Message forceActionExecution(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException {
+    private Message forceActionExecution(final Message serviceState, final ServiceType serviceType, final DB internalBuilder) throws CouldNotPerformException, InterruptedException {
 
         try {
             final Message.Builder serviceStateBuilder = serviceState.toBuilder();
@@ -1683,37 +1661,27 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 ActionDescriptionProcessor.generateAndSetResponsibleAction(serviceStateBuilder, serviceType, this, Timeout.INFINITY_TIMEOUT, TimeUnit.MILLISECONDS, false, false, false, Priority.NO, null);
             }
 
-            // locking this lock skips the notification by calling reject or abort below
-            // else the builderSyncSetup is retrieved twice by the same thread which can cause a deadlock because the lock is held during the notification
-            // if the applyDataUpdate method finished these new states are notified anyway
-            actionListNotificationLock.writeLock().lock();
-            try {
-
-                // if there was another action executing before, abort it because its anyway outdated and if it is important, than it gets executed after rescheduling anyway.
-                if (!scheduledActionList.isEmpty()) {
-                    final SchedulableAction schedulableAction = scheduledActionList.get(0);
-                    if (schedulableAction.isProcessing()) {
-                        // only abort/reject action if the action is processing
-                        if (schedulableAction.getActionDescription().getInterruptible()) {
-                            schedulableAction.abort();
-                        } else {
-                            schedulableAction.reject();
-                        }
+            // if there was another action executing before, abort it because its anyway outdated and if it is important, than it gets executed after rescheduling anyway.
+            if (!scheduledActionList.isEmpty()) {
+                final SchedulableAction schedulableAction = scheduledActionList.get(0);
+                if (schedulableAction.isProcessing()) {
+                    // only abort/reject action if the action is processing
+                    if (schedulableAction.getActionDescription().getInterruptible()) {
+                        schedulableAction.abort();
+                    } else {
+                        schedulableAction.reject();
                     }
                 }
-
-                // add action to force
-                scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this));
-
-                // trigger a reschedule which can trigger the action with a higher priority again
-                reschedule();
-
-                // update action list in builder
-                syncActionList(internalBuilder);
-            } finally {
-                actionListNotificationLock.writeLock().unlock();
             }
 
+            // add action to force
+            scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this));
+
+            // trigger a reschedule which can trigger the action with a higher priority again
+            reschedule();
+
+            // update action list in builder
+            syncActionList(internalBuilder);
             return serviceStateBuilder.build();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not force action execution!", ex);
@@ -1731,29 +1699,26 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
         builderSetup.lockWriteInterruptibly(LOCK_CONSUMER_SCHEDULING);
         try {
-            actionListNotificationLock.writeLock().lockInterruptibly();
-            try {
+            // cancel requested action cache
+            requestedStateCache.clear();
 
-                // cancel requested action cache
-                requestedStateCache.clear();
+            // cancel all actions except the service termination
+            for (int i = scheduledActionList.size() - 1; i >= 0; i--) {
 
-                // cancel all actions except the service termination
-                for (int i = scheduledActionList.size() - 1; i >= 0; i--) {
-
-                    // do not cancel the termination action
-                    if (scheduledActionList.get(i).getActionDescription().getPriority() == Priority.TERMINATION) {
-                        continue;
-                    }
-
-                    // cancel all other actions on the stack
-                    scheduledActionList.remove(i).cancel();
+                // do not cancel the termination action
+                if (scheduledActionList.get(i).getActionDescription().getPriority() == Priority.TERMINATION) {
+                    continue;
                 }
 
-                // final reschedule for cleanup
-                reschedule();
-            } finally {
-                actionListNotificationLock.writeLock().unlock();
+                // cancel all other actions on the stack
+                final Action removedAction = scheduledActionList.remove(i);
+                if(!removedAction.isDone()) {
+                    removedAction.cancel();
+                }
             }
+
+            // final reschedule for cleanup
+            reschedule();
         } finally {
             builderSetup.unlockWrite(NotificationStrategy.AFTER_LAST_RELEASE);
         }

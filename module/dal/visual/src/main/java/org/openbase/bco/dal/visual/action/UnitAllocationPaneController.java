@@ -38,6 +38,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.util.Pair;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -45,6 +46,7 @@ import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -69,7 +71,9 @@ import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -284,7 +288,14 @@ public class UnitAllocationPaneController extends AbstractFXController {
                 unitIdProperty.set(c);
             });
 
-            unitSelectionPaneControllerPair.getValue().setupServicePatternPass(ServicePattern.OPERATION);
+            List<ServicePattern> servicePatterns = new ArrayList<>();
+            servicePatterns.add(ServicePattern.OPERATION);
+
+            if(JPService.getValue(JPProviderControlMode.class, false)) {
+                servicePatterns.add(ServicePattern.PROVIDER);
+            }
+
+            unitSelectionPaneControllerPair.getValue().setupServicePatternPass(servicePatterns);
 
             actionTable.setItems(unitAllocationData);
             actionChainTable.setItems(actionChainData);

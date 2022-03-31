@@ -30,11 +30,8 @@ import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Background;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.openbase.bco.dal.visual.util.SelectorPanel.LocationUnitConfigHolder;
-import org.openbase.bco.dal.visual.util.SelectorPanel.UnitConfigHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -484,12 +481,12 @@ public class UnitSelectionPaneController extends AbstractFXController {
         this.unitTemplateFilter = unitTemplateFilter;
     }
 
-    public void setupServicePatternPass(final ServicePattern servicePattern) {
+    public void setupServicePatternPass(final List<ServicePattern> servicePatterns) {
 
         // filter services which do not support the service pattern.
         setServiceTemplateFilter(serviceTemplate -> {
             try {
-                return !Registries.getTemplateRegistry(false).validateServicePatternSupport(serviceTemplate.getServiceType(), servicePattern);
+                return !Registries.getTemplateRegistry(false).validateServicePatternSupport(serviceTemplate.getServiceType(), servicePatterns);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not compute match for service pattern filter!", ex, LOGGER, LogLevel.DEBUG);
             } catch (InterruptedException ex) {
@@ -501,7 +498,7 @@ public class UnitSelectionPaneController extends AbstractFXController {
         // filter units which do not support the service pattern.
         setUnitTemplateFilter(unitTemplate -> {
             for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
-                if (serviceDescription.getPattern() == servicePattern) {
+                if (servicePatterns.contains(serviceDescription.getPattern())) {
                     return false;
                 }
             }

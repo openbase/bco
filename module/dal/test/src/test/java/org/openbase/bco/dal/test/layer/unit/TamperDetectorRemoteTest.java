@@ -106,6 +106,6 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.TAMPER, tamperDetectorRemote.getTamperState()));
         comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
-        assertFalse("The last detection timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertFalse("The last detection timestamp has been updated even though it should not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }
 }

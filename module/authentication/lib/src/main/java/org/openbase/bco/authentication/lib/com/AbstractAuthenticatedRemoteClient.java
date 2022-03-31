@@ -36,7 +36,6 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.communication.EventType.Event;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -64,13 +63,7 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
             if (otherData != null) {
                 setData(otherData);
             }
-            if (isSyncRunning()) {
-                // if a sync task is still running restart it
-                restartSyncTask();
-            } else {
-                // trigger a new data request to update data for the user
-                requestData();
-            }
+            restartSyncTask();
         };
     }
 
@@ -85,11 +78,15 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
             final SessionManager sessionManager = SessionManager.getInstance();
             if (sessionManager.isLoggedIn()) {
                 final TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.initializeServiceServerRequest();
-                final Future<AuthenticatedValue> authenticatedValueFuture = getRpcClient().callMethod(
-                        AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
-                        AuthenticatedValue.class,
-                        ticketAuthenticatorWrapper
-                );
+                final Future<AuthenticatedValue> authenticatedValueFuture =
+                        FutureProcessor.postProcess(
+                                (input, timeout, timeUnit) -> input.getResponse(),
+                                getRpcClient().callMethod(
+                                AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
+                                AuthenticatedValue.class,
+                                ticketAuthenticatorWrapper
+                            )
+                        );
                 final ReLoginFuture<AuthenticatedValue> reloginFuture = new ReLoginFuture<>(
                         authenticatedValueFuture,
                         sessionManager
@@ -124,38 +121,18 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
         @Override
         public Unit invoke(Event event) {
             try {
-                if (event.hasPayload()) {
-                    otherData = event.getPayload().unpack(getDataClass());
-                    if (SessionManager.getInstance().isLoggedIn()) {
-                        // received a new data event from the controller which is filtered for other permissions, so trigger an authenticated request
-                        GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                            if (isSyncRunning()) {
-                                // a sync task is currently running so wait for it to finish and trigger a new one
-                                // to make sure that the latest data update is received
-                                try {
-                                    requestData().get(10, TimeUnit.SECONDS);
-                                } catch (InterruptedException ex) {
-                                    Thread.currentThread().interrupt();
-                                    return null;
-                                } catch (ExecutionException | TimeoutException ex) {
-                                    throw new CouldNotPerformException("Could not wait for running sync task", ex);
-                                } catch (CancellationException ex) {
-                                    logger.error("Cancellation exception", ex);
-                                    // request data was cancelled and is most likely done again by the login observer
-                                    return null;
-                                }
-                            }
-                            requestData();
-                            return null;
-                        });
-                    } else {
-                        applyEventUpdate(event);
-                    }
-                } else {
+
+                if (!SessionManager.getInstance().isLoggedIn() || !event.hasPayload()) {
                     applyEventUpdate(event);
+                    return null;
                 }
+
+                // cache data object with other permissions.
+                otherData = event.getPayload().unpack(getDataClass());
+
+                restartSyncTask();
             } catch (Exception ex) {
-                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Internal notification failed!", ex), logger);
                 }
             }
