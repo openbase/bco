@@ -81,13 +81,12 @@ public class BCOLogger extends UnitStatePrinter {
             final BCOLogger bcoLogger = new BCOLogger();
             bcoLogger.init();
             bcoLogger.activate();
+            LOGGER.info(APP_NAME + " successfully started.");
         } catch (CouldNotPerformException ex) {
-            if (ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             }
-            return;
         }
-        LOGGER.info(APP_NAME + " successfully started.");
     }
 
     private static PrintStream getModelPrintStream() {

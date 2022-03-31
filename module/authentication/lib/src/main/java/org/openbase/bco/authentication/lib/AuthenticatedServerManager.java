@@ -29,6 +29,7 @@ import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -109,14 +110,14 @@ public class AuthenticatedServerManager {
         // create authentication base data from ticket
         final AuthenticationBaseData authenticationBaseData = verifyClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
 
-        // if authenticated value has this token encrypt it and add it to the return data
+        // if authenticated value has this token, encrypt it and add it to the return data
         if (authenticatedValue.hasAuthorizationToken()) {
             String tokenString = EncryptionHelper.decryptSymmetric(authenticatedValue.getAuthorizationToken(), authenticationBaseData.getSessionKey(), String.class);
             AuthorizationToken decrypt = EncryptionHelper.decrypt(Base64.getDecoder().decode(tokenString), serviceServerSecretKey, AuthorizationToken.class, true);
             authenticationBaseData.setAuthorizationToken(decrypt);
         }
 
-        // if authenticated value has this token encrypt it and add it to the return data
+        // if authenticated value has this token, encrypt it and add it to the return data
         if (authenticatedValue.hasAuthenticationToken()) {
             String tokenString = EncryptionHelper.decryptSymmetric(authenticatedValue.getAuthenticationToken(), authenticationBaseData.getSessionKey(), String.class);
             AuthenticationToken decrypt = EncryptionHelper.decrypt(Base64.getDecoder().decode(tokenString), serviceServerSecretKey, AuthenticationToken.class, true);
@@ -192,7 +193,9 @@ public class AuthenticatedServerManager {
             this.ticketAuthenticatorWrapper = ticketWrapperSessionKeyPair.getTicketAuthenticatorWrapper();
             this.sessionKey = ticketWrapperSessionKeyPair.getSessionKey();
         } catch (ExecutionException | JPNotAvailableException | CouldNotPerformException | IOException | InterruptedException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            }
             throw new CouldNotPerformException("Login failed!", ex);
         }
     }

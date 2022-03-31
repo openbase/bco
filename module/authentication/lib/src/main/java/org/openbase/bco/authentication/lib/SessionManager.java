@@ -458,10 +458,6 @@ public class SessionManager implements Shutdownable, Session {
                     userClientPair.clearClientId();
                 }
             }
-            // todo: @pleminoq anything else the reset?
-            // e.g. ticketAuthenticatorWrapper, sessionKey
-
-            LOGGER.info("Login failed: ", ex);
             throw ex;
         }
     }
