@@ -39,6 +39,7 @@ buildNumber.properties
 
 ### Gradle ###
 .gradle
+.gradletasknamecache
 build/
 
 # Ignore Gradle GUI config
@@ -52,18 +53,18 @@ gradle-app.setting
 **/*/nbproject
 
 ### Eclipse ###
-   *.pydevproject
-   .metadata
-   .gradle
-   bin/
-   tmp/
-   *.tmp
-   *.bak
-   *.swp
-   *~.nib
-   local.properties
-   .settings/
-   .loadpath
+*.pydevproject
+.metadata
+.gradle
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
 
 # Eclipse Core
 .project
@@ -72,7 +73,7 @@ gradle-app.setting
 .externalToolBuilders/
 
 # Locally stored "Eclipse launch configurations"
-   *.launch
+*.launch
 
 # CDT-specific
 .cproject
@@ -129,7 +130,6 @@ gradle-app.setting
 .idea/modules
 *.iml
 *.ipr
-.idea/libraries-with-intellij-classes.xml
 
 # CMake
 cmake-build-*/
@@ -142,7 +142,7 @@ cmake-build-*/
 
 # IntelliJ
 out/
-.idea
+**/.idea
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
