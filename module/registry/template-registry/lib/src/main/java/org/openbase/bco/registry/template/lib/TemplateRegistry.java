@@ -192,7 +192,7 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * which means it is registered as operation service within at least one unit template.
      *
      * @param serviceType the service type to check.
-     * @param servicePattern the service to check for.
+     * @param servicePatterns the service to check for.
      *
      * @return true if the service type supports the service pattern, otherwise false.
      *
