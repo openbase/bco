@@ -35,6 +35,10 @@ createAdditionalScript("bco-logo") {
     mainClass.set("org.openbase.bco.app.util.launch.LogoPrinter")
 }
 
+createAdditionalScript("bco-ping") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOPing")
+}
+
 createAdditionalScript("bco-manager") {
     mainClass.set("org.openbase.bco.app.util.launch.ManagerLauncher")
 }
