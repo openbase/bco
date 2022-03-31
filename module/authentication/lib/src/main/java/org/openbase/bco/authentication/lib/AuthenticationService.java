@@ -1,7 +1,6 @@
 package org.openbase.bco.authentication.lib;
 
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.communication.data.RPCResponse;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;

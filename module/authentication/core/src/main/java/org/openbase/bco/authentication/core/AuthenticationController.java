@@ -34,7 +34,6 @@ import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.communication.config.CommunicatorConfig;
-import org.openbase.jul.communication.data.RPCResponse;
 import org.openbase.jul.communication.iface.CommunicatorFactory;
 import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.communication.mqtt.CommunicatorFactoryImpl;
