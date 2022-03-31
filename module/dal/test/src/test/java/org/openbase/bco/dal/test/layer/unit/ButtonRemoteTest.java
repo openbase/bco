@@ -69,8 +69,13 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetButtonState() throws Exception {
         System.out.println("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
-        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyServiceState(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        ButtonState controllerButtonState = deviceManagerLauncher
+                .getLaunchable()
+                .getUnitControllerRegistry()
+                .get(buttonRemote.getId())
+                .applyServiceState(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         buttonRemote.requestData().get();
+        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), controllerButtonState.getValue());
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
     }
 

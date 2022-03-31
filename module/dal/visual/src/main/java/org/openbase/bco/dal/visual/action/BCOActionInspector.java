@@ -22,6 +22,7 @@ package org.openbase.bco.dal.visual.action;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.communication.jp.JPComHost;
 import org.openbase.jul.communication.jp.JPComPort;
@@ -37,6 +38,7 @@ public class BCOActionInspector extends AbstractFXMLApplication {
     protected void registerProperties() {
         JPService.registerProperty(JPComPort.class);
         JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPProviderControlMode.class);
     }
 
     public static void main(String[] args) {

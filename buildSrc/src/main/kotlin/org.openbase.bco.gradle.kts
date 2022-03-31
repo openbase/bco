@@ -20,7 +20,6 @@ repositories {
 }
 
 group = "org.openbase"
-version = "3.0-SNAPSHOT"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_11

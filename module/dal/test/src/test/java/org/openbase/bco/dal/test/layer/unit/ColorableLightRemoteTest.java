@@ -231,7 +231,9 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(61).setSaturation(0.23).setBrightness(0.37).build();
         final RemoteAction action = waitForExecution(colorableLightRemote.setColor(color));
-        ColorState colorResult = colorableLightRemote.callMethodAsync("getColorState", ColorState.class).get();
+        ColorState colorResult = colorableLightRemote.callMethodAsync("getColorState", ColorState.class)
+                .get()
+                .getResponse();
         assertEquals("Color has not been set in time or the return value from the getter is different!", color, colorResult.getColor().getHsbColor());
 
         // cancel manual action

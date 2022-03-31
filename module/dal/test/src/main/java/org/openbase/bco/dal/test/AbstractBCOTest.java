@@ -369,11 +369,7 @@ public class AbstractBCOTest extends MqttIntegrationTest {
         testActions.add(remoteAction);
 
         // cleanup finished actions
-        for (RemoteAction testAction : new ArrayList<>(testActions)) {
-            if (testAction.isDone()) {
-                testActions.remove(testAction);
-            }
-        }
+        testActions.removeIf(RemoteAction::isDone);
 
         return remoteAction;
     }

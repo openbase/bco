@@ -87,7 +87,7 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
         this.emphasisStateObserver = (source, data) -> parentLocationEmphasisRescheduleEventFilter.trigger();
 
         this.activationTriggerPoolObserver = (Trigger source, ActivationState data) -> {
-            logger.info("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
+            logger.debug("activationTriggerPoolObserver current " + currentTriggerActivationState.name() + " trigger: " + data.getValue().name());
             synchronized (triggerSync) {
                 try {
                     //triggerInternal(data);

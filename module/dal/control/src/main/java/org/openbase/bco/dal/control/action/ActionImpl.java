@@ -292,8 +292,9 @@ public class ActionImpl implements SchedulableAction {
                                     }
                                 }
 
-                                final ActionDescription actionDescription = unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
-                                // todo: should we use this action description to update the one stored in the action builder? For example we could update the action impact...
+                                actionDescriptionBuilder.mergeFrom(
+                                    unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS)
+                                );
 
                                 updateActionStateIfNotCanceled(State.EXECUTING);
 
@@ -714,7 +715,6 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionState(final ActionState.State state) throws InterruptedException {
-
         actionDescriptionBuilderLock.writeLock().lockInterruptibly();
         try {
 
@@ -779,14 +779,13 @@ public class ActionImpl implements SchedulableAction {
             if (isDone()) {
                 actionDescriptionBuilder.setTerminationTimestamp(TimestampProcessor.getCurrentTimestamp());
             }
-
-            // make sure that state changes to finishing states, scheduled and executing always trigger a notification
-            if (isNotifiedActionState(state)) {
-                unit.notifyScheduledActionList();
-            }
-
         } finally {
             actionDescriptionBuilderLock.writeLock().unlock();
+        }
+
+        // make sure that state changes to finishing states, scheduled and executing always trigger a notification
+        if (isNotifiedActionState(state)) {
+            unit.notifyScheduledActionList();
         }
 
         // notify about state change to wakeup all wait methods.

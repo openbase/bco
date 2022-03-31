@@ -122,8 +122,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
                 // odd
                 powerState = Power.OFF;
             }
-            // to not observe in order to speedup the calls
-            observe(powerSwitchRemote.setPowerState(powerState, parameter));
+            // do not observe in order to speed up the calls
+            powerSwitchRemote.setPowerState(powerState, parameter);
         }
 
         // make sure unit is still responding
@@ -208,7 +208,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         }
 
         // analyse errors
-        assertEquals("Some errors occured during cancelation!", Collections.EMPTY_LIST, errorList);
+        assertEquals("Some errors occurred during cancellation!", Collections.EMPTY_LIST, errorList);
 
         // make sure unit is still responding
         try {
