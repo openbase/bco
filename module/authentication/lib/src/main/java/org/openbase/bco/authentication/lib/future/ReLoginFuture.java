@@ -24,7 +24,6 @@ package org.openbase.bco.authentication.lib.future;
 
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
-import org.openbase.jul.communication.data.RPCResponse;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.schedule.FutureWrapper;

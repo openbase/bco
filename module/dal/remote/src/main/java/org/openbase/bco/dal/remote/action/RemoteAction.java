@@ -1016,9 +1016,9 @@ public class RemoteAction implements Action {
                 if (actionDescription != null && isDone()) {
                     throw new CouldNotPerformException(targetUnit.getLabel()+ " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
                 }
-                LOGGER.warn(getTargetUnit().getLabel()+ " - wait for action ["+this+"] to be in state ["+actionState+"] ");
+                LOGGER.trace(getTargetUnit().getLabel()+ " - wait for action ["+this+"] to be in state ["+actionState+"] ");
                 executionSync.wait(timeSplit.getTime());
-                LOGGER.warn(getTargetUnit().getLabel()+ " - got update while waiting for action ["+this+"] to be in state ["+actionState+"] ");
+                LOGGER.trace(getTargetUnit().getLabel()+ " - got update while waiting for action ["+this+"] to be in state ["+actionState+"] ");
             }
         }
     }
