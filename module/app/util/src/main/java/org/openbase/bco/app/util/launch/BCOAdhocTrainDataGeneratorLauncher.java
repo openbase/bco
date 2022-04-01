@@ -126,9 +126,9 @@ public class BCOAdhocTrainDataGeneratorLauncher {
                     location).build();
 
             LOGGER.info("prepare setup...");
-            Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+            Actions.waitForExecution(location.applyAction(presentState), TIMEOUT * 2, TimeUnit.MILLISECONDS);
             waitBetweenActions();
-            Actions.waitForExecution(location.setColor(HSBColor.newBuilder().setBrightness(1).setSaturation(0).build()), TIMEOUT, TimeUnit.MILLISECONDS);
+            Actions.waitForExecution(location.setColor(HSBColor.newBuilder().setBrightness(1).setSaturation(0).build()), TIMEOUT * 2, TimeUnit.MILLISECONDS);
             waitUntilNextAction();
 
             try {
