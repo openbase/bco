@@ -322,7 +322,13 @@ public class ActionImpl implements SchedulableAction {
                                     break;
                                 }
 
-                                ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
+                                if(ex instanceof RuntimeException) {
+                                    ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.ERROR);
+                                    cancel();
+                                } else {
+                                    ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
+                                }
+
                                 Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
                             }
                         }
