@@ -30,13 +30,16 @@ import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
+import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.authentication.lib.BCO;
 import org.openbase.bco.registry.message.core.MessageRegistryLauncher;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.jp.JPPrintLauncher;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -48,6 +51,9 @@ public class BCOTestLauncher {
      */
     public static void main(final String[] args) {
         BCO.printLogo();
+
+        JPService.registerProperty(JPProviderControlMode.class, true);
+
         AbstractLauncher.main(BCO.class, args,
                 AuthenticatorLauncher.class,
 
