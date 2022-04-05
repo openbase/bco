@@ -49,12 +49,6 @@ import java.util.concurrent.TimeoutException;
  */
 public class MasterSlavePowerCycleAgent extends AbstractTriggerableAgent {
 
-    public final static String XMAS_SCENE = "PresenceScene";
-
-    public static final double MIN_ILLUMINANCE_UNTIL_TRIGGER = 100d;
-
-    private LocationRemote locationRemote;
-
     private PowerConsumptionSensorRemote master;
     private PowerStateServiceRemote slave;
 
@@ -66,9 +60,6 @@ public class MasterSlavePowerCycleAgent extends AbstractTriggerableAgent {
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-
-
             final MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("AgentConfig", config.getMetaConfig());
 
             if (master != null) {
@@ -96,7 +87,7 @@ public class MasterSlavePowerCycleAgent extends AbstractTriggerableAgent {
             }
 
             // activation trigger
-            registerActivationTrigger(new GenericBoundedDoubleValueTrigger<>(master, Double.parseDouble(variableProvider.getValue("HIGH_ACTIVE_POWER_THRESHOLD")), TriggerOperation.HIGH_ACTIVE, ServiceType.POWER_CONSUMPTION_STATE_SERVICE, "getConsumption"), TriggerAggregation.OR);
+            registerActivationTrigger(new GenericBoundedDoubleValueTrigger<>(master, Double.parseDouble(variableProvider.getValue("HIGH_ACTIVE_POWER_THRESHOLD", "1.0")), TriggerOperation.HIGH_ACTIVE, ServiceType.POWER_CONSUMPTION_STATE_SERVICE, "getConsumption"), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -106,7 +97,7 @@ public class MasterSlavePowerCycleAgent extends AbstractTriggerableAgent {
     protected void trigger(final ActivationState activationState) throws
             CouldNotPerformException, ExecutionException, InterruptedException, TimeoutException {
 
-        // activate xmas scene
+        // sync slave
         switch (activationState.getValue()) {
             case ACTIVE:
                 observe(slave.setPowerState(State.ON, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)));
