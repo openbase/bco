@@ -67,6 +67,10 @@ createAdditionalScript("bco-registry-validate") {
     mainClass.set("org.openbase.bco.app.util.launch.BCORegistryValidator")
 }
 
+createAdditionalScript("bco-registry") {
+    mainClass.set("org.openbase.bco.registry.launch.RegistryLauncher")
+}
+
 createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOAdhocTrainDataGeneratorLauncher")
 }
