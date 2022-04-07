@@ -64,7 +64,7 @@ jobs:
         with:
           context: .
           file: docker/Dockerfile 
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
           tags: ${{ steps.bco-meta.outputs.tags }}
           labels: ${{ steps.bco-meta.outputs.labels }}
@@ -99,7 +99,7 @@ jobs:
           build-args: |
             BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
           file: ./docker/device-manager/openhab/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
           tags: ${{ steps.bco-device-meta.outputs.tags }}
           labels: ${{ steps.bco-device-meta.outputs.labels }}
@@ -129,7 +129,7 @@ jobs:
           build-args: |
             BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
           file: ./docker/bco-demo/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
           tags: ${{ steps.bco-demo-meta.outputs.tags }}
           labels: ${{ steps.bco-demo-meta.outputs.labels }}
