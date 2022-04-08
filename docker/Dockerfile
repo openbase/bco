@@ -1,5 +1,5 @@
 # Install dependencies
-FROM ubuntu:latest AS builder
+FROM gradle:jdk17 AS build
 
 ENV \
     JAVA_OPTS="" \
