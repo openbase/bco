@@ -26,8 +26,10 @@ RUN apt update && \
 # Copy repo into working directory
 COPY . .
 
+RUN java --version
+
 # Setup Gradle Wrapper
-RUN ./gradlew --version
+RUN gradle --version
 
 # Build jul
 RUN ./prepare.sh
@@ -35,7 +37,7 @@ RUN cd lib/jul && \
     ./install.sh
 
 # Build bco
-RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
+RUN gradle :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
 
 # Switch to baseline image
 FROM ubuntu:latest
