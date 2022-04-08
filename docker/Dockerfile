@@ -1,5 +1,5 @@
 # Install dependencies
-FROM gradle:jdk17 AS build
+FROM gradle:jdk17 AS builder
 
 ENV \
     JAVA_OPTS="" \
