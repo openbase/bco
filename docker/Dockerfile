@@ -1,5 +1,5 @@
 # Install dependencies
-FROM gradle:jdk17 AS builder
+FROM ubuntu:latest AS builder
 
 ENV \
     JAVA_OPTS="" \
@@ -26,10 +26,8 @@ RUN apt update && \
 # Copy repo into working directory
 COPY . .
 
-RUN java --version
-
 # Setup Gradle Wrapper
-RUN gradle --version
+RUN ./gradlew --version
 
 # Build jul
 RUN ./prepare.sh
@@ -37,7 +35,7 @@ RUN cd lib/jul && \
     ./install.sh
 
 # Build bco
-RUN gradle :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
+RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
 
 # Switch to baseline image
 FROM ubuntu:latest
