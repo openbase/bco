@@ -9,7 +9,6 @@ plugins {
 dependencies {
     api(project(":bco.registry.lib"))
     api("org.openbase:jul.storage:_")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:_")
 }
 
 description = "BCO Registry Class Library"

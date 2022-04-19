@@ -10,7 +10,6 @@ dependencies {
     api(project(":bco.registry.util"))
     api(project(":bco.authentication.core"))
     api(project(":bco.authentication.test"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:_")
 }
 
 description = "BCO Registry Unit Test"

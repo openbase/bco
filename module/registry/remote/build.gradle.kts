@@ -13,7 +13,6 @@ dependencies {
     api(project(":bco.registry.template.remote"))
     api(project(":bco.registry.unit.remote"))
     api(project(":bco.registry.message.remote"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:_")
 }
 
 description = "BCO Registry Remote"

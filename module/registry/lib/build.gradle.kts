@@ -13,7 +13,6 @@ dependencies {
     api("org.openbase:jul.extension.type.util:_")
     api("org.openbase:jul.communication.controller:_")
     api("org.openbase:jul.exception:_")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:_")
 }
 
 description = "BCO Registry Lib"

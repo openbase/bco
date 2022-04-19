@@ -9,7 +9,6 @@ plugins {
 dependencies {
     api(project(":bco.registry.activity.core"))
     api(project(":bco.registry.activity.remote"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:_")
 }
 
 description = "BCO Registry Activity Test"

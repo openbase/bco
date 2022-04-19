@@ -9,7 +9,6 @@ plugins {
 dependencies {
     api(project(":bco.registry.util"))
     api(project(":bco.authentication.core"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:_")
 }
 
 description = "BCO Registry Message Test"
