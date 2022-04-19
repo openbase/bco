@@ -22,10 +22,9 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
-import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
@@ -34,10 +33,6 @@ import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -81,7 +76,8 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 

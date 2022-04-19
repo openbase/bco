@@ -23,6 +23,10 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.ReedContactRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -41,7 +45,7 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     public ReedContactRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         reedContactRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.REED_CONTACT), true, ReedContactRemote.class);
@@ -50,7 +54,7 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     /**
      * Test of notifyUpdated method, of class ReedSwitchRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 
@@ -59,7 +63,8 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         ContactState state = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();

@@ -22,7 +22,8 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -50,7 +51,8 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void removeAllLocationsTest() throws Exception {
         logger.info("RemoveAllLocationsTest");
         try {

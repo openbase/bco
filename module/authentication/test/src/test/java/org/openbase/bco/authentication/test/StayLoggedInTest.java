@@ -22,16 +22,15 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
@@ -52,7 +51,7 @@ public class StayLoggedInTest extends AuthenticationTest {
      */
     private static final long SESSION_TIMEOUT = 500;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         // set the session timeout and use the super method for initialization
         JPService.registerProperty(JPSessionTimeout.class, SESSION_TIMEOUT);
@@ -64,7 +63,8 @@ public class StayLoggedInTest extends AuthenticationTest {
      *
      * @throws Exception if something does not work as expected
      */
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testStayingLoggedIn() throws Exception {
         // validate that the session timeout has been setup accordingly
         assertEquals("Session timeout has not been initialized correctly", SESSION_TIMEOUT, (long) JPService.getProperty(JPSessionTimeout.class).getValue());

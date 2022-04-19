@@ -22,9 +22,9 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Trait;
 import org.openbase.bco.app.cloudconnector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
@@ -48,14 +48,14 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceStateTraitMapperFactoryTest.class);
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         MockRegistryHolder.newMockRegistry();
 
         Registries.getTemplateRegistry(true);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         MockRegistryHolder.shutdownMockRegistry();
     }

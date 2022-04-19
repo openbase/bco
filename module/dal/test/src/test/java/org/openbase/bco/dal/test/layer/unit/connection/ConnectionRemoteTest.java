@@ -21,9 +21,10 @@ package org.openbase.bco.dal.test.layer.unit.connection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
@@ -50,7 +51,7 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
     public ConnectionRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOLocationManagerTest.setUpClass();
@@ -62,12 +63,12 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws InitializationException, InvalidStateException {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws CouldNotPerformException {
     }
 
@@ -76,7 +77,8 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception
      */
-//    @Test(timeout = 5000)
+//    @Test
+//    @Timeout(15)
 //    public void testDoorStateUpdate() throws Exception {
 //        System.out.println("testDoorStateUpdate");
 //

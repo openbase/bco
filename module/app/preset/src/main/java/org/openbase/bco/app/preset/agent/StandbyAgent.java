@@ -71,7 +71,7 @@ public class StandbyAgent extends AbstractDelayedTriggerableAgent {
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceStateType.PresenceState.State.ABSENT, ServiceType.PRESENCE_STATE_SERVICE),  TriggerAggregation.OR);
+            registerActivationTrigger(new GenericServiceStateValueTrigger<>(locationRemote, PresenceStateType.PresenceState.State.ABSENT, ServiceType.PRESENCE_STATE_SERVICE),  TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

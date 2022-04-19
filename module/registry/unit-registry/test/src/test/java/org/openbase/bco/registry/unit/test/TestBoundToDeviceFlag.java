@@ -22,7 +22,8 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -114,7 +115,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceNotBoundAndUnitsNotBound() throws Exception {
         logger.info("testDeviceNotBoundAndUnitsNotBound");
 
@@ -141,7 +143,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceBoundAndUnitsNotBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsNotBound");
 
@@ -176,7 +179,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceNotBoundAndUnitsBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsNotBound");
 
@@ -208,7 +212,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceBoundAndUnitsBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsBound");
 

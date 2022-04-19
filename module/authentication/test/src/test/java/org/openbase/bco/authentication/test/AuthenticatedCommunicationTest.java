@@ -22,9 +22,9 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -32,7 +32,6 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedControllerServer;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteClient;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.LoginCredentialsType;
 import org.openbase.type.domotic.authentication.PermissionType.Permission;
@@ -58,7 +57,6 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_PASSWORD = "communication";
 
     @BeforeAll
-    @BeforeClass
     public static void setUpClass() throws Throwable {
         AuthenticationTest.setUpClass();
 
@@ -80,7 +78,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testCommunication() throws Exception {
         final UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
         otherAgentConfig.setId("OtherAgent");

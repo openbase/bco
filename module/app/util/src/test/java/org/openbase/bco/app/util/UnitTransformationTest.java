@@ -21,6 +21,10 @@ package org.openbase.bco.app.util;/*-
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
@@ -48,17 +52,18 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
     public UnitTransformationTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCOManagerTest.setUpClass();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         AbstractBCOManagerTest.tearDownClass();
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void testUnitTransformation() throws Exception {
         System.out.println("testUnitTransformation");
         try {

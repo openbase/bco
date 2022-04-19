@@ -23,13 +23,12 @@ package org.openbase.bco.authentication.test;
  */
 import com.google.protobuf.ByteString;
 import java.security.KeyPair;
+import java.util.concurrent.ExecutionException;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.Assert.*;
 
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -47,6 +46,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
+    @Timeout(20)
     public void testGenerateKey() {
         LOGGER.info("test key generation");
         int expLen = 16;
@@ -63,6 +63,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
+    @Timeout(20)
     public void testSymmetricEncryptionDecryption() throws Exception {
         LOGGER.info("test symmetric encryption and decryption");
         String str = "test";
@@ -73,6 +74,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
+    @Timeout(20)
     public void testAsymmetricEncryptionDecryption() throws Exception {
         LOGGER.info("test asymmetric encryption and decryption");
         String str = "test";
@@ -82,29 +84,33 @@ public class EncryptionHelperTest {
         assertEquals(str, decrypted);
     }
 
-    @Test(expected = CouldNotPerformException.class)
-    public void testExceptionsWithWrongKeySymmetric() throws Exception {
+    @Test
+    public void testExceptionsWithWrongKeySymmetric() {
         LOGGER.info("testExceptionsWithWrongKey");
 
         byte[] correctPassword = EncryptionHelper.hash("123654");
         byte[] wrongPassword = EncryptionHelper.hash("654321");
 
         String value = "This String should be encrypted";
-        ByteString encryptedValue = EncryptionHelper.encryptSymmetric(value, correctPassword);
 
-        EncryptionHelper.decryptSymmetric(encryptedValue, wrongPassword, String.class);
+        Assertions.assertThrows(CouldNotPerformException.class, () -> {
+            ByteString encryptedValue = EncryptionHelper.encryptSymmetric(value, correctPassword);
+            EncryptionHelper.decryptSymmetric(encryptedValue, wrongPassword, String.class);
+        });
     }
 
-    @Test(expected = CouldNotPerformException.class)
-    public void testExceptionsWithWrongKeyAsymmetric() throws Exception {
+    @Test
+    public void testExceptionsWithWrongKeyAsymmetric() {
         LOGGER.info("testExceptionsWithWrongKeyAsymmetric");
 
         KeyPair correctKeyPair = EncryptionHelper.generateKeyPair();
         KeyPair wrongKeyPair = EncryptionHelper.generateKeyPair();
 
         String value = "This String should be encrypted";
-        ByteString encryptedValue = EncryptionHelper.encryptAsymmetric(value, correctKeyPair.getPublic().getEncoded());
+        Assertions.assertThrows(CouldNotPerformException.class, () -> {
+            ByteString encryptedValue = EncryptionHelper.encryptAsymmetric(value, correctKeyPair.getPublic().getEncoded());
 
-        EncryptionHelper.decryptAsymmetric(encryptedValue, wrongKeyPair.getPrivate().getEncoded(), String.class);
+            EncryptionHelper.decryptAsymmetric(encryptedValue, wrongKeyPair.getPrivate().getEncoded(), String.class);
+        });
     }
 }

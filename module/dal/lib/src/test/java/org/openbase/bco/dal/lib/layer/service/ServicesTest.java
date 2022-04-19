@@ -23,9 +23,9 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import com.google.protobuf.Message;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
-import org.openbase.bco.dal.lib.state.States;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -51,6 +51,7 @@ public class ServicesTest {
      * @throws Exception if something fails.
      */
     @Test
+    @Timeout(20)
     public void testSuperStateConversion() throws Exception {
         final BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(.5d).build();
         final Message expectedPowerState = BrightnessStateProviderService.toPowerState(brightnessState);

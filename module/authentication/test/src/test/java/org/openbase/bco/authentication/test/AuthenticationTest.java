@@ -22,10 +22,10 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
@@ -43,7 +43,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
     static AuthenticationController authenticationController;
     static byte[] serviceServerSecretKey = EncryptionHelper.generateKey();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         MqttIntegrationTest.setUpClass();
 
@@ -57,7 +57,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
         Assert.assertTrue("Initial password has not been generated despite an empty registry", AuthenticationController.getInitialPassword() != null);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         CachedAuthenticationRemote.shutdown();
         if (authenticationController != null) {
@@ -67,7 +67,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
         SessionManager.getInstance().shutdown();
     }
 
-    @After
+    @AfterEach
     public void afterTest() {
         // reset credential store because it could have been changed in a test
         MockCredentialStore.getInstance().reset();

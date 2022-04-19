@@ -24,6 +24,8 @@ package org.openbase.bco.dal.test.layer.unit;
 
 import com.google.protobuf.Message;
 import org.junit.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -72,7 +74,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     public AbstractUnitControllerTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, Units.COLORABLE_LIGHT);
@@ -84,13 +86,13 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             adminToken = TokenGenerator.generateAuthToken(sessionManager);
         }
     }
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         sessionManager.logout();
         AbstractBCODeviceManagerTest.tearDownClass();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         for (ActionDescription actionDescription : colorableLightController.getActionList()) {
 
@@ -104,13 +106,14 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         // cleanup leftover actions which were manually submitted to the controller.
         colorableLightController.cancelAllActions();
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void applyDataStateUpdateTest() {
         try {
             colorableLightController.applyServiceState(States.Power.ON, ServiceType.POWER_STATE_SERVICE);
@@ -137,7 +140,8 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void applyCustomDataStateUpdateTest() {
         try {
             for (int i = 0; i < 10; i++) {
@@ -173,7 +177,8 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void applyCustomDataStateFeedbackLoopTest() {
         try {
             colorableLightController.applyServiceState(Power.OFF, ServiceType.POWER_STATE_SERVICE);
@@ -217,7 +222,8 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void rejectUpdateWhenStateIsCompatibleTest() {
         try {
             final RemoteAction mainAction = waitForExecution(colorableLightRemote.setColorState(Color.BLUE));
@@ -265,7 +271,8 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void futureSyncTest() throws InterruptedException, ExecutionException, TimeoutException, CouldNotPerformException {
 
         String anotherColorableLightId = null;

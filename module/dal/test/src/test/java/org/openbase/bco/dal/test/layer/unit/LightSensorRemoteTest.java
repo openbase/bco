@@ -23,8 +23,9 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 import static org.junit.Assert.assertEquals;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -44,7 +45,7 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
     public LightSensorRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         lightSensorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT_SENSOR), true, LightSensorRemote.class);
@@ -55,7 +56,8 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetIlluminance() throws Exception {
         System.out.println("getIlluminance");
         double illuminance = 0.5;

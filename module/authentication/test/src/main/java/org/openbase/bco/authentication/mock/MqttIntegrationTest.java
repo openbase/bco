@@ -25,7 +25,6 @@ package org.openbase.bco.authentication.mock;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.communication.jp.JPComHost;
 import org.openbase.jul.communication.jp.JPComPort;
 import org.openbase.jul.communication.mqtt.SharedMqttClient;
@@ -33,14 +32,14 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
 
 public class MqttIntegrationTest {
 
-    public static final int port = 1883;
+    public static final int port = 1884;
     public static Path mosquittoConfig;
     public static GenericContainer<?> broker;
 
@@ -49,7 +48,7 @@ public class MqttIntegrationTest {
         mosquittoConfig = Files.createTempFile("mosquitto_", ".conf");
         Files.write(mosquittoConfig, Arrays.asList(
                 "allow_anonymous true",
-                "listener 1883")
+                "listener "+port)
         );
 
         broker = new GenericContainer<>(DockerImageName.parse("eclipse-mosquitto"))
@@ -59,7 +58,7 @@ public class MqttIntegrationTest {
                         "/mosquitto/config/mosquitto.conf",
                         BindMode.READ_ONLY
                 );
-        broker.start();
+        broker.withStartupTimeout(Duration.ofSeconds(30)).start();
 
         JPService.registerProperty(JPComPort.class, broker.getFirstMappedPort());
         JPService.registerProperty(JPComHost.class, broker.getHost());

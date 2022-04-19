@@ -22,8 +22,8 @@ package org.openbase.bco.dal.test.layer.unit.user;
  * #L%
  */
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.remote.Registries;
@@ -41,7 +41,7 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
 
     protected static UserManagerLauncher userManagerLauncher;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOTest.setUpClass();
@@ -55,7 +55,7 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         try {
             if (userManagerLauncher != null) {

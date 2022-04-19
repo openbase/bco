@@ -23,22 +23,18 @@ package org.openbase.bco.authentication.test;
  */
 
 import com.google.protobuf.ByteString;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler.TicketWrapperSessionKeyPair;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
-import org.openbase.jul.communication.exception.RPCException;
-import org.openbase.jul.communication.exception.RPCResolvedException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
-import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticatorType;
 import org.openbase.type.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -68,7 +64,8 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testCommunication() throws Exception {
         System.out.println("testCommunication");
 
@@ -103,18 +100,21 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000, expected = ExecutionException.class)
-    public void testAuthenticationWithNonExistentUser() throws Exception {
+    @Test
+    @Timeout(5)
+    public void testAuthenticationWithNonExistentUser() {
         System.out.println("testAuthenticationWithNonExistentUser");
-        try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+        Assertions.assertThrows(ExecutionException.class, () -> {
+            try {
+                ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
-            UserClientPair nonExistentUserId = UserClientPair.newBuilder().setUserId("12abc-15123").build();
+                UserClientPair nonExistentUserId = UserClientPair.newBuilder().setUserId("12abc-15123").build();
 
-            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId).get();
-        } finally {
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
+                CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId).get();
+            } finally {
+                ExceptionPrinter.setBeQuit(Boolean.FALSE);
+            }
+        });
     }
 
     /**
@@ -122,18 +122,22 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000, expected = CouldNotPerformException.class)
-    public void testAuthenticationWithIncorrectPassword() throws Exception {
+    @Test
+    @Timeout(5)
+    public void testAuthenticationWithIncorrectPassword() {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
-        final UserClientPair userClientPair = UserClientPair.newBuilder().setUserId(MockCredentialStore.USER_ID).build();
-        final LoginCredentials wrongLoginCredentials = LoginCredentials.newBuilder().setSymmetric(true).setCredentials(ByteString.copyFrom(EncryptionHelper.hash("wrong_password"))).build();
+        Assertions.assertThrows(CouldNotPerformException.class, () -> {
+            final UserClientPair userClientPair = UserClientPair.newBuilder().setUserId(MockCredentialStore.USER_ID).build();
+            final LoginCredentials wrongLoginCredentials = LoginCredentials.newBuilder().setSymmetric(true).setCredentials(ByteString.copyFrom(EncryptionHelper.hash("wrong_password"))).build();
 
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userClientPair).get();
-        AuthenticationClientHandler.handleKeyDistributionCenterResponse(userClientPair, wrongLoginCredentials, null, ticketSessionKeyWrapper);
+            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userClientPair).get();
+            AuthenticationClientHandler.handleKeyDistributionCenterResponse(userClientPair, wrongLoginCredentials, null, ticketSessionKeyWrapper);
+        });
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testChangeCredentials() throws Exception {
         System.out.println("testChangeCredentials");
 
@@ -174,7 +178,8 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testChangeOthersCredentials() throws Exception {
         System.out.println("testChangeOthersCredentials");
 
@@ -257,7 +262,8 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testAsyncCommunication() throws Exception {
         System.out.println("testAsyncCommunication");
 
@@ -303,7 +309,8 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
         AuthenticationClientHandler.handleServiceServerResponse(ticketWrapperSessionKeyPair.getSessionKey(), request1, response1);
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testLoginCombinations() throws Exception {
         final UserClientPair clientSymmetricUserSymmetric = UserClientPair.newBuilder()
                 .setClientId(MockCredentialStore.CLIENT_SYMMETRIC_ID)

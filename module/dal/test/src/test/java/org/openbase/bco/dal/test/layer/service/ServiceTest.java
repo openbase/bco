@@ -25,21 +25,17 @@ package org.openbase.bco.dal.test.layer.service;
 import java.util.Collection;
 
 import com.google.protobuf.ProtocolMessageEnum;
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.Assert;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.type.domotic.service.ServiceCommunicationTypeType;
-import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType;
 import org.openbase.type.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BatteryStateType;
@@ -56,12 +52,12 @@ public class ServiceTest extends AbstractBCOTest {
     public ServiceTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCOTest.setUpClass();
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         AbstractBCOTest.tearDownClass();
     }

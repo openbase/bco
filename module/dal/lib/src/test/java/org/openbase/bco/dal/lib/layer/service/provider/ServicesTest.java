@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.registry.remote.Registries;

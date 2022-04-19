@@ -22,7 +22,10 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.BatteryRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -46,7 +49,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
     public BatteryRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         batteryRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BATTERY), true, BatteryRemote.class);
@@ -55,7 +58,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
     /**
      * Test of notifyUpdated method, of class BatteryRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 
@@ -64,7 +67,8 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetBatteryLevel() throws Exception {
         try {
             System.out.println("getBatteryLevel");

@@ -23,6 +23,8 @@ package org.openbase.bco.dal.test.action;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
@@ -90,7 +92,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         }).start();*/
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCOLocationManagerTest.setUpClass();
 
@@ -123,17 +125,18 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws InitializationException, InvalidStateException {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws CouldNotPerformException {
 
     }
 
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testExecutionAndCancellationWithToken() throws Exception {
         System.out.println("testExecutionAndCancellationWithToken");
 
@@ -188,7 +191,8 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testExtentionCancelation() throws Exception {
         System.out.println("testExtentionCancelation");
 

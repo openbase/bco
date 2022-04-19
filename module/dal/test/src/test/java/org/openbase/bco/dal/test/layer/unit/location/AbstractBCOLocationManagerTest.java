@@ -22,10 +22,9 @@ package org.openbase.bco.dal.test.layer.unit.location;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -47,7 +46,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
     protected static LocationManagerLauncher locationManagerLauncher;
     protected static UserManagerLauncher userManagerLauncher;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOTest.setUpClass();
@@ -65,7 +64,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         try {
             if (userManagerLauncher != null) {
@@ -89,7 +88,6 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
-    @After
     public void cancelAllOngoingActions() throws InterruptedException {
         log.info("Cancel all ongoing actions...");
         try {

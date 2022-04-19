@@ -22,9 +22,9 @@ package org.openbase.bco.dal.test.layer.unit.user;
  * #L%
  */
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openbase.bco.dal.remote.action.Actions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.user.UserRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -51,7 +51,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
 
     private static UserRemote userRemote;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOUserManagerTest.setUpClass();
@@ -67,7 +67,8 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetUserName() throws Exception {
         System.out.println("testGetUserName");
         userRemote.requestData().get();
@@ -79,7 +80,8 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      *
      * @throws Exception if an error occurs
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetPresenceState() throws Exception {
         System.out.println("testSetPresenceState");
 
@@ -98,7 +100,8 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      *
      * @throws Exception if an error occurs
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetMultiActivityState() throws Exception {
         System.out.println("testSetMultiActivityState");
 
@@ -126,7 +129,8 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      *
      * @throws Exception if an error occurs
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testUserTransitState() throws Exception {
         System.out.println("testUserTransitState");
 
@@ -147,7 +151,8 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      *
      * @throws Exception if an error occurs
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testLocalPositionState() throws Exception {
         System.out.println("testLocalPositionState");
 

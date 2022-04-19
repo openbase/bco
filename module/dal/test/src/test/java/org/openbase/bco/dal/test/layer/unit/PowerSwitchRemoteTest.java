@@ -23,6 +23,9 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -58,7 +61,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     public PowerSwitchRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         powerSwitchRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, PowerSwitchRemote.class);
@@ -69,7 +72,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
+    @Timeout(3)
     public void testSetPowerState() throws Exception {
         waitForExecution(powerSwitchRemote.setPowerState(Power.ON));
         assertEquals("Power state has not been set in time!", Power.ON.getValue(), powerSwitchRemote.getData().getPowerState().getValue());
@@ -80,7 +84,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 3000)
+    @Test
+    @Timeout(3)
     public void testGetPowerState() throws Exception {
         // apply service state
         final UnitController<?, ?> unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId());
@@ -107,7 +112,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testPowerStateServicePerformance() throws Exception {
         System.out.println("testPowerStateServicePerformance");
 
@@ -157,7 +163,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testPowerStateServiceCancellationPerformance() throws Exception {
         final Random random = new Random();
         final ActionParameter parameter = ActionParameter.newBuilder().setExecutionTimePeriod(100000000).build();

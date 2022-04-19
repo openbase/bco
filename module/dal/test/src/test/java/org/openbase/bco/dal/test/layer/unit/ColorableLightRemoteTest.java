@@ -23,6 +23,8 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
@@ -67,7 +69,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public ColorableLightRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
 
         // legacy mode needed for testLegacyRemoteCallGetColor() test.
@@ -81,19 +83,19 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         AbstractBCODeviceManagerTest.tearDownClass();
 
         JPService.registerProperty(JPComLegacyMode.class, false);
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws InitializationException, InvalidStateException {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws CouldNotPerformException {
 
     }
@@ -103,7 +105,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetColor_Color() throws Exception {
         System.out.println("setColor");
         HSBColor color = HSBColor.newBuilder().setBrightness(0.50).setSaturation(0.70).setHue(150).build();
@@ -116,8 +119,9 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if an error occurs
      */
-    @Ignore
-    @Test(timeout = 15000)
+    @Disabled
+    @Test
+    @Timeout(15)
     public void testControllingViaLightRemote() throws Exception {
         System.out.println("testControllingViaLightRemote");
 
@@ -165,7 +169,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetColor_HSBColor() throws Exception {
         System.out.println("setColor");
         HSBColor color = HSBColor.newBuilder().setHue(50).setSaturation(0.50).setBrightness(0.50).build();
@@ -178,7 +183,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetColor_InvalidHSBColor() throws Exception {
         System.out.println("setColor");
 
@@ -213,7 +219,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testRemoteGetColor() throws Exception {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(66).setSaturation(0.63).setBrightness(0.33).build();
@@ -226,7 +233,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testLegacyRemoteCallGetColor() throws Exception {
         System.out.println("getColor");
         HSBColor color = HSBColor.newBuilder().setHue(61).setSaturation(0.23).setBrightness(0.37).build();
@@ -256,7 +264,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
@@ -269,7 +278,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
@@ -282,7 +292,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 0.75d;
@@ -296,7 +307,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
         Double brightness = 0.25d;
@@ -305,7 +317,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         assertEquals("Brightness has not been set in time or the return value from the getter is different!", brightnessState.getBrightness(), colorableLightRemote.getBrightnessState().getBrightness(), 0.001);
     }
 
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetNeutralWhite() throws Exception {
         System.out.println("testSetNeutralWhite");
         waitForExecution(colorableLightRemote.setNeutralWhite());
@@ -319,7 +332,8 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if something fails.
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testPowerStateObserver() throws Exception {
         System.out.println("testPowerStateObserver");
 

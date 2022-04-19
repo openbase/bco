@@ -23,6 +23,10 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.PowerConsumptionSensorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -41,7 +45,7 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
     public PowerConsumptionSensorRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         powerConsumptionRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_CONSUMPTION_SENSOR), true, PowerConsumptionSensorRemote.class);
@@ -50,7 +54,7 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
     /**
      * Test of notifyUpdated method, of class PowerConsumptionSensorRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 
@@ -60,7 +64,8 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         double consumption = 200d;

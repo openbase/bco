@@ -23,6 +23,9 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -41,7 +44,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
     public TemperatureControllerRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         temperatureControllerRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TEMPERATURE_CONTROLLER), true, TemperatureControllerRemote.class);
@@ -52,7 +55,8 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetTargetTemperature() throws Exception {
         System.out.println("setTargetTemperature");
         double temperature = 42.0F;
@@ -67,7 +71,8 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetTargetTemperature() throws Exception {
         System.out.println("getTargetTemperature");
 
@@ -83,7 +88,8 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;

@@ -22,8 +22,9 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
-import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 import org.openbase.bco.dal.control.layer.unit.LightSensorController;
@@ -37,8 +38,6 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.LoggerFactory;
@@ -74,7 +73,8 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testIlluminationLightSavingAgent() throws Exception {
         System.out.println("testIlluminationLightSavingAgent");
 

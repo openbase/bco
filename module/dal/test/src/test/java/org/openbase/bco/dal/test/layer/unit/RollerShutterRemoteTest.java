@@ -22,7 +22,10 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.RollerShutterRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -44,7 +47,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     public RollerShutterRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         rollerShutterRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.ROLLER_SHUTTER), true, RollerShutterRemote.class);
@@ -55,7 +58,8 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         BlindState state = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
@@ -68,7 +72,8 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         final BlindState blindState = BlindState.newBuilder().setValue(State.UP).build();
@@ -80,7 +85,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     /**
      * Test of notifyUpdated method, of class RollershutterRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 }

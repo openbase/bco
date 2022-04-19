@@ -22,8 +22,9 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -44,7 +45,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public LightRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         lightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, LightRemote.class);
@@ -55,7 +56,8 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         waitForExecution(lightRemote.setPowerState(Power.ON));
@@ -67,7 +69,8 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
 

@@ -23,15 +23,13 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState.Builder;
-
-import static org.junit.Assert.*;
 
 public class ColorStateProviderServiceTest {
 

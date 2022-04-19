@@ -24,8 +24,9 @@ package org.openbase.bco.dal.test.layer.unit.location;
 
 import com.google.protobuf.Message;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.*;
@@ -54,7 +55,6 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -96,7 +96,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public LocationRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOLocationManagerTest.setUpClass();
@@ -111,7 +111,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
 
@@ -159,7 +160,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testUnitToLocationPipeline() throws Exception {
         System.out.println("testUnitToLocationPipeline");
 
@@ -220,7 +222,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals("Consumption of location has not been updated!", powerConsumptionState.getConsumption() * powerConsumptionSensorList.size(), rootLocationRemote.getPowerConsumptionState().getConsumption(), 0.01);
     }
 
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testRecordAndRestoreSnapshots() throws Exception {
         BlindState snapshotBlindState = BlindState.newBuilder().setValue(BlindState.State.DOWN).setOpeningRatio(0).build();
         BlindState newBlindState = BlindState.newBuilder().setValue(BlindState.State.UP).setOpeningRatio(0.5).build();
@@ -288,7 +291,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals("TargetTemperatureState of location has not been restored through snapshot!", snapshotTemperatureState.getTemperature(), rootLocationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature(), 0.5);
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testManipulatingByUnitType() throws Exception {
         System.out.println("testManipulatingByUnitType");
 
@@ -347,7 +351,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testPresenceState() throws Exception {
         System.out.println("testPresenceState");
 
@@ -395,7 +400,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testColorableLightControlViaLocation() throws Exception {
         System.out.println("testColorableLightControlViaLocation");
 
@@ -469,7 +475,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testIlluminanceState() throws Exception {
         System.out.println("testIlluminanceState");
 
@@ -523,7 +530,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception if something fails.
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 
@@ -550,7 +558,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         assertEquals(serviceState.getValue(), rootLocationRemote.getPowerState().getValue());
     }
 
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testActionCancellation() throws Exception {
         System.out.println("testActionCancellation");
 
@@ -603,7 +612,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testLocationModificationViaApplyAction() throws Exception {
 
 

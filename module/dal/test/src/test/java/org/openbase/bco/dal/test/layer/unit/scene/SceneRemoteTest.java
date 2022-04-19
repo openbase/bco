@@ -23,9 +23,9 @@ package org.openbase.bco.dal.test.layer.unit.scene;
  */
 
 import org.junit.*;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
@@ -33,7 +33,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Activation;
 import org.openbase.bco.dal.lib.state.States.Color;
@@ -49,33 +48,21 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.test.AbstractBCOTest;
-import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.remote.login.BCOLogin;
 import org.openbase.bco.registry.remote.session.BCOSessionImpl;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jps.preset.JPLogLevel;
-import org.openbase.jps.preset.JPLogLevel.LogLevel;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
-import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
-import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
-import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActionStateType;
@@ -100,7 +87,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -164,7 +150,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 //        }
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOTest.setUpClass();
@@ -193,7 +179,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         try {
             if (sceneManagerLauncher != null) {
@@ -224,7 +210,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
-    @After
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {
@@ -410,7 +395,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
@@ -433,7 +419,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testTriggerSceneWithLocationActionPerRemote() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemote");
 
@@ -457,7 +444,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testTriggerUnitGroupByScene() throws Exception {
         System.out.println("testTriggerUnitGroupByScene");
 
@@ -491,7 +479,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -551,7 +540,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -617,7 +607,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testIntermediaryActionCancellationOnSceneDeactivation() throws Exception {
         System.out.println("testTestIntermediaryActionCancellationOnSceneDeactivation");
 
@@ -687,7 +678,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
         }
     }
 
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testActionCancellationViaScene() throws Exception {
 
         final LocationRemote rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
@@ -779,7 +771,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
 
-    @Test(timeout = 20000)
+    @Test
+    @Timeout(20)
     public void testThatScenesDoNotInterfereEachOther() throws Exception {
 
         final long AGGREGATION_TIME = 50;

@@ -22,7 +22,8 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
@@ -47,7 +48,7 @@ public class CredentialStoreTest {
     public CredentialStoreTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
         JPService.registerProperty(JPResetCredentials.class);

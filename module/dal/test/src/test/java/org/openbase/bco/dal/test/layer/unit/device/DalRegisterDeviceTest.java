@@ -22,8 +22,9 @@ package org.openbase.bco.dal.test.layer.unit.device;
  * #L%
  */
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
@@ -66,7 +67,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
     public DalRegisterDeviceTest() {
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws InitializationException, InstantiationException {
     }
 
@@ -75,7 +76,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testRegisterDeviceWhileRunning() throws Exception {
         System.out.println("testRegisterDeviceWhileRunning");
 
@@ -159,7 +161,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
     private boolean running = true;
 
-    @Test(timeout = 60000)
+    @Test
+    @Timeout(6)
     public void testRegisteringManyDevices() throws Exception {
         System.out.println("testRegisteringManyDevices");
 

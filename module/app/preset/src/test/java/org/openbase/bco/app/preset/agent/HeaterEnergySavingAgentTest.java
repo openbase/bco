@@ -22,12 +22,11 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.dal.control.layer.unit.ReedContactController;
 import org.openbase.bco.dal.control.layer.unit.TemperatureControllerController;
-import org.openbase.bco.dal.control.layer.unit.TemperatureSensorController;
-import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.remote.layer.unit.ReedContactRemote;
 import org.openbase.bco.dal.remote.layer.unit.TemperatureControllerRemote;
@@ -38,11 +37,9 @@ import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ContactStateType.ContactState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.TemperatureStateType.TemperatureState;
 import org.openbase.type.domotic.state.WindowStateType.WindowState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -68,7 +65,8 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testHeaterEnergySavingAgent() throws Exception {
         System.out.println("testHeaterEnergySavingAgent");
 

@@ -23,7 +23,8 @@ package org.openbase.bco.registry.unit.test;
  */
 
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -74,7 +75,8 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception if any error occurs
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testRootLocationConsistency() throws Exception {
         System.out.println("testChildConsistency");
 
@@ -117,7 +119,8 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception if any error occurs
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testParentChildConsistency() throws Exception {
         System.out.println("testParentChildConsistency");
 
@@ -158,7 +161,8 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception if any error occurs
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testLoopConsistency() throws Exception {
         System.out.println("testLoopConsistency");
 
@@ -193,7 +197,8 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception if any error occurs
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testConnectionTilesConsistency() throws Exception {
         System.out.println("testConnectionTilesConsistency");
 
@@ -248,7 +253,8 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception if any error occurs
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testLocationTypeConsistency() throws Exception {
         System.out.println("testLocationTypeConsistency");
 
@@ -279,7 +285,8 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception if any error occurs
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testGetLocationUnitConfigByScope() throws Exception {
         System.out.println("testGetLocationUnitConfigByScope");
 

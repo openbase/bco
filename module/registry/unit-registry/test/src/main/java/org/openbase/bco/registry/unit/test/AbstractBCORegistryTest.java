@@ -24,11 +24,9 @@ package org.openbase.bco.registry.unit.test;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;

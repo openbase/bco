@@ -72,10 +72,10 @@ public class PresenceSceneAgent extends AbstractTriggerableAgent {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
 
             // activation trigger
-            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
+            registerActivationTrigger(new GenericServiceStateValueTrigger<>(locationRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
 
             // deactivation trigger
-            registerDeactivationTrigger(new GenericServiceStateValueTrigger(locationRemote, PresenceState.State.ABSENT, ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
+            registerDeactivationTrigger(new GenericServiceStateValueTrigger<>(locationRemote, PresenceState.State.ABSENT, ServiceType.PRESENCE_STATE_SERVICE), TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

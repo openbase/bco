@@ -22,10 +22,11 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -67,7 +68,7 @@ public class TestWaitUntilReady {
     public TestWaitUntilReady() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
@@ -102,7 +103,7 @@ public class TestWaitUntilReady {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         try {
             MockRegistryHolder.shutdownMockRegistry();
@@ -111,7 +112,8 @@ public class TestWaitUntilReady {
         }
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void testWaitUntilReady() throws Exception {
         System.out.println("testWaitUntilReady");
 

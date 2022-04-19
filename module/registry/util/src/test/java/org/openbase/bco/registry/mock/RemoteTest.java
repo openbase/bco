@@ -21,18 +21,19 @@ package org.openbase.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.AfterClass;
+import org.junit.jupiter.api.*;
+
 import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.state.ConnectionStateType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -42,7 +43,7 @@ public class RemoteTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RemoteTest.class);
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
@@ -52,7 +53,7 @@ public class RemoteTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() {
         try {
             MockRegistryHolder.shutdownMockRegistry();
@@ -67,7 +68,8 @@ public class RemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testRestartingDeviceRegistryRemotes() throws Exception {
         System.out.println("testRestartingDeviceRegistryRemotes");
         ClassRegistryRemote deviceRemoteAlwaysOn = new ClassRegistryRemote();

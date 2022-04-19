@@ -55,7 +55,7 @@ public class HeaterComfortAgent extends AbstractTriggerableAgent{
         super.init(config);
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-            registerActivationTrigger(new GenericServiceStateValueTrigger(locationRemote, triggerState, ServiceType.PRESENCE_STATE_SERVICE), TriggerPool.TriggerAggregation.OR);
+            registerActivationTrigger(new GenericServiceStateValueTrigger<>(locationRemote, triggerState, ServiceType.PRESENCE_STATE_SERVICE), TriggerPool.TriggerAggregation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

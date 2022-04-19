@@ -23,17 +23,15 @@ package org.openbase.bco.registry.unit.test;
  */
 
 import com.google.protobuf.ByteString;
-import org.junit.After;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -55,13 +53,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class RegistryFilteringTest extends AbstractBCORegistryTest {
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         super.tearDown();
         SessionManager.getInstance().completeLogout();
     }
 
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testRegisteringWhileLoggedIn() throws Exception {
         System.out.println("testRegisteringWhileLoggedIn");
 
@@ -87,7 +86,8 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testUnitFiltering() throws Exception {
         System.out.println("testUnitFiltering");
 
@@ -163,7 +163,8 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         }
     }
 
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testRequestingAuthorizationToken() throws Exception {
         final String adminUserId = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId();
         SessionManager.getInstance().loginUser(adminUserId, UserCreationPlugin.ADMIN_PASSWORD, false);

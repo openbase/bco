@@ -22,12 +22,11 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.dal.control.layer.unit.LightSensorController;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.lib.state.States.Illuminance;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -45,9 +44,6 @@ import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator;
-import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
-import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState.State;
@@ -95,7 +91,8 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void testPresenceLightAgent() throws Exception {
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
         ColorableLightRemote colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT).get(0);
@@ -205,7 +202,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, locationRemote.getPowerState().getValue());
         assertEquals("Illuminance of Location[" + locationRemote.getLabel() + "] has not set to BRIGHT.", IlluminanceState.State.SUNNY, locationRemote.getIlluminanceState().getValue());
-
 
         // cancel initial control
         cancelAllTestActions();

@@ -22,50 +22,19 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.Test;
-import org.openbase.bco.registry.mock.MockRegistry;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.extension.type.processing.ScopeProcessor;
-import org.openbase.type.configuration.EntryType;
-import org.openbase.type.configuration.MetaConfigType;
-import org.openbase.type.domotic.binding.BindingConfigType.BindingConfig;
-import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
-import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
-import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
-import org.openbase.type.domotic.state.InventoryStateType.InventoryState;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
-import org.openbase.type.domotic.unit.device.DeviceConfigType.DeviceConfig;
-import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
-import org.openbase.type.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
-import org.openbase.type.geometry.TranslationType.Translation;
-import org.openbase.type.math.Vec3DDoubleType.Vec3DDouble;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import static junit.framework.TestCase.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class RegistrySyncTest extends AbstractBCORegistryTest {
 
-    @Test(timeout = 5000)
-    public void testRemoteRegistrySync() throws Exception {
+    @Test
+    @Timeout(5)
+            public void testRemoteRegistrySync() throws Exception {
         System.out.println("testRegisterUnitConfigWithUnits");
 
         Registries.shutdown();
@@ -74,7 +43,8 @@ public class RegistrySyncTest extends AbstractBCORegistryTest {
         Registries.waitForData();
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testUnitRemoteRegistrySync() throws Exception {
         System.out.println("testRegisterUnitConfigWithUnits");
 

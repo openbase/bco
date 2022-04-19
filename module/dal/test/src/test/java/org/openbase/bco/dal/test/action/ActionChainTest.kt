@@ -1,9 +1,9 @@
 package org.openbase.bco.dal.test.action
 
-import lombok.extern.slf4j.Slf4j
 import org.junit.Assert
 import org.junit.BeforeClass
 import org.junit.Test
+import org.junit.jupiter.api.Timeout
 import org.openbase.bco.dal.remote.layer.unit.Units
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest
 import org.openbase.bco.dal.test.layer.unit.location.LocationRemoteTest
@@ -18,7 +18,8 @@ class ActionChainTest : AbstractBCOLocationManagerTest() {
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     @Throws(Exception::class)
     fun `when a location is turned of its units that support the power service are registered as impact`() {
         val rootLocationRemote =
@@ -44,7 +45,8 @@ class ActionChainTest : AbstractBCOLocationManagerTest() {
             }
     }
 
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     @Throws(Exception::class)
     fun `when a light is switched on the locations the light is a part of are registered as impact`() {
         val rootLocationRemote =

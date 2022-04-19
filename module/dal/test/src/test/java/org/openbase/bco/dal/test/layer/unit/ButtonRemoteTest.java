@@ -22,7 +22,10 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -47,7 +50,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     public ButtonRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         buttonRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BUTTON), true, ButtonRemote.class);
@@ -56,7 +59,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     /**
      * Test of notifyUpdated method, of class ButtonRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 
@@ -65,7 +68,8 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetButtonState() throws Exception {
         System.out.println("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
@@ -84,7 +88,8 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetButtonStateTimestamp() throws Exception {
         System.out.println("testGetButtonStateTimestamp");
         long timestamp;

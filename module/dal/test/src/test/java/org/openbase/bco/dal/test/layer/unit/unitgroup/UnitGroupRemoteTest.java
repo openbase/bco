@@ -22,17 +22,13 @@ package org.openbase.bco.dal.test.layer.unit.unitgroup;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
@@ -76,7 +72,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
     private static UnitGroupRemote unitGroupRemote;
     private static final List<Unit> UNIT_LIST = new ArrayList<>();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCOLocationManagerTest.setUpClass();
 
@@ -132,12 +128,12 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         return true;
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws InitializationException, InvalidStateException {
 
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws CouldNotPerformException {
 
     }
@@ -147,7 +143,8 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         unitGroupRemote.waitForData();
@@ -170,7 +167,8 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         unitGroupRemote.waitForData();
@@ -184,7 +182,8 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws java.lang.Exception if something fails.
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetUnsupportedService() throws Exception {
         System.out.println("testSetUnsupportedService");
 
@@ -207,7 +206,8 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception if something fails.
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 

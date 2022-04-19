@@ -21,7 +21,8 @@ package org.openbase.bco.app.preset.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.openbase.bco.dal.control.layer.unit.SmokeDetectorController;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
@@ -62,7 +63,8 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testFireAlarmAgent() throws Exception {
         System.out.println("testFireAlarmAgent");
 

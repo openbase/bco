@@ -22,7 +22,10 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.layer.unit.TamperDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -47,7 +50,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public TamperDetectorRemoteTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
         tamperDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TAMPER_DETECTOR), true, TamperDetectorRemote.class);
@@ -56,7 +59,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     /**
      * Test of notifyUpdated method, of class TamperSwtichRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 
@@ -65,7 +68,8 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
@@ -79,7 +83,8 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetTamperStateTimestamp() throws Exception {
         System.out.println("testGetTamperStateTimestamp");
         long timestamp;

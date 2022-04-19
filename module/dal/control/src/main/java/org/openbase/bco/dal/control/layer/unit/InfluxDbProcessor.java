@@ -78,7 +78,7 @@ public class InfluxDbProcessor {
     public static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
     public static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
     public static final String INFLUXDB_URL = "INFLUXDB_URL";
-    public static final String INFLUXDB_URL_DEFAULT = "http://localhost:9999";
+    public static final String INFLUXDB_URL_DEFAULT = "http://localhost:8086";
     public static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     public static final String INFLUXDB_ORG_DEFAULT = "openbase";
     public static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";

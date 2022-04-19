@@ -24,7 +24,8 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -98,6 +99,7 @@ public class AuthorizationHelperTest {
      * @throws java.lang.Exception
      */
     @Test
+    @Timeout(20)
     public void testOwnerPermissions() throws Exception {
         System.out.println("testOwnerPermissions");
 
@@ -207,6 +209,7 @@ public class AuthorizationHelperTest {
      * @throws java.lang.Exception
      */
     @Test
+    @Timeout(20)
     public void testOtherPermissions() throws Exception {
         System.out.println("testOtherPermissions");
 
@@ -251,6 +254,7 @@ public class AuthorizationHelperTest {
      * @throws java.lang.Exception
      */
     @Test
+    @Timeout(20)
     public void testUserClient() throws Exception {
         System.out.println("testOtherPermissions");
 
@@ -294,6 +298,7 @@ public class AuthorizationHelperTest {
     }
 
     @Test
+    @Timeout(20)
     public void testLocationPermission() throws Exception {
         LocationConfig location1 = LocationConfig.newBuilder().setRoot(false).build();
         PermissionConfig.Builder permissionConfigLocation = PermissionConfig.newBuilder().setOtherPermission(NONE);
@@ -348,6 +353,7 @@ public class AuthorizationHelperTest {
      * Validate that a user can also be a group with permissions.
      */
     @Test
+    @Timeout(20)
     public void testUserAsGroupPermissions() {
         // create user id
         final String userId = "UserWhichIsAlsoAGroup";

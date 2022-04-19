@@ -22,7 +22,8 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
@@ -45,7 +46,8 @@ public class UnitGroupRegistryTest extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testPlacementChange() throws Exception {
         logger.info("testPlacementChange");
 

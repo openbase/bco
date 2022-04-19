@@ -23,7 +23,8 @@ package org.openbase.bco.dal.remote.layer.unit;
  */
 
 import com.google.protobuf.Message;
-import org.junit.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.remote.Registries;
@@ -42,7 +43,8 @@ public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testUnitPool() throws Exception {
         final CustomUnitPool customUnitPool = new CustomUnitPool();
         assertEquals("pool is active while never activated", false, customUnitPool.isActive());

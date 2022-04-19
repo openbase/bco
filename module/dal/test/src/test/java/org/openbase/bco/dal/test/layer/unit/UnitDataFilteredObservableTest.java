@@ -23,8 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.Assert;
-import org.junit.Test;
-import org.openbase.bco.dal.lib.layer.unit.Dimmer;
+import org.junit.jupiter.api.Test;
 import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
