@@ -166,7 +166,6 @@ public class TestWaitUntilReady {
             }
             waitedUntilReady = true;
         }
-        waitedUntilReady = false;
         delayConsistencyCheck = false;
     }
 }

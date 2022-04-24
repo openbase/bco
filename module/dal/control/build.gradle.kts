@@ -11,7 +11,7 @@ dependencies {
     api(project(":bco.dal.remote"))
     api(project(":bco.registry.util"))
     api("org.openbase:jul.pattern.trigger:_")
-    api("com.influxdb:influxdb-client-java:[1.0,1.1-alpha)")
+    api("com.influxdb:influxdb-client-java:_")
 }
 
 description = "BCO DAL Control"

@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.registry.remote.Registries;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 
 public class ServicesTest extends AbstractBCORegistryTest {
     @Test
+    @Timeout(value = 30)
     public void testComputeActionImpact() throws CouldNotPerformException, InterruptedException {
 
         final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(true);

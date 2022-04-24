@@ -131,7 +131,6 @@ dependencies {
     api(project(":bco.dal.visual"))
     api("commons-collections:commons-collections:_")
     testImplementation(project(":bco.dal.test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
 }
 
 description = "BCO App Utility"

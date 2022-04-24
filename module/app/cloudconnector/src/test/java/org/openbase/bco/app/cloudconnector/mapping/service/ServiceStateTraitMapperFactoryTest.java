@@ -25,6 +25,7 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Trait;
 import org.openbase.bco.app.cloudconnector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
@@ -38,6 +39,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -64,6 +66,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
      * Test if for all defined combinations of services and traits a mapper is available.
      */
     @Test
+    @Timeout(value = 30)
     public void testMapperAvailability() {
         LOGGER.info("testMapperAvailability");
 

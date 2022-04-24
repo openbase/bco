@@ -228,9 +228,6 @@ public class InfluxDbProcessor {
                         throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
                     }
                     return influxDBClient.getQueryApi().query(query, getInfluxdbOrg());
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
                 } catch (Exception ex) {
                     throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
                 }
