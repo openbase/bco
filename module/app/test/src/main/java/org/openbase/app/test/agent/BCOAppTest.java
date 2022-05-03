@@ -22,9 +22,9 @@ package org.openbase.app.test.agent;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
@@ -46,7 +46,7 @@ public class BCOAppTest extends AbstractBCOTest {
     protected static DeviceManagerLauncher deviceManagerLauncher;
     protected static LocationManagerLauncher locationManagerLauncher;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             LOGGER.info("Start app test setup...");
@@ -79,7 +79,7 @@ public class BCOAppTest extends AbstractBCOTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         LOGGER.info("Tear down app tests...");
         try {
@@ -107,7 +107,7 @@ public class BCOAppTest extends AbstractBCOTest {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
-    @After
+    @AfterEach
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

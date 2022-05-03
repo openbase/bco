@@ -22,6 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -32,8 +33,6 @@ import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -61,7 +60,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         waitForExecution(lightRemote.setPowerState(Power.ON));
-        assertEquals("Power has not been set in time!", Power.ON.getValue(), lightRemote.getData().getPowerState().getValue());
+        assertEquals(Power.ON.getValue(), lightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
     /**
@@ -81,7 +80,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
         lightRemote.requestData().get();
 
         // validate service state
-        assertEquals("Light has not been set in time!", Power.OFF.getValue(), lightRemote.getPowerState().getValue());
+        assertEquals(Power.OFF.getValue(), lightRemote.getPowerState().getValue(), "Light has not been set in time!");
 
         // apply service state
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId()).applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
@@ -90,6 +89,6 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
         lightRemote.requestData().get();
 
         // validate service state
-        assertEquals("Light has not been set in time!", Power.ON.getValue(), lightRemote.getPowerState().getValue());
+        assertEquals(Power.ON.getValue(), lightRemote.getPowerState().getValue(), "Light has not been set in time!");
     }
 }

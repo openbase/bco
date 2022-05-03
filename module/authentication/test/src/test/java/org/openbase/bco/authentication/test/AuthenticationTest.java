@@ -24,7 +24,7 @@ package org.openbase.bco.authentication.test;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
@@ -54,7 +54,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
         authenticationController.activate();
         authenticationController.waitForActivation();
 
-        Assert.assertTrue("Initial password has not been generated despite an empty registry", AuthenticationController.getInitialPassword() != null);
+        assertTrue(AuthenticationController.getInitialPassword() != null, "Initial password has not been generated despite an empty registry");
     }
 
     @AfterAll

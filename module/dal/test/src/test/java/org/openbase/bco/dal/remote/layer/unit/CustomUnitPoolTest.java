@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.layer.unit;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.protobuf.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -34,7 +35,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
 
@@ -47,7 +48,7 @@ public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
     @Timeout(10)
     public void testUnitPool() throws Exception {
         final CustomUnitPool customUnitPool = new CustomUnitPool();
-        assertEquals("pool is active while never activated", false, customUnitPool.isActive());
+        assertEquals(false, customUnitPool.isActive(), "pool is active while never activated");
 
         customUnitPool.activate();
 
@@ -58,7 +59,7 @@ public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
         customUnitPool.activate();
 
         for (UnitRemote<? extends Message> unitRemote : customUnitPool.getInternalUnitList()) {
-            assertEquals("pool contains actually filtered entry!", UnitType.BUTTON, unitRemote.getUnitType());
+            assertEquals(UnitType.BUTTON, unitRemote.getUnitType(), "pool contains actually filtered entry!");
             System.out.println("is button: "+ unitRemote.getLabel());
         }
 
@@ -69,7 +70,7 @@ public class CustomUnitPoolTest extends AbstractBCODeviceManagerTest {
         Registries.getUnitRegistry().updateUnitConfig(lightUnitConfig.get(0).toBuilder().addAlias("MyLightestUnit").build()).get(5, TimeUnit.SECONDS);
 
         for (UnitRemote<? extends Message> unitRemote : customUnitPool.getInternalUnitList()) {
-            assertEquals("pool contains actually filtered entry!", UnitType.BUTTON, unitRemote.getUnitType());
+            assertEquals(UnitType.BUTTON, unitRemote.getUnitType(), "pool contains actually filtered entry!");
             System.out.println("is button: "+ unitRemote.getLabel());
         }
 

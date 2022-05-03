@@ -22,8 +22,10 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
@@ -52,8 +54,6 @@ import org.openbase.type.domotic.unit.agent.AgentDataType;
 import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import org.openbase.type.domotic.unit.dal.LightSensorDataType.LightSensorData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
@@ -134,10 +134,10 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         LOGGER.info("WaitFor ColorableLight power update");
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
-        assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 5000", 5000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 5000", 5000.0, locationRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not ON", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals(5000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1, "Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 5000");
+        assertEquals(5000.0, locationRemote.getIlluminanceState().getIlluminance(), 1, "Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 5000");
+        assertEquals(PowerState.State.ON, colorableLightRemote.getPowerState().getValue(), "Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not ON");
+        assertEquals(PowerState.State.ON, locationRemote.getPowerState().getValue(), "Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON");
 
         // test if on high illuminance lights get switched off
         lightSensorController.applyServiceState(IlluminanceState.newBuilder().setIlluminance(7000.0).build(), ServiceType.ILLUMINANCE_STATE_SERVICE);
@@ -150,9 +150,9 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 //        LOGGER.info("WaitFor Location power update");
 //        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
-        assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 7000", 7000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 7000", 7000.0, locationRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
+        assertEquals(7000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1, "Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 7000");
+        assertEquals(7000.0, locationRemote.getIlluminanceState().getIlluminance(), 1, "Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 7000");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF");
         //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
         // Not Part of this agent, is it? As it is just cancelling its action and is not responsible for behavior afterwards.
@@ -167,9 +167,9 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 //        LOGGER.info("WaitFor Location power update");
 //        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
-        assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 2000", 2000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 2000", 2000.0, locationRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
+        assertEquals(2000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1, "Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 2000");
+        assertEquals(2000.0, locationRemote.getIlluminanceState().getIlluminance(), 1, "Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 2000");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention");
         //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerState.State.OFF, locationRemote.getPowerState().getValue());
     }
 

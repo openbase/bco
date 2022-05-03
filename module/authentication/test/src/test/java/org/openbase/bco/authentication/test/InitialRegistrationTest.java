@@ -32,7 +32,7 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -64,6 +64,6 @@ public class InitialRegistrationTest extends AuthenticationTest {
 
         // test if login works afterwards
         SessionManager.getInstance().loginUser(userId, password, false);
-        assertTrue("User is not logged in", SessionManager.getInstance().isLoggedIn());
+        assertTrue(SessionManager.getInstance().isLoggedIn(), "User is not logged in");
     }
 }

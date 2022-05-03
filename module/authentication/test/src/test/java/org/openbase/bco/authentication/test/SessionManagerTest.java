@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
@@ -41,8 +42,6 @@ import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPai
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
@@ -484,7 +483,7 @@ public class SessionManagerTest extends AuthenticationTest {
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 1 after the first login", 1, notificationCounter);
+        assertEquals(1, notificationCounter, "Notification counter should be 1 after the first login");
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
@@ -492,12 +491,12 @@ public class SessionManagerTest extends AuthenticationTest {
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 2 after logging in another user", 2, notificationCounter);
+        assertEquals(2, notificationCounter, "Notification counter should be 2 after logging in another user");
         sessionManager.logout();
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 3 after logout", 3, notificationCounter);
+        assertEquals(3, notificationCounter, "Notification counter should be 3 after logout");
 
         sessionManager.removeLoginObserver(loginObserver);
     }

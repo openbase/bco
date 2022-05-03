@@ -22,6 +22,7 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,9 +40,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
-
-import static junit.framework.TestCase.assertEquals;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -89,7 +87,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
             LOGGER.error(entry.getValue().getMessage());
         }
 
-        assertEquals("Could not create every needed mapping", 0, mapperExceptionMap.size());
+        assertEquals(0, mapperExceptionMap.size(), "Could not create every needed mapping");
     }
 
 }

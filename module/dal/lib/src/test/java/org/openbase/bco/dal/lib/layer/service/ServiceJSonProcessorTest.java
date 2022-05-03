@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 import com.google.protobuf.Message;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

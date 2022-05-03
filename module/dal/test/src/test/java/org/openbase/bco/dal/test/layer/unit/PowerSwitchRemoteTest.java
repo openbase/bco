@@ -22,7 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -49,8 +49,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
-
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
@@ -76,7 +74,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     @Timeout(3)
     public void testSetPowerState() throws Exception {
         waitForExecution(powerSwitchRemote.setPowerState(Power.ON));
-        assertEquals("Power state has not been set in time!", Power.ON.getValue(), powerSwitchRemote.getData().getPowerState().getValue());
+        assertEquals(Power.ON.getValue(), powerSwitchRemote.getData().getPowerState().getValue(), "Power state has not been set in time!");
     }
 
     /**
@@ -95,7 +93,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         powerSwitchRemote.requestData().get();
 
         // validate service state
-        assertEquals("Switch has not been set in time.", Power.OFF.getValue(), powerSwitchRemote.getPowerState().getValue());
+        assertEquals(Power.OFF.getValue(), powerSwitchRemote.getPowerState().getValue(), "Switch has not been set in time.");
 
         // apply service state
         unitController.applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
@@ -104,7 +102,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         powerSwitchRemote.requestData().get();
 
         // validate service state
-        assertEquals("Switch has not been set in time.", Power.ON.getValue(), powerSwitchRemote.getPowerState().getValue());
+        assertEquals(Power.ON.getValue(), powerSwitchRemote.getPowerState().getValue(), "Switch has not been set in time.");
     }
 
     /**
@@ -136,7 +134,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         try {
             powerSwitchRemote.requestData().get(1, TimeUnit.SECONDS);
         } catch (TimeoutException ex) {
-            assertTrue("PowerSwitch did not response in time after massive load!", true);
+            assertTrue(true, "PowerSwitch did not response in time after massive load!");
         }
 
         // invert state
@@ -147,7 +145,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         try {
             testAction.waitForActionState(State.EXECUTING);
         } catch (CancellationException ex) {
-            Assert.fail("Power action is not executing and instead: "+testAction.getActionState().name());
+            fail("Power action is not executing and instead: "+testAction.getActionState().name());
         }
 
         // make sure the final state is correctly applied.
@@ -215,13 +213,13 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         }
 
         // analyse errors
-        assertEquals("Some errors occurred during cancellation!", Collections.EMPTY_LIST, errorList);
+        assertEquals(Collections.EMPTY_LIST, errorList, "Some errors occurred during cancellation!");
 
         // make sure unit is still responding
         try {
             powerSwitchRemote.requestData().get(1, TimeUnit.SECONDS);
         } catch (TimeoutException ex) {
-            assertTrue("PowerSwitch did not response in time after massive load!", true);
+            assertTrue(true, "PowerSwitch did not response in time after massive load!");
         }
 
         // wait until all actions are canceled

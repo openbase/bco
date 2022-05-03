@@ -21,7 +21,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -71,8 +71,6 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
@@ -127,7 +125,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
         waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON), adminToken);
         colorableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
     /**
@@ -185,7 +183,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         System.out.println("execute action");
         waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON), adminToken);
         colorableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
     /**
@@ -222,7 +220,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         System.out.println("execute action");
         waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON), adminToken);
         colorableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
     @Test
@@ -268,7 +266,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         try {
             ExceptionPrinter.setBeQuit(true);
             colorableLightRemote.setPowerState(State.ON).get();
-            assertTrue("Could set power state without access permissions", false);
+            assertTrue(false, "Could set power state without access permissions");
         } catch (ExecutionException ex) {
             // this should happen
             // ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.INFO);
@@ -359,7 +357,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         powerStateServiceRemote.cancelAction(future.get(), largosAuthToken).get(5 , TimeUnit.SECONDS);
 
         future = powerStateServiceRemote.setPowerState(Power.OFF, largosDefaultParameter);
-        final RemoteAction largoOffAction = waitForExecution(future, largosAuthToken);
+        waitForExecution(future, largosAuthToken);
 
         // make sure sync is done
         powerStateServiceRemote.requestData().get(5 , TimeUnit.SECONDS);

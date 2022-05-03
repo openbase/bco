@@ -26,9 +26,9 @@ import java.util.Collection;
 
 import com.google.protobuf.ProtocolMessageEnum;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.Assert.assertEquals;
+
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -69,10 +69,10 @@ public class ServiceTest extends AbstractBCOTest {
     public void testDetectServiceDataClass() throws Exception {
         System.out.println("detectServiceDataClass");
         try {
-            Assert.assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class);
-            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.COLOR_STATE_SERVICE), ColorStateType.ColorState.class);
-            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.SMOKE_STATE_SERVICE), SmokeStateType.SmokeState.class);
-            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.MOTION_STATE_SERVICE), MotionStateType.MotionState.class);
+            assertEquals(Services.getServiceStateClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class, "wrong service class detected!");
+            assertEquals(Services.getServiceStateClass(ServiceType.COLOR_STATE_SERVICE), ColorStateType.ColorState.class, "wrong service class detected!");
+            assertEquals(Services.getServiceStateClass(ServiceType.SMOKE_STATE_SERVICE), SmokeStateType.SmokeState.class, "wrong service class detected!");
+            assertEquals(Services.getServiceStateClass(ServiceType.MOTION_STATE_SERVICE), MotionStateType.MotionState.class, "wrong service class detected!");
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.out);
         }
@@ -88,7 +88,7 @@ public class ServiceTest extends AbstractBCOTest {
             Registries.getClassRegistry().waitForData();
             Collection<? extends ProtocolMessageEnum> values = Services.getServiceStateEnumValues(ServiceType.POWER_STATE_SERVICE);
             for (PowerState.State state : PowerState.State.values()) {
-                Assert.assertTrue("Detected values does not contain " + state.name(), values.contains(state));
+                assertTrue(values.contains(state), "Detected values does not contain " + state.name());
             }
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);

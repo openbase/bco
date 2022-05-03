@@ -36,8 +36,8 @@ import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *

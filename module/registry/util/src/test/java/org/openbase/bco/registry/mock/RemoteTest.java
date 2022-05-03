@@ -23,7 +23,7 @@ package org.openbase.bco.registry.mock;
  */
 import org.junit.jupiter.api.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
@@ -32,8 +32,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.state.ConnectionStateType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -87,7 +85,7 @@ public class RemoteTest {
             deviceRemoteToggle.deactivate();
             deviceRemoteToggle.waitForConnectionState(ConnectionState.State.DISCONNECTED);
 
-            assertEquals("Remote has been shutdown with another in the [" + i + "]s try!", ConnectionStateType.ConnectionState.State.CONNECTED, deviceRemoteAlwaysOn.getConnectionState());
+            assertEquals(ConnectionStateType.ConnectionState.State.CONNECTED, deviceRemoteAlwaysOn.getConnectionState(), "Remote has been shutdown with another in the [" + i + "]s try!");
             deviceRemoteAlwaysOn.requestData().get();
 
             deviceRemoteToggle.activate();

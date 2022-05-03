@@ -22,10 +22,10 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,7 +42,7 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
 
     protected static DeviceManagerLauncher deviceManagerLauncher;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOTest.setUpClass();
@@ -54,7 +54,7 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         try {
             if (deviceManagerLauncher != null) {
@@ -71,8 +71,8 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
-    @Before
-    @After
+    @BeforeEach
+    @AfterEach
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

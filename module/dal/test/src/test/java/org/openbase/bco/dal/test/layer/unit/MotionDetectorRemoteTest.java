@@ -21,10 +21,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.junit.Assert;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -73,7 +70,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId()).applyServiceState(motion, ServiceType.MOTION_STATE_SERVICE);
         motionDetectorRemote.requestData().get();
-        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
+        assertEquals(motion.getValue(), motionDetectorRemote.getMotionState().getValue(), "The getter for the motion state returns the wrong value!");
     }
 
     /**
@@ -93,10 +90,10 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId()).applyServiceState(motion, ServiceType.MOTION_STATE_SERVICE);
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
-        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
+        assertEquals(motion.getValue(), motionDetectorRemote.getMotionState().getValue(), "The getter for the motion state returns the wrong value!");
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.MOTION, motionDetectorRemote.getMotionState()));
         String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
-        assertTrue("The last motion timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertTrue((timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()), "The last motion timestamp has not been updated! " + comparision);
 
         // just to be safe that the next test does not set the motion state in the same millisecond
         Thread.sleep(1);
@@ -106,9 +103,9 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId()).applyServiceState(motion, ServiceType.MOTION_STATE_SERVICE);
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
-        Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
+        assertEquals(motion.getValue(), motionDetectorRemote.getMotionState().getValue(), "The getter for the motion state returns the wrong value!");
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.MOTION, motionDetectorRemote.getMotionState()));
         comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
-        assertFalse("The last motion timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertFalse((timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()), "The last motion timestamp has been updated even though it sould not! " + comparision);
     }
 }

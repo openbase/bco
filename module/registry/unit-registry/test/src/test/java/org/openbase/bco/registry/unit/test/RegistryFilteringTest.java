@@ -45,8 +45,8 @@ import org.openbase.type.domotic.unit.user.UserConfigType.UserConfig;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -114,12 +114,12 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
         // test if location does not contain unit ids and child ids anymore anymore
-        assertTrue("Unit id list of location has not been filtered without access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdList().isEmpty());
-        assertTrue("Child id list of location has not been filtered without access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdList().isEmpty());
+        assertTrue(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdList().isEmpty(), "Unit id list of location has not been filtered without access and read permissions");
+        assertTrue(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdList().isEmpty(), "Child id list of location has not been filtered without access and read permissions");
         // test if unit configuration cannot be read anymore
         try {
             Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
-            assertTrue("Unit configuration can still be seen even though other has no read and access permissions on its location", false);
+            fail("Unit configuration can still be seen even though other has no read and access permissions on its location");
         } catch (NotAvailableException ex) {
             // this should happen
         }
@@ -129,37 +129,41 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
         // test if unit ids and child ids are back
-        assertEquals("Unit id list of location not available with read permissions",
+        assertEquals(
                 unitConfig.getLocationConfig().getUnitIdCount(),
-                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount());
-        assertEquals("Child id list of location not available with read permissions",
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount(),
+                "Unit id list of location not available with read permissions");
+        assertEquals(
                 unitConfig.getLocationConfig().getChildIdCount(),
-                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount());
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount(),
+                "Child id list of location not available with read permissions");
         // test if unit configurations are still not available
         try {
             Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
         } catch (NotAvailableException ex) {
-            assertTrue("Unit configuration cannot be seen even though other has read permissions on its location", false);
+            assertTrue(false, "Unit configuration cannot be seen even though other has read permissions on its location");
         }
 
         // give only access permissions
         unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(true).setRead(false);
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
-        assertTrue("Location does not provide read permission while providing access permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getPermissionConfig().getOtherPermission().getRead());
+        assertTrue(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getPermissionConfig().getOtherPermission().getRead(), "Location does not provide read permission while providing access permissions");
 
         // test if unit ids and child ids are back
-        assertEquals("Unit id list of location not available with access permissions",
+        assertEquals(
                 unitConfig.getLocationConfig().getUnitIdCount(),
-                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount());
-        assertEquals("Child id list of location not available with access permissions",
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount(),
+                "Unit id list of location not available with access permissions");
+        assertEquals(
                 unitConfig.getLocationConfig().getChildIdCount(),
-                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount());
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount(),
+                "Child id list of location not available with access permissions");
         // test if unit configurations are still not available
         try {
             Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
         } catch (NotAvailableException ex) {
-            assertTrue("Unit configuration cannot be seen even though other has read and access permissions on its location", false);
+            assertTrue(false, "Unit configuration cannot be seen even though other has read and access permissions on its location");
         }
     }
 
@@ -180,6 +184,6 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
         final AuthorizationToken decrypted = EncryptionHelper.decryptSymmetric(
                 ByteString.copyFrom(Base64.getDecoder().decode(token)), AuthenticatedServerManager.getInstance().getServiceServerSecretKey(), AuthorizationToken.class);
 
-        assertEquals("Returned authorization token does not match", authorizationToken.build(), decrypted);
+        assertEquals(authorizationToken.build(), decrypted, "Returned authorization token does not match");
     }
 }

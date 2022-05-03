@@ -52,8 +52,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -98,7 +98,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
         // test if the state of the light can be changed
         waitForExecution(colorableLightRemote.setPowerState(PowerState.State.ON));
-        assertEquals("Power state has not been set in time!", PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power state has not been set in time!");
 
         // add the previously removed unit template config again
         deviceClassBuilder = deviceClass.toBuilder();
@@ -124,8 +124,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         // test if both unit remotes can be used
         final RemoteAction action = waitForExecution(powerSwitchRemote.setPowerState(State.ON));
         waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
-        assertEquals("Power state has not been set in time!", PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue());
-        assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue(), "Power state has not been set in time!");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue(), "Power state has not been set in time!");
 
         // cancel action because cancellation is not possible afterwards
         action.cancel().get();
@@ -141,22 +141,22 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         while (Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getId()).getDeviceConfig().getUnitIdCount() != deviceClass.getUnitTemplateConfigCount() && (System.currentTimeMillis() - currentTime) < 500) {
             Thread.sleep(10);
         }
-        assertTrue("Unit registry still contains the unit config which should have been removed", !Registries.getUnitRegistry().containsUnitConfigById(powerSwitchConfig.getId()));
+        assertFalse(Registries.getUnitRegistry().containsUnitConfigById(powerSwitchConfig.getId()), "Unit registry still contains the unit config which should have been removed");
 
         // wait up to half a second for the unit controller to be removed from the device test
         currentTime = System.currentTimeMillis();
         while (deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().contains(powerSwitchConfig.getId()) && (System.currentTimeMillis() - currentTime) < 500) {
             Thread.sleep(10);
         }
-        assertTrue("DeviceManager still contains removed unit controller", !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().contains(powerSwitchConfig.getId()));
+        assertTrue(!deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().contains(powerSwitchConfig.getId()), "DeviceManager still contains removed unit controller");
 
         // test if the colorable light can still be used
         waitForExecution(colorableLightRemote.setPowerState(PowerState.State.OFF));
-        assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue(), "Power state has not been set in time!");
 
         // test if the power switch remote has lost its connection
         powerSwitchRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED, 1000);
-        assertEquals("Remote has not disconnected even though its config should have been removed!", ConnectionState.State.DISCONNECTED, powerSwitchRemote.getConnectionState());
+        assertEquals(ConnectionState.State.DISCONNECTED, powerSwitchRemote.getConnectionState(), "Remote has not disconnected even though its config should have been removed!");
     }
 
     private boolean running = true;
@@ -210,7 +210,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
                 String serialNumber = productNumber + "-" + i;
                 System.out.println("Register device");
                 final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.generateDeviceConfig(deviceConfigLabel + "_" + i, serialNumber, deviceClass)).get();
-                assertTrue("DeviceUnitConfig[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + "] is not available after registration!", Registries.getUnitRegistry().containsUnitConfigById(deviceUnitConfig.getId()));
+                assertTrue(Registries.getUnitRegistry().containsUnitConfigById(deviceUnitConfig.getId()), "DeviceUnitConfig[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + "] is not available after registration!");
                 final UnitConfig colorableLightConfig1 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
                 final UnitConfig colorableLightConfig2 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));
                 final UnitConfig powerSwitchConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(2));
@@ -244,9 +244,9 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
                 waitForExecution(colorableLightRemote2.setPowerState(PowerState.State.OFF));
                 System.out.println("SetPowerState3");
                 waitForExecution(powerSwitchRemote.setPowerState(PowerState.State.ON));
-                assertEquals("Power state has not been set in time!", PowerState.State.ON, colorableLightRemote1.getData().getPowerState().getValue());
-                assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote2.getData().getPowerState().getValue());
-                assertEquals("Power state has not been set in time!", PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue());
+                assertEquals(PowerState.State.ON, colorableLightRemote1.getData().getPowerState().getValue(), "Power state has not been set in time!");
+                assertEquals(PowerState.State.OFF, colorableLightRemote2.getData().getPowerState().getValue(), "Power state has not been set in time!");
+                assertEquals(PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue(), "Power state has not been set in time!");
             }
         } catch (CouldNotPerformException | ExecutionException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);

@@ -22,7 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -63,7 +63,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
         waitForExecution(temperatureControllerRemote.setTargetTemperatureState(temperatureState));
         temperatureControllerRemote.requestData().get();
-        Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperature, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1);
+        assertEquals(temperature, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1, "The getter for the target temperature returns the wrong value!");
     }
 
     /**
@@ -80,7 +80,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         final TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId()).applyServiceState(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
         temperatureControllerRemote.requestData().get();
-        Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperatureState.getTemperature(), temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1);
+        assertEquals(temperatureState.getTemperature(), temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1, "The getter for the target temperature returns the wrong value!");
     }
 
     /**
@@ -96,6 +96,6 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId()).applyServiceState(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
         temperatureControllerRemote.requestData().get();
-        Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureControllerRemote.getTemperatureState().getTemperature(), 0.1);
+        assertEquals(temperature, temperatureControllerRemote.getTemperatureState().getTemperature(), 0.1, "The getter for the temperature returns the wrong value!");
     }
 }

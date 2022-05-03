@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -53,8 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
-import static junit.framework.TestCase.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -96,12 +95,12 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         String deviceScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + "device" + "/"+motionSensorConfig.getAlias(0).toLowerCase();
         String expectedUnitScope = "/" + Registries.getUnitRegistry().getRootLocationConfig().getAlias(0).toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + batteryUnitConfig.getAlias(0).toLowerCase();
 
-        assertEquals("Device scope is not set properly", deviceScope, ScopeProcessor.generateStringRep(motionSensorConfig.getScope()));
-        assertEquals("Device has not the correct number of units", 1, motionSensorConfig.getDeviceConfig().getUnitIdCount());
+        assertEquals(deviceScope, ScopeProcessor.generateStringRep(motionSensorConfig.getScope()), "Device scope is not set properly");
+        assertEquals(1, motionSensorConfig.getDeviceConfig().getUnitIdCount(), "Device has not the correct number of units");
 
         UnitConfig batteryUnit = Registries.getUnitRegistry().getUnitConfigById(motionSensorConfig.getDeviceConfig().getUnitId(0));
-        assertEquals("Unit scope is not set properly", expectedUnitScope, ScopeProcessor.generateStringRep(batteryUnit.getScope()));
-        assertEquals("Device id is not set in unit", motionSensorConfig.getId(), batteryUnit.getUnitHostId());
+        assertEquals(expectedUnitScope, ScopeProcessor.generateStringRep(batteryUnit.getScope()), "Unit scope is not set properly");
+        assertEquals(motionSensorConfig.getId(), batteryUnit.getUnitHostId(), "Device id is not set in unit");
     }
 
     /**
@@ -141,9 +140,9 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         unitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(UnitType.COLORABLE_LIGHT);
         unitTemplate = unitTemplate.toBuilder().addServiceDescription(batteryTemplate).addServiceDescription(colorTemplate).build();
         unitTemplate = Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
-        assertTrue(unitTemplate.getServiceDescriptionList().get(0).getServiceType() == ServiceType.BATTERY_STATE_SERVICE);
-        assertTrue(unitTemplate.getServiceDescriptionList().get(1).getServiceType() == ServiceType.COLOR_STATE_SERVICE);
-        assertTrue(unitTemplate.getUnitType() == UnitType.COLORABLE_LIGHT);
+        assertSame(unitTemplate.getServiceDescriptionList().get(0).getServiceType(), ServiceType.BATTERY_STATE_SERVICE);
+        assertSame(unitTemplate.getServiceDescriptionList().get(1).getServiceType(), ServiceType.COLOR_STATE_SERVICE);
+        assertSame(unitTemplate.getUnitType(), UnitType.COLORABLE_LIGHT);
 
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setUnitType(unitTemplate.getUnitType()).build();
         String serialNumber1 = "5073";
@@ -157,10 +156,10 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         UnitConfig localDeviceConfig = generateDeviceUnitConfig(deviceLabel, serialNumber1, clazz);
 
         localDeviceConfig = Registries.getUnitRegistry().registerUnitConfig(localDeviceConfig).get();
-        assertTrue("DeviceConfig does not contain the correct amount of units", localDeviceConfig.getDeviceConfig().getUnitIdCount() == 1);
+        assertTrue(localDeviceConfig.getDeviceConfig().getUnitIdCount() == 1, "DeviceConfig does not contain the correct amount of units");
 
         UnitConfig registeredUnit = Registries.getUnitRegistry().getUnitConfigById(localDeviceConfig.getDeviceConfig().getUnitId(0));
-        assertEquals("The amount of service configs for the unit is not correct", 2, registeredUnit.getServiceConfigCount());
+        assertEquals(2, registeredUnit.getServiceConfigCount(), "The amount of service configs for the unit is not correct");
         assertTrue(registeredUnit.getServiceConfig(0).getServiceDescription().getServiceType() == ServiceType.BATTERY_STATE_SERVICE || registeredUnit.getServiceConfig(0).getServiceDescription().getServiceType() == ServiceType.COLOR_STATE_SERVICE);
         assertTrue(registeredUnit.getServiceConfig(1).getServiceDescription().getServiceType() == ServiceType.BATTERY_STATE_SERVICE || registeredUnit.getServiceConfig(1).getServiceDescription().getServiceType() == ServiceType.COLOR_STATE_SERVICE);
 
@@ -209,7 +208,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         logger.info(unitTemplateConfigList.get(0) + ", " + unitTemplateConfigList.get(1));
 
         UnitConfig config = Registries.getUnitRegistry().registerUnitConfig(generateDeviceUnitConfig("DeviceConfigWhereUnitsShallBeSetViaConsistency", "randomSerial14972", clazz)).get();
-        assertEquals("Units in device config were not set according to the device classes unit templates", clazz.getUnitTemplateConfigCount(), config.getDeviceConfig().getUnitIdCount());
+        assertEquals(clazz.getUnitTemplateConfigCount(), config.getDeviceConfig().getUnitIdCount(), "Units in device config were not set according to the device classes unit templates");
         boolean containsLight = false;
         boolean containsHandlseSensor = false;
         List<UnitConfig> dalUnitConfigs = new ArrayList<>();
@@ -219,17 +218,17 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         for (UnitConfig unit : dalUnitConfigs) {
             if (unit.getUnitType().equals(unitTemplateConfig1.getUnitType())) {
                 containsLight = true;
-                assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(), unitTemplateConfig1.getServiceTemplateConfigCount());
-                assertTrue("The service type of the light unit does not match", unit.getServiceConfig(0).getServiceDescription().getServiceType().equals(serviceTemplate1.getServiceType()));
+                assertEquals(unit.getServiceConfigCount(), unitTemplateConfig1.getServiceTemplateConfigCount(), "The light unit contains more or less services than the template config");
+                assertTrue(unit.getServiceConfig(0).getServiceDescription().getServiceType().equals(serviceTemplate1.getServiceType()), "The service type of the light unit does not match");
             } else if (unit.getUnitType().equals(unitTemplateConfig2.getUnitType())) {
                 containsHandlseSensor = true;
-                assertEquals("The handle sensor unit contains more or less services than the template config", unitTemplateConfig2.getServiceTemplateConfigCount(), unit.getServiceConfigCount());
-                assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(0).getServiceDescription().getServiceType(), serviceTemplate2.getServiceType());
-                assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(1).getServiceDescription().getServiceType(), serviceTemplate3.getServiceType());
+                assertEquals(unitTemplateConfig2.getServiceTemplateConfigCount(), unit.getServiceConfigCount(), "The handle sensor unit contains more or less services than the template config");
+                assertEquals(unit.getServiceConfig(0).getServiceDescription().getServiceType(), serviceTemplate2.getServiceType(), "The service type of the handle sensor unit does not match");
+                assertEquals(unit.getServiceConfig(1).getServiceDescription().getServiceType(), serviceTemplate3.getServiceType(), "The service type of the handle sensor unit does not match");
             }
         }
-        assertTrue("The device config does not contain a light unit even though the device class has an according unit template", containsLight);
-        assertTrue("The device config does not contain a handle sensor unit even though the device class has an according unit template", containsHandlseSensor);
+        assertTrue(containsLight, "The device config does not contain a light unit even though the device class has an according unit template");
+        assertTrue(containsHandlseSensor, "The device config does not contain a handle sensor unit even though the device class has an according unit template");
 
         ServiceTemplateConfig serviceTemplate4 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.BUTTON_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig3 = UnitTemplateConfig.newBuilder().setUnitType(UnitType.BUTTON).addServiceTemplateConfig(serviceTemplate1).build();
@@ -245,27 +244,27 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
             Thread.sleep(100);
             config = Registries.getUnitRegistry().getUnitConfigById(config.getId());
         }
-        assertEquals("Unit configs and templates differ after the update of the device class", config.getDeviceConfig().getUnitIdCount(), clazz.getUnitTemplateConfigCount());
+        assertEquals(config.getDeviceConfig().getUnitIdCount(), clazz.getUnitTemplateConfigCount(), "Unit configs and templates differ after the update of the device class");
         Registries.getUnitRegistry().waitUntilReady();
 
         dalUnitConfigs.clear();
         for (String unitId : config.getDeviceConfig().getUnitIdList()) {
             dalUnitConfigs.add(Registries.getUnitRegistry().getUnitConfigById(unitId));
         }
-        assertEquals("Device config does not contain the right unit config", dalUnitConfigs.get(2).getUnitType(), unitTemplateConfig3.getUnitType());
-        assertEquals("Unit config does not contain the right service", dalUnitConfigs.get(2).getServiceConfig(0).getServiceDescription().getServiceType(), serviceTemplate4.getServiceType());
+        assertEquals(dalUnitConfigs.get(2).getUnitType(), unitTemplateConfig3.getUnitType(), "Device config does not contain the right unit config");
+        assertEquals(dalUnitConfigs.get(2).getServiceConfig(0).getServiceDescription().getServiceType(), serviceTemplate4.getServiceType(), "Unit config does not contain the right service");
 
         int sizeBefore = Registries.getUnitRegistry().getDalUnitConfigs().size();
         UnitConfig.Builder configBuilder = config.toBuilder().clearLabel();
         LabelProcessor.addLabel(configBuilder.getLabelBuilder(), Locale.ENGLISH, "newDeviceLabel");
         config = Registries.getUnitRegistry().updateUnitConfig(configBuilder.build()).get();
-        assertTrue("More dal units registered after device renaming!", Registries.getUnitRegistry().getDalUnitConfigs().size() == sizeBefore);
-        assertTrue("More units in device config after renaming!", config.getDeviceConfig().getUnitIdCount() == 3);
+        assertTrue(Registries.getUnitRegistry().getDalUnitConfigs().size() == sizeBefore, "More dal units registered after device renaming!");
+        assertTrue(config.getDeviceConfig().getUnitIdCount() == 3, "More units in device config after renaming!");
 
         //test if dal units are also removed when a device is removed
         Registries.getUnitRegistry().removeUnitConfig(config).get();
         for (UnitConfig dalUnitConfig : dalUnitConfigs) {
-            assertTrue("DalUnit [" + dalUnitConfig.getLabel() + "] still registered even though its device has been removed!", !Registries.getUnitRegistry().containsUnitConfig(dalUnitConfig));
+            assertTrue(!Registries.getUnitRegistry().containsUnitConfig(dalUnitConfig), "DalUnit [" + dalUnitConfig.getLabel() + "] still registered even though its device has been removed!");
         }
 
     }
@@ -294,7 +293,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         builder.setHeight((float) (0.0));
         builder.setWidth((float) (5.0));
         builder.setLeftFrontBottom(Translation.newBuilder().setX(0.1).setY(0).setZ(0));
-        assertEquals("Bounding box has not been updated!", builder.build(), updatedUnit.getPlacementConfig().getShape().getBoundingBox());
+        assertEquals(builder.build(), updatedUnit.getPlacementConfig().getShape().getBoundingBox(), "Bounding box has not been updated!");
     }
 
     /**
@@ -323,13 +322,13 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfigBuilder.build()).get();
 
         // test that owner id is still set after registration
-        assertEquals("The device does not have the correct owner id!", owner.getId(), deviceUnitConfig.getPermissionConfig().getOwnerId());
+        assertEquals(owner.getId(), deviceUnitConfig.getPermissionConfig().getOwnerId(), "The device does not have the correct owner id!");
 
         // remove the owner from the registry
         Registries.getUnitRegistry().removeUnitConfig(owner).get();
 
         // validate that owner got removed
-        assertTrue("The owner did not get removed!", !Registries.getUnitRegistry().containsUnitConfig(owner));
+        assertTrue(!Registries.getUnitRegistry().containsUnitConfig(owner), "The owner did not get removed!");
 
         // validate that owner has been removed from device unit config
         deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getId());
@@ -358,9 +357,9 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         device = Registries.getUnitRegistry().registerUnitConfig(device.build()).get().toBuilder();
         UnitConfig dalUnit = Registries.getUnitRegistry().getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertTrue("DeviceUnitConfig is not Enabled", device.getEnablingState().getValue() == EnablingState.State.ENABLED);
-        assertTrue("DalUnitConfig is not Enabled", device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue());
-        assertEquals("DeviceUnitConfig and DalUnitConfig have different labels", device.getLabel(), dalUnit.getLabel());
+        assertTrue(device.getEnablingState().getValue() == EnablingState.State.ENABLED, "DeviceUnitConfig is not Enabled");
+        assertTrue(device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Enabled");
+        assertEquals(device.getLabel(), dalUnit.getLabel(), "DeviceUnitConfig and DalUnitConfig have different labels");
 
         label = label + "-2";
         UnitConfig.Builder deviceBuilder = device.clearLabel();
@@ -374,18 +373,18 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         inventoryState.setValue(InventoryState.State.IN_STOCK);
         device = Registries.getUnitRegistry().updateUnitConfig(device.build()).get().toBuilder();
         dalUnit = Registries.getUnitRegistry().getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertTrue("DeviceUnitConfig inventory state is not IN_STOCK", device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.IN_STOCK);
-        assertTrue("DeviceUnitConfig is not Disabled", device.getEnablingState().getValue() == EnablingState.State.DISABLED);
-        assertTrue("DalUnitConfig is not Disabled", device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue());
+        assertTrue(device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.IN_STOCK, "DeviceUnitConfig inventory state is not IN_STOCK");
+        assertTrue(device.getEnablingState().getValue() == EnablingState.State.DISABLED, "DeviceUnitConfig is not Disabled");
+        assertTrue(device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Disabled");
 
         deviceConfig = device.getDeviceConfigBuilder();
         inventoryState = deviceConfig.getInventoryStateBuilder();
         inventoryState.setValue(InventoryState.State.INSTALLED);
         device = Registries.getUnitRegistry().updateUnitConfig(device.build()).get().toBuilder();
         dalUnit = Registries.getUnitRegistry().getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertTrue("DeviceUnitConfig inventory state is not INSTALLED", device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.INSTALLED);
-        assertTrue("DeviceUnitConfig is not Enabled", device.getEnablingState().getValue() == EnablingState.State.ENABLED);
-        assertTrue("DalUnitConfig is not Enabled", device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue());
+        assertTrue(device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.INSTALLED, "DeviceUnitConfig inventory state is not INSTALLED");
+        assertTrue(device.getEnablingState().getValue() == EnablingState.State.ENABLED, "DeviceUnitConfig is not Enabled");
+        assertTrue(device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Enabled");
 
         unitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceDescription().build();
         Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
@@ -440,7 +439,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
             Registries.getUnitRegistry().registerUnitConfig(newDeviceUnitConfig.toBuilder().clearId().build()).get();
             fail("No exception thrown after updating a device with to have the same label as another");
         } catch (Exception ex) {
-            assertEquals("DeviceConfig has been changed event though the update has been rejected", newDeviceUnitConfig, Registries.getUnitRegistry().getUnitConfigById(newDeviceUnitConfig.getId()));
+            assertEquals(newDeviceUnitConfig, Registries.getUnitRegistry().getUnitConfigById(newDeviceUnitConfig.getId()), "DeviceConfig has been changed event though the update has been rejected");
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }

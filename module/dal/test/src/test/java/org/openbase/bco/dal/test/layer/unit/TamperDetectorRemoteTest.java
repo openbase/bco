@@ -22,6 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -37,8 +38,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.state.TamperStateType.TamperState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -75,7 +74,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         tamperDetectorRemote.requestData().get();
-        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        assertEquals(tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue(), "The getter for the tamper switch state returns the wrong value!");
     }
 
     /**
@@ -95,10 +94,10 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
-        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        assertEquals(tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue(), "The getter for the tamper switch state returns the wrong value!");
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.TAMPER, tamperDetectorRemote.getTamperState()));
         String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
-        assertTrue("The last detection timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertTrue((timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()), "The last detection timestamp has not been updated! " + comparision);
 
         // just to be safe that the next test does not set the motion state in the same millisecond
         Thread.sleep(1);
@@ -108,9 +107,9 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
-        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        assertEquals(tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue(), "The getter for the tamper switch state returns the wrong value!");
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.TAMPER, tamperDetectorRemote.getTamperState()));
         comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
-        assertFalse("The last detection timestamp has been updated even though it should not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertFalse((timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()), "The last detection timestamp has been updated even though it should not! " + comparision);
     }
 }

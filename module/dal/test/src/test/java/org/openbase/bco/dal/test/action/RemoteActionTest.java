@@ -22,7 +22,7 @@ package org.openbase.bco.dal.test.action;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -59,10 +59,6 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.fail;
 
 public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
@@ -146,20 +142,20 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         for (int i = 0; i < 10; i++) {
             PowerStateType.PowerState.State powerState = (i % 2 == 0) ? PowerStateType.PowerState.State.ON : PowerStateType.PowerState.State.OFF;
             final RemoteAction locationRemoteAction = waitForExecution(locationRemote.setPowerState(powerState, UnitType.COLORABLE_LIGHT, mrPinkActionParameter), mrPinkUserToken);
-            assertTrue("Action of location does not offer an id after submission!", !locationRemoteAction.getId().isEmpty());
+            assertTrue(!locationRemoteAction.getId().isEmpty(), "Action of location does not offer an id after submission!");
 
             for (ColorableLightRemote unit : units) {
                 boolean actionIsExecuting = false;
                 for (ActionReferenceType.ActionReference actionReference : unit.getActionList().get(0).getActionCauseList()) {
-                    assertTrue("Subaction of location does not offer an id after submission!", !actionReference.getActionId().isEmpty());
+                    assertTrue(!actionReference.getActionId().isEmpty(), "Subaction of location does not offer an id after submission!");
                     if (actionReference.getActionId().equals(locationRemoteAction.getId())) {
                         actionIsExecuting = true;
                         break;
                     }
                 }
 
-                assertTrue("Action on unit[" + unit + "] is not executing", actionIsExecuting);
-                assertEquals("Action was not authenticated by the correct user", mrPinkUserId, unit.getActionList().get(0).getActionInitiator().getAuthenticatedBy());
+                assertTrue(actionIsExecuting, "Action on unit[" + unit + "] is not executing");
+                assertEquals(mrPinkUserId, unit.getActionList().get(0).getActionInitiator().getAuthenticatedBy(), "Action was not authenticated by the correct user");
             }
 
             locationRemoteAction.cancel().get();
@@ -185,7 +181,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
                     fail("Caused action on unit[" + colorableLightRemote + "] could not be found!");
                 }
 
-                Assert.assertEquals("Action on unit[" + colorableLightRemote + "] was not cancelled!", ActionStateType.ActionState.State.CANCELED, causedAction.getActionState().getValue());
+                assertEquals(ActionStateType.ActionState.State.CANCELED, causedAction.getActionState().getValue(), "Action on unit[" + colorableLightRemote + "] was not cancelled!");
             }
 
         }
@@ -233,7 +229,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light[" + unit + "] not on", State.ON, unit.getPowerState().getValue());
+            assertEquals(State.ON, unit.getPowerState().getValue(), "Light[" + unit + "] not on");
         }
 
         System.out.println("cancel dominant action");
@@ -263,12 +259,12 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
 
         for (ColorableLightRemote unit : units) {
             unit.requestData().get();
-            Assert.assertEquals("Light[" + unit + "] not off", State.OFF, unit.getPowerState().getValue());
+            assertEquals(State.OFF, unit.getPowerState().getValue(), "Light[" + unit + "] not off");
         }
 
         System.out.println("wait until last extension timeout and validate if no further extension will be performed for dominant action...");
         Thread.sleep(dominantAction.getValidityTime(TimeUnit.MILLISECONDS) + 10);
-        Assert.assertEquals("Dominant action was extended even through the action was already canceled.", false, dominantActionExtentionFlag.value);
+        assertFalse(dominantActionExtentionFlag.value, "Dominant action was extended even through the action was already canceled.");
 
         System.out.println("cancel low prio action");
         lowPrioLongtermAction.cancel().get();
@@ -284,13 +280,13 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
                     continue;
                 }
 
-                Assert.assertEquals("Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
+                assertTrue(new RemoteAction(actionDescription).isDone(), "Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
             }
         }
 
         System.out.println("wait until last extension timeout and validate if no further extension will be performed for low prio longterm action...");
         Thread.sleep(lowPrioLongtermAction.getValidityTime(TimeUnit.MILLISECONDS) + 10);
-        Assert.assertEquals("Low prio action was extended even through the action was already canceled.", false, lowPrioLongtermActionExtentionFlag.value);
+        assertEquals(false, lowPrioLongtermActionExtentionFlag.value, "Low prio action was extended even through the action was already canceled.");
 
         System.out.println("validate if still everything is done");
         for (ColorableLightRemote unit : units) {
@@ -301,7 +297,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
                     continue;
                 }
 
-                Assert.assertEquals("Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()), true, new RemoteAction(actionDescription).isDone());
+                assertEquals(true, new RemoteAction(actionDescription).isDone(), "Zombie[" + actionDescription.getActionState().getValue().name() + "] actions detected: " + MultiLanguageTextProcessor.getBestMatch(actionDescription.getDescription()));
             }
         }
 

@@ -22,7 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -71,7 +71,7 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
         double temperature = 37.0F;
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyServiceState(TemperatureState.newBuilder().setTemperature(temperature), ServiceType.TEMPERATURE_STATE_SERVICE);
         temperatureSensorRemote.requestData().get();
-        Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperatureState().getTemperature(), 0.1);
+        assertEquals(temperature, temperatureSensorRemote.getTemperatureState().getTemperature(), 0.1, "The getter for the temperature returns the wrong value!");
     }
 
     /**
@@ -87,6 +87,6 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId()).applyServiceState(alarmState, ServiceType.TEMPERATURE_ALARM_STATE_SERVICE);
         temperatureSensorRemote.requestData().get();
-        Assert.assertEquals("The getter for the temperature alarm state returns the wrong value!", alarmState.getValue(), temperatureSensorRemote.getTemperatureAlarmState().getValue());
+        assertEquals(alarmState.getValue(), temperatureSensorRemote.getTemperatureAlarmState().getValue(), "The getter for the temperature alarm state returns the wrong value!");
     }
 }

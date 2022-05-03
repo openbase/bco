@@ -23,7 +23,7 @@ package org.openbase.bco.registry.unit.test;
  */
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -125,7 +125,7 @@ public class TestWaitUntilReady {
 
         Registries.getUnitRegistry().addDataObserver((DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
             if (waitedUntilReady) {
-                Assert.assertTrue("Received an update even though waitUntilReady has returned!", false);
+                assertTrue(false, "Received an update even though waitUntilReady has returned!");
             }
         });
 
@@ -154,7 +154,10 @@ public class TestWaitUntilReady {
             // System.out.println("wait");
             Registries.waitUntilReady();
             //            System.out.println("continue");
-            Assert.assertTrue("Test failed because registry is not consistent after wait until done returned.", Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent());
+            assertTrue(
+                    Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent(),
+                    "Test failed because registry is not consistent after wait until done returned."
+            );
             long time = System.currentTimeMillis();
             try {
                 // registrationFuture.get();
@@ -162,7 +165,7 @@ public class TestWaitUntilReady {
                 LOGGER.info("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
             } catch (TimeoutException ex) {
                 LOGGER.warn("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
-                Assert.assertTrue("Test failed because registration result is not available", false);
+                assertTrue(false, "Test failed because registration result is not available");
             }
             waitedUntilReady = true;
         }

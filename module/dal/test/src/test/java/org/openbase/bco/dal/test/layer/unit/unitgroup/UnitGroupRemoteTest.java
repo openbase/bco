@@ -59,8 +59,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -152,13 +151,13 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         waitForExecution(unitGroupRemote.setPowerState(state));
 
         for (final Unit<?> unit : UNIT_LIST) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
+            assertEquals(state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue(), "Power state of unit [" + unit.getConfig().getId() + "] has not been set on!");
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         waitForExecution(unitGroupRemote.setPowerState(state));
         for (final Unit<?> unit : UNIT_LIST) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
+            assertEquals(state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue(), "Power state of unit [" + unit.getConfig().getId() + "] has not been set on!");
         }
     }
 
@@ -174,7 +173,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         waitForExecution(unitGroupRemote.setPowerState(state));
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), unitGroupRemote.getPowerState().getValue());
+        assertEquals(state.getValue(), unitGroupRemote.getPowerState().getValue(), "Power state has not been set in time or the return value from the getter is different!");
     }
 
     /**

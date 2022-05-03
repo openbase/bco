@@ -22,7 +22,7 @@ package org.openbase.bco.device.openhab.registry.synchronizer;
  * #L%
  */
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -33,14 +33,14 @@ class SynchronizationProcessorTest {
     @Test
     @Timeout(20)
     void getUniquePrefix() {
-        Assert.assertNotEquals(
+        assertNotEquals(
                 "Prefix is not unique!",
                 SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc00"),
                 SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:70:3c:a9-02-fc00")
 
         );
 
-        Assert.assertEquals(
+        assertEquals(
                 "Prefix is not unique!",
                 SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc00"),
                 SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc22")

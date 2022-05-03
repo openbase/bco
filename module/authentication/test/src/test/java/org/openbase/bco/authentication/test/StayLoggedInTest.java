@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -35,8 +36,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.Assert.*;
 
 /**
  * Test the staying logged in functionality of the session manager.
@@ -67,7 +66,7 @@ public class StayLoggedInTest extends AuthenticationTest {
     @Timeout(20)
     public void testStayingLoggedIn() throws Exception {
         // validate that the session timeout has been setup accordingly
-        assertEquals("Session timeout has not been initialized correctly", SESSION_TIMEOUT, (long) JPService.getProperty(JPSessionTimeout.class).getValue());
+        assertEquals(SESSION_TIMEOUT, (long) JPService.getProperty(JPSessionTimeout.class).getValue(), "Session timeout has not been initialized correctly");
 
         // create a new session manager
         SessionManager sessionManager = new SessionManager();

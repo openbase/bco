@@ -20,7 +20,6 @@ package org.openbase.bco.app.util;/*-
  * #L%
  */
 
-import org.junit.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -37,7 +36,7 @@ import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.geometry.PoseType;
-
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -72,7 +71,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 
             // load bound to unithost unit
             UnitConfig lightUnitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT));
-            Assert.assertTrue(lightUnitConfig.getBoundToUnitHost());
+            assertTrue(lightUnitConfig.getBoundToUnitHost());
 
             // change unit host position
             UnitConfig.Builder hostUnitConfigBuilder = Registries.getUnitRegistry().getUnitConfigById(lightUnitConfig.getUnitHostId()).toBuilder();
@@ -91,9 +90,9 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             // todo: sleep is actually to long!
             Thread.sleep(500);
 
-            Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPose(), hostUnitConfig.getPlacementConfig().getPose());
-            Assert.assertNotEquals("TransformationFrameId are not unique!", lightUnitConfig.getPlacementConfig().getTransformationFrameId(), hostUnitConfig.getPlacementConfig().getTransformationFrameId());
-            Assert.assertEquals("Transformations are not synchronized!", Units.getRootToUnitTransformation(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getRootToUnitTransformation(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform());
+            assertEquals(lightUnitConfig.getPlacementConfig().getPose(), hostUnitConfig.getPlacementConfig().getPose(), "Positions are not synchronized!");
+            assertNotEquals(lightUnitConfig.getPlacementConfig().getTransformationFrameId(), hostUnitConfig.getPlacementConfig().getTransformationFrameId(), "TransformationFrameId are not unique!");
+            assertEquals(Units.getRootToUnitTransformation(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getRootToUnitTransformation(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), "Transformations are not synchronized!");
 
             // verify that all other unit transformations are available
             verifyTransformations();

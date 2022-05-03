@@ -23,10 +23,10 @@ package org.openbase.bco.dal.test;
  */
 
 import lombok.NonNull;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
@@ -60,7 +60,7 @@ public class AbstractBCOTest extends MqttIntegrationTest {
 
     private final List<RemoteAction> testActions = Collections.synchronizedList(new ArrayList<>());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             MqttIntegrationTest.setUpClass();
@@ -72,7 +72,7 @@ public class AbstractBCOTest extends MqttIntegrationTest {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         try {
             Units.reset(AbstractBCOTest.class);
@@ -88,17 +88,17 @@ public class AbstractBCOTest extends MqttIntegrationTest {
      * Method is automatically called after each test run and there is no need to call it manually.
      * If you want to cancel all actions manually please use method {@code cancelAllTestActions()} to get feedback about the cancellation process.
      */
-    @After
+    @AfterEach
     public void autoCancelActionsAfterTestRun() {
 
         // before canceling pending actions lets just validate that the test did not cause any deadlocks
-        Assert.assertFalse("Deadlocks found!", StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER));
+        assertFalse(StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER), "Deadlocks found!");
 
         try {
             cancelAllTestActions();
         } catch (Exception ex) {
             ExceptionPrinter.printHistory("Could not cancel all test actions of test suite: " + getClass().getName(), ex, LOGGER);
-            Assert.fail("Could not cancel all test actions of test suite: " + getClass().getName());
+            fail("Could not cancel all test actions of test suite: " + getClass().getName());
         }
     }
 

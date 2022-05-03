@@ -22,7 +22,7 @@ package org.openbase.app.test.agent;
  * #L%
  */
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
@@ -46,7 +46,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected UnitConfig agentConfig = null;
     protected AgentRemote agentRemote = null;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         try {
             // register agent
