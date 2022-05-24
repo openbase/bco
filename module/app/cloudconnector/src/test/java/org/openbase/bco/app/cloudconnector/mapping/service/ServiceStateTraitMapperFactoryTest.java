@@ -49,14 +49,14 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceStateTraitMapperFactoryTest.class);
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setupTest() throws Exception {
         MockRegistryHolder.newMockRegistry();
 
         Registries.getTemplateRegistry(true);
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDownTest() {
         MockRegistryHolder.shutdownMockRegistry();
     }
 

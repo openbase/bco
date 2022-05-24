@@ -48,16 +48,8 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         dimmableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.DIMMABLE_LIGHT), true, DimmableLightRemote.class);
-    }
-
-    /**
-     * Test of notifyUpdated method, of class DimmerRemote.
-     */
-    @Disabled
-    public void testNotifyUpdated() {
     }
 
     /**

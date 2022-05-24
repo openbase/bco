@@ -72,9 +72,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
     private static final List<Unit> UNIT_LIST = new ArrayList<>();
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCOLocationManagerTest.setUpClass();
-
+    public static void loadUnits() throws Throwable {
         try {
             UnitConfig unitGroupConfig = registerUnitGroup();
             unitGroupRemote = Units.getUnit(unitGroupConfig, true, UnitGroupRemote.class);
@@ -125,16 +123,6 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
             }
         }
         return true;
-    }
-
-    @BeforeEach
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @AfterEach
-    public void tearDown() throws CouldNotPerformException {
-
     }
 
     /**

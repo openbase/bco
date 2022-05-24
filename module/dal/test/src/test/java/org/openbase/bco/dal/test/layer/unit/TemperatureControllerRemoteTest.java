@@ -45,8 +45,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void setupTest() throws Throwable {
         temperatureControllerRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TEMPERATURE_CONTROLLER), true, TemperatureControllerRemote.class);
     }
 

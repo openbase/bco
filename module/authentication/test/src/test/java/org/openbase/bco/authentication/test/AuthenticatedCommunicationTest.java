@@ -23,6 +23,7 @@ package org.openbase.bco.authentication.test;
  */
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.core.AuthenticationController;
@@ -53,10 +54,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
 
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AuthenticationTest.setUpClass();
-
+    @BeforeEach
+    public void setupUser() throws Throwable {
         // register a user from which a ticket can be validated
         registerUser();
     }

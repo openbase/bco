@@ -51,20 +51,16 @@ public class SessionManagerTest extends AuthenticationTest {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManagerTest.class);
 
     private static CredentialStore clientStore;
+    private static String INITIAL_USER_ID = "InitialUserId";
 
-
-    public SessionManagerTest() {
-    }
-
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AuthenticationTest.setUpClass();
+    @BeforeEach
+    public void setupSessionManager() throws Throwable {
         clientStore = new MockClientStore();
 
         // register an initial user for the authenticator
         try {
             LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder();
-            loginCredentials.setId("InitialUserId");
+            loginCredentials.setId(INITIAL_USER_ID);
             loginCredentials.setSymmetric(true);
             loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticationController.getInitialPassword())));
             AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
@@ -72,14 +68,6 @@ public class SessionManagerTest extends AuthenticationTest {
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not register initial user!"), LOGGER);
         }
-    }
-
-    @BeforeEach
-    public void setUp() throws Exception {
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
     }
 
     /**
@@ -299,7 +287,8 @@ public class SessionManagerTest extends AuthenticationTest {
             try {
                 ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
-                // remove himself
+                // remove all admins
+                manager.removeUser(INITIAL_USER_ID).get();
                 manager.removeUser(MockClientStore.ADMIN_ID).get();
             } finally {
                 ExceptionPrinter.setBeQuit(Boolean.FALSE);

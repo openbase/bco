@@ -46,8 +46,7 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         powerConsumptionRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_CONSUMPTION_SENSOR), true, PowerConsumptionSensorRemote.class);
     }
 

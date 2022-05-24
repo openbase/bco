@@ -48,6 +48,10 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
     maxParallelForks = 1
+    logging.captureStandardOutput(LogLevel.WARN)
+    maxHeapSize = "7G"
+    failFast = true
+    setForkEvery(1)
 }
 
 publishing {

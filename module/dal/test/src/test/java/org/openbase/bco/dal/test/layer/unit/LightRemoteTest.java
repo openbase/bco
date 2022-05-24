@@ -45,8 +45,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         lightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, LightRemote.class);
     }
 

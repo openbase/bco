@@ -50,8 +50,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void setupTest() throws Throwable {
         tamperDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TAMPER_DETECTOR), true, TamperDetectorRemote.class);
     }
 

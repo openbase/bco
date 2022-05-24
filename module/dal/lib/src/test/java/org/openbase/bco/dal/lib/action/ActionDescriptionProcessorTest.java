@@ -61,10 +61,10 @@ class ActionDescriptionProcessorTest {
         assertEquals(true, locationActionDescription.getReplaceable());
         assertEquals(true, lightActionDescription.getReplaceable());
 
-        assertEquals("Chain suffix does not match!", "Button", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(buttonActionDescription.build()));
-        assertEquals("Chain suffix does not match!", "SceneChill", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(sceneChillActionDescription.build()));
-        assertEquals("Chain suffix does not match!", "SceneMoodLight", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(sceneMoodLightActionDescription.build()));
-        assertEquals("Chain suffix does not match!", "SceneMoodLight_Location", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(locationActionDescription.build()));
-        assertEquals("Chain suffix does not match!", "SceneMoodLight_Location_Light", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(lightActionDescription.build()));
+        assertEquals("Button", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(buttonActionDescription.build()), "Chain suffix does not match!");
+        assertEquals("SceneChill", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(sceneChillActionDescription.build()), "Chain suffix does not match!");
+        assertEquals("SceneMoodLight", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(sceneMoodLightActionDescription.build()), "Chain suffix does not match!");
+        assertEquals("SceneMoodLight_Location", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(locationActionDescription.build()), "Chain suffix does not match!");
+        assertEquals("SceneMoodLight_Location_Light", ActionDescriptionProcessor.getUnitChainSuffixForNonReplaceableAction(lightActionDescription.build()), "Chain suffix does not match!");
     }
 }

@@ -49,8 +49,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         batteryRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BATTERY), true, BatteryRemote.class);
     }
 

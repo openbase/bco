@@ -94,9 +94,9 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         newRootLocation = Registries.getUnitRegistry().getUnitConfigById(newRootLocation.getId()).toBuilder();
         // validate that previous root location is not root anymore and that the new one is
         assertFalse(previousRootLocation.getLocationConfig().getRoot(), "Previous root location is still root");
-        assertEquals("Previous root location should be put under the new one", newRootLocation.getId(), previousRootLocation.getPlacementConfig().getLocationId());
+        assertEquals(newRootLocation.getId(), previousRootLocation.getPlacementConfig().getLocationId(), "Previous root location should be put under the new one");
         assertTrue(newRootLocation.getLocationConfig().getRoot(), "New root location did not become root");
-        assertEquals("New root location should have itself as placement", newRootLocation.getId(), newRootLocation.getPlacementConfig().getLocationId());
+        assertEquals(newRootLocation.getId(), newRootLocation.getPlacementConfig().getLocationId(), "New root location should have itself as placement");
 
         // try to do the change back again
         newRootLocation.getPlacementConfigBuilder().setLocationId(previousRootLocation.getId());

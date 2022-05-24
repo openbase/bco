@@ -51,16 +51,6 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
     public UnitTransformationTest() {
     }
 
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCOManagerTest.setUpClass();
-    }
-
-    @AfterAll
-    public static void tearDownClass() throws Throwable {
-        AbstractBCOManagerTest.tearDownClass();
-    }
-
     @Test
     @Timeout(30)
     public void testUnitTransformation() throws Exception {

@@ -35,6 +35,8 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
+import org.openbase.jps.preset.JPLogLevel;
 import org.openbase.jul.communication.jp.JPComLegacyMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -66,38 +68,24 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static ColorableLightRemote colorableLightRemote;
 
-    public ColorableLightRemoteTest() {
+    @Override
+    public void setupTestProperties() {
+        // legacy mode needed for testLegacyRemoteCallGetColor() test.
+        JPService.registerProperty(JPComLegacyMode.class, true);
+        System.out.println("called");
+        // enable to get debug logging
+//         JPService.registerProperty(JPDebugMode.class, true);
+//         JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-
-        // legacy mode needed for testLegacyRemoteCallGetColor() test.
-        JPService.registerProperty(JPComLegacyMode.class, true);
-
-        // enable to get debug logging
-        // JPService.registerProperty(JPDebugMode.class, true);
-        // JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
-
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
     }
 
     @AfterAll
-    public static void tearDownClass() throws Throwable {
-        AbstractBCODeviceManagerTest.tearDownClass();
-
+    public static void tearDownTest() throws Throwable {
         JPService.registerProperty(JPComLegacyMode.class, false);
-    }
-
-    @BeforeEach
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @AfterEach
-    public void tearDown() throws CouldNotPerformException {
-
     }
 
     /**
@@ -119,7 +107,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if an error occurs
      */
-    @Disabled
     @Test
     @Timeout(15)
     public void testControllingViaLightRemote() throws Exception {
@@ -226,37 +213,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         HSBColor color = HSBColor.newBuilder().setHue(66).setSaturation(0.63).setBrightness(0.33).build();
         waitForExecution(colorableLightRemote.setColor(color));
         assertEquals(color, colorableLightRemote.getHSBColor(), "Color has not been set in time or the return value from the getter is different!");
-    }
-
-    /**
-     * Test of getColor method, of class ColorableLightRemote.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test
-    @Timeout(10)
-    public void testLegacyRemoteCallGetColor() throws Exception {
-        System.out.println("getColor");
-        HSBColor color = HSBColor.newBuilder().setHue(61).setSaturation(0.23).setBrightness(0.37).build();
-        final RemoteAction action = waitForExecution(colorableLightRemote.setColor(color));
-        ColorState colorResult = colorableLightRemote.callMethodAsync("getColorState", ColorState.class)
-                .get()
-                .getResponse();
-        assertEquals(color, colorResult.getColor().getHsbColor(), "Color has not been set in time or the return value from the getter is different!");
-
-        // cancel manual action
-        action.cancel().get();
-        colorableLightRemote.requestData().get();
-        for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
-
-            // filter termination action
-            if (actionDescription.getPriority() == Priority.TERMINATION) {
-                continue;
-            }
-
-            final RemoteAction remoteAction = new RemoteAction(actionDescription);
-            assertTrue(remoteAction.isDone(), remoteAction + " is not done!");
-        }
     }
 
     /**

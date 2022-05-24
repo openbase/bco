@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
@@ -59,10 +60,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
     private Pose poseLightTwo;
     private Pose poseLightThree;
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
+    @BeforeEach
+    public void setupTest() throws Exception {
         try {
             deviceClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("Label", "Product Number", "Company", unitTypes)).get();
             PlacementConfig placement = generatePlacementConfig();
@@ -149,7 +148,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         logger.info("testDeviceBoundAndUnitsNotBound");
 
         // change bound to host flag in device
-        Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.toBuilder().setBoundToUnitHost(true).build()).get();
+        Registries.getUnitRegistry(true).updateUnitConfig(deviceUnitConfig.toBuilder().setBoundToUnitHost(true).build()).get();
         getUpdatedConfigs();
         assertTrue(deviceUnitConfig.getBoundToUnitHost());
 
@@ -203,14 +202,12 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         assertEquals(newPoseLightOne, poseDevice);
         assertEquals(newPoseLightOne, poseLightTwo);
         assertEquals(oldPoseLightThree, poseLightThree);
-        assertTrue(!poseLightThree.equals(poseLightOne));
+        assertNotEquals(poseLightThree, poseLightOne);
     }
 
     /**
      * Test what happens when the flag is set in the device and
      * its unit.
-     *
-     * @throws Exception
      */
     @Test
     @Timeout(10)

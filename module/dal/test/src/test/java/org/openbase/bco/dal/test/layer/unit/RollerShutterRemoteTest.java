@@ -48,8 +48,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         rollerShutterRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.ROLLER_SHUTTER), true, RollerShutterRemote.class);
     }
 

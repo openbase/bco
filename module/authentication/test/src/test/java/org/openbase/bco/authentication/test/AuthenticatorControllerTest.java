@@ -54,11 +54,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class AuthenticatorControllerTest extends AuthenticationTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorControllerTest.class);
-
-    public AuthenticatorControllerTest() {
-    }
-
     /**
      * Test of communication between ClientRemote and AuthenticatorController.
      *

@@ -47,7 +47,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected AgentRemote agentRemote = null;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setupAgentManager() throws Exception {
         try {
             // register agent
             agentConfig = Registries.getUnitRegistry().registerUnitConfig(getAgentConfig()).get(5, TimeUnit.SECONDS);

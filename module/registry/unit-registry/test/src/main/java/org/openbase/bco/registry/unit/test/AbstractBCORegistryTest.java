@@ -56,16 +56,17 @@ public abstract class AbstractBCORegistryTest extends MqttIntegrationTest {
     final Logger logger = LoggerFactory.getLogger(getClass());
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setupMockRegistry() throws Exception {
         try {
             MockRegistryHolder.newMockRegistry();
+            Registries.waitForData();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    public void tearDownMockRegistry() throws Exception {
         try {
             MockRegistryHolder.shutdownMockRegistry();
         } catch (Exception ex) {

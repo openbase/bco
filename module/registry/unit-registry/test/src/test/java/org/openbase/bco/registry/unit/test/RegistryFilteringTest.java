@@ -55,7 +55,6 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
 
     @AfterEach
     public void tearDown() throws Exception {
-        super.tearDown();
         SessionManager.getInstance().completeLogout();
     }
 

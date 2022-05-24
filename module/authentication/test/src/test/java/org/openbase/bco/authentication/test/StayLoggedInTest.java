@@ -23,14 +23,19 @@ package org.openbase.bco.authentication.test;
  */
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.openbase.bco.authentication.test.AuthenticationTest.serviceServerSecretKey;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.authentication.mock.MockClientStore;
+import org.openbase.bco.authentication.mock.MockCredentialStore;
+import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -43,18 +48,17 @@ import java.util.concurrent.ExecutionException;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class StayLoggedInTest extends AuthenticationTest {
+public class StayLoggedInTest extends MqttIntegrationTest {
 
     /**
      * The session timeout for this test.
      */
     private static final long SESSION_TIMEOUT = 500;
 
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
+    @Override
+    public void setupTestProperties() {
         // set the session timeout and use the super method for initialization
         JPService.registerProperty(JPSessionTimeout.class, SESSION_TIMEOUT);
-        AuthenticationTest.setUpClass();
     }
 
     /**
@@ -63,8 +67,15 @@ public class StayLoggedInTest extends AuthenticationTest {
      * @throws Exception if something does not work as expected
      */
     @Test
-    @Timeout(20)
+    @Timeout(10)
     public void testStayingLoggedIn() throws Exception {
+
+        CachedAuthenticationRemote.prepare();
+        AuthenticationController authenticationController = new AuthenticationController(MockCredentialStore.getInstance(), serviceServerSecretKey);
+        authenticationController.init();
+        authenticationController.activate();
+        authenticationController.waitForActivation();
+
         // validate that the session timeout has been setup accordingly
         assertEquals(SESSION_TIMEOUT, (long) JPService.getProperty(JPSessionTimeout.class).getValue(), "Session timeout has not been initialized correctly");
 
@@ -73,7 +84,7 @@ public class StayLoggedInTest extends AuthenticationTest {
         // login with stay logged in activated
         sessionManager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, true);
         // wait longer than the session timeout
-        Thread.sleep(SESSION_TIMEOUT + AuthenticationServerHandler.MAX_TIME_DIFF_SERVER_CLIENT + 200);
+        Thread.sleep(SESSION_TIMEOUT + AuthenticationServerHandler.MAX_TIME_DIFF_SERVER_CLIENT);
         // perform a request
         TicketAuthenticatorWrapper wrapper = sessionManager.initializeServiceServerRequest();
         CachedAuthenticationRemote.getRemote().validateClientServerTicket(wrapper).get();
@@ -81,7 +92,7 @@ public class StayLoggedInTest extends AuthenticationTest {
         // login as a different user without staying logged in
         sessionManager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
         // wait longer than the session timeout
-        Thread.sleep(SESSION_TIMEOUT + AuthenticationServerHandler.MAX_TIME_DIFF_SERVER_CLIENT + 200);
+        Thread.sleep(SESSION_TIMEOUT + AuthenticationServerHandler.MAX_TIME_DIFF_SERVER_CLIENT);
         // perform a request
         wrapper = sessionManager.initializeServiceServerRequest();
         try {

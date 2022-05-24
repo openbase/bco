@@ -324,6 +324,19 @@ public class Registries {
         CachedTemplateRegistryRemote.prepare();
     }
 
+    public static Future<Void> requestData() {
+        try {
+            return FutureProcessor.allOf(
+                CachedUnitRegistryRemote.getRegistry().requestData(),
+                CachedActivityRegistryRemote.getRegistry().requestData(),
+                CachedClassRegistryRemote.getRegistry().requestData(),
+                CachedTemplateRegistryRemote.getRegistry().requestData()
+            );
+        } catch (NotAvailableException ex) {
+            return FutureProcessor.canceledFuture(ex);
+        }
+    }
+
     /**
      * Method only returns if all available registries are synchronized.
      *

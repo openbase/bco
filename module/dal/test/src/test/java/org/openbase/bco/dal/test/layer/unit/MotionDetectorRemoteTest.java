@@ -52,8 +52,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         motionDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.MOTION_DETECTOR), true, MotionDetectorRemote.class);
     }
 

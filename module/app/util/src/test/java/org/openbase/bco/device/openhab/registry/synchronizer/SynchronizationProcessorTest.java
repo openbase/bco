@@ -34,19 +34,17 @@ class SynchronizationProcessorTest {
     @Timeout(20)
     void getUniquePrefix() {
         assertNotEquals(
-                "Prefix is not unique!",
                 SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc00"),
-                SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:70:3c:a9-02-fc00")
+                SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:70:3c:a9-02-fc00"),
+                "Prefix is not unique!"
 
         );
 
         assertEquals(
-                "Prefix is not unique!",
                 SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc00"),
-                SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc22")
+                SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc22"),
+                "Prefix is not unique!"
 
         );
-
-
     }
 }

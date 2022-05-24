@@ -89,13 +89,12 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void registerProperties() throws Throwable {
         JPService.registerProperty(JPAuthentication.class, true);
-        AbstractBCODeviceManagerTest.setUpClass();
     }
 
     @BeforeEach
-    public void setUp() throws CouldNotPerformException, InterruptedException, ExecutionException {
+    public void prepareTest() throws CouldNotPerformException, InterruptedException, ExecutionException {
 
         adminSessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
@@ -108,7 +107,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @AfterEach
-    public void tearDown() throws CouldNotPerformException, ExecutionException, InterruptedException {
+    public void tearDownTest() throws CouldNotPerformException, ExecutionException, InterruptedException {
         adminSessionManager.logout();
         colorableLightRemote.setSessionManager(SessionManager.getInstance());
     }

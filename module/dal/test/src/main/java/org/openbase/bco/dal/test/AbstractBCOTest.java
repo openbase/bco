@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
@@ -35,6 +36,7 @@ import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -52,7 +54,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AbstractBCOTest extends MqttIntegrationTest {
+public abstract class AbstractBCOTest extends MqttIntegrationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractBCOTest.class);
 
@@ -61,10 +63,8 @@ public class AbstractBCOTest extends MqttIntegrationTest {
     private final List<RemoteAction> testActions = Collections.synchronizedList(new ArrayList<>());
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void setupBCO() throws Throwable {
         try {
-            MqttIntegrationTest.setUpClass();
-            JPService.setupJUnitTestMode();
             mockRegistry = MockRegistryHolder.newMockRegistry();
             Units.reinitialize();
         } catch (Throwable ex) {
@@ -73,12 +73,11 @@ public class AbstractBCOTest extends MqttIntegrationTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Throwable {
+    public static void tearDownBCO() throws Throwable {
         try {
             Units.reset(AbstractBCOTest.class);
             SessionManager.getInstance().completeLogout();
             MockRegistryHolder.shutdownMockRegistry();
-            MqttIntegrationTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

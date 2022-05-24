@@ -36,17 +36,15 @@ import org.slf4j.LoggerFactory;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
+public abstract class AbstractBCODeviceManagerTest extends AbstractBCOTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBCODeviceManagerTest.class);
 
     protected static DeviceManagerLauncher deviceManagerLauncher;
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void setupDeviceManager() throws Throwable {
         try {
-            AbstractBCOTest.setUpClass();
-
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch().get();
         } catch (Throwable ex) {
@@ -55,12 +53,11 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Throwable {
+    public static void tearDownDeviceManage() throws Throwable {
         try {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
-            AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

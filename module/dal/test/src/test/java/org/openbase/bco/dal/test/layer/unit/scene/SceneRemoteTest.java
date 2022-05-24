@@ -148,9 +148,8 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void setupSceneTest() throws Throwable {
         try {
-            AbstractBCOTest.setUpClass();
             //JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
             JPService.setupJUnitTestMode();
 
@@ -177,7 +176,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Throwable {
+    public static void tearDownSceneTest() throws Throwable {
         try {
             if (sceneManagerLauncher != null) {
                 sceneManagerLauncher.shutdown();
@@ -194,8 +193,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
-
-            AbstractBCOTest.tearDownClass();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -538,7 +535,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-    @Timeout(20)
+    @Timeout(60)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -567,7 +564,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         waitForExecution(sceneRemoteOn.setActivationState(State.INACTIVE, SCENE_ACTION_PARAM));
         waitForExecution(sceneRemoteOff.setActivationState(State.INACTIVE, SCENE_ACTION_PARAM));
 
-        int TEST_ITERATIONS = 3;
+        int TEST_ITERATIONS = 20;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             System.out.println("Current iteration: " + i);
 

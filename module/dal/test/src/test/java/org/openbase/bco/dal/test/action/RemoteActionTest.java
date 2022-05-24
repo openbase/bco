@@ -89,9 +89,7 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCOLocationManagerTest.setUpClass();
-
+    public static void setupRemoteActionTest() throws Throwable {
         // create new user token for test
         try {
             // login as admin
@@ -119,16 +117,6 @@ public class RemoteActionTest extends AbstractBCOLocationManagerTest {
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-    }
-
-    @BeforeEach
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @AfterEach
-    public void tearDown() throws CouldNotPerformException {
-
     }
 
     @Test

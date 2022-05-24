@@ -95,9 +95,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void loadUnits() throws Throwable {
         try {
-            AbstractBCOLocationManagerTest.setUpClass();
             rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);

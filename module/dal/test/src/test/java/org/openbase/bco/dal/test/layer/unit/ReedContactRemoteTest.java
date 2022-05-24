@@ -46,16 +46,8 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         reedContactRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.REED_CONTACT), true, ReedContactRemote.class);
-    }
-
-    /**
-     * Test of notifyUpdated method, of class ReedSwitchRemote.
-     */
-    @Disabled
-    public void testNotifyUpdated() {
     }
 
     /**

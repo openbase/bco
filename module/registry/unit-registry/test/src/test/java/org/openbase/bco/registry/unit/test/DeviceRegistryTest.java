@@ -38,6 +38,7 @@ import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescripti
 import org.openbase.type.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.EnablingStateType.EnablingState;
+import org.openbase.type.domotic.state.EnablingStateType.EnablingState.State;
 import org.openbase.type.domotic.state.InventoryStateType.InventoryState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
@@ -121,9 +122,9 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         UnitConfig deviceWithoutLabel = generateDeviceUnitConfig("", serialNumber, deviceClass).toBuilder().clearLabel().build();
         deviceWithoutLabel = Registries.getUnitRegistry().registerUnitConfig(deviceWithoutLabel).get();
 
-        assertEquals("The device label is not set as the id if it is empty!",
-                LabelProcessor.format(deviceClass.getCompany() + " " + LabelProcessor.getBestMatch(deviceClass.getLabel()) + " " + deviceWithoutLabel.getAlias(0)),
-                LabelProcessor.getBestMatch(deviceWithoutLabel.getLabel()));
+        assertEquals(LabelProcessor.format(deviceClass.getCompany() + " " + LabelProcessor.getBestMatch(deviceClass.getLabel()) + " " + deviceWithoutLabel.getAlias(0)),
+                LabelProcessor.getBestMatch(deviceWithoutLabel.getLabel()),
+                "The device label is not set as the id if it is empty!");
     }
 
     @Test
@@ -238,14 +239,16 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         System.out.println("Updating deviceClass...");
         clazz = Registries.getClassRegistry().updateDeviceClass(clazz.toBuilder().addUnitTemplateConfig(unitTemplateConfig3).build()).get();
+
+        Registries.waitUntilReady();
+        Registries.requestData();
+
         config = Registries.getUnitRegistry().getUnitConfigById(config.getId());
-        // the update is not synced immediately to the device config, thus this waits and fails if the timeout is exceeded
-        while (config.getDeviceConfig().getUnitIdCount() != clazz.getUnitTemplateConfigCount()) {
-            Thread.sleep(100);
-            config = Registries.getUnitRegistry().getUnitConfigById(config.getId());
-        }
+
+
         assertEquals(config.getDeviceConfig().getUnitIdCount(), clazz.getUnitTemplateConfigCount(), "Unit configs and templates differ after the update of the device class");
-        Registries.getUnitRegistry().waitUntilReady();
+        Registries.waitUntilReady();
+        Registries.requestData();
 
         dalUnitConfigs.clear();
         for (String unitId : config.getDeviceConfig().getUnitIdList()) {
@@ -328,7 +331,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         Registries.getUnitRegistry().removeUnitConfig(owner).get();
 
         // validate that owner got removed
-        assertTrue(!Registries.getUnitRegistry().containsUnitConfig(owner), "The owner did not get removed!");
+        assertFalse(Registries.getUnitRegistry().containsUnitConfig(owner), "The owner did not get removed!");
 
         // validate that owner has been removed from device unit config
         deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getId());
@@ -357,8 +360,8 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         device = Registries.getUnitRegistry().registerUnitConfig(device.build()).get().toBuilder();
         UnitConfig dalUnit = Registries.getUnitRegistry().getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertTrue(device.getEnablingState().getValue() == EnablingState.State.ENABLED, "DeviceUnitConfig is not Enabled");
-        assertTrue(device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Enabled");
+        assertSame(device.getEnablingState().getValue(), State.ENABLED, "DeviceUnitConfig is not Enabled");
+        assertSame(device.getEnablingState().getValue(), dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Enabled");
         assertEquals(device.getLabel(), dalUnit.getLabel(), "DeviceUnitConfig and DalUnitConfig have different labels");
 
         label = label + "-2";
@@ -373,18 +376,18 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         inventoryState.setValue(InventoryState.State.IN_STOCK);
         device = Registries.getUnitRegistry().updateUnitConfig(device.build()).get().toBuilder();
         dalUnit = Registries.getUnitRegistry().getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertTrue(device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.IN_STOCK, "DeviceUnitConfig inventory state is not IN_STOCK");
-        assertTrue(device.getEnablingState().getValue() == EnablingState.State.DISABLED, "DeviceUnitConfig is not Disabled");
-        assertTrue(device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Disabled");
+        assertSame(device.getDeviceConfig().getInventoryState().getValue(), InventoryState.State.IN_STOCK, "DeviceUnitConfig inventory state is not IN_STOCK");
+        assertSame(device.getEnablingState().getValue(), State.DISABLED, "DeviceUnitConfig is not Disabled");
+        assertSame(device.getEnablingState().getValue(), dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Disabled");
 
         deviceConfig = device.getDeviceConfigBuilder();
         inventoryState = deviceConfig.getInventoryStateBuilder();
         inventoryState.setValue(InventoryState.State.INSTALLED);
         device = Registries.getUnitRegistry().updateUnitConfig(device.build()).get().toBuilder();
         dalUnit = Registries.getUnitRegistry().getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertTrue(device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.INSTALLED, "DeviceUnitConfig inventory state is not INSTALLED");
-        assertTrue(device.getEnablingState().getValue() == EnablingState.State.ENABLED, "DeviceUnitConfig is not Enabled");
-        assertTrue(device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Enabled");
+        assertSame(device.getDeviceConfig().getInventoryState().getValue(), InventoryState.State.INSTALLED, "DeviceUnitConfig inventory state is not INSTALLED");
+        assertSame(device.getEnablingState().getValue(), State.ENABLED, "DeviceUnitConfig is not Enabled");
+        assertSame(device.getEnablingState().getValue(), dalUnit.getEnablingState().getValue(), "DalUnitConfig is not Enabled");
 
         unitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceDescription().build();
         Registries.getTemplateRegistry().updateUnitTemplate(unitTemplate).get();
@@ -406,7 +409,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         testLocationIdInInventoryStateDevice = testLocationIdInInventoryStateDevice.toBuilder().setDeviceConfig(tmp).build();
         testLocationIdInInventoryStateDevice = Registries.getUnitRegistry().registerUnitConfig(testLocationIdInInventoryStateDevice).get();
 
-        assertEquals("The location id in the inventory state has not been set for an installed device!", Registries.getUnitRegistry().getRootLocationConfig().getId(), testLocationIdInInventoryStateDevice.getDeviceConfig().getInventoryState().getLocationId());
+        assertEquals(Registries.getUnitRegistry().getRootLocationConfig().getId(), testLocationIdInInventoryStateDevice.getDeviceConfig().getInventoryState().getLocationId(), "The location id in the inventory state has not been set for an installed device!");
     }
 
     /**

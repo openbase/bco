@@ -617,7 +617,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 actionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
                 actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(TimedProcessable.INFINITY_TIMEOUT));
 
-                final ActionImpl action = new ActionImpl(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build(), this);
+                final ActionImpl action = new ActionImpl(ActionDescriptionProcessor.generateActionDescriptionBuilder(actionParameter).build(), this, dataLock);
                 action.schedule();
 
                 // add action to action list and sync it back into the data builder
@@ -672,7 +672,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public Future<ActionDescription> applyAction(final ActionDescription actionDescription) {
         try {
-            return scheduleAction(new ActionImpl(actionDescription, this));
+            return scheduleAction(new ActionImpl(actionDescription, this, dataLock));
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not apply action!", ex), logger));
         }
@@ -1675,7 +1675,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
             // add action to force
-            scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this));
+
+            scheduledActionList.add(0, new ActionImpl(serviceStateBuilder.build(), this, dataLock));
 
             // trigger a reschedule which can trigger the action with a higher priority again
             reschedule();

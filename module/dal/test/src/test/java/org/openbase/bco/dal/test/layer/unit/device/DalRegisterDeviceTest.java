@@ -67,10 +67,6 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
     public DalRegisterDeviceTest() {
     }
 
-    @BeforeEach
-    public void setUp() throws InitializationException, InstantiationException {
-    }
-
     /**
      * Test registering a new device while the device test is running.
      *
@@ -162,7 +158,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
     private boolean running = true;
 
     @Test
-    @Timeout(6)
+    @Timeout(10)
     public void testRegisteringManyDevices() throws Exception {
         System.out.println("testRegisteringManyDevices");
 

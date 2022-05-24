@@ -75,8 +75,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loginUser() throws Throwable {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, Units.COLORABLE_LIGHT);
         colorableLightController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(colorableLightRemote.getId());
 
@@ -87,13 +86,12 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
         }
     }
     @AfterAll
-    public static void tearDownClass() throws Throwable {
+    public static void logoutUser() throws Throwable {
         sessionManager.logout();
-        AbstractBCODeviceManagerTest.tearDownClass();
     }
 
     @BeforeEach
-    public void setUp() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+    public void setupUnitController() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         for (ActionDescription actionDescription : colorableLightController.getActionList()) {
 
             // filter termination action
@@ -107,7 +105,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     }
 
     @AfterEach
-    public void tearDown() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
+    public void tearDownUnitController() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         // cleanup leftover actions which were manually submitted to the controller.
         colorableLightController.cancelAllActions();
     }

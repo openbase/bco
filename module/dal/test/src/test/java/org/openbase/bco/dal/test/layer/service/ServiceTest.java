@@ -49,19 +49,6 @@ import org.openbase.type.domotic.state.SmokeStateType;
  */
 public class ServiceTest extends AbstractBCOTest {
 
-    public ServiceTest() {
-    }
-
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCOTest.setUpClass();
-    }
-
-    @AfterAll
-    public static void tearDownClass() throws Throwable {
-        AbstractBCOTest.tearDownClass();
-    }
-
     /**
      * Test of getServiceStateClass method, of class Service.
      */

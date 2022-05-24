@@ -48,28 +48,14 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
 
     private static ConnectionRemote connectionRemote;
 
-    public ConnectionRemoteTest() {
-    }
-
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void loadUnits() throws Throwable {
         try {
-            AbstractBCOLocationManagerTest.setUpClass();
-
             connectionRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.CONNECTION).get(0), true, ConnectionRemote.class);
             connectionRemote.waitForConnectionState(ConnectionState.State.CONNECTED);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
-    }
-
-    @BeforeEach
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @AfterEach
-    public void tearDown() throws CouldNotPerformException {
     }
 
     /**

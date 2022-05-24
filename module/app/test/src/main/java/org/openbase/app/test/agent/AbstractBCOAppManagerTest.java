@@ -49,18 +49,8 @@ public abstract class AbstractBCOAppManagerTest extends BCOAppTest {
     protected UnitConfig appConfig = null;
     protected AppRemote appRemote = null;
 
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        BCOAppTest.setUpClass();
-    }
-
-    @AfterAll
-    public static void tearDownClass() throws Throwable {
-        BCOAppTest.tearDownClass();
-    }
-
     @BeforeEach
-    public void setUp() throws Exception {
+    public void prepareAppManager() throws Exception {
         try {
             // setup and register app class
             AppClass.Builder appClassBuilder = AppClass.newBuilder();

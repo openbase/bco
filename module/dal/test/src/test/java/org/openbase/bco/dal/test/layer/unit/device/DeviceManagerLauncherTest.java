@@ -39,23 +39,6 @@ public class DeviceManagerLauncherTest extends AbstractBCOTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManagerLauncherTest.class);
 
-    public DeviceManagerLauncherTest() {
-    }
-    
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCOTest.setUpClass();
-    }
-
-    @AfterAll
-    public static void tearDownClass() throws Throwable {
-        AbstractBCOTest.tearDownClass();
-    }
-
-    @BeforeEach
-    public void setUp() throws InitializationException, org.openbase.jul.exception.InstantiationException {
-    }
-
     /**
      * Test of deactivate method, of class DeviceManagerLauncher.
      *

@@ -63,18 +63,4 @@ class ActionChainTest : AbstractBCOLocationManagerTest() {
                 })
             }
     }
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(LocationRemoteTest::class.java)
-
-        @BeforeAll
-        @Throws(Throwable::class)
-        fun setUpClass() {
-            try {
-                AbstractBCOLocationManagerTest.setUpClass()
-            } catch (ex: Throwable) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger)
-            }
-        }
-    }
 }

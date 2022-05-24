@@ -51,10 +51,8 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
     private static UserRemote userRemote;
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void loadUnits() throws Throwable {
         try {
-            AbstractBCOUserManagerTest.setUpClass();
-
             userRemote = Units.getUnit(MockRegistry.testUser, true, UserRemote.class);
         } catch (CouldNotPerformException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
@@ -70,7 +68,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
     public void testGetUserName() throws Exception {
         System.out.println("testGetUserName");
         userRemote.requestData().get();
-        assertEquals("The user created in the test has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getUserName());
+        assertEquals(MockRegistry.USER_NAME, userRemote.getUserName(), "The user created in the test has a different user name than the one registered!");
     }
 
     /**

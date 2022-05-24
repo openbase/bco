@@ -47,8 +47,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void setupTest() throws Throwable {
         smokeDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.SMOKE_DETECTOR), true, SmokeDetectorRemote.class);
     }
 

@@ -49,16 +49,8 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         buttonRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BUTTON), true, ButtonRemote.class);
-    }
-
-    /**
-     * Test of notifyUpdated method, of class ButtonRemote.
-     */
-    @Disabled
-    public void testNotifyUpdated() {
     }
 
     /**
