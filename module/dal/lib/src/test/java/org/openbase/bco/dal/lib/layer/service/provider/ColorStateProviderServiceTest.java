@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -47,8 +47,8 @@ public class ColorStateProviderServiceTest {
         final ColorState verifiedColorState = ColorStateProviderService.verifyColorState(builder.build());
         ExceptionPrinter.setBeQuit(false);
 
-        Assert.assertEquals("Hue value invalid!", builder.getColorBuilder().getHsbColorBuilder().getHue(), verifiedColorState.getColor().getHsbColor().getHue(), 0.00001);
-        Assert.assertEquals("Hue value invalid!", 1d, verifiedColorState.getColor().getHsbColor().getSaturation(), 0.00001);
-        Assert.assertEquals("Hue value invalid!", 0.5d, verifiedColorState.getColor().getHsbColor().getBrightness(), 0.00001);
+        assertEquals(builder.getColorBuilder().getHsbColorBuilder().getHue(), verifiedColorState.getColor().getHsbColor().getHue(), 0.00001, "Hue value invalid!");
+        assertEquals(1d, verifiedColorState.getColor().getHsbColor().getSaturation(), 0.00001, "Hue value invalid!");
+        assertEquals(0.5d, verifiedColorState.getColor().getHsbColor().getBrightness(), 0.00001, "Hue value invalid!");
     }
 }

@@ -22,7 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -46,16 +46,8 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         reedContactRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.REED_CONTACT), true, ReedContactRemote.class);
-    }
-
-    /**
-     * Test of notifyUpdated method, of class ReedSwitchRemote.
-     */
-    @Disabled
-    public void testNotifyUpdated() {
     }
 
     /**
@@ -70,6 +62,6 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
         ContactState state = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId()).applyServiceState(state, ServiceType.CONTACT_STATE_SERVICE);
         reedContactRemote.requestData().get();
-        Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state.getValue(), reedContactRemote.getContactState().getValue());
+        assertEquals(state.getValue(), reedContactRemote.getContactState().getValue(), "The getter for the reed switch state returns the wrong value!");
     }
 }

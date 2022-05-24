@@ -21,6 +21,9 @@ package org.openbase.bco.app.preset.agent;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
@@ -46,7 +49,7 @@ import org.openbase.type.domotic.unit.dal.RollerShutterDataType.RollerShutterDat
 import org.openbase.type.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
-import static org.junit.Assert.assertEquals;
+
 
 public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
 
@@ -92,10 +95,10 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
-        assertEquals("Initial SmokeAlarmState of SmokeDetector[" + smokeDetectorRemote.getLabel() + "] is not NO_ALARM", AlarmState.State.NO_ALARM, smokeDetectorRemote.getSmokeAlarmState().getValue());
-        assertEquals("Initial OpeningRatio of Blindstate of Rollershutter[" + rollerShutterRemote.getLabel() + "] is not 0.0", 0d, rollerShutterRemote.getBlindState().getOpeningRatio(), 0.001);
-        assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not OFF", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
+        assertEquals(AlarmState.State.NO_ALARM, smokeDetectorRemote.getSmokeAlarmState().getValue(), "Initial SmokeAlarmState of SmokeDetector[" + smokeDetectorRemote.getLabel() + "] is not NO_ALARM");
+        assertEquals(0d, rollerShutterRemote.getBlindState().getOpeningRatio(), 0.001, "Initial OpeningRatio of Blindstate of Rollershutter[" + rollerShutterRemote.getLabel() + "] is not 0.0");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getPowerState().getValue(), "Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not OFF");
+        assertEquals(PowerState.State.OFF, locationRemote.getPowerState().getValue(), "Initial PowerState of Location[" + locationRemote.getLabel() + "] is not OFF");
 
         // test if on alarm the lights are turned on
         smokeDetectorController.applyServiceState(ALARM, ServiceType.SMOKE_ALARM_STATE_SERVICE);
@@ -105,11 +108,11 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
         rollerShutterStateAwaiter.waitForState((RollerShutterData data) -> data.getBlindState().getOpeningRatio() == 1.0d && data.getBlindState().getValue() == State.UP);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
-        assertEquals("SmokeAlarmState of SmokeDetector[" + smokeDetectorRemote.getLabel() + "] has not switched to ALARM", AlarmState.State.ALARM, smokeDetectorRemote.getSmokeAlarmState().getValue());
-        assertEquals("OpeningRatio of Blindstate of Rollershutter[" + rollerShutterRemote.getLabel() + "] has not switched to 100", 1.0d, rollerShutterRemote.getBlindState().getOpeningRatio(), 0.001);
-        assertEquals("SmokeAlarmState of Location[" + locationRemote.getLabel() + "] has not switched to ALARM.", AlarmState.State.ALARM, locationRemote.getSmokeAlarmState().getValue());
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
-        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals(AlarmState.State.ALARM, smokeDetectorRemote.getSmokeAlarmState().getValue(), "SmokeAlarmState of SmokeDetector[" + smokeDetectorRemote.getLabel() + "] has not switched to ALARM");
+        assertEquals(1.0d, rollerShutterRemote.getBlindState().getOpeningRatio(), 0.001, "OpeningRatio of Blindstate of Rollershutter[" + rollerShutterRemote.getLabel() + "] has not switched to 100");
+        assertEquals(AlarmState.State.ALARM, locationRemote.getSmokeAlarmState().getValue(), "SmokeAlarmState of Location[" + locationRemote.getLabel() + "] has not switched to ALARM.");
+        assertEquals(PowerState.State.ON, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to ON");
+        assertEquals(PowerState.State.ON, locationRemote.getPowerState().getValue(), "PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON");
     }
 
     @Override

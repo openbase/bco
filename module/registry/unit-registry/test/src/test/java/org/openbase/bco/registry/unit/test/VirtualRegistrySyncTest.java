@@ -48,7 +48,7 @@ public class VirtualRegistrySyncTest {
 //
 //    private static AuthenticatorController authenticatorController;
 //
-//    @BeforeClass
+//    @BeforeAll
 //    public static void setUpClass() throws Exception {
 //        try {
 //            JPService.setupJUnitTestMode();
@@ -159,7 +159,7 @@ public class VirtualRegistrySyncTest {
 //        }
 //    }
 //
-//    @AfterClass
+//    @AfterAll
 //    public static void tearDownClass() throws Exception {
 //        try {
 //            if (unitRegistry != null) {

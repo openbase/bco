@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
@@ -42,8 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.*;
-
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
@@ -52,20 +51,16 @@ public class SessionManagerTest extends AuthenticationTest {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManagerTest.class);
 
     private static CredentialStore clientStore;
+    private static String INITIAL_USER_ID = "InitialUserId";
 
-
-    public SessionManagerTest() {
-    }
-
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AuthenticationTest.setUpClass();
+    @BeforeEach
+    public void setupSessionManager() throws Throwable {
         clientStore = new MockClientStore();
 
         // register an initial user for the authenticator
         try {
             LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder();
-            loginCredentials.setId("InitialUserId");
+            loginCredentials.setId(INITIAL_USER_ID);
             loginCredentials.setSymmetric(true);
             loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticationController.getInitialPassword())));
             AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
@@ -73,14 +68,6 @@ public class SessionManagerTest extends AuthenticationTest {
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not register initial user!"), LOGGER);
         }
-    }
-
-    @BeforeEach
-    public void setUp() throws Exception {
-    }
-
-    @AfterEach
-    public void tearDown() throws Exception {
     }
 
     /**
@@ -300,7 +287,8 @@ public class SessionManagerTest extends AuthenticationTest {
             try {
                 ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
-                // remove himself
+                // remove all admins
+                manager.removeUser(INITIAL_USER_ID).get();
                 manager.removeUser(MockClientStore.ADMIN_ID).get();
             } finally {
                 ExceptionPrinter.setBeQuit(Boolean.FALSE);
@@ -484,7 +472,7 @@ public class SessionManagerTest extends AuthenticationTest {
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 1 after the first login", 1, notificationCounter);
+        assertEquals(1, notificationCounter, "Notification counter should be 1 after the first login");
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
@@ -492,12 +480,12 @@ public class SessionManagerTest extends AuthenticationTest {
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 2 after logging in another user", 2, notificationCounter);
+        assertEquals(2, notificationCounter, "Notification counter should be 2 after logging in another user");
         sessionManager.logout();
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 3 after logout", 3, notificationCounter);
+        assertEquals(3, notificationCounter, "Notification counter should be 3 after logout");
 
         sessionManager.removeLoginObserver(loginObserver);
     }

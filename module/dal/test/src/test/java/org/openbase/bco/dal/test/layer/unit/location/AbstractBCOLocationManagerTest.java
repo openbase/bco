@@ -47,10 +47,8 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void setupLocationManager() throws Throwable {
         try {
-            AbstractBCOTest.setUpClass();
-
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch().get();
 
@@ -65,7 +63,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Throwable {
+    public static void tearDownLocationManager() throws Throwable {
         try {
             if (userManagerLauncher != null) {
                 userManagerLauncher.shutdown();
@@ -76,7 +74,6 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
             if (locationManagerLauncher != null) {
                 locationManagerLauncher.shutdown();
             }
-            AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, log);
         }

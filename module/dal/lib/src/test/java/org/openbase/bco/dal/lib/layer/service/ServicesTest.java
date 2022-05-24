@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.protobuf.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -37,8 +38,6 @@ import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -56,7 +55,7 @@ public class ServicesTest {
         final BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(.5d).build();
         final Message expectedPowerState = BrightnessStateProviderService.toPowerState(brightnessState);
         final Message actualPowerState = Services.convertToSuperState(ServiceType.BRIGHTNESS_STATE_SERVICE, brightnessState, ServiceType.POWER_STATE_SERVICE);
-        assertEquals("Conversion from brightness state to power state did not go as expected", expectedPowerState, actualPowerState);
+        assertEquals(expectedPowerState, actualPowerState, "Conversion from brightness state to power state did not go as expected");
     }
 
     /**
@@ -84,9 +83,9 @@ public class ServicesTest {
 
         for (int i = 0; i < localPositionStateList.size(); i++) {
             for (int j = 1; j < localPositionStateList.size(); j++) {
-                assertEquals("Comparison between position states " + i + " and " + j + " yields unexpected result", (i == j || (i != 3 && j != 3)), Services.equalServiceStates(localPositionStateList.get(i), localPositionStateList.get(j)));
+                assertEquals((i == j || (i != 3 && j != 3)), Services.equalServiceStates(localPositionStateList.get(i), localPositionStateList.get(j)), "Comparison between position states " + i + " and " + j + " yields unexpected result");
             }
-            assertFalse("PowerState should never match a local position state", Services.equalServiceStates(localPositionStateList.get(i), powerState));
+            assertFalse(Services.equalServiceStates(localPositionStateList.get(i), powerState), "PowerState should never match a local position state");
         }
     }
 
@@ -97,8 +96,8 @@ public class ServicesTest {
         BrightnessState brightnessStateInMargin = BrightnessState.newBuilder().setBrightness(brightness + 0.9 * Services.DOUBLE_MARGIN).build();
         BrightnessState brightnessStateOutsideMargin = BrightnessState.newBuilder().setBrightness(brightness + 2 * Services.DOUBLE_MARGIN).build();
 
-        assertTrue("Brightness states are not considered equal even though the value is within margin", Services.equalServiceStates(brightnessState, brightnessStateInMargin));
-        assertFalse("Brightness states are considered equal even though the value is outside margin", Services.equalServiceStates(brightnessState, brightnessStateOutsideMargin));
+        assertTrue(Services.equalServiceStates(brightnessState, brightnessStateInMargin), "Brightness states are not considered equal even though the value is within margin");
+        assertFalse(Services.equalServiceStates(brightnessState, brightnessStateOutsideMargin), "Brightness states are considered equal even though the value is outside margin");
     }
 
 

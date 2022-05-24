@@ -21,8 +21,8 @@ package org.openbase.bco.dal.test.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import static org.junit.Assert.assertEquals;
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -46,8 +46,7 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         lightSensorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT_SENSOR), true, LightSensorRemote.class);
     }
 
@@ -64,6 +63,6 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
         IlluminanceState illuminanceState = IlluminanceState.newBuilder().setIlluminance(illuminance).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId()).applyServiceState(illuminanceState, ServiceType.ILLUMINANCE_STATE_SERVICE);
         lightSensorRemote.requestData().get();
-        assertEquals("The getter for the illuminance returns the wrong value!", illuminanceState.getIlluminance(), lightSensorRemote.getIlluminanceState().getIlluminance(), 0.1);
+        assertEquals(illuminanceState.getIlluminance(), lightSensorRemote.getIlluminanceState().getIlluminance(), 0.1, "The getter for the illuminance returns the wrong value!");
     }
 }

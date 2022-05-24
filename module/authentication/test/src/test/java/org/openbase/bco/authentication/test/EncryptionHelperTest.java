@@ -21,15 +21,14 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.protobuf.ByteString;
 import java.security.KeyPair;
-import java.util.concurrent.ExecutionException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.junit.jupiter.api.Test;
-import static org.junit.Assert.*;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.slf4j.LoggerFactory;

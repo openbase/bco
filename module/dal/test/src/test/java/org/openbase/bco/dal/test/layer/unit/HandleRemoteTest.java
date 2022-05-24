@@ -21,7 +21,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.junit.Assert;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -46,8 +46,7 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    public static void loadUnits() throws Throwable {
         handleRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.HANDLE), true, HandleRemote.class);
     }
 
@@ -70,6 +69,6 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
         HandleState handlestate =HandleState.newBuilder().setPosition(90).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(handleRemote.getId()).applyServiceState(handlestate, ServiceType.HANDLE_STATE_SERVICE);
         handleRemote.requestData().get();
-        Assert.assertEquals("The getter for the handle state returns the wrong value!", handlestate.getPosition(), handleRemote.getHandleState().getPosition());
+        assertEquals(handlestate.getPosition(), handleRemote.getHandleState().getPosition(), "The getter for the handle state returns the wrong value!");
     }
 }

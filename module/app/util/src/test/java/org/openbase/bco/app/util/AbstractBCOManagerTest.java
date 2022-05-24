@@ -53,10 +53,8 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void setupBCOManager() throws Throwable {
         try {
-            AbstractBCOTest.setUpClass();
-
             agentManagerLauncher = new AgentManagerLauncher();
             agentManagerLauncher.launch().get();
             appManagerLauncher = new AppManagerLauncher();
@@ -75,7 +73,7 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Throwable {
+    public static void tearDownBCOManager() throws Throwable {
         try {
             if (agentManagerLauncher != null) {
                 agentManagerLauncher.shutdown();
@@ -95,8 +93,6 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
             if (userManagerLauncher != null) {
                 userManagerLauncher.shutdown();
             }
-
-            AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

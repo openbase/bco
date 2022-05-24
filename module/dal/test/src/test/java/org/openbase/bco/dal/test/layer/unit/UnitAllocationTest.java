@@ -22,6 +22,7 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
@@ -65,8 +66,6 @@ import java.util.HashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
-
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
@@ -92,9 +91,6 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // JPService.registerProperty(JPDebugMode.class, true);
         // JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
 
-        // trigger super method
-        AbstractBCODeviceManagerTest.setUpClass();
-
         // retrieve colorable light remote
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
 
@@ -103,14 +99,8 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // new Thread(() -> BCOActionInspector.main(args)).start();
     }
 
-    @AfterAll
-    public static void tearDownClass() throws Throwable {
-        AbstractBCODeviceManagerTest.tearDownClass();
-    }
-
-
     @BeforeEach
-    public void setUp() throws Exception {
+    public void loginUser() throws Exception {
         sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
         if (adminToken == null) {
@@ -119,7 +109,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void logoutUser() {
         sessionManager.logout();
     }
 
@@ -152,13 +142,13 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         remoteAction.waitForActionState(ActionState.State.EXECUTING);
 
         // validate that the action is available from unit data
-        assertTrue("Unit data does not contain any action descriptions", colorableLightRemote.getData().getActionCount() > 0);
+        assertTrue(colorableLightRemote.getData().getActionCount() > 0, "Unit data does not contain any action descriptions");
         // validate the initiator of the action
-        assertEquals("Unexpected action initiator", SessionManager.getInstance().getUserClientPair().getClientId(), remoteAction.getActionDescription().getActionInitiator().getInitiatorId());
+        assertEquals(SessionManager.getInstance().getUserClientPair().getClientId(), remoteAction.getActionDescription().getActionInitiator().getInitiatorId(), "Unexpected action initiator");
         // validate that the action is currently executing
-        assertEquals("ActionState is not executing", ActionState.State.EXECUTING, remoteAction.getActionState());
+        assertEquals(ActionState.State.EXECUTING, remoteAction.getActionState(), "ActionState is not executing");
         // validate that the power state is set
-        assertEquals("PowerState has not been updated", State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "PowerState has not been updated");
 
         // cancel the action
         System.out.println("try to cancel");
@@ -169,13 +159,13 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         colorableLightRemote.requestData().get();
 
         // validate that the action is cancelled
-        assertEquals("ActionState is not canceled", ActionState.State.CANCELED, remoteAction.getActionState());
+        assertEquals(ActionState.State.CANCELED, remoteAction.getActionState(), "ActionState is not canceled");
 
         // validate state order
         actionStateObserver.validateActionStates(remoteAction.getActionId());
 
         // validate that all states were notified
-        assertEquals("Not all action states have been notified", actionStates.length, actionStateObserver.getReceivedActionStateCounter(remoteAction.getActionId()));
+        assertEquals(actionStates.length, actionStateObserver.getReceivedActionStateCounter(remoteAction.getActionId()), "Not all action states have been notified");
 
         // remove the action state observer
         colorableLightRemote.removeDataObserver(actionStateObserver);
@@ -240,7 +230,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         void validateActionStates(final String actionId) {
             synchronized (actionIdStateMapLock) {
-                assertEquals("Unexpected action state order.", StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionIdStateMap.get(actionId), ", "));
+                assertEquals(StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionIdStateMap.get(actionId), ", "), "Unexpected action state order.");
             }
         }
     }
@@ -372,8 +362,8 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         primaryActionParameter.getActionInitiatorBuilder().setInitiatorId(sessionManager.getUserClientPair().getUserId());
         primaryActionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
         final ActionDescription actionDescription = ActionDescriptionProcessor.generateActionDescriptionBuilder(primaryActionParameter).build();
-        assertTrue("initiator type not set.", actionDescription.getActionInitiator().hasInitiatorType());
-        assertEquals("initiator type not correct.", InitiatorType.SYSTEM, actionDescription.getActionInitiator().getInitiatorType());
+        assertTrue(actionDescription.getActionInitiator().hasInitiatorType(), "initiator type not set.");
+        assertEquals(InitiatorType.SYSTEM, actionDescription.getActionInitiator().getInitiatorType(), "initiator type not correct.");
 
         AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(actionDescription, null);
 
@@ -506,13 +496,13 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // validate that power value was set
         assertEquals(State.ON, colorableLightRemote.getPowerState().getValue());
 
-        assertEquals("last extension time was not initialized with the action creation time!", actionToExtend.getCreationTime(), actionToExtend.getLastExtensionTime());
+        assertEquals(actionToExtend.getCreationTime(), actionToExtend.getLastExtensionTime(), "last extension time was not initialized with the action creation time!");
 
         // make sure this works when using quantum computing
         Thread.sleep(1);
         actionToExtend.extend();
         actionToExtend.waitForExtension();
-        assertNotEquals("last extension time was not updated!", actionToExtend.getCreationTime(), actionToExtend.getLastExtensionTime());
+        assertNotEquals(actionToExtend.getCreationTime(), actionToExtend.getLastExtensionTime(), "last extension time was not updated!");
 
         // cancel remaining action for the next test
         actionToExtend.cancel().get();

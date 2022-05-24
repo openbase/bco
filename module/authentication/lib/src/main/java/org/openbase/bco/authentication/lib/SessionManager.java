@@ -336,15 +336,6 @@ public class SessionManager implements Shutdownable, Session {
      */
     private synchronized void internalLogin(final String id, final LoginCredentials loginCredentials, final boolean stayLoggedIn, final boolean isUser) throws CouldNotPerformException, NotAvailableException {
         try {
-            // validate authentication property
-            try {
-                if (!JPService.getProperty(JPAuthentication.class).getValue()) {
-                    throw new CouldNotPerformException("Could not login. Authentication is disabled");
-                }
-            } catch (JPNotAvailableException ex) {
-                throw new CouldNotPerformException("Could not check JPEnableAuthenticationProperty", ex);
-            }
-
             // handle cases when somebody is already logged in
             if (this.isLoggedIn()) {
                 // do nothing if same user or client is already logged in

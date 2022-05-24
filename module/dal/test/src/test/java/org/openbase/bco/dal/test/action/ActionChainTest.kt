@@ -1,8 +1,8 @@
 package org.openbase.bco.dal.test.action
 
-import org.junit.Assert
-import org.junit.BeforeClass
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.openbase.bco.dal.remote.layer.unit.Units
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest
@@ -41,7 +41,7 @@ class ActionChainTest : AbstractBCOLocationManagerTest() {
         remoteAction.actionDescription.actionImpactList
             .map { it.serviceStateDescription.unitId }
             .forEach { impactedUnitId ->
-                Assert.assertTrue(powerStateUnits.any { it.id == impactedUnitId })
+                assertTrue(powerStateUnits.any { it.id == impactedUnitId })
             }
     }
 
@@ -56,25 +56,11 @@ class ActionChainTest : AbstractBCOLocationManagerTest() {
             .map { light -> waitForExecution(light.setPowerState(PowerState.State.ON)) }
             .map { action -> action.actionDescription.actionImpactList }
 
-        impact.forEach { Assert.assertFalse(it.isEmpty()) }
+        impact.forEach { assertFalse(it.isEmpty()) }
         impact.forEach { impactedUnits ->
-                Assert.assertTrue(impactedUnits.any {
+                assertTrue(impactedUnits.any {
                     it.serviceStateDescription.unitId == rootLocationRemote.id
                 })
             }
-    }
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(LocationRemoteTest::class.java)
-
-        @BeforeClass
-        @Throws(Throwable::class)
-        fun setUpClass() {
-            try {
-                AbstractBCOLocationManagerTest.setUpClass()
-            } catch (ex: Throwable) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger)
-            }
-        }
     }
 }

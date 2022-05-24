@@ -42,12 +42,12 @@ public class ServiceTypeCommandMappingTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTypeCommandMappingTest.class);
 
-    //    @BeforeClass
+    //    @BeforeAll
 //    public static void setUpClass() throws InstantiationException {
 //        MockRegistryHolder.newMockRegistry();
 //    }
 //
-//    @AfterClass
+//    @AfterAll
 //    public static void tearDownClass() {
 //        MockRegistryHolder.shutdownMockRegistry();
 //    }

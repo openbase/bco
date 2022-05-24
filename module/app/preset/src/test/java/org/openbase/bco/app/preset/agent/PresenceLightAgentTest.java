@@ -22,6 +22,7 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.jupiter.api.Test;
@@ -59,7 +60,7 @@ import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightD
 import org.openbase.type.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
-import static org.junit.Assert.assertEquals;
+
 
 /**
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
@@ -75,7 +76,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     public PresenceLightAgentTest() {
     }
 
-    //@BeforeClass //uncomment to enable debug mode
+    //@BeforeAll //uncomment to enable debug mode
     public static void showActionInspector() throws Throwable {
 
         JPService.registerProperty(JPDebugMode.class, true);
@@ -124,9 +125,9 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         lightSensorController.applyServiceState(Illuminance.DARK, ServiceType.ILLUMINANCE_STATE_SERVICE);
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getValue() == IlluminanceState.State.DARK);
 
-        assertEquals("Initial MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] is not NO_MOTION", MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue());
-        assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not OFF", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
+        assertEquals(MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue(), "Initial MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] is not NO_MOTION");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getPowerState().getValue(), "Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not OFF");
+        assertEquals(PowerState.State.OFF, locationRemote.getPowerState().getValue(), "Initial PowerState of Location[" + locationRemote.getLabel() + "] is not OFF");
 
 
         // test if on motion the lights are turned on
@@ -136,10 +137,10 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
-        assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to MOTION", MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue());
-        assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
-        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals(MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue(), "MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to MOTION");
+        assertEquals(PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue(), "PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.");
+        assertEquals(PowerState.State.ON, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to ON");
+        assertEquals(PowerState.State.ON, locationRemote.getPowerState().getValue(), "PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON");
 
 //        for (ActionDescription actionDescription : colorableLightRemote.getActionList()) {
 //            System.out.println("action: " + actionDescription.getId());
@@ -154,10 +155,10 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
-        assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to NO_MOTION", MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue());
-        assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, locationRemote.getPowerState().getValue());
+        assertEquals(MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue(), "MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to NO_MOTION");
+        assertEquals(PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue(), "PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched back to off");
+        assertEquals(PowerState.State.OFF, locationRemote.getPowerState().getValue(), "PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off");
 
 
         // test if the lights stay off after bright illuminance
@@ -170,11 +171,11 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
-        assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to MOTION", MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue());
-        assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
-        assertEquals("Illuminance of Location[" + locationRemote.getLabel() + "] has not set to SUNNY.", IlluminanceState.State.SUNNY, locationRemote.getIlluminanceState().getValue());
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not stayed off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not stayed off", PowerState.State.OFF, locationRemote.getPowerState().getValue());
+        assertEquals(MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue(), "MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to MOTION");
+        assertEquals(PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue(), "PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.");
+        assertEquals(IlluminanceState.State.SUNNY, locationRemote.getIlluminanceState().getValue(), "Illuminance of Location[" + locationRemote.getLabel() + "] has not set to SUNNY.");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not stayed off");
+        assertEquals(PowerState.State.OFF, locationRemote.getPowerState().getValue(), "PowerState of Location[" + locationRemote.getLabel() + "] has not stayed off");
 
 
         // test if the lights switch on after darkness
@@ -183,9 +184,9 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
-        assertEquals("Illuminance of Location[" + locationRemote.getLabel() + "] has not set to BRIGHT.", IlluminanceState.State.DARK, locationRemote.getIlluminanceState().getValue());
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched on", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
-        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched on", PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals(IlluminanceState.State.DARK, locationRemote.getIlluminanceState().getValue(), "Illuminance of Location[" + locationRemote.getLabel() + "] has not set to BRIGHT.");
+        assertEquals(PowerState.State.ON, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched on");
+        assertEquals(PowerState.State.ON, locationRemote.getPowerState().getValue(), "PowerState of Location[" + locationRemote.getLabel() + "] has not switched on");
 
 
         // test if the lights switch off after no motion and brightness
@@ -197,11 +198,11 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getValue() == IlluminanceState.State.SUNNY);
 
-        assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to NO_MOTION", MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue());
-        assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off", PowerState.State.OFF, locationRemote.getPowerState().getValue());
-        assertEquals("Illuminance of Location[" + locationRemote.getLabel() + "] has not set to BRIGHT.", IlluminanceState.State.SUNNY, locationRemote.getIlluminanceState().getValue());
+        assertEquals(MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue(), "MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to NO_MOTION");
+        assertEquals(PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue(), "PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.");
+        assertEquals(PowerState.State.OFF, colorableLightRemote.getPowerState().getValue(), "PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched back to off");
+        assertEquals(PowerState.State.OFF, locationRemote.getPowerState().getValue(), "PowerState of Location[" + locationRemote.getLabel() + "] has not switched back to off");
+        assertEquals(IlluminanceState.State.SUNNY, locationRemote.getIlluminanceState().getValue(), "Illuminance of Location[" + locationRemote.getLabel() + "] has not set to BRIGHT.");
 
         // cancel initial control
         cancelAllTestActions();
@@ -217,7 +218,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
             // make sure all other actions are done
             final RemoteAction remoteAction = new RemoteAction(actionDescription);
             remoteAction.waitForRegistration();
-            assertEquals("There is still the running Action[" + MultiLanguageTextProcessor.getBestMatch(remoteAction.getActionDescription().getDescription(), "?") + "] found which should actually be terminated!", true, remoteAction.isDone());
+            assertEquals(true, remoteAction.isDone(), "There is still the running Action[" + MultiLanguageTextProcessor.getBestMatch(remoteAction.getActionDescription().getDescription(), "?") + "] found which should actually be terminated!");
         }
     }
 

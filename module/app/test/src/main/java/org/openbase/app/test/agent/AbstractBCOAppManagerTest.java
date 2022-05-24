@@ -22,9 +22,9 @@ package org.openbase.app.test.agent;
  * #L%
  */
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.app.AppRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
@@ -49,18 +49,8 @@ public abstract class AbstractBCOAppManagerTest extends BCOAppTest {
     protected UnitConfig appConfig = null;
     protected AppRemote appRemote = null;
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        BCOAppTest.setUpClass();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        BCOAppTest.tearDownClass();
-    }
-
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void prepareAppManager() throws Exception {
         try {
             // setup and register app class
             AppClass.Builder appClassBuilder = AppClass.newBuilder();

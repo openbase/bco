@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -34,7 +35,7 @@ import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 
 import java.util.Locale;
 
-import static org.junit.Assert.assertEquals;
+
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -64,6 +65,6 @@ public class UnitGroupRegistryTest extends AbstractBCORegistryTest {
 
         UnitConfig registeredGroup = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
 
-        assertEquals("BoundingBox was not generated!", registeredGroup.getPlacementConfig().getShape().getBoundingBox(), MockRegistry.DEFAULT_BOUNDING_BOX);
+        assertEquals(registeredGroup.getPlacementConfig().getShape().getBoundingBox(), MockRegistry.DEFAULT_BOUNDING_BOX, "BoundingBox was not generated!");
     }
 }

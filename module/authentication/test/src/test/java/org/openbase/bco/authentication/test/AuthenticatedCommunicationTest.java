@@ -21,8 +21,9 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.core.AuthenticationController;
@@ -44,9 +45,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
-
 public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedCommunicationTest.class);
@@ -56,10 +54,8 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
 
-    @BeforeAll
-    public static void setUpClass() throws Throwable {
-        AuthenticationTest.setUpClass();
-
+    @BeforeEach
+    public void setupUser() throws Throwable {
         // register a user from which a ticket can be validated
         registerUser();
     }
@@ -115,9 +111,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         LOGGER.info("Synchronizing remote finished! " + data.getAgentUnitConfigCount() + " agents");
 
         assertEquals(
-                "Without being logged in only the 'OtherAgent' should be visible by the remote.",
                 expectedAgentsLoggedOut,
-                data.getAgentUnitConfigList()
+                data.getAgentUnitConfigList(),
+                "Without being logged in only the 'OtherAgent' should be visible by the remote."
         );
 
         LOGGER.info("Login!");
@@ -127,9 +123,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         LOGGER.info("Synchronizing remote finished! " + data.getAgentUnitConfigCount() + " agents");
 
         assertEquals(
-                "Being logged in both agens should be visible by the remote.",
                 expectedAgentsLoggedIn,
-                data.getAgentUnitConfigList()
+                data.getAgentUnitConfigList(),
+                "Being logged in both agens should be visible by the remote."
         );
         //expectedAgents.add(userAgentConfig.build());
         assertTrue(remoteService.getData().getAgentUnitConfigList().contains(otherAgentConfig.build()));
@@ -141,9 +137,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         LOGGER.info("Synchronizing remote finished! " + data.getAgentUnitConfigCount() + " agents");
 
         assertEquals(
-                "Only 'OtherAgent' should be visible again after logging out.",
                 expectedAgentsLoggedOut,
-                data.getAgentUnitConfigList()
+                data.getAgentUnitConfigList(),
+                "Only 'OtherAgent' should be visible again after logging out."
         );
 
         remoteService.shutdown();
@@ -171,9 +167,9 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
                 }
             }
             if (userClientPair.getClientId().isEmpty() && userClientPair.getUserId().isEmpty()) {
-                assertTrue("Other permissions should only show the OtherAgent", dataBuilder.build().getAgentUnitConfigCount() < 2);
+                assertTrue(dataBuilder.build().getAgentUnitConfigCount() < 2, "Other permissions should only show the OtherAgent");
             } else {
-                assertEquals("For a logged in user both agents should be visible", 2, dataBuilder.build().getAgentUnitConfigCount());
+                assertEquals(2, dataBuilder.build().getAgentUnitConfigCount(), "For a logged in user both agents should be visible");
             }
             return dataBuilder.build();
         }

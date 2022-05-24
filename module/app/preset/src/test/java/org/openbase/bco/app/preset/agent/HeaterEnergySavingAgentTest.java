@@ -22,6 +22,7 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.jupiter.api.Test;
@@ -49,7 +50,7 @@ import org.openbase.type.domotic.unit.dal.ReedContactDataType.ReedContactData;
 import org.openbase.type.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
-import static org.junit.Assert.assertEquals;
+
 
 /**
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
@@ -80,8 +81,8 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         TemperatureControllerController temperatureController = (TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId());
 
         // validate remote controller match
-        assertEquals("Controller and remote are not compatible to each other!", reedContactController.getId(), reedContactRemote.getId());
-        assertEquals("Reed contact is not connected to window.", connectionRemote.getConfig().getConnectionConfig().getUnitIdList().contains(reedContactRemote.getId()), true);
+        assertEquals(reedContactController.getId(), reedContactRemote.getId(), "Controller and remote are not compatible to each other!");
+        assertEquals(connectionRemote.getConfig().getConnectionConfig().getUnitIdList().contains(reedContactRemote.getId()), true, "Reed contact is not connected to window.");
 
         UnitStateAwaiter<ReedContactData, ReedContactRemote> reedContactStateAwaiter = new UnitStateAwaiter<>(reedContactRemote);
         UnitStateAwaiter<ConnectionData, ConnectionRemote> connectionStateAwaiter = new UnitStateAwaiter<>(connectionRemote);
@@ -97,10 +98,10 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
         locationStateAwaiter.waitForState((LocationData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
 
-        assertEquals("Initial ContactState of ReedContact[" + reedContactRemote.getLabel() + "] is not CLOSED", ContactState.State.CLOSED, reedContactRemote.getContactState().getValue());
-        assertEquals("Initial ContactState of Connection[" + connectionRemote.getLabel() + "] is not CLOSED", WindowState.State.CLOSED, connectionRemote.getWindowState().getValue());
-        assertEquals("Initial TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] is not 21.0", 21.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
-        assertEquals("Initial TargetTemperature of location[" + locationRemote.getLabel() + "] is not 21.0", 21.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
+        assertEquals(ContactState.State.CLOSED, reedContactRemote.getContactState().getValue(), "Initial ContactState of ReedContact[" + reedContactRemote.getLabel() + "] is not CLOSED");
+        assertEquals(WindowState.State.CLOSED, connectionRemote.getWindowState().getValue(), "Initial ContactState of Connection[" + connectionRemote.getLabel() + "] is not CLOSED");
+        assertEquals(21.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0, "Initial TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] is not 21.0");
+        assertEquals(21.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0, "Initial TargetTemperature of location[" + locationRemote.getLabel() + "] is not 21.0");
 
         // test if on open reed sensor target temperature is set to 13.0
         reedContactController.applyServiceState(States.Contact.OPEN, ServiceType.CONTACT_STATE_SERVICE);
@@ -109,10 +110,10 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 13.0);
         locationStateAwaiter.waitForState((LocationData data) -> data.getTargetTemperatureState().getTemperature() == 13.0);
 
-        assertEquals("ContactState of ReedContact[" + reedContactRemote.getLabel() + "] has not switched to OPEN", ContactState.State.OPEN, reedContactRemote.getContactState().getValue());
-        assertEquals("ContactState of Connection[" + connectionRemote.getLabel() + "] has not switched to OPEN", WindowState.State.OPEN, connectionRemote.getWindowState().getValue());
-        assertEquals("TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] has not switched to 13.0", 13.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
-        assertEquals("TargetTemperature of location[" + locationRemote.getLabel() + "] has not switched to 13.0", 13.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
+        assertEquals(ContactState.State.OPEN, reedContactRemote.getContactState().getValue(), "ContactState of ReedContact[" + reedContactRemote.getLabel() + "] has not switched to OPEN");
+        assertEquals(WindowState.State.OPEN, connectionRemote.getWindowState().getValue(), "ContactState of Connection[" + connectionRemote.getLabel() + "] has not switched to OPEN");
+        assertEquals(13.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0, "TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] has not switched to 13.0");
+        assertEquals(13.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0, "TargetTemperature of location[" + locationRemote.getLabel() + "] has not switched to 13.0");
 
 //        Obsoled as functionality of HeaterEnergySavingAgent was reduced
 //        // test if on closed reedsensor target temperature is set back to 21.0

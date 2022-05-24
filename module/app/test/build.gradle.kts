@@ -8,6 +8,9 @@ plugins {
 
 dependencies {
     api(project(":bco.dal.test"))
+    implementation("org.junit.jupiter:junit-jupiter:[5.8,5.9-alpha)")
+    implementation ("org.junit.jupiter:junit-jupiter-api:[5.8,5.9-alpha)")
+    implementation ("org.junit.jupiter:junit-jupiter-engine:[5.8,5.9-alpha)")
 }
 
 description = "BCO App Test Framework"

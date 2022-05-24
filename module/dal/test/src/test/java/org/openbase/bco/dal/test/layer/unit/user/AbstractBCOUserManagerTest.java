@@ -42,10 +42,8 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
-    public static void setUpClass() throws Throwable {
+    public static void setupUserManager() throws Throwable {
         try {
-            AbstractBCOTest.setUpClass();
-
             userManagerLauncher = new UserManagerLauncher();
             userManagerLauncher.launch().get();
 
@@ -56,12 +54,11 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    public static void tearDownClass() throws Throwable {
+    public static void tearDownUserManager() throws Throwable {
         try {
             if (userManagerLauncher != null) {
                 userManagerLauncher.shutdown();
             }
-            AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

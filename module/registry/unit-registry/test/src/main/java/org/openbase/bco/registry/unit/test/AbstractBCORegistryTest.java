@@ -22,8 +22,8 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
@@ -55,17 +55,18 @@ public abstract class AbstractBCORegistryTest extends MqttIntegrationTest {
 
     final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setupMockRegistry() throws Exception {
         try {
             MockRegistryHolder.newMockRegistry();
+            Registries.waitForData();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @AfterEach
+    public void tearDownMockRegistry() throws Exception {
         try {
             MockRegistryHolder.shutdownMockRegistry();
         } catch (Exception ex) {
