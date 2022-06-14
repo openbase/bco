@@ -107,6 +107,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws Exception if an error occurs
      */
+    @Disabled("Deprecated")
     @Test
     @Timeout(15)
     public void testControllingViaLightRemote() throws Exception {
