@@ -63,6 +63,8 @@ public class MqttIntegrationTest {
                         BindMode.READ_ONLY
                 );
         broker.withStartupTimeout(Duration.ofSeconds(30)).start();
+
+        resetBrokerProperties();
     }
 
     @AfterAll
@@ -72,6 +74,13 @@ public class MqttIntegrationTest {
         Files.delete(mosquittoConfig);
     }
 
+    public static void resetBrokerProperties() throws JPServiceException {
+        JPService.reset();
+        JPService.registerProperty(JPComPort.class, broker.getFirstMappedPort());
+        JPService.registerProperty(JPComHost.class, broker.getHost());
+        JPService.setupJUnitTestMode();
+    }
+
     /**
      * Overwrite method to set custom test properties.
      */
@@ -79,10 +88,7 @@ public class MqttIntegrationTest {
 
     @BeforeEach
     public void customSetup() throws JPServiceException {
-        JPService.reset();
-        JPService.registerProperty(JPComPort.class, broker.getFirstMappedPort());
-        JPService.registerProperty(JPComHost.class, broker.getHost());
-        JPService.setupJUnitTestMode();
+        resetBrokerProperties();
         setupTestProperties();
     }
 }
