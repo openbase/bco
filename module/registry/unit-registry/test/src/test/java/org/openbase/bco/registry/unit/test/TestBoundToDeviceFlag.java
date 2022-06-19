@@ -22,7 +22,9 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -35,8 +37,8 @@ import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -58,10 +60,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
     private Pose poseLightTwo;
     private Pose poseLightThree;
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-
+    @BeforeEach
+    public void setupTest() throws Exception {
         try {
             deviceClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("Label", "Product Number", "Company", unitTypes)).get();
             PlacementConfig placement = generatePlacementConfig();
@@ -114,7 +114,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceNotBoundAndUnitsNotBound() throws Exception {
         logger.info("testDeviceNotBoundAndUnitsNotBound");
 
@@ -141,12 +142,13 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceBoundAndUnitsNotBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsNotBound");
 
         // change bound to host flag in device
-        Registries.getUnitRegistry().updateUnitConfig(deviceUnitConfig.toBuilder().setBoundToUnitHost(true).build()).get();
+        Registries.getUnitRegistry(true).updateUnitConfig(deviceUnitConfig.toBuilder().setBoundToUnitHost(true).build()).get();
         getUpdatedConfigs();
         assertTrue(deviceUnitConfig.getBoundToUnitHost());
 
@@ -176,7 +178,8 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceNotBoundAndUnitsBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsNotBound");
 
@@ -199,16 +202,15 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         assertEquals(newPoseLightOne, poseDevice);
         assertEquals(newPoseLightOne, poseLightTwo);
         assertEquals(oldPoseLightThree, poseLightThree);
-        assertTrue(!poseLightThree.equals(poseLightOne));
+        assertNotEquals(poseLightThree, poseLightOne);
     }
 
     /**
      * Test what happens when the flag is set in the device and
      * its unit.
-     *
-     * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testDeviceBoundAndUnitsBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsBound");
 

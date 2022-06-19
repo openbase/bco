@@ -22,8 +22,11 @@ package org.openbase.bco.authentication.mock;
  * #L%
  */
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.communication.jp.JPComHost;
@@ -33,23 +36,23 @@ import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
 
 public class MqttIntegrationTest {
 
-    public static final int port = 1883;
+    public static final int port = 1884;
     public static Path mosquittoConfig;
     public static GenericContainer<?> broker;
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
+    @BeforeAll
+    public static void setupMqtt() throws Throwable {
         mosquittoConfig = Files.createTempFile("mosquitto_", ".conf");
         Files.write(mosquittoConfig, Arrays.asList(
                 "allow_anonymous true",
-                "listener 1883")
+                "listener "+port)
         );
 
         broker = new GenericContainer<>(DockerImageName.parse("eclipse-mosquitto"))
@@ -59,17 +62,27 @@ public class MqttIntegrationTest {
                         "/mosquitto/config/mosquitto.conf",
                         BindMode.READ_ONLY
                 );
-        broker.start();
-
-        JPService.registerProperty(JPComPort.class, broker.getFirstMappedPort());
-        JPService.registerProperty(JPComHost.class, broker.getHost());
-        JPService.setupJUnitTestMode();
+        broker.withStartupTimeout(Duration.ofSeconds(30)).start();
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
+    @AfterAll
+    public static void tearDownMQTT() throws Throwable {
         SharedMqttClient.INSTANCE.waitForShutdown();
         broker.stop();
         Files.delete(mosquittoConfig);
+    }
+
+    /**
+     * Overwrite method to set custom test properties.
+     */
+    public void setupTestProperties() { }
+
+    @BeforeEach
+    public void customSetup() throws JPServiceException {
+        JPService.reset();
+        JPService.registerProperty(JPComPort.class, broker.getFirstMappedPort());
+        JPService.registerProperty(JPComHost.class, broker.getHost());
+        JPService.setupJUnitTestMode();
+        setupTestProperties();
     }
 }

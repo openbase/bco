@@ -9,8 +9,6 @@ plugins {
 dependencies {
     api(project(":bco.registry.template.core"))
     api(project(":bco.registry.template.remote"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
-    testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }
 
 description = "BCO Registry Template Test"

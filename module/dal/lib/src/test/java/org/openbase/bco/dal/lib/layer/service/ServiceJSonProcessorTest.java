@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 import com.google.protobuf.Message;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.type.domotic.state.PowerStateType;
@@ -44,7 +44,7 @@ public class ServiceJSonProcessorTest {
         this.serviceJSonProcessor = new ServiceJSonProcessor();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws JPServiceException {
         JPService.setupJUnitTestMode();
     }
@@ -55,7 +55,8 @@ public class ServiceJSonProcessorTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testGetServiceStateClassName() throws Exception {
         System.out.println("getServiceStateClassName");
         Message serviceState;
@@ -92,7 +93,8 @@ public class ServiceJSonProcessorTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testSerializationPipeline() throws Exception {
         System.out.println("SerializationPipeline");
         Message serviceState;

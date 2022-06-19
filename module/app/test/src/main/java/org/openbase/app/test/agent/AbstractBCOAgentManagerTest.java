@@ -22,19 +22,11 @@ package org.openbase.app.test.agent;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jps.preset.JPLogLevel;
-import org.openbase.jps.preset.JPLogLevel.LogLevel;
-import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
@@ -54,8 +46,8 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected UnitConfig agentConfig = null;
     protected AgentRemote agentRemote = null;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setupAgentManager() throws Exception {
         try {
             // register agent
             agentConfig = Registries.getUnitRegistry().registerUnitConfig(getAgentConfig()).get(5, TimeUnit.SECONDS);

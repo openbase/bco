@@ -313,7 +313,7 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                             "ServiceType[" + serviceType + "] " +
                             "CurrentServiceState[" + currentServiceState + "] " +
                             "LastServiceState[" + lastServiceState + "]"
-                    , ex, logger, LogLevel.WARN);
+                    , ex, logger, LogLevel.DEBUG);
         }
     }
 

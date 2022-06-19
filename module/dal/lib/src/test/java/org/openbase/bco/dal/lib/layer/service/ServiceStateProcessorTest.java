@@ -22,47 +22,27 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
+import static org.junit.jupiter.api.Assertions.*;
 import com.google.protobuf.Message;
-import org.junit.Test;
-import org.openbase.bco.dal.lib.state.States;
-import org.openbase.bco.dal.lib.state.States.Power;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.junit.jupiter.api.Test;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.MessageObservable;
-import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription.Builder;
-import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
-import org.openbase.type.domotic.unit.scene.SceneConfigType.SceneConfig;
-import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.timing.TimestampType.Timestamp;
 import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.HSBColorType.HSBColor;
-
-import java.time.temporal.ChronoUnit;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 public class ServiceStateProcessorTest {
 
@@ -71,23 +51,23 @@ public class ServiceStateProcessorTest {
         PresenceState.Builder builder = PresenceState.newBuilder();
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 2000, builder);
 //        System.out.println(builder.build());
-        assertEquals("Timestamp update not correctly handled.", 2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
+        assertEquals(2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime(), "Timestamp update not correctly handled.");
 //        System.out.println("==============");
         ServiceStateProcessor.updateLatestValueOccurrence(State.ABSENT, 2002, builder);
 //        System.out.println(builder.build());
-        assertEquals("Timestamp update not correctly handled.", 2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
-        assertEquals("Timestamp update not correctly handled.", 2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
+        assertEquals(2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime(), "Timestamp update not correctly handled.");
+        assertEquals(2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime(), "Timestamp update not correctly handled.");
 //        System.out.println("==============");
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 2004, builder);
 //        System.out.println(builder.build());
-        assertEquals("Timestamp update not correctly handled.", 2004, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
-        assertEquals("Timestamp update not correctly handled.", 2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
+        assertEquals(2004, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime(), "Timestamp update not correctly handled.");
+        assertEquals(2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime(), "Timestamp update not correctly handled.");
 //        System.out.println("==============");
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 1200, builder);
         ServiceStateProcessor.updateLatestValueOccurrence(State.ABSENT, 2200, builder);
         ServiceStateProcessor.updateLatestValueOccurrence(State.ABSENT, -1, builder);
-        assertEquals("", 2004, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
-        assertEquals("", 2200, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
+        assertEquals(2004, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
+        assertEquals(2200, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
     }
 
     /**
@@ -146,16 +126,18 @@ public class ServiceStateProcessorTest {
             @Override
             public void update(DataProvider<LocationData> source, LocationData data) throws Exception {
                 notificationCounter++;
-                assertEquals("LocationData has been notified even though only the timestamp changed", 1, notificationCounter);
+                assertEquals(1, notificationCounter, "LocationData has been notified even though only the timestamp changed");
             }
         });
 
-        assertFalse("LocationData equal even though they have different timestamps", locationData1.build().equals(locationData2.build()));
-        assertFalse("LocationData hashcodes are equal even though they have different timestamps", locationData1.build().hashCode() == locationData2.build().hashCode());
+        assertFalse(locationData1.build().equals(locationData2.build()), "LocationData equal even though they have different timestamps");
+        assertFalse(locationData1.build().hashCode() == locationData2.build().hashCode(), "LocationData hashcodes are equal even though they have different timestamps");
 
-        assertEquals("Hashes of both data types do not match after removed timestamps",
+        assertEquals(
                 messageObservable.removeTimestamps(locationData1).build().hashCode(),
-                messageObservable.removeTimestamps(locationData2).build().hashCode());
+                messageObservable.removeTimestamps(locationData2).build().hashCode(),
+                "Hashes of both data types do not match after removed timestamps"
+                );
 
         messageObservable.notifyObservers(locationData1.build());
         messageObservable.notifyObservers(locationData2.build());

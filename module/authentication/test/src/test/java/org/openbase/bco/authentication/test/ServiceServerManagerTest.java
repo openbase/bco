@@ -22,7 +22,8 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -46,7 +47,8 @@ public class ServiceServerManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void testServiceServerManagerValidation() throws Exception {
         System.out.println("testServiceServerManagerValidation");
 

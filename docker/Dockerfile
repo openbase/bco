@@ -1,12 +1,12 @@
 # Install dependencies
-FROM ubuntu:focal-20211006 AS builder
+FROM ubuntu:latest AS builder
 
 ENV \
     JAVA_OPTS="" \
     LC_ALL="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
     LANGUAGE="en_US.UTF-8" \
-    JAVA_VERSION="11"
+    JAVA_VERSION="17"
 
 WORKDIR /workspace
 
@@ -14,8 +14,7 @@ WORKDIR /workspace
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
     apt install -y \
-            maven \
-            openjdk-11-jdk \
+            openjdk-17-jdk \
             git \
             rsync \
             curl \
@@ -33,8 +32,7 @@ RUN ./gradlew --version
 # Build jul
 RUN ./prepare.sh
 RUN cd lib/jul && \
-    prefix="/tmp/" ./install.sh \
-    -Dmaven.javadoc.skip=true
+    ./install.sh
 
 # Build bco
 RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace

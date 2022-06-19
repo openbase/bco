@@ -22,10 +22,11 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -67,7 +68,7 @@ public class TestWaitUntilReady {
     public TestWaitUntilReady() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
@@ -75,7 +76,6 @@ public class TestWaitUntilReady {
             MockRegistry.registerUnitConsistencyHandler(new ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder>, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder>>() {
 
                 boolean alreadyDelayed = false;
-                int counter = 0;
 
                 @Override
                 public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
@@ -103,7 +103,7 @@ public class TestWaitUntilReady {
         }
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDownClass() throws Throwable {
         try {
             MockRegistryHolder.shutdownMockRegistry();
@@ -112,7 +112,8 @@ public class TestWaitUntilReady {
         }
     }
 
-    @Test(timeout = 30000)
+    @Test
+    @Timeout(30)
     public void testWaitUntilReady() throws Exception {
         System.out.println("testWaitUntilReady");
 
@@ -124,7 +125,7 @@ public class TestWaitUntilReady {
 
         Registries.getUnitRegistry().addDataObserver((DataProvider<UnitRegistryData> source, UnitRegistryData data) -> {
             if (waitedUntilReady) {
-                Assert.assertTrue("Received an update even though waitUntilReady has returned!", false);
+                assertTrue(false, "Received an update even though waitUntilReady has returned!");
             }
         });
 
@@ -153,7 +154,10 @@ public class TestWaitUntilReady {
             // System.out.println("wait");
             Registries.waitUntilReady();
             //            System.out.println("continue");
-            Assert.assertTrue("Test failed because registry is not consistent after wait until done returned.", Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent());
+            assertTrue(
+                    Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent(),
+                    "Test failed because registry is not consistent after wait until done returned."
+            );
             long time = System.currentTimeMillis();
             try {
                 // registrationFuture.get();
@@ -161,11 +165,10 @@ public class TestWaitUntilReady {
                 LOGGER.info("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
             } catch (TimeoutException ex) {
                 LOGGER.warn("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
-                Assert.assertTrue("Test failed because registration result is not available", false);
+                assertTrue(false, "Test failed because registration result is not available");
             }
             waitedUntilReady = true;
         }
-        waitedUntilReady = false;
         delayConsistencyCheck = false;
     }
 }

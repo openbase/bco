@@ -33,6 +33,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -120,7 +121,9 @@ public class BCOSessionImpl implements BCOSession {
             } catch (InterruptedException | CancellationException ex) {
                 throw ex;
             } catch (Exception ex) {
-                ExceptionPrinter.printHistoryAndReturnThrowable("Auto system login not possible. Please login via user interface to get system permissions!", ex, LOGGER, LogLevel.WARN);
+                if(!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistoryAndReturnThrowable("Auto system login not possible. Please login via user interface to get system permissions!", ex, LOGGER, LogLevel.WARN);
+                }
             }
             return null;
         });

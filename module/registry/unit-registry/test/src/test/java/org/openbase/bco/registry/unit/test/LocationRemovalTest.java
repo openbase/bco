@@ -22,7 +22,9 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -33,8 +35,6 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
-
-import static org.junit.Assert.assertFalse;
 
 /**
  * In this test the MockRegistry is started and all its locations except the root are
@@ -50,7 +50,8 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void removeAllLocationsTest() throws Exception {
         logger.info("RemoveAllLocationsTest");
         try {
@@ -76,7 +77,7 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
                 Registries.getUnitRegistry().removeUnitConfig(locationConfig).get();
 
                 // test if removal really worked
-                assertFalse("LocationRegistry still contains locationConfig[" + locationConfig.getLabel() + "] after removal", Registries.getUnitRegistry().containsUnitConfig(locationConfig));
+                assertFalse(Registries.getUnitRegistry().containsUnitConfig(locationConfig), "LocationRegistry still contains locationConfig[" + locationConfig.getLabel() + "] after removal");
                 logger.info("Removed location[" + ScopeProcessor.generateStringRep(locationConfig.getScope()) + "] successfully. " + locationConfigList.size() + " location[s] remaining.");
             }
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {

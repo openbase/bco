@@ -41,6 +41,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 
+import java.util.List;
 import java.util.concurrent.Future;
 
 public interface TemplateRegistry extends ActivityTemplateCollectionProvider, ServiceTemplateCollectionProvider, UnitTemplateCollectionProvider, DataProvider<TemplateRegistryData>, Shutdownable, RegistryService {
@@ -191,16 +192,16 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      * which means it is registered as operation service within at least one unit template.
      *
      * @param serviceType the service type to check.
-     * @param servicePattern the service to check for.
+     * @param servicePatterns the service to check for.
      *
      * @return true if the service type supports the service pattern, otherwise false.
      *
      * @throws CouldNotPerformException is thrown if the registry is not ready yet.
      */
-    default boolean validateServicePatternSupport(final ServiceType serviceType, final ServicePattern servicePattern) throws CouldNotPerformException {
+    default boolean validateServicePatternSupport(final ServiceType serviceType, final List<ServicePattern> servicePatterns) throws CouldNotPerformException {
         for (UnitTemplate unitTemplate : getUnitTemplates()) {
             for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
-                if (serviceDescription.getServiceType() == serviceType && serviceDescription.getPattern() == servicePattern) {
+                if (serviceDescription.getServiceType() == serviceType && servicePatterns.contains(serviceDescription.getPattern())) {
                     return true;
                 }
             }

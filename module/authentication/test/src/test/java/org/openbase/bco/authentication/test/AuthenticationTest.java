@@ -22,10 +22,11 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
@@ -40,36 +41,30 @@ import org.openbase.jps.core.JPService;
  */
 public class AuthenticationTest extends MqttIntegrationTest {
 
-    static AuthenticationController authenticationController;
-    static byte[] serviceServerSecretKey = EncryptionHelper.generateKey();
+    public static AuthenticationController authenticationController;
+    public static byte[] serviceServerSecretKey = EncryptionHelper.generateKey();
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        MqttIntegrationTest.setUpClass();
-
+    @BeforeEach
+    public void setupAuthentication() throws Throwable {
         JPService.setupJUnitTestMode();
         CachedAuthenticationRemote.prepare();
         authenticationController = new AuthenticationController(MockCredentialStore.getInstance(), serviceServerSecretKey);
         authenticationController.init();
         authenticationController.activate();
         authenticationController.waitForActivation();
-
-        Assert.assertTrue("Initial password has not been generated despite an empty registry", AuthenticationController.getInitialPassword() != null);
+        assertNotNull(AuthenticationController.getInitialPassword(), "Initial password has not been generated despite an empty registry");
     }
 
-    @AfterClass
-    public static void tearDownClass() {
+    @AfterEach
+    public void tearDownAuthentication() {
+        // reset credential store because it could have been changed in a test
+        MockCredentialStore.getInstance().reset();
         CachedAuthenticationRemote.shutdown();
         if (authenticationController != null) {
             authenticationController.shutdown();
         }
         AuthenticatedServerManager.shutdown();
         SessionManager.getInstance().shutdown();
-    }
-
-    @After
-    public void afterTest() {
-        // reset credential store because it could have been changed in a test
-        MockCredentialStore.getInstance().reset();
+        authenticationController = null;
     }
 }

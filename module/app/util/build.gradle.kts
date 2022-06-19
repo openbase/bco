@@ -35,6 +35,10 @@ createAdditionalScript("bco-logo") {
     mainClass.set("org.openbase.bco.app.util.launch.LogoPrinter")
 }
 
+createAdditionalScript("bco-ping") {
+    mainClass.set("org.openbase.bco.app.util.launch.BCOPing")
+}
+
 createAdditionalScript("bco-manager") {
     mainClass.set("org.openbase.bco.app.util.launch.ManagerLauncher")
 }
@@ -63,6 +67,10 @@ createAdditionalScript("bco-registry-validate") {
     mainClass.set("org.openbase.bco.app.util.launch.BCORegistryValidator")
 }
 
+createAdditionalScript("bco-registry") {
+    mainClass.set("org.openbase.bco.registry.launch.RegistryLauncher")
+}
+
 createAdditionalScript("bco-app-adhoc-generate-trainingdata") {
     mainClass.set("org.openbase.bco.app.util.launch.BCOAdhocTrainDataGeneratorLauncher")
 }
@@ -85,6 +93,10 @@ createAdditionalScript("bco-query-label") {
 
 createAdditionalScript("bco-logger") {
     mainClass.set("org.openbase.bco.dal.remote.printer.BCOLogger")
+}
+
+createAdditionalScript("bco-actions") {
+    mainClass.set("org.openbase.bco.dal.visual.action.BCOActionInspectorLauncher")
 }
 
 distributions {
@@ -119,7 +131,6 @@ dependencies {
     api(project(":bco.dal.visual"))
     api("commons-collections:commons-collections:_")
     testImplementation(project(":bco.dal.test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:[5.6,5.7-alpha)")
 }
 
 description = "BCO App Utility"

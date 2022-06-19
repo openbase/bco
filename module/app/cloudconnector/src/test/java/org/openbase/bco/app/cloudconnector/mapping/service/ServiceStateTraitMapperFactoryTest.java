@@ -22,9 +22,11 @@ package org.openbase.bco.app.cloudconnector.mapping.service;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.app.cloudconnector.mapping.lib.Trait;
 import org.openbase.bco.app.cloudconnector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.authentication.mock.MqttIntegrationTest;
@@ -39,8 +41,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static junit.framework.TestCase.assertEquals;
-
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
@@ -48,15 +48,15 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceStateTraitMapperFactoryTest.class);
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setupTest() throws Exception {
         MockRegistryHolder.newMockRegistry();
 
         Registries.getTemplateRegistry(true);
     }
 
-    @After
-    public void tearDown() {
+    @AfterEach
+    public void tearDownTest() {
         MockRegistryHolder.shutdownMockRegistry();
     }
 
@@ -64,6 +64,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
      * Test if for all defined combinations of services and traits a mapper is available.
      */
     @Test
+    @Timeout(value = 30)
     public void testMapperAvailability() {
         LOGGER.info("testMapperAvailability");
 
@@ -86,7 +87,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
             LOGGER.error(entry.getValue().getMessage());
         }
 
-        assertEquals("Could not create every needed mapping", 0, mapperExceptionMap.size());
+        assertEquals(0, mapperExceptionMap.size(), "Could not create every needed mapping");
     }
 
 }

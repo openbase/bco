@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.printer;
 
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -34,6 +35,7 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.consumer.Consumer;
@@ -52,11 +54,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class UnitModelPrinter {
 
-
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitModelPrinter.class);
+    private static final BaseUnitNameComparator BASE_UNIT_NAME_COMPARATOR = new BaseUnitNameComparator();
 
     public static File getModelFile() throws NotAvailableException {
         try {
@@ -127,7 +131,7 @@ public class UnitModelPrinter {
                             Services.getServiceStateEnumValues(serviceTemplate.getServiceType())
                             , (ProtocolMessageEnum o) -> o.getValueDescriptor().getName().toLowerCase(),
                             ", ",
-                            type -> type.getValueDescriptor().getName().toLowerCase().equals("unknown")) + "]).");
+                            type -> type.getValueDescriptor().getName().equalsIgnoreCase("unknown")) + "]).");
                 } catch (CouldNotPerformException ex) {
                     try {
                         // print continuous service state values
@@ -156,7 +160,8 @@ public class UnitModelPrinter {
                         " * --> syntax: unit(unit_id, unit_alias, unit_type, parent_location, [labels], [operation_services], [provider_services]).\n" +
                         " */");
             }
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs()) {
+
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs().stream().sorted(BASE_UNIT_NAME_COMPARATOR).collect(Collectors.toList())) {
                 outputConsumer.consume("unit("
                         + "'" + IdResolver.getId(unitConfig) + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
@@ -177,7 +182,7 @@ public class UnitModelPrinter {
                         " * --> syntax: location(unit_id, unit_alias, location_type, [labels]).\n" +
                         " */");
             }
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.LOCATION)) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.LOCATION).stream().sorted(BASE_UNIT_NAME_COMPARATOR).collect(Collectors.toList())) {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
                         + "'" + IdResolver.getId(unitConfig) + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
@@ -197,7 +202,7 @@ public class UnitModelPrinter {
                         " * --> syntax: connection(unit_id, unit_alias, connection_type, [labels], [locations]).\n" +
                         " */");
             }
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.CONNECTION)) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.CONNECTION).stream().sorted(BASE_UNIT_NAME_COMPARATOR).collect(Collectors.toList())) {
                 outputConsumer.consume(unitConfig.getUnitType().name().toLowerCase() + "("
                         + "'" + IdResolver.getId(unitConfig) + "', "
                         + "'" + unitConfig.getAlias(0) + "', "
@@ -229,6 +234,36 @@ public class UnitModelPrinter {
             if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 ExceptionPrinter.printHistory("Could not print unit templates.", ex, LOGGER);
             }
+        }
+    }
+
+    static class BaseUnitNameComparator implements Comparator<UnitConfig> {
+
+        @Override
+        public int compare(UnitConfig o1, UnitConfig o2) {
+            return sortByName(preferBaseUnits(o1, o2), o1, o2);
+        }
+
+        private int preferBaseUnits(UnitConfig o1, UnitConfig o2) {
+            return Boolean.compare(
+                    !UnitConfigProcessor.isBaseUnit(o1.getUnitType()),
+                    !UnitConfigProcessor.isBaseUnit(o2.getUnitType())
+            );
+        }
+
+        private int sortByName(int originSort, UnitConfig o1, UnitConfig o2) {
+            // only apply name sorting in case the origin sort did not find any difference.
+            if(originSort != 0) {
+                return originSort;
+            }
+
+            return LabelProcessor.getBestMatch(o1.getLabel(), "?")
+                    .compareTo(LabelProcessor.getBestMatch(o2.getLabel(), "?"));
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return false;
         }
     }
 }

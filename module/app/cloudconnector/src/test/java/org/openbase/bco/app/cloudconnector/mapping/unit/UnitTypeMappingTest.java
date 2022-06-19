@@ -22,12 +22,15 @@ package org.openbase.bco.app.cloudconnector.mapping.unit;
  * #L%
  */
 
-import org.junit.Test;
+
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import static org.junit.Assert.assertEquals;
+
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -49,8 +52,10 @@ public class UnitTypeMappingTest {
 
             final UnitType unitType = UnitType.valueOf(unitTypeName);
 
-            assertEquals("UnitTypeMapping[" + unitTypeMapping.name() + "] does not match unitType[" + unitType.name() + "]",
-                    unitTypeMapping.getUnitType(), unitType);
+            Assertions.assertEquals(unitTypeMapping.getUnitType(),
+                    unitType,
+                    "UnitTypeMapping[" + unitTypeMapping.name() + "] does not match unitType[" + unitType.name() + "]"
+            );
         }
     }
 }

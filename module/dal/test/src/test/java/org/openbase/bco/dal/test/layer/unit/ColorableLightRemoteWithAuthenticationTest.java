@@ -21,11 +21,8 @@ package org.openbase.bco.dal.test.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -75,8 +72,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
-
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
@@ -93,14 +88,13 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         adminSessionManager = new SessionManager();
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
+    @BeforeAll
+    public static void registerProperties() throws Throwable {
         JPService.registerProperty(JPAuthentication.class, true);
-        AbstractBCODeviceManagerTest.setUpClass();
     }
 
-    @Before
-    public void setUp() throws CouldNotPerformException, InterruptedException, ExecutionException {
+    @BeforeEach
+    public void prepareTest() throws CouldNotPerformException, InterruptedException, ExecutionException {
 
         adminSessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
@@ -112,8 +106,8 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         colorableLightRemote.setSessionManager(adminSessionManager);
     }
 
-    @After
-    public void tearDown() throws CouldNotPerformException, ExecutionException, InterruptedException {
+    @AfterEach
+    public void tearDownTest() throws CouldNotPerformException, ExecutionException, InterruptedException {
         adminSessionManager.logout();
         colorableLightRemote.setSessionManager(SessionManager.getInstance());
     }
@@ -123,13 +117,14 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetColorWithAuthentication() throws Exception {
         System.out.println("testSetColorWithAuthentication");
 
         waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON), adminToken);
         colorableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
     /**
@@ -138,7 +133,8 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetColorWithClientWithoutAuthentication() throws Exception {
         System.out.println("testSetColorWithClientWithoutAuthentication");
 
@@ -186,7 +182,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         System.out.println("execute action");
         waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON), adminToken);
         colorableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
     /**
@@ -195,7 +191,8 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetColorWithUserWithoutAuthentication() throws Exception {
         System.out.println("testSetColorWithClientWithoutAuthentication");
 
@@ -222,10 +219,11 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         System.out.println("execute action");
         waitForExecution(colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON), adminToken);
         colorableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testApplyActionWithToken() throws Exception {
         System.out.println("testApplyActionWithToken");
 
@@ -267,7 +265,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         try {
             ExceptionPrinter.setBeQuit(true);
             colorableLightRemote.setPowerState(State.ON).get();
-            assertTrue("Could set power state without access permissions", false);
+            assertTrue(false, "Could set power state without access permissions");
         } catch (ExecutionException ex) {
             // this should happen
             // ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.INFO);
@@ -310,7 +308,8 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         Registries.getUnitRegistry().updateUnitConfig(rootLocation.build()).get();
     }
 
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testApplyActionViaServiceRemoteWithToken() throws Exception {
         System.out.println("testApplyActionViaServiceRemoteWithToken");
 
@@ -357,7 +356,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         powerStateServiceRemote.cancelAction(future.get(), largosAuthToken).get(5 , TimeUnit.SECONDS);
 
         future = powerStateServiceRemote.setPowerState(Power.OFF, largosDefaultParameter);
-        final RemoteAction largoOffAction = waitForExecution(future, largosAuthToken);
+        waitForExecution(future, largosAuthToken);
 
         // make sure sync is done
         powerStateServiceRemote.requestData().get(5 , TimeUnit.SECONDS);

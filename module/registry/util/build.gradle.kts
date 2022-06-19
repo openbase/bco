@@ -14,8 +14,6 @@ dependencies {
     api(project(":bco.registry.unit.core"))
     api(project(":bco.registry.message.core"))
     api(project(":bco.registry.remote"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:[5.6,5.7-alpha)")
-    testImplementation("org.junit.vintage:junit-vintage-engine:[5.6,5.7-alpha)")
 }
 
 description = "BCO Registry Utility"

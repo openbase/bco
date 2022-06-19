@@ -10,22 +10,20 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.CredentialStore;
@@ -45,8 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.*;
-
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
@@ -55,20 +51,16 @@ public class SessionManagerTest extends AuthenticationTest {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManagerTest.class);
 
     private static CredentialStore clientStore;
+    private static String INITIAL_USER_ID = "InitialUserId";
 
-
-    public SessionManagerTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AuthenticationTest.setUpClass();
+    @BeforeEach
+    public void setupSessionManager() throws Throwable {
         clientStore = new MockClientStore();
 
         // register an initial user for the authenticator
         try {
             LoginCredentials.Builder loginCredentials = LoginCredentials.newBuilder();
-            loginCredentials.setId("InitialUserId");
+            loginCredentials.setId(INITIAL_USER_ID);
             loginCredentials.setSymmetric(true);
             loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticationController.getInitialPassword())));
             AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
@@ -78,20 +70,13 @@ public class SessionManagerTest extends AuthenticationTest {
         }
     }
 
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
-
     /**
      * Test of SessionManager.login() for client.
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void registerUser() throws Exception {
         System.out.println("registerUser");
         SessionManager manager = new SessionManager(clientStore);
@@ -110,7 +95,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void loginUser() throws Exception {
         System.out.println("loginUser");
         SessionManager manager = new SessionManager(clientStore);
@@ -122,7 +108,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void loginUserThenOtherUser() throws Exception {
         System.out.println("loginUserThenOtherUser");
         SessionManager manager = new SessionManager(clientStore);
@@ -135,7 +122,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void loginUserAfterSystemLoginFailure() throws Exception {
         System.out.println("loginUserAfterSystemLoginFailure");
         SessionManager manager = new SessionManager(clientStore);
@@ -175,7 +163,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void isLoggedIn() throws Exception {
         System.out.println("isLoggedIn");
         SessionManager manager = new SessionManager(clientStore);
@@ -190,7 +179,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void logout() throws Exception {
         System.out.println("logout");
         SessionManager manager = new SessionManager(clientStore);
@@ -206,7 +196,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void registerClientAndLogin() throws Exception {
         System.out.println("registerClientAndLogin");
         SessionManager manager = new SessionManager(clientStore);
@@ -240,7 +231,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void registerClientAndLoginAndLoginUserAndLogout() throws Exception {
         System.out.println("registerClientAndLoginAndLoginUserAndLogout");
         SessionManager manager = new SessionManager(clientStore);
@@ -282,22 +274,26 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000, expected = ExecutionException.class)
-    public void removeAdminHimself() throws Exception {
+    @Test
+    @Timeout(5)
+    public void removeAdminHimself() {
         System.out.println("removeAdminHimself");
         SessionManager manager = new SessionManager(clientStore);
 
-        // login admin
-        manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
+        Assertions.assertThrows(ExecutionException.class, () -> {
+            // login admin
+            manager.loginUser(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD, false);
 
-        try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+            try {
+                ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
-            // remove himself
-            manager.removeUser(MockClientStore.ADMIN_ID).get();
-        } finally {
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
+                // remove all admins
+                manager.removeUser(INITIAL_USER_ID).get();
+                manager.removeUser(MockClientStore.ADMIN_ID).get();
+            } finally {
+                ExceptionPrinter.setBeQuit(Boolean.FALSE);
+            }
+        });
     }
 
     /**
@@ -305,7 +301,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception if something fails.
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void removeAdminOther() throws Exception {
         System.out.println("removeAdminOther");
 
@@ -326,21 +323,24 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000, expected = ExecutionException.class)
-    public void registerClientAsNonAdmin() throws Exception {
+    @Test
+    @Timeout(5)
+    public void registerClientAsNonAdmin() {
         System.out.println("registerClientAsNonAdmin");
-        try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            SessionManager manager = new SessionManager(clientStore);
+        Assertions.assertThrows(ExecutionException.class, () -> {
+            try {
+                ExceptionPrinter.setBeQuit(Boolean.TRUE);
+                SessionManager manager = new SessionManager(clientStore);
 
-            // login admin
-            manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
+                // login admin
+                manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
 
-            // register client
-            manager.registerClient(MockClientStore.USER_ID).get();
-        } finally {
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
+                // register client
+                manager.registerClient(MockClientStore.USER_ID).get();
+            } finally {
+                ExceptionPrinter.setBeQuit(Boolean.FALSE);
+            }
+        });
     }
 
     /**
@@ -348,7 +348,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception if an exception occurs.
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testChangingPassword() throws Exception {
         System.out.println("testChangingPassword");
 
@@ -385,7 +386,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void setAdmin() throws Exception {
         System.out.println("setAdmin");
         SessionManager manager = new SessionManager(clientStore);
@@ -404,21 +406,24 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000, expected = ExecutionException.class)
+    @Test
+    @Timeout(5)
     public void setAdminAsNonAdmin() throws Exception {
         System.out.println("setAdminAsNonAdmin");
-        try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            SessionManager manager = new SessionManager(clientStore);
+        Assertions.assertThrows(ExecutionException.class, () -> {
+            try {
+                ExceptionPrinter.setBeQuit(Boolean.TRUE);
+                SessionManager manager = new SessionManager(clientStore);
 
-            // login admin
-            manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
+                // login admin
+                manager.loginUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
 
-            // register client
-            manager.setAdministrator(MockClientStore.USER_ID, true).get();
-        } finally {
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
+                // register client
+                manager.setAdministrator(MockClientStore.USER_ID, true).get();
+            } finally {
+                ExceptionPrinter.setBeQuit(Boolean.FALSE);
+            }
+        });
     }
 
     /**
@@ -426,7 +431,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void isAdmin() throws Exception {
         System.out.println("isAdmin");
         SessionManager manager = new SessionManager(clientStore);
@@ -444,7 +450,8 @@ public class SessionManagerTest extends AuthenticationTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void loginObservableTest() throws Exception {
         System.out.println("loginObservableTest");
 
@@ -465,7 +472,7 @@ public class SessionManagerTest extends AuthenticationTest {
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 1 after the first login", 1, notificationCounter);
+        assertEquals(1, notificationCounter, "Notification counter should be 1 after the first login");
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
@@ -473,12 +480,12 @@ public class SessionManagerTest extends AuthenticationTest {
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 2 after logging in another user", 2, notificationCounter);
+        assertEquals(2, notificationCounter, "Notification counter should be 2 after logging in another user");
         sessionManager.logout();
         synchronized (loginSyncObject) {
             loginSyncObject.wait(maxWaitTime);
         }
-        assertEquals("Notification counter should be 3 after logout", 3, notificationCounter);
+        assertEquals(3, notificationCounter, "Notification counter should be 3 after logout");
 
         sessionManager.removeLoginObserver(loginObserver);
     }

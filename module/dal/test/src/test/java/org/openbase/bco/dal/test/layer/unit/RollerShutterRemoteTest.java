@@ -22,7 +22,10 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.RollerShutterRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -32,7 +35,7 @@ import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BlindStateType.BlindState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import static org.junit.Assert.assertEquals;
+
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -44,9 +47,8 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     public RollerShutterRemoteTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    @BeforeAll
+    public static void loadUnits() throws Throwable {
         rollerShutterRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.ROLLER_SHUTTER), true, RollerShutterRemote.class);
     }
 
@@ -55,12 +57,13 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         BlindState state = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
         waitForExecution(rollerShutterRemote.setBlindState(state));
-        assertEquals("Shutter movement state has not been set in time!", state.getValue(), rollerShutterRemote.getData().getBlindState().getValue());
+        assertEquals(state.getValue(), rollerShutterRemote.getData().getBlindState().getValue(), "Shutter movement state has not been set in time!");
     }
 
     /**
@@ -68,19 +71,13 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         final BlindState blindState = BlindState.newBuilder().setValue(State.UP).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId()).applyServiceState(blindState, ServiceType.BLIND_STATE_SERVICE);
         rollerShutterRemote.requestData().get();
-        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getValue(), blindState.getValue());
-    }
-
-    /**
-     * Test of notifyUpdated method, of class RollershutterRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
+        assertEquals(rollerShutterRemote.getBlindState().getValue(), blindState.getValue(), "Shutter has not been set in time!");
     }
 }

@@ -23,11 +23,9 @@ package org.openbase.bco.registry.mock;
  */
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -42,7 +40,7 @@ public class MockRegistryTest {
     public MockRegistryTest() {
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpClass() throws JPServiceException {
         JPService.setupJUnitTestMode();
     }
@@ -52,7 +50,8 @@ public class MockRegistryTest {
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    @Test(timeout = 120000)
+    @Test
+    @Timeout(120)
     public void testMockRegistryCreation() throws Exception {
         Stopwatch stopwatch = new Stopwatch();
         List<String> times = new ArrayList<>();

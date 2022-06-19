@@ -23,10 +23,13 @@ package org.openbase.bco.app.util.launch;
  */
 
 import org.openbase.bco.authentication.lib.BCO;
+import org.openbase.bco.authentication.lib.jp.JPBCOHomeDirectory;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPProviderControlMode;
 import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.layer.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -37,12 +40,16 @@ import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
+import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.communication.jp.JPComPort;
+import org.openbase.jul.communication.jp.JPComHost;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,26 +80,32 @@ public class BCOAdhocTrainDataGeneratorLauncher {
     /**
      * @param args the command line arguments
      */
-    public static void main(final String[] args) throws JPServiceException {
+    public static void main(final String[] args) throws JPServiceException, CouldNotPerformException {
         BCO.printLogo();
+        JPService.registerProperty(JPComPort.class);
+        JPService.registerProperty(JPComHost.class);
+        JPService.registerProperty(JPBCOHomeDirectory.class);
         JPService.registerProperty(JPProviderControlMode.class, true);
         JPService.registerProperty(JPDebugMode.class, false);
         JPService.registerProperty(JPVerbose.class, false);
         JPService.parse(args);
-
-        BCOLogin.getSession().autoLogin(true);
 
         try {
             LOGGER.info("please make sure bco is started with the --provider-control flag, otherwise no provider services can be synthesised.");
             LOGGER.info("waiting for registry synchronization...");
             Registries.waitUntilReady();
 
+            LOGGER.info("authenticate...");
+            BCOLogin.getSession().loginUserViaUsername("admin", "admin", true);
+
             // init
             final int trainingSetCounter = 10;
             LOGGER.info("init simulation of {} runs with {} conditions.", trainingSetCounter, trainConditions.size());
 
+            // Note: Illuminance is applied on the location instead at the sensor, since otherwise the average of the two sensors would affect the results.
             LocationRemote location = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("Location-Adhoc"), true, Units.LOCATION);
             ColorableLightRemote light = Units.getUnit(Registries.getUnitRegistry(true).getUnitConfigByAlias("ColorableLight-Adhoc"), true, Units.COLORABLE_LIGHT);
+
 
             final ActionDescription absentState = ActionDescriptionProcessor.generateActionDescriptionBuilder(
                     PresenceState.newBuilder().setValue(PresenceState.State.ABSENT).build(),
@@ -113,86 +126,93 @@ public class BCOAdhocTrainDataGeneratorLauncher {
                     location).build();
 
             LOGGER.info("prepare setup...");
-            Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+            Actions.waitForExecution(location.applyAction(presentState), TIMEOUT * 2, TimeUnit.MILLISECONDS);
             waitBetweenActions();
-            Actions.waitForExecution(location.setColor(HSBColor.newBuilder().setBrightness(1).setSaturation(0).build()), TIMEOUT, TimeUnit.MILLISECONDS);
+            Actions.waitForExecution(location.setColor(HSBColor.newBuilder().setBrightness(1).setSaturation(0).build()), TIMEOUT * 2, TimeUnit.MILLISECONDS);
             waitUntilNextAction();
 
-            LOGGER.info("generate " + trainingSetCounter + " training sets.");
-            for (int i = 0; i < trainingSetCounter; i++) {
+            try {
+                LOGGER.info("generate " + trainingSetCounter + " training sets.");
+                for (int i = 0; i < trainingSetCounter; i++) {
 
-                Collections.shuffle(trainConditions);
+                    Collections.shuffle(trainConditions);
 
-                for (TrainCondition trainCondition : trainConditions) {
+                    for (TrainCondition trainCondition : trainConditions) {
 
-                    // skip on manual cancel
-                    if (Thread.interrupted()) {
-                        throw new InterruptedException();
-                    }
-
-                    LOGGER.info("=== generate condition {} for training set {} ===", trainCondition.name(), (i + 1));
-
-                    try {
-                        // check condition
-                        switch (trainCondition) {
-                            case ABSENCE_DARK_OFF:
-                                if (conditionOrder()) {
-                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-                                } else {
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                }
-                                break;
-                            case PRESENCE_DARK_ON:
-                                if (conditionOrder()) {
-                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
-                                } else {
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                }
-                                break;
-                            case ABSENCE_SUNNY_OFF:
-                                if (conditionOrder()) {
-                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-                                } else {
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                }
-                                break;
-                            case PRESENCE_SUNNY_OFF:
-                                if (conditionOrder()) {
-                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-                                } else {
-                                    Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    waitBetweenActions();
-                                    Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                    Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
-                                }
-                                break;
+                        // skip on manual cancel
+                        if (Thread.interrupted()) {
+                            throw new InterruptedException();
                         }
-                        waitUntilNextAction();
-                    } catch (CancellationException ex) {
-                        ExceptionPrinter.printHistory("generator run skipped!", ex, LOGGER);
+
+                        LOGGER.info("=== generate condition {} for training set {} ===", trainCondition.name(), (i + 1));
+
+                        try {
+                            // check condition
+                            switch (trainCondition) {
+                                case ABSENCE_DARK_OFF:
+                                    if (conditionOrder()) {
+                                        Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    } else {
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    }
+                                    break;
+                                case PRESENCE_DARK_ON:
+                                    if (conditionOrder()) {
+                                        Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    } else {
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.ON), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(darkState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    }
+                                    break;
+                                case ABSENCE_SUNNY_OFF:
+                                    if (conditionOrder()) {
+                                        Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    } else {
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(location.applyAction(absentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    }
+                                    break;
+                                case PRESENCE_SUNNY_OFF:
+                                    if (conditionOrder()) {
+                                        Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    } else {
+                                        Actions.waitForExecution(light.setPowerState(PowerState.State.OFF), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        waitBetweenActions();
+                                        Actions.waitForExecution(location.applyAction(presentState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                        Actions.waitForExecution(location.applyAction(sunnyState), TIMEOUT, TimeUnit.MILLISECONDS);
+                                    }
+                                    break;
+                            }
+                            waitUntilNextAction();
+                        } catch (CancellationException ex) {
+                            ExceptionPrinter.printHistory("generator run skipped!", ex, LOGGER);
+                        }
                     }
                 }
+            } catch (CouldNotPerformException | TimeoutException ex) {
+                if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                    ExceptionPrinter.printHistory("Training data generation failed!", ex, LOGGER);
+                }
+                System.exit(1);
             }
             LOGGER.info("generate finished.");
         } catch (InterruptedException e) {

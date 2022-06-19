@@ -25,6 +25,7 @@ package org.openbase.bco.dal.remote.layer.unit.object;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
+import org.openbase.jul.communication.data.RPCResponse;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
@@ -117,8 +118,8 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public <R> Future<R> callMethodAsync(String methodName, Class<R> returnClazz) {
-        return (Future<R>) FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
+    public <R> Future<RPCResponse<R>> callMethodAsync(String methodName, Class<R> returnClazz) {
+        return (Future<RPCResponse<R>>) FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
     }
 
     @Override
@@ -142,8 +143,8 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public <R, T> Future<R> callMethodAsync(String methodName, Class<R> returnClazz, T argument) {
-        return (Future<R>) FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
+    public <R, T> Future<RPCResponse<R>> callMethodAsync(String methodName, Class<R> returnClazz, T argument) {
+        return (Future<RPCResponse<R>>) FutureProcessor.canceledFuture(new NotSupportedException("Method[callMethodAsync]", this));
     }
 
     @Override

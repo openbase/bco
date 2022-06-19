@@ -50,7 +50,9 @@ public class BCOLogger extends UnitStatePrinter {
                         .setPrintInitialStates(JPService.getValue(JPPrintInitialServiceStates.class, false))
                         .setSkipUnknownValues(JPService.getValue(JPSkipUnknownStates.class, false)));
 
-        UnitModelPrinter.printStaticRelations(getModelPrintStream());
+        if(JPService.getValue(JPPrintModel.class, false)) {
+            UnitModelPrinter.printStaticRelations(getModelPrintStream());
+        }
     }
 
     public static void main(String[] args) throws CouldNotPerformException, InterruptedException, InitializationException {
@@ -58,6 +60,7 @@ public class BCOLogger extends UnitStatePrinter {
         /* Setup JPService */
         JPService.setApplicationName(APP_NAME);
         JPService.registerProperty(JPLogFormat.class);
+        JPService.registerProperty(JPPrintModel.class);
         JPService.registerProperty(JPPrintInitialServiceStates.class);
         JPService.registerProperty(JPSkipUnknownStates.class);
         JPService.registerProperty(JPAppendLog.class);
@@ -81,13 +84,12 @@ public class BCOLogger extends UnitStatePrinter {
             final BCOLogger bcoLogger = new BCOLogger();
             bcoLogger.init();
             bcoLogger.activate();
+            LOGGER.info(APP_NAME + " successfully started.");
         } catch (CouldNotPerformException ex) {
-            if (ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             }
-            return;
         }
-        LOGGER.info(APP_NAME + " successfully started.");
     }
 
     private static PrintStream getModelPrintStream() {

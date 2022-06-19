@@ -97,7 +97,7 @@ public class RandomLightPatternAgent extends AbstractTriggerableAgent {
         thread.interrupt();
     }
 
-    private class PersonSimulator extends Thread {
+    private static class PersonSimulator extends Thread {
 
         @Override
         public void run() {

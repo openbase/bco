@@ -34,8 +34,8 @@ public interface TemplateRegistryProvider {
 
     /**
      * Returns the globally managed template registry instance.
-     * @return
-     * @throws NotAvailableException
+     * @return the registry instance.
+     * @throws NotAvailableException throw in case the registry is not available.
      */
     TemplateRegistry getTemplateRegistry() throws NotAvailableException;
 }

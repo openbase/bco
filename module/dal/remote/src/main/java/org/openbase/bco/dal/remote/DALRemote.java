@@ -108,9 +108,9 @@ public class DALRemote {
 
         try {
             new DALRemote();
+            logger.info(APP_NAME + " successfully started.");
         } catch (InitializationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
         }
-        logger.info(APP_NAME + " successfully started.");
     }
 }

@@ -22,7 +22,8 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -31,7 +32,7 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 import org.openbase.type.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -46,7 +47,8 @@ public class InitialRegistrationTest extends AuthenticationTest {
     /**
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(15)
     public void initialRegistrationTest() throws Exception {
         LOGGER.info("initialRegistrationTest");
 
@@ -62,6 +64,6 @@ public class InitialRegistrationTest extends AuthenticationTest {
 
         // test if login works afterwards
         SessionManager.getInstance().loginUser(userId, password, false);
-        assertTrue("User is not logged in", SessionManager.getInstance().isLoggedIn());
+        assertTrue(SessionManager.getInstance().isLoggedIn(), "User is not logged in");
     }
 }

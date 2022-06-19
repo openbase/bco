@@ -22,7 +22,11 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.SmokeDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -42,9 +46,8 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public SmokeDetectorRemoteTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    @BeforeAll
+    public static void setupTest() throws Throwable {
         smokeDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.SMOKE_DETECTOR), true, SmokeDetectorRemote.class);
     }
 
@@ -53,7 +56,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() throws Exception {
     }
 
@@ -62,13 +65,14 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId()).applyServiceState(alarmState, ServiceType.SMOKE_ALARM_STATE_SERVICE);
         smokeDetectorRemote.requestData().get();
-        Assert.assertEquals("The getter for the smoke alarm state returns the wrong value!", alarmState.getValue(), smokeDetectorRemote.getSmokeAlarmState().getValue());
+        assertEquals(alarmState.getValue(), smokeDetectorRemote.getSmokeAlarmState().getValue(), "The getter for the smoke alarm state returns the wrong value!");
     }
 
     /**
@@ -76,13 +80,14 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(0.13d).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId()).applyServiceState(smokeState, ServiceType.SMOKE_STATE_SERVICE);
         smokeDetectorRemote.requestData().get();
-        Assert.assertEquals("The getter for the smoke state returns the wrong value!", smokeState.getValue(), smokeDetectorRemote.getSmokeState().getValue());
+        assertEquals(smokeState.getValue(), smokeDetectorRemote.getSmokeState().getValue(), "The getter for the smoke state returns the wrong value!");
     }
 
 }

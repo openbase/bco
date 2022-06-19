@@ -22,8 +22,9 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.registry.remote.Registries;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 
 public class ServicesTest extends AbstractBCORegistryTest {
     @Test
+    @Timeout(value = 30)
     public void testComputeActionImpact() throws CouldNotPerformException, InterruptedException {
 
         final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(true);
@@ -54,7 +56,7 @@ public class ServicesTest extends AbstractBCORegistryTest {
         final Set<ActionDescription> impact = Services.computeActionImpact(serviceStateBuilder.build());
 
         impact.forEach(
-            it -> Assert.assertNotEquals("Computed impact does not offer an valid action id!", "", it.getActionId())
+            it -> assertNotEquals("Computed impact does not offer an valid action id!", "", it.getActionId())
         );
 
         final List<String> impactedUnitIdList = impact.stream()
@@ -71,6 +73,6 @@ public class ServicesTest extends AbstractBCORegistryTest {
                         .sorted()
                         .collect(Collectors.toList());
 
-        Assert.assertEquals("impacted unit id list differs as expected", affectedUnitsUnsorted, impactedUnitIdList);
+        assertEquals(affectedUnitsUnsorted, impactedUnitIdList, "impacted unit id list differs as expected");
     }
 }

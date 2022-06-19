@@ -176,7 +176,7 @@ public class RemoteAction implements Action {
      *
      * @param actionFuture            the future referring the action.
      * @param authToken               the token used for authentication if for example the action is canceled or extended.
-     * @param autoExtendCheckCallback
+     * @param autoExtendCheckCallback flag defines if the action should be auto extended. This is required to execute an action more than 15 min.
      */
     public RemoteAction(final Future<ActionDescription> actionFuture, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) {
         this.actionParameter = null;
@@ -190,12 +190,12 @@ public class RemoteAction implements Action {
      * Instantiates a remote action which can be used to execute the referred action.
      *
      * @param initiatingUnit          the unit which initiates the execution. This can be any unit like a user, scene or location.
-     * @param actionParameter         the parameter to descripe the action to execute.
+     * @param actionParameter         the parameter to describe the action to execute.
      * @param authToken               the token to used for the authorization.
      * @param autoExtendCheckCallback flag defines if the action should be auto extended. This is required to execute an action more than 15 min.
      *
      * @throws InstantiationException is thrown if same information are missing.
-     * @throws InterruptedException   is thown if the thread was externally interrupted.
+     * @throws InterruptedException   is thrown if the thread was externally interrupted.
      */
     public RemoteAction(final Unit<?> initiatingUnit, final ActionParameter actionParameter, final AuthToken authToken, Callable<Boolean> autoExtendCheckCallback) throws InstantiationException, InterruptedException {
         try {
@@ -315,7 +315,9 @@ public class RemoteAction implements Action {
             } catch (CancellationException ex) {
                 // in case the action is canceled, this is done via the futureObservationTask which than causes this cancellation exception.
                 // But in this case we need to cancel the initial future as well.
-                future.cancel(true);
+                if(!future.isDone()) {
+                    future.cancel(true);
+                }
                 throw new ExecutionException(ex);
             } catch (ExecutionException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable("Could not observe " + this + "!", ex, LOGGER);
@@ -454,7 +456,7 @@ public class RemoteAction implements Action {
         targetUnit.addDataObserver(ServiceTempus.UNKNOWN, unitObserver);
 
         // because future can already be outdated but the update not received because
-        // the action id was not yet available we need to trigger an manual update.
+        // the action id was not yet available we need to trigger a manual update.
         if (targetUnit.isDataAvailable()) {
             updateActionDescription(targetUnit.getActionList(), true);
         }
@@ -649,6 +651,10 @@ public class RemoteAction implements Action {
         }
     }
 
+    private Future<ActionDescription> cancelTask = null;
+    private final SyncObject cancelLock = new SyncObject("CancelLock");
+
+
     /**
      * {@inheritDoc}
      *
@@ -656,10 +662,23 @@ public class RemoteAction implements Action {
      */
     @Override
     public Future<ActionDescription> cancel() {
+        synchronized (cancelLock) {
+            if (cancelTask == null) {
+                cancelTask = internalCancel();
+            }
+            return cancelTask;
+        }
+    }
+    private Future<ActionDescription> internalCancel() {
         LOGGER.debug("cancel {}", this);
         Future<ActionDescription> future = null;
         try {
             synchronized (executionSync) {
+
+                if(cancelTask != null) {
+                    return cancelTask;
+                }
+
                 // make sure an action is not auto extended during the cancellation process.
                 cancelAutoExtension();
 
@@ -683,7 +702,7 @@ public class RemoteAction implements Action {
                     }
                 }
 
-                // if precomputed, than we are not responsible for the cancelation
+                // if precomputed, then we are not responsible for the cancellation
                 if(PRECOMPUTED_ACTION_ID.equals(actionId)) {
                     future = FutureProcessor.completedFuture(getActionDescription());
                     return future;
@@ -850,6 +869,11 @@ public class RemoteAction implements Action {
             builder.getActionStateBuilder().setValue(State.UNKNOWN);
             actionDescription = builder.build();
         }
+
+        // reset cancel task after the cleanup is done
+        synchronized (cancelLock) {
+            cancelTask = null;
+        }
     }
 
     private void updateActionDescription(final Collection<ActionDescription> actionDescriptions, final boolean initialSync) {
@@ -982,7 +1006,7 @@ public class RemoteAction implements Action {
         }
 
         // wait until unit is ready
-        targetUnit.waitForData(timeSplit.getTime(), TimeUnit.MILLISECONDS);
+        targetUnit.waitForData(timeSplit.getTime(), timeSplit.getTimeUnit());
 
 
         synchronized (executionSync) {
@@ -990,9 +1014,11 @@ public class RemoteAction implements Action {
             while (actionDescription == null || (actionDescription.getActionState().getValue() != actionState) && !checkIfStateWasPassed(actionState, timeSplit.getTimestamp(), actionDescription)) {
                 // Waiting makes no sense if the action is done but the state is still not reached.
                 if (actionDescription != null && isDone()) {
-                    throw new CouldNotPerformException("Stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
+                    throw new CouldNotPerformException(targetUnit.getLabel()+ " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
                 }
+                LOGGER.trace(getTargetUnit().getLabel()+ " - wait for action ["+this+"] to be in state ["+actionState+"] ");
                 executionSync.wait(timeSplit.getTime());
+                LOGGER.trace(getTargetUnit().getLabel()+ " - got update while waiting for action ["+this+"] to be in state ["+actionState+"] ");
             }
         }
     }

@@ -6,10 +6,19 @@ plugins {
     id("org.openbase.bco")
 }
 
+configurations {
+
+}
+
 dependencies {
     api(project(":bco.authentication.core"))
     api(project(":bco.authentication.lib"))
-    api("org.testcontainers:testcontainers:_")
+    api("org.testcontainers:junit-jupiter:_")  {
+        exclude(group = "junit", module = "junit")
+    }
+    api("io.quarkus:quarkus-junit4-mock:_")
+    api("org.junit.jupiter:junit-jupiter:_")
+    api("org.junit.jupiter:junit-jupiter-api:_")
 }
 
 description = "BCO Authentication Test"

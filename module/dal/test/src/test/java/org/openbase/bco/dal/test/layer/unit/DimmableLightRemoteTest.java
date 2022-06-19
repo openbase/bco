@@ -22,7 +22,11 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.layer.unit.DimmableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -32,8 +36,6 @@ import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.Ser
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -45,17 +47,9 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public DimmableLightRemoteTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    @BeforeAll
+    public static void loadUnits() throws Throwable {
         dimmableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.DIMMABLE_LIGHT), true, DimmableLightRemote.class);
-    }
-
-    /**
-     * Test of notifyUpdated method, of class DimmerRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
     }
 
     /**
@@ -63,12 +57,13 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         waitForExecution(dimmableLightRemote.setPowerState(state));
-        assertEquals("Power has not been set in time!", state.getValue(), dimmableLightRemote.getData().getPowerState().getValue());
+        assertEquals(state.getValue(), dimmableLightRemote.getData().getPowerState().getValue(), "Power has not been set in time!");
     }
 
     /**
@@ -76,12 +71,13 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
         dimmableLightRemote.requestData().get();
-        assertEquals("Power has not been set in time!", Power.ON.getValue(), dimmableLightRemote.getPowerState().getValue());
+        assertEquals(Power.ON.getValue(), dimmableLightRemote.getPowerState().getValue(), "Power has not been set in time!");
     }
 
     /**
@@ -89,13 +85,14 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 0.66d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
         waitForExecution(dimmableLightRemote.setBrightnessState(brightnessState));
-        assertEquals("Brightness has not been set in time!", brightness, dimmableLightRemote.getBrightnessState().getBrightness(), 0.001);
+        assertEquals(brightness, dimmableLightRemote.getBrightnessState().getBrightness(), 0.001, "Brightness has not been set in time!");
     }
 
     /**
@@ -103,7 +100,8 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
 
@@ -111,6 +109,6 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
         final BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyServiceState(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE);
         dimmableLightRemote.requestData().get();
-        assertEquals("Brightness has not been set in time!", brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.001);
+        assertEquals(brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.001, "Brightness has not been set in time!");
     }
 }

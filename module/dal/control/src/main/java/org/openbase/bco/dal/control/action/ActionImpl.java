@@ -71,7 +71,7 @@ public class ActionImpl implements SchedulableAction {
     protected final AbstractUnitController<?, ?> unit;
     private final SyncObject executionStateChangeSync = new SyncObject("ExecutionStateChangeSync");
     private final SyncObject actionTaskLock = new SyncObject("ActionTaskLock");
-    private final ReentrantReadWriteLock actionDescriptionBuilderLock = new ReentrantReadWriteLock();
+    private final BundledReentrantReadWriteLock actionDescriptionBuilderLock;
     private ActionDescription.Builder actionDescriptionBuilder;
     private Message serviceState;
     private ServiceDescription serviceDescription;
@@ -87,8 +87,9 @@ public class ActionImpl implements SchedulableAction {
      *
      * @throws InstantiationException is throw in case the given action description is invalid. Checkout the exception cause chain for more details.
      */
-    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit) throws InstantiationException {
+    public ActionImpl(final ActionDescription actionDescription, final AbstractUnitController<?, ?> unit, final ReentrantReadWriteLock dataLock) throws InstantiationException {
         try {
+            this.actionDescriptionBuilderLock = new BundledReentrantReadWriteLock(dataLock, true, this);
             this.unit = unit;
             this.init(actionDescription);
         } catch (InterruptedException ex) {
@@ -108,8 +109,9 @@ public class ActionImpl implements SchedulableAction {
      *
      * @throws InstantiationException is throw in case the given action description is invalid. Checkout the exception cause chain for more details.
      */
-    public ActionImpl(final Message serviceState, final AbstractUnitController<?, ?> unit) throws InstantiationException {
+    public ActionImpl(final Message serviceState, final AbstractUnitController<?, ?> unit, final ReentrantReadWriteLock dataLock) throws InstantiationException {
         try {
+            this.actionDescriptionBuilderLock = new BundledReentrantReadWriteLock(dataLock, true, this);
             this.unit = unit;
             this.init(serviceState);
         } catch (InterruptedException ex) {
@@ -128,7 +130,7 @@ public class ActionImpl implements SchedulableAction {
 
     private void init(final ActionDescription actionDescription, final boolean prepare) throws InitializationException, InterruptedException {
         LOGGER.trace("================================================================================");
-        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+        actionDescriptionBuilderLock.lockWriteInterruptibly();
         try {
             actionDescriptionBuilder = actionDescription.toBuilder();
 
@@ -152,13 +154,13 @@ public class ActionImpl implements SchedulableAction {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
     private void init(final Message serviceState) throws InitializationException, InterruptedException {
         LOGGER.trace("================================================================================");
-        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+        actionDescriptionBuilderLock.lockWriteInterruptibly();
         try {
 
             this.serviceState = serviceState;
@@ -179,7 +181,7 @@ public class ActionImpl implements SchedulableAction {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
@@ -212,7 +214,7 @@ public class ActionImpl implements SchedulableAction {
 
         // builder lock has to be locked first before locking the action task lock to avoid deadlocks
         try {
-            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+            actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
@@ -241,6 +243,7 @@ public class ActionImpl implements SchedulableAction {
                 try {
                     updateActionState(ActionState.State.INITIATING);
                 } catch (InterruptedException ex) {
+
                     Thread.currentThread().interrupt();
                     return FutureProcessor.canceledFuture(ActionDescription.class, ex);
                 }
@@ -292,8 +295,9 @@ public class ActionImpl implements SchedulableAction {
                                     }
                                 }
 
-                                final ActionDescription actionDescription = unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
-                                // todo: should we use this action description to update the one stored in the action builder? For example we could update the action impact...
+                                actionDescriptionBuilder.mergeFrom(
+                                    unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS)
+                                );
 
                                 updateActionStateIfNotCanceled(State.EXECUTING);
 
@@ -321,7 +325,13 @@ public class ActionImpl implements SchedulableAction {
                                     break;
                                 }
 
-                                ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
+                                if(ex instanceof RuntimeException) {
+                                    ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.ERROR);
+                                    cancel();
+                                } else {
+                                    ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
+                                }
+
                                 Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
                             }
                         }
@@ -344,7 +354,7 @@ public class ActionImpl implements SchedulableAction {
                 return actionTask;
             }
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
@@ -403,11 +413,15 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public ActionDescription getActionDescription() {
-        actionDescriptionBuilderLock.readLock().lock();
         try {
-            return actionDescriptionBuilder.build();
-        } finally {
-            actionDescriptionBuilderLock.readLock().unlock();
+            actionDescriptionBuilderLock.lockReadInterruptibly();
+            try {
+                return actionDescriptionBuilder.build();
+            } finally {
+                actionDescriptionBuilderLock.unlockRead();
+            }
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(new NotAvailableException("ActionDescription", ex));
         }
     }
 
@@ -415,7 +429,12 @@ public class ActionImpl implements SchedulableAction {
     public void autoExtendWithLowPriority() throws VerificationFailedException {
 
         // auto extend
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.lockWriteInterruptibly();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
+
         try {
 
             // validate if action is extendable
@@ -436,7 +455,7 @@ public class ActionImpl implements SchedulableAction {
             // has to be reset because otherwise the action would still be invalid.
             actionDescriptionBuilder.setLastExtensionTimestamp(TimestampProcessor.getCurrentTimestamp());
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
 
         // validate that action is valid after extension
@@ -452,41 +471,47 @@ public class ActionImpl implements SchedulableAction {
     public Future<ActionDescription> cancel() {
 
         try {
-            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
         try {
-            // if action is not executing, set to canceled if not already done and finish
-            if (!isProcessing()) {
-                if (!isDone()) {
-                    updateActionStateWhileHoldingWriteLock(State.CANCELED);
-                }
-
-                // notify transaction id change
-                try {
-                    if (!unit.isDataBuilderWriteLockedByCurrentThread()) {
-                        // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
-                        try {
-                            unit.updateTransactionId();
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Could not update transaction id", ex, LOGGER);
-                        }
-                        unit.notifyChange();
+            synchronized (actionTaskLock) {
+                // if action is not executing, set to canceled if not already done and finish
+                if (!isProcessing()) {
+                    if (!isDone()) {
+                        updateActionStateWhileHoldingWriteLock(State.CANCELED);
                     }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not notify transaction id update", ex, LOGGER);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+
+                    // we need to update the transaction id to inform the remote that the action was successful even when already canceled.
+                    try {
+                        unit.updateTransactionId();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not update transaction id", ex, LOGGER);
+                    }
+
+                    // notify transaction id change
+                    try {
+                        if (!unit.isDataBuilderWriteLockedByCurrentThread()) {
+                            unit.notifyChange();
+                        }
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not notify transaction id update", ex, LOGGER);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                        return FutureProcessor.canceledFuture(ActionDescription.class, ex);
+                    }
+
+                    return FutureProcessor.completedFuture(getActionDescription());
                 }
 
-                return FutureProcessor.completedFuture(getActionDescription());
-            }
+                // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
 
-            // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
-            updateActionStateWhileHoldingWriteLock(State.CANCELING);
+                if(getActionState() != State.INITIATING) {
+                    updateActionStateWhileHoldingWriteLock(State.CANCELING);
+                }
+            }
             try {
                 return GlobalCachedExecutorService.submit(() -> {
 
@@ -507,20 +532,19 @@ public class ActionImpl implements SchedulableAction {
                         }
                     }
                     return getActionDescription();
-
                 });
             } catch (RejectedExecutionException ex) {
                 return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel " + this, ex));
             }
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
     @Override
     public Future<ActionDescription> abort(boolean forceReject) {
         try {
-            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
@@ -552,7 +576,7 @@ public class ActionImpl implements SchedulableAction {
                 return getActionDescription();
             });
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
@@ -565,7 +589,11 @@ public class ActionImpl implements SchedulableAction {
         // cancel action task
         cancelActionTask();
 
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.lockWriteInterruptibly();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
         try {
 
             if (isProcessing()) {
@@ -592,7 +620,7 @@ public class ActionImpl implements SchedulableAction {
                 updateActionStateWhileHoldingWriteLock(State.SCHEDULED);
             }
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
@@ -605,7 +633,11 @@ public class ActionImpl implements SchedulableAction {
         // cancel action task
         cancelActionTask();
 
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.lockWriteInterruptibly();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
         try {
 
             if (isProcessing()) {
@@ -632,7 +664,7 @@ public class ActionImpl implements SchedulableAction {
                 updateActionStateWhileHoldingWriteLock(State.REJECTED);
             }
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
@@ -645,7 +677,11 @@ public class ActionImpl implements SchedulableAction {
         // cancel action task
         cancelActionTask();
 
-        actionDescriptionBuilderLock.writeLock().lock();
+        try {
+            actionDescriptionBuilderLock.lockWriteInterruptibly();
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
         try {
 
             // if not already finished then we force the state.
@@ -653,15 +689,15 @@ public class ActionImpl implements SchedulableAction {
                 updateActionStateWhileHoldingWriteLock(State.FINISHED);
             }
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
     private void cancelActionTask() {
 
-        if (actionDescriptionBuilderLock.isWriteLockedByCurrentThread()) {
-            new FatalImplementationErrorException("Any thead that cancels the action task should not hold the builder lock, because the lock is required to guarantee a proper task shutdown.", this);
-        }
+//        if (actionDescriptionBuilderLock.isAnyWriteLockHeldByCurrentThread()) {
+//            new FatalImplementationErrorException("Any thread that cancels the action task should not hold the builder lock, because the lock is required to guarantee a proper task shutdown.", this);
+//        }
 
         // finalize if still running
         if (!isActionTaskFinish()) {
@@ -702,7 +738,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionStateWhileHoldingWriteLock(final ActionState.State state) {
-        if (!actionDescriptionBuilderLock.isWriteLockedByCurrentThread()) {
+        if (!actionDescriptionBuilderLock.isAnyWriteLockHeldByCurrentThread()) {
             new FatalImplementationErrorException("Update Action description while not holding the action description write lock!", this);
         }
         try {
@@ -714,8 +750,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionState(final ActionState.State state) throws InterruptedException {
-
-        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+         actionDescriptionBuilderLock.lockWriteInterruptibly();
         try {
 
             // duplicated state confirmation should be ok to simplify the code, but than skip the update.
@@ -779,19 +814,18 @@ public class ActionImpl implements SchedulableAction {
             if (isDone()) {
                 actionDescriptionBuilder.setTerminationTimestamp(TimestampProcessor.getCurrentTimestamp());
             }
-
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
-        }
-
-        // notify about state change to wakeup all wait methods.
-        synchronized (executionStateChangeSync) {
-            executionStateChangeSync.notifyAll();
+            actionDescriptionBuilderLock.unlockWrite();
         }
 
         // make sure that state changes to finishing states, scheduled and executing always trigger a notification
         if (isNotifiedActionState(state)) {
             unit.notifyScheduledActionList();
+        }
+
+        // notify about state change to wakeup all wait methods.
+        synchronized (executionStateChangeSync) {
+            executionStateChangeSync.notifyAll();
         }
     }
 
@@ -882,21 +916,21 @@ public class ActionImpl implements SchedulableAction {
     }
 
     public void setExecutionTimePeriod(final long time, final TimeUnit timeUnit) throws InterruptedException, CouldNotPerformException {
-        actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+         actionDescriptionBuilderLock.lockWriteInterruptibly();
         try {
             if (time <= 0) {
                 throw new CouldNotPerformException("Invalid execution time " + time  + timeUnit.name());
             }
             TimestampProcessor.updateTimestamp(time, actionDescriptionBuilder, timeUnit, LOGGER);
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 
     @Override
     public Future<ActionDescription> extend() {
         try {
-            actionDescriptionBuilderLock.writeLock().lockInterruptibly();
+             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
@@ -905,7 +939,7 @@ public class ActionImpl implements SchedulableAction {
             actionDescriptionBuilder.setLastExtensionTimestamp(TimestampProcessor.getCurrentTimestamp());
             return FutureProcessor.completedFuture(actionDescriptionBuilder.build());
         } finally {
-            actionDescriptionBuilderLock.writeLock().unlock();
+            actionDescriptionBuilderLock.unlockWrite();
         }
     }
 

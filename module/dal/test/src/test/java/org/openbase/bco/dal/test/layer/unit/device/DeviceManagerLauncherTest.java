@@ -21,14 +21,9 @@ package org.openbase.bco.dal.test.layer.unit.device;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.test.AbstractBCOTest;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
@@ -44,29 +39,13 @@ public class DeviceManagerLauncherTest extends AbstractBCOTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManagerLauncherTest.class);
 
-    public DeviceManagerLauncherTest() {
-    }
-    
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCOTest.setUpClass();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        AbstractBCOTest.tearDownClass();
-    }
-
-    @Before
-    public void setUp() throws InitializationException, org.openbase.jul.exception.InstantiationException {
-    }
-
     /**
      * Test of deactivate method, of class DeviceManagerLauncher.
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testShutdown() throws Exception {
         DeviceManagerLauncher instance = new DeviceManagerLauncher();
         try {

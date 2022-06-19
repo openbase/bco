@@ -22,7 +22,11 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.PowerConsumptionSensorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
@@ -41,16 +45,15 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
     public PowerConsumptionSensorRemoteTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    @BeforeAll
+    public static void loadUnits() throws Throwable {
         powerConsumptionRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_CONSUMPTION_SENSOR), true, PowerConsumptionSensorRemote.class);
     }
 
     /**
      * Test of notifyUpdated method, of class PowerConsumptionSensorRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 
@@ -60,7 +63,8 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         double consumption = 200d;
@@ -69,8 +73,8 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
         PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId()).applyServiceState(state, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
         powerConsumptionRemote.requestData().get();
-        Assert.assertEquals("The getter for the power consumption returns the wrong voltage value!", state.getVoltage(), powerConsumptionRemote.getPowerConsumptionState().getVoltage(), 0.1);
-        Assert.assertEquals("The getter for the power consumption returns the wrong consumption value!", state.getConsumption(), powerConsumptionRemote.getPowerConsumptionState().getConsumption(), 0.1);
-        Assert.assertEquals("The getter for the power consumption returns the wrong current value!", state.getCurrent(), powerConsumptionRemote.getPowerConsumptionState().getCurrent(), 0.1);
+        assertEquals(state.getVoltage(), powerConsumptionRemote.getPowerConsumptionState().getVoltage(), 0.1, "The getter for the power consumption returns the wrong voltage value!");
+        assertEquals(state.getConsumption(), powerConsumptionRemote.getPowerConsumptionState().getConsumption(), 0.1, "The getter for the power consumption returns the wrong consumption value!");
+        assertEquals(state.getCurrent(), powerConsumptionRemote.getPowerConsumptionState().getCurrent(), 0.1, "The getter for the power consumption returns the wrong current value!");
     }
 }

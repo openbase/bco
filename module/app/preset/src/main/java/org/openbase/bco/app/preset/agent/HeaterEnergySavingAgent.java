@@ -67,7 +67,7 @@ public class HeaterEnergySavingAgent extends AbstractTriggerableAgent {
             for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(false)) {
                 if (connectionRemote.getConfig().getConnectionConfig().getConnectionType().equals(ConnectionType.WINDOW)) {
                     try {
-                        registerActivationTrigger(new GenericServiceStateValueTrigger(connectionRemote, WindowState.State.OPEN, ServiceType.WINDOW_STATE_SERVICE), TriggerAggregation.OR);
+                        registerActivationTrigger(new GenericServiceStateValueTrigger<>(connectionRemote, WindowState.State.OPEN, ServiceType.WINDOW_STATE_SERVICE), TriggerAggregation.OR);
                     } catch (CouldNotPerformException ex) {
                         throw new InitializationException("Could not add agent to agentpool", ex);
                     }

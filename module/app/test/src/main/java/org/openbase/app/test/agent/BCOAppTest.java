@@ -22,9 +22,9 @@ package org.openbase.app.test.agent;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
@@ -46,12 +46,9 @@ public class BCOAppTest extends AbstractBCOTest {
     protected static DeviceManagerLauncher deviceManagerLauncher;
     protected static LocationManagerLauncher locationManagerLauncher;
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
+    @BeforeAll
+    public static void setupBcoApp() throws Throwable {
         try {
-            LOGGER.info("Start app test setup...");
-            AbstractBCOTest.setUpClass();
-
             LOGGER.trace("Start device manager...");
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch().get();
@@ -79,8 +76,8 @@ public class BCOAppTest extends AbstractBCOTest {
         }
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
+    @AfterAll
+    public static void tearDownBCOApp() throws Throwable {
         LOGGER.info("Tear down app tests...");
         try {
             if (appManagerLauncher != null) {
@@ -95,7 +92,6 @@ public class BCOAppTest extends AbstractBCOTest {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
-            AbstractBCOTest.tearDownClass();
             LOGGER.info("App tests finished!");
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
@@ -107,7 +103,7 @@ public class BCOAppTest extends AbstractBCOTest {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
-    @After
+    @AfterEach
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

@@ -22,17 +22,13 @@ package org.openbase.bco.dal.test.layer.unit.unitgroup;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.dal.control.layer.unit.AbstractAggregatedBaseUnitController;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
@@ -63,8 +59,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -76,10 +71,8 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
     private static UnitGroupRemote unitGroupRemote;
     private static final List<Unit> UNIT_LIST = new ArrayList<>();
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCOLocationManagerTest.setUpClass();
-
+    @BeforeAll
+    public static void loadUnits() throws Throwable {
         try {
             UnitConfig unitGroupConfig = registerUnitGroup();
             unitGroupRemote = Units.getUnit(unitGroupConfig, true, UnitGroupRemote.class);
@@ -132,22 +125,13 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         return true;
     }
 
-    @Before
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @After
-    public void tearDown() throws CouldNotPerformException {
-
-    }
-
     /**
      * Test of setPowerState method, of class UnitGroupRemote.
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         unitGroupRemote.waitForData();
@@ -155,13 +139,13 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
         waitForExecution(unitGroupRemote.setPowerState(state));
 
         for (final Unit<?> unit : UNIT_LIST) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
+            assertEquals(state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue(), "Power state of unit [" + unit.getConfig().getId() + "] has not been set on!");
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         waitForExecution(unitGroupRemote.setPowerState(state));
         for (final Unit<?> unit : UNIT_LIST) {
-            assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
+            assertEquals(state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue(), "Power state of unit [" + unit.getConfig().getId() + "] has not been set on!");
         }
     }
 
@@ -170,13 +154,14 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         waitForExecution(unitGroupRemote.setPowerState(state));
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), unitGroupRemote.getPowerState().getValue());
+        assertEquals(state.getValue(), unitGroupRemote.getPowerState().getValue(), "Power state has not been set in time or the return value from the getter is different!");
     }
 
     /**
@@ -184,7 +169,8 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws java.lang.Exception if something fails.
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testSetUnsupportedService() throws Exception {
         System.out.println("testSetUnsupportedService");
 
@@ -207,7 +193,8 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception if something fails.
      */
-    @Test(timeout = 5000)
+    @Test
+    @Timeout(5)
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 

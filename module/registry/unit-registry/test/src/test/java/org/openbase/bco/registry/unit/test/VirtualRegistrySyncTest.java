@@ -22,6 +22,8 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
+import org.junit.jupiter.api.Timeout;
+
 /**
  * If reactivated implement with abstract classes, since no real virtual registry currently exists
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -46,7 +48,7 @@ public class VirtualRegistrySyncTest {
 //
 //    private static AuthenticatorController authenticatorController;
 //
-//    @BeforeClass
+//    @BeforeAll
 //    public static void setUpClass() throws Exception {
 //        try {
 //            JPService.setupJUnitTestMode();
@@ -157,7 +159,7 @@ public class VirtualRegistrySyncTest {
 //        }
 //    }
 //
-//    @AfterClass
+//    @AfterAll
 //    public static void tearDownClass() throws Exception {
 //        try {
 //            if (unitRegistry != null) {
@@ -193,7 +195,8 @@ public class VirtualRegistrySyncTest {
 //    private final SyncObject DEVICE_LOCK = new SyncObject("deviceRegistryLock");
 //    private final SyncObject LOCATION_LOCK = new SyncObject("locationRegistryLock");
 //
-//    @Test(timeout = 5000)
+//    @Test
+//    @Timeout(15)
 //    public void testVirtualRegistrySync() throws Exception {
 //        Stopwatch stopwatch = new Stopwatch();
 //        stopwatch.start();

@@ -22,9 +22,10 @@ package org.openbase.bco.dal.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -35,17 +36,15 @@ import org.slf4j.LoggerFactory;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
+public abstract class AbstractBCODeviceManagerTest extends AbstractBCOTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBCODeviceManagerTest.class);
 
     protected static DeviceManagerLauncher deviceManagerLauncher;
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
+    @BeforeAll
+    public static void setupDeviceManager() throws Throwable {
         try {
-            AbstractBCOTest.setUpClass();
-
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch().get();
         } catch (Throwable ex) {
@@ -53,13 +52,12 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
         }
     }
 
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
+    @AfterAll
+    public static void tearDownDeviceManage() throws Throwable {
         try {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
-            AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -70,7 +68,8 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
      *
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
-    @After
+    @BeforeEach
+    @AfterEach
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

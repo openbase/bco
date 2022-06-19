@@ -22,10 +22,10 @@ package org.openbase.bco.app.preset.agent;
  * #L%
  */
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
-import org.openbase.bco.dal.lib.layer.unit.PowerSwitch;
-import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
@@ -34,10 +34,6 @@ import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -56,8 +52,6 @@ import org.openbase.type.domotic.unit.dal.DimmerDataType.DimmerData;
 import org.openbase.type.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -81,7 +75,8 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 15000)
+    @Test
+    @Timeout(15)
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
@@ -101,8 +96,8 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         LOGGER.info("Turn off targets");
         waitForExecution(colorableLightRemote.setPowerState(State.OFF));
         waitForExecution(powerSwitchRemote.setPowerState(State.OFF));
-        assertEquals("Target 1 has not turned off", State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Target 2 has not turned off", State.OFF, powerSwitchRemote.getPowerState().getValue());
+        assertEquals(State.OFF, colorableLightRemote.getPowerState().getValue(), "Target 1 has not turned off");
+        assertEquals(State.OFF, powerSwitchRemote.getPowerState().getValue(), "Target 2 has not turned off");
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF, STATE_AWAIT_TIMEOUT);
         powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.OFF, STATE_AWAIT_TIMEOUT);
         // TODO: also validate that the executing action has expected settings:
@@ -164,8 +159,8 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         waitForExecution(powerSwitchRemote.setPowerState(State.ON));
         // TODO: in a real test scenario the other target would turn on as well -> should the agent request its state as well?
         //   this could get pretty messy: imagine a scene turning on all targets at once...
-        assertEquals("Target 1 did not stay off", State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Target 2 has not turned on", State.ON, powerSwitchRemote.getPowerState().getValue());
+        assertEquals(State.OFF, colorableLightRemote.getPowerState().getValue(), "Target 1 did not stay off");
+        assertEquals(State.ON, powerSwitchRemote.getPowerState().getValue(), "Target 2 has not turned on");
         dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
         // TODO: validate that according flags are set by the agent
@@ -175,35 +170,35 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         System.out.println("\n\n\n");
 
         // validate received requested states
-        assertEquals("Received at least one unknown requested state!", false, deliveredUnknownRequestedState[0]);
+        assertEquals(false, deliveredUnknownRequestedState[0], "Received at least one unknown requested state!");
 
         // turn target off which should make the agent turn off the source
         LOGGER.info("Turn all targets off");
         waitForExecution(powerSwitchRemote.setPowerState(State.OFF));
-        assertEquals("Target 1 did not stay off", State.OFF, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Target 2 has not turned off", State.OFF, powerSwitchRemote.getPowerState().getValue());
+        assertEquals(State.OFF, colorableLightRemote.getPowerState().getValue(), "Target 1 did not stay off");
+        assertEquals(State.OFF, powerSwitchRemote.getPowerState().getValue(), "Target 2 has not turned off");
         dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
         Thread.sleep(1000);
         System.out.println("\n\n\n");
 
         // validate received requested states
-        assertEquals("Received at least one unknown requested state!", false, deliveredUnknownRequestedState[0]);
+        assertEquals(false, deliveredUnknownRequestedState[0], "Received at least one unknown requested state!");
 
         // change color of the target which should also make the agent turn on the source
         LOGGER.info("Set color of target");
         final HSBColor hsbColor = HSBColor.newBuilder().setHue(0).setSaturation(1d).setBrightness(1d).build();
         waitForExecution(colorableLightRemote.setColor(hsbColor));
-        assertEquals("Target 1 has not turned on", State.ON, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Target 1 does not have the expected color", hsbColor, colorableLightRemote.getColorState().getColor().getHsbColor());
-        assertEquals("Target 2 has not stayed off", State.OFF, powerSwitchRemote.getPowerState().getValue());
+        assertEquals(State.ON, colorableLightRemote.getPowerState().getValue(), "Target 1 has not turned on");
+        assertEquals(hsbColor, colorableLightRemote.getColorState().getColor().getHsbColor(), "Target 1 does not have the expected color");
+        assertEquals(State.OFF, powerSwitchRemote.getPowerState().getValue(), "Target 2 has not stayed off");
         dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
         Thread.sleep(1000);
         System.out.println("\n\n\n");
 
         // validate received requested states
-        assertEquals("Received at least one unknown requested state!", false, deliveredUnknownRequestedState[0]);
+        assertEquals(false, deliveredUnknownRequestedState[0], "Received at least one unknown requested state!");
     }
 
     @Override

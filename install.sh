@@ -11,7 +11,7 @@ export BCO_DIST="${BCO_DIST:=$HOME/usr/}"
 
 if [ ! -d ${BCO_DIST} ]; then
     echo "No bco distribution found at: ${BCO_DIST}"
-    echo "Please define the distribution installation target directory by setting the $BCO_DIST environment variable."
+    echo 'Please define the distribution installation target directory by setting the $BCO_DIST environment variable.'
     exit 255
 fi
 

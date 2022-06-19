@@ -22,7 +22,11 @@ package org.openbase.bco.dal.test.layer.unit;
  * #L%
  */
 
-import org.junit.*;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.layer.unit.TamperDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -35,8 +39,6 @@ import org.openbase.type.domotic.state.TamperStateType.TamperState;
 import org.openbase.type.domotic.state.TamperStateType.TamperState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import static org.junit.Assert.*;
-
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
@@ -47,16 +49,15 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public TamperDetectorRemoteTest() {
     }
 
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        AbstractBCODeviceManagerTest.setUpClass();
+    @BeforeAll
+    public static void setupTest() throws Throwable {
         tamperDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TAMPER_DETECTOR), true, TamperDetectorRemote.class);
     }
 
     /**
      * Test of notifyUpdated method, of class TamperSwtichRemote.
      */
-    @Ignore
+    @Disabled
     public void testNotifyUpdated() {
     }
 
@@ -65,13 +66,14 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         tamperDetectorRemote.requestData().get();
-        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        assertEquals(tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue(), "The getter for the tamper switch state returns the wrong value!");
     }
 
     /**
@@ -79,7 +81,8 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test
+    @Timeout(10)
     public void testGetTamperStateTimestamp() throws Exception {
         System.out.println("testGetTamperStateTimestamp");
         long timestamp;
@@ -90,10 +93,10 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
-        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        assertEquals(tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue(), "The getter for the tamper switch state returns the wrong value!");
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.TAMPER, tamperDetectorRemote.getTamperState()));
         String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
-        assertTrue("The last detection timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertTrue((timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()), "The last detection timestamp has not been updated! " + comparision);
 
         // just to be safe that the next test does not set the motion state in the same millisecond
         Thread.sleep(1);
@@ -103,9 +106,9 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId()).applyServiceState(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
-        assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
+        assertEquals(tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue(), "The getter for the tamper switch state returns the wrong value!");
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.TAMPER, tamperDetectorRemote.getTamperState()));
         comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
-        assertFalse("The last detection timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertFalse((timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()), "The last detection timestamp has been updated even though it should not! " + comparision);
     }
 }

@@ -21,9 +21,10 @@ package org.openbase.bco.dal.test.layer.unit.connection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
@@ -47,14 +48,9 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
 
     private static ConnectionRemote connectionRemote;
 
-    public ConnectionRemoteTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
+    @BeforeAll
+    public static void loadUnits() throws Throwable {
         try {
-            AbstractBCOLocationManagerTest.setUpClass();
-
             connectionRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.CONNECTION).get(0), true, ConnectionRemote.class);
             connectionRemote.waitForConnectionState(ConnectionState.State.CONNECTED);
         } catch (Throwable ex) {
@@ -62,21 +58,13 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
         }
     }
 
-    @Before
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @After
-    public void tearDown() throws CouldNotPerformException {
-    }
-
     /**
      * Test if changes in unitControllers are published to a connection remote.
      *
      * @throws Exception
      */
-//    @Test(timeout = 5000)
+//    @Test
+//    @Timeout(15)
 //    public void testDoorStateUpdate() throws Exception {
 //        System.out.println("testDoorStateUpdate");
 //
@@ -103,7 +91,7 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
 //            System.out.println("current temp: " + connectionRemote.getDoorState().getValue() + " waiting for: " + DoorState.State.CLOSED);
 //            Thread.sleep(10);
 //        }
-//        Assert.assertEquals("Doorstate of the connection has not been updated!", DoorState.State.CLOSED, connectionRemote.getDoorState().getValue());
+//        assertEquals("Doorstate of the connection has not been updated!", DoorState.State.CLOSED, connectionRemote.getDoorState().getValue());
 //
 //        ContactState openState = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
 //        for (ReedContactController reedContact : reedContactControllerList) {
@@ -120,6 +108,6 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
 //            System.out.println("current temp: " + connectionRemote.getDoorState().getValue() + " waiting for: " + DoorState.State.OPEN);
 //            Thread.sleep(10);
 //        }
-//        Assert.assertEquals("Doorstate of the connection has not been updated!", DoorState.State.OPEN, connectionRemote.getDoorState().getValue());
+//        assertEquals("Doorstate of the connection has not been updated!", DoorState.State.OPEN, connectionRemote.getDoorState().getValue());
 //    }
 }
