@@ -7,10 +7,5 @@ git pull
 git $@ submodule init
 git $@ submodule update --remote
 
-# detect project branch
-BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
-
-# switch to bco master versions
-git submodule foreach git checkout ${BRANCH_NAME}
-git submodule foreach git pull
-
+git submodule foreach ./install.sh
+./install.sh
