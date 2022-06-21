@@ -30,6 +30,7 @@ import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.communication.controller.AbstractRemoteClient;
+import org.openbase.jul.communication.data.RPCResponse;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.RejectedException;
@@ -73,34 +74,36 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
     }
 
     @Override
-    protected Future<M> internalRequestStatus() {
+    protected Future<RPCResponse<M>> internalRequestStatus() {
         try {
             final SessionManager sessionManager = SessionManager.getInstance();
             if (sessionManager.isLoggedIn()) {
                 final TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.initializeServiceServerRequest();
+                final Future<RPCResponse<AuthenticatedValue>> requestFuture = getRpcClient().callMethod(
+                        AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
+                        AuthenticatedValue.class,
+                        ticketAuthenticatorWrapper
+                );
                 final Future<AuthenticatedValue> authenticatedValueFuture =
                         FutureProcessor.postProcess(
                                 (input, timeout, timeUnit) -> input.getResponse(),
-                                getRpcClient().callMethod(
-                                AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
-                                AuthenticatedValue.class,
-                                ticketAuthenticatorWrapper
-                            )
+                                requestFuture
                         );
                 final ReLoginFuture<AuthenticatedValue> reloginFuture = new ReLoginFuture<>(
                         authenticatedValueFuture,
                         sessionManager
                 );
-                return new AuthenticatedValueFuture<>(reloginFuture,
+                final AuthenticatedValueFuture<M> authenticationFuture = new AuthenticatedValueFuture<>(reloginFuture,
                         getDataClass(),
                         ticketAuthenticatorWrapper,
                         sessionManager
                 );
+                return new AuthenticatedRPCResponseFuture<>(requestFuture, authenticationFuture);
             } else {
                 return super.internalRequestStatus();
             }
         } catch (RejectedException ex) {
-            return FutureProcessor.canceledFuture(getDataClass(), ex);
+            return FutureProcessor.canceledFuture(null, ex);
         }
     }
 
