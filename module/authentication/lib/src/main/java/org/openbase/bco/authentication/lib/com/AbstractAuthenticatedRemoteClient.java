@@ -24,7 +24,7 @@ package org.openbase.bco.authentication.lib.com;
 
 import com.google.protobuf.Message;
 import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
@@ -42,7 +42,8 @@ import org.openbase.type.domotic.authentication.AuthenticatedValueType.Authentic
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 
-import java.util.concurrent.*;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 public abstract class AbstractAuthenticatedRemoteClient<M extends Message> extends AbstractRemoteClient<M> {
 
@@ -69,7 +70,7 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
     }
 
     @Override
-    protected Function1<Event, Unit> generateHandler() {
+    protected Function2<Event, Map<String, String>, Unit> generateHandler() {
         return new AuthenticatedUpdateHandler();
     }
 
@@ -119,14 +120,14 @@ public abstract class AbstractAuthenticatedRemoteClient<M extends Message> exten
         super.deactivate();
     }
 
-    private class AuthenticatedUpdateHandler implements Function1<Event, Unit> {
+    private class AuthenticatedUpdateHandler implements Function2<Event, Map<String, String>, Unit> {
 
         @Override
-        public Unit invoke(Event event) {
+        public Unit invoke(Event event, Map<String, String> userProperties) {
             try {
 
                 if (!SessionManager.getInstance().isLoggedIn() || !event.hasPayload()) {
-                    applyEventUpdate(event);
+                    applyEventUpdate(event, userProperties);
                     return null;
                 }
 
