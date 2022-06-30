@@ -17,8 +17,8 @@ dependencies {
         exclude(group = "junit", module = "junit")
     }
     api("io.quarkus:quarkus-junit4-mock:_")
-    api("org.junit.jupiter:junit-jupiter:_")
-    api("org.junit.jupiter:junit-jupiter-api:_")
+    api(Testing.junit.jupiter)
+    api(Testing.junit.jupiter.api)
 }
 
 description = "BCO Authentication Test"
