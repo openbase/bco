@@ -103,56 +103,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test controlling a colorable light using a light remote.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Disabled("Deprecated")
-    @Test
-    @Timeout(15)
-    public void testControllingViaLightRemote() throws Exception {
-        System.out.println("testControllingViaLightRemote");
-
-        waitForExecution(colorableLightRemote.setPowerState(State.OFF));
-        final LightRemote lightRemote = new LightRemote();
-        try {
-            // create a light remote from colorable light config and wait for data
-            lightRemote.setSessionManager(SessionManager.getInstance());
-            lightRemote.init(colorableLightRemote.getConfig());
-            lightRemote.activate();
-            lightRemote.waitForData();
-
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-
-            // test if the initial state was synced correctly
-            assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
-
-            // test controlling via light remote
-            waitForExecution(lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()));
-            lightRemote.requestData().get();
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
-
-            // test controlling via colorable light remote
-            waitForExecution(colorableLightRemote.setPowerState(State.OFF));
-            lightRemote.requestData().get();
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-            assertEquals(colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        } finally {
-            // custom remote not handled by shutdown hook so make sure to call shutdown
-            lightRemote.shutdown();
-        }
-    }
-
-    /**
      * Test of setColor method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
