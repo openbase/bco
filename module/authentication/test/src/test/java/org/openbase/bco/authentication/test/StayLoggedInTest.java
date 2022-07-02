@@ -67,7 +67,7 @@ public class StayLoggedInTest extends MqttIntegrationTest {
      * @throws Exception if something does not work as expected
      */
     @Test
-    @Timeout(10)
+    @Timeout(20)
     public void testStayingLoggedIn() throws Exception {
 
         CachedAuthenticationRemote.prepare();
