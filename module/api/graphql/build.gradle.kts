@@ -38,7 +38,7 @@ dependencies {
     api("com.google.guava:guava:_")
     api("net.javacrumbs.future-converter:future-converter-java8-guava:_")
     api("org.jmdns:jmdns:_")
-    api("io.reactivex.rxjava2:rxjava:_")
+    api(ReactiveX.rxJava2)
 }
 
 description = "BCO GraphQL API"
