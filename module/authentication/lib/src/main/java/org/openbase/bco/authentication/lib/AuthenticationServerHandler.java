@@ -51,7 +51,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class AuthenticationServerHandler {
 
-    public static final long MAX_TIME_DIFF_SERVER_CLIENT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(1) : TimeUnit.MINUTES.toMillis(2);
+    public static final long MAX_TIME_DIFF_SERVER_CLIENT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(5) : TimeUnit.MINUTES.toMillis(10);
 
     /**
      * Handles a Key Distribution Center (KDC) login request
