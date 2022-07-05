@@ -63,7 +63,7 @@ public class PublishUnitTransformationRegistryPlugin extends AbstractUnitTransfo
             }
 
             if (!unitConfig.getPlacementConfig().hasPose()) {
-                throw new NotAvailableException("unitconfig.placementconfig.position");
+                throw new NotAvailableException("unitconfig.placementconfig.pose");
             }
 
             if (!unitConfig.getPlacementConfig().hasTransformationFrameId() || unitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
