@@ -134,7 +134,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     /**
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
-    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(10) : TimeUnit.SECONDS.toMillis(30);
+    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(30) : TimeUnit.SECONDS.toMillis(60);
 
     private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(1) : TimeUnit.SECONDS.toMillis(20);
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
