@@ -337,7 +337,7 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
         communicationService.shutdown();
     }
 
-    @Timeout(5)
+    @Timeout(10)
     @Test
     public void testReinit() throws Exception {
         final int TEST_PARALLEL_REINIT_TASKS = 5;
