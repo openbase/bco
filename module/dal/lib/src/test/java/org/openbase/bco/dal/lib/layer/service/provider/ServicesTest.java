@@ -10,19 +10,19 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -41,7 +41,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 public class ServicesTest extends AbstractBCORegistryTest {
+
+    @RepeatedTest(100)
+    @Test
+    public void testLocationLoop() throws Exception {
+        //TODO: remove after location loop bug is fixed
+        final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(true);
+        unitRegistry.isServiceAvailable(ServiceType.POWER_STATE_SERVICE, unitRegistry.getRootLocationConfig());
+    }
+
     @Test
     @Timeout(value = 30)
     public void testComputeActionImpact() throws CouldNotPerformException, InterruptedException {
@@ -56,7 +68,7 @@ public class ServicesTest extends AbstractBCORegistryTest {
         final Set<ActionDescription> impact = Services.computeActionImpact(serviceStateBuilder.build());
 
         impact.forEach(
-            it -> assertNotEquals("Computed impact does not offer an valid action id!", "", it.getActionId())
+                it -> assertNotEquals("Computed impact does not offer an valid action id!", "", it.getActionId())
         );
 
         final List<String> impactedUnitIdList = impact.stream()
