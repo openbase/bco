@@ -45,15 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class ServicesTest extends AbstractBCORegistryTest {
-
-    @RepeatedTest(100)
-    @Test
-    public void testLocationLoop() throws Exception {
-        //TODO: remove after location loop bug is fixed
-        final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(true);
-        unitRegistry.isServiceAvailable(ServiceType.POWER_STATE_SERVICE, unitRegistry.getRootLocationConfig());
-    }
-
+    
     @Test
     @Timeout(value = 30)
     public void testComputeActionImpact() throws CouldNotPerformException, InterruptedException {
