@@ -34,8 +34,8 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */ /** @author [Tamino Huxohl](mailto:pleminoq@openbase.org) */
-class UnitGroupMemberRecursionConsistencyHandler(
-) : AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig?, UnitConfig.Builder?>() {
+class UnitGroupMemberRecursionConsistencyHandler
+    : AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig?, UnitConfig.Builder?>() {
 
     @Throws(CouldNotPerformException::class, EntryModification::class)
     override fun processData(
