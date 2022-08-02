@@ -190,7 +190,7 @@ public class ActionImpl implements SchedulableAction {
      *
      * @return true if the execution task is finish otherwise true.
      */
-    private boolean isActionTaskFinish() {
+    private boolean isActionTaskFinished() {
         synchronized (actionTaskLock) {
             // when the action task finishes it will finally reset the action task to null.
             // actionTask.isDone(); is not a solution at all because when the action task is
@@ -201,7 +201,7 @@ public class ActionImpl implements SchedulableAction {
 
     @Override
     public boolean isProcessing() {
-        return !isActionTaskFinish() || SchedulableAction.super.isProcessing();
+        return !isActionTaskFinished() || SchedulableAction.super.isProcessing();
     }
 
     /**
@@ -262,13 +262,12 @@ public class ActionImpl implements SchedulableAction {
                         }
 
                         // check is implicitly used make sure actionTask variable is not null since it will be synchronized during call.
-                        if (isActionTaskFinish()) {
+                        if (isActionTaskFinished()) {
                             new FatalImplementationErrorException("Action task is marked as finished even when the task is still running!", this);
                         }
 
                         // loop as long as task is not canceled.
-                        while (!Thread.interrupted() && (actionTask == null || !actionTask.isCancelled() || getActionState() == State.CANCELING)) {
-
+                        while (!(Thread.interrupted() || actionTask == null || actionTask.isCancelled() || getActionState() == State.CANCELING)) {
                             try {
                                 // validate action state
                                 if (isDone()) {
@@ -388,7 +387,7 @@ public class ActionImpl implements SchedulableAction {
     private void waitForActionTaskFinalization(final long timeout, final TimeUnit timeUnit) throws InterruptedException, TimeoutException {
         final TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
         synchronized (actionTaskLock) {
-            while (!isActionTaskFinish()) {
+            while (!isActionTaskFinished()) {
                 actionTaskLock.wait(timeoutSplitter.getTime());
             }
         }
@@ -695,12 +694,15 @@ public class ActionImpl implements SchedulableAction {
 
     private void cancelActionTask() {
 
+// todo: seems not to be necessary anymore since the action task does not set its final state anymore and therefore
+//  does not require the lock which would otherwise lead to an potential deadlock.
 //        if (actionDescriptionBuilderLock.isAnyWriteLockHeldByCurrentThread()) {
-//            new FatalImplementationErrorException("Any thread that cancels the action task should not hold the builder lock, because the lock is required to guarantee a proper task shutdown.", this);
+//            new FatalImplementationErrorException("Any thread that cancels the action task should not hold the builder
+//            lock, because the lock is required to guarantee a proper task shutdown.", this);
 //        }
 
         // finalize if still running
-        if (!isActionTaskFinish()) {
+        if (!isActionTaskFinished()) {
 
             //create a ref copy
             final Future<ActionDescription> actionTask = this.actionTask;
@@ -711,7 +713,7 @@ public class ActionImpl implements SchedulableAction {
             }
 
             try {
-                waitForActionTaskFinalization(5, TimeUnit.SECONDS);
+                waitForActionTaskFinalization(1, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 return;
@@ -720,9 +722,9 @@ public class ActionImpl implements SchedulableAction {
             }
 
             // check if finished after force
-            if (!isActionTaskFinish()) {
+            if (!isActionTaskFinished()) {
+
                 LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
-                StackTracePrinter.printAllStackTraces(LOGGER, LogLevel.WARN);
                 StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER);
             }
         }
@@ -789,7 +791,7 @@ public class ActionImpl implements SchedulableAction {
                     // mark action task already as canceled, to make sure the task is not
                     // updating any further action states which would otherwise introduce invalid state transitions.
                     synchronized (actionTaskLock) {
-                        if (!isActionTaskFinish()) {
+                        if (!isActionTaskFinished()) {
                             actionTask.cancel(false);
                         }
                     }

@@ -55,7 +55,7 @@ class StayLoggedInTest : MqttIntegrationTest() {
      * @throws Exception if something does not work as expected
      */
     @Test
-    @Timeout(20)
+    @Timeout(30)
     @Throws(Exception::class)
     fun testStayingLoggedIn() {
         CachedAuthenticationRemote.prepare()
