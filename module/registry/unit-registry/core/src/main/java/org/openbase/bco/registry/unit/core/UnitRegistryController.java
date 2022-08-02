@@ -259,6 +259,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupPlacementConfigConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
+        unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberRecursionConsistencyHandler());
 
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());

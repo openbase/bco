@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.openbase.bco.registry.mock.MockRegistry
 import org.openbase.bco.registry.remote.Registries
+import org.openbase.jul.exception.printer.ExceptionPrinter
 import org.openbase.jul.extension.type.processing.LabelProcessor
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType
@@ -80,9 +81,11 @@ class UnitGroupRegistryTest : AbstractBCORegistryTest() {
         unitGroup2 = Registries.getUnitRegistry().updateUnitConfig(unitGroup2.build()).get().toBuilder()
         unitGroup2.unitGroupConfig.memberIdList shouldContain unitGroup3.id
 
-        unitGroup3.unitGroupConfigBuilder.addMemberId(unitGroup3.id)
+        unitGroup3.unitGroupConfigBuilder.addMemberId(unitGroup1.id)
+        ExceptionPrinter.setBeQuit(true)
         val updateFuture = Registries.getUnitRegistry().updateUnitConfig(unitGroup3.build())
         shouldThrow<ExecutionException> { updateFuture.get() }
+        ExceptionPrinter.setBeQuit(false)
     }
 
     private fun registerUnitGroup(unitGroupType: UnitType, memberIds: List<String> = emptyList()): UnitConfig {
