@@ -376,11 +376,10 @@ public class ServiceStateProcessor {
                         actionImpactList.addAll(computeActionImpact(serviceStateDescription.toBuilder().setUnitId(unitConfig.getId()).build(), processedServiceStates));
                     }
 
-                    // register location itself as impact in case its affected by child units through aggregation
+                    // register location itself as impact in case it's affected by child units through aggregation
                     if(!locationChildUnits.isEmpty()) {
                         actionImpactList.add(buildActionImpact(serviceStateDescription).setIntermediary(true).build());
                     }
-
                     break;
                 case UNIT_GROUP:
                     for (String memberId : impactedUnitConfig.getUnitGroupConfig().getMemberIdList()) {
