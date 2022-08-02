@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
