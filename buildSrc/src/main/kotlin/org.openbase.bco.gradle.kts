@@ -23,7 +23,7 @@ group = "org.openbase"
 val releaseVersion = !version.toString().endsWith("-SNAPSHOT")
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = sourceCompatibility
     withSourcesJar()
     withJavadocJar()

@@ -44,14 +44,14 @@ class UnitGroupMemberRecursionConsistencyHandler
         entryMap: ProtoBufMessageMap<String, UnitConfig?, UnitConfig.Builder?>,
         registry: ProtoBufRegistry<String?, UnitConfig?, UnitConfig.Builder?>
     ) {
-        val unitGroupUnitConfig = entry?.message?: return
-        val memberIds = unitGroupUnitConfig?.unitGroupConfig?.memberIdList?.toList() ?: return
+        val unitGroupUnitConfig = entry?.message ?: return
+        val memberIds = unitGroupUnitConfig.unitGroupConfig.memberIdList.toList()
 
         unitGroupUnitConfig
-            ?.takeIf { memberIds.containsUnit(it, registry) }
+            .takeIf { memberIds.containsUnit(it, registry) }
             ?.let {
-                throw InvalidStateException("UnitGroup[${LabelProcessor.getBestMatch(entry?.message?.label)}] refers" +
-                        "itself as member!")
+                throw InvalidStateException("UnitGroup[${LabelProcessor.getBestMatch(unitGroupUnitConfig.label)}] " +
+                        "refers itself as member!")
             }
     }
 
