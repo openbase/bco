@@ -37,6 +37,9 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
+      - name: "prepare libs for build"
+        run: ./prepare.sh
+
       - name: "build backend"
         run: ./gradlew --build-cache build -x test
 
@@ -72,6 +75,9 @@ jobs:
         with:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "prepare libs for tests"
+        run: ./prepare.sh
 
       - name: "test backend"
         run: ./gradlew --build-cache check

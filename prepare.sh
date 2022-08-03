@@ -1,3 +1,2 @@
 #!/bin/bash
-git $@ submodule init
-git $@ submodule update --remote
+git $@ submodule init && echo "libraries successfully initialized"
