@@ -44,7 +44,7 @@ class UnitGroupMemberRecursionConsistencyHandler
         entryMap: ProtoBufMessageMap<String, UnitConfig?, UnitConfig.Builder?>,
         registry: ProtoBufRegistry<String?, UnitConfig?, UnitConfig.Builder?>
     ) {
-        val unitGroupUnitConfig = entry?.message ?: return
+        val unitGroupUnitConfig = entry.message ?: return
         val memberIds = unitGroupUnitConfig.unitGroupConfig.memberIdList.toList()
 
         unitGroupUnitConfig
