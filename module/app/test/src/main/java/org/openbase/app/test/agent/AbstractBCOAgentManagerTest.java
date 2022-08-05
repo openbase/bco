@@ -22,6 +22,7 @@ package org.openbase.app.test.agent;
  * #L%
  */
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
@@ -31,6 +32,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +49,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected AgentRemote agentRemote = null;
 
     @BeforeEach
-    public void setupAgentManager() throws Exception {
+    public void createAgent() throws Exception {
         try {
             // register agent
             agentConfig = Registries.getUnitRegistry().registerUnitConfig(getAgentConfig()).get(5, TimeUnit.SECONDS);
@@ -64,6 +66,12 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
+    }
+
+    @AfterEach
+    public void removeAgent() throws Exception {
+        Registries.getUnitRegistry().removeUnitConfig(agentConfig);
+        agentRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED);
     }
 
     public abstract UnitConfig getAgentConfig() throws CouldNotPerformException;
