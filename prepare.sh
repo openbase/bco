@@ -1,2 +1,3 @@
 #!/bin/bash
-git $@ submodule init && echo "libraries successfully initialized"
+git $@ submodule init && \
+git $@ submodule update 
