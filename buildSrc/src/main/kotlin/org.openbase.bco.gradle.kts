@@ -53,7 +53,7 @@ tasks.withType<Test> {
     maxParallelForks = 1
     logging.captureStandardOutput(LogLevel.WARN)
     maxHeapSize = "7G"
-    failFast = true
+    failFast = false
     setForkEvery(1)
 }
 
@@ -145,5 +145,3 @@ tasks.javadoc {
         (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
     }
 }
-
-
