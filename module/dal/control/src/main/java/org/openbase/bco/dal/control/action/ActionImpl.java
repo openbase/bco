@@ -75,7 +75,7 @@ public class ActionImpl implements SchedulableAction {
     private ActionDescription.Builder actionDescriptionBuilder;
     private Message serviceState;
     private ServiceDescription serviceDescription;
-    private Future<ActionDescription> actionTask;
+    private volatile Future<ActionDescription> actionTask;
 
     /**
      * Constructor creates a new action object which helps to manage its execution during the scheduling process.
@@ -144,7 +144,7 @@ public class ActionImpl implements SchedulableAction {
             // initially set last extension to creation time
             actionDescriptionBuilder.setLastExtensionTimestamp(actionDescriptionBuilder.getTimestamp());
 
-            // since its an action it has to be an operation service pattern
+            // since it's an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
             // mark new action as initialized.
@@ -173,7 +173,7 @@ public class ActionImpl implements SchedulableAction {
             // initially set last extension to creation time
             actionDescriptionBuilder.setLastExtensionTimestamp(actionDescriptionBuilder.getTimestamp());
 
-            // since its an action it has to be an operation service pattern
+            // since it's an action it has to be an operation service pattern
             serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
             // mark new action as initialized.
@@ -267,7 +267,7 @@ public class ActionImpl implements SchedulableAction {
                         }
 
                         // loop as long as task is not canceled.
-                        while (!(Thread.interrupted() || actionTask == null || actionTask.isCancelled() || getActionState() == State.CANCELING)) {
+                        while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || getActionState() == State.CANCELING)) {
                             try {
                                 // validate action state
                                 if (isDone()) {
@@ -505,7 +505,7 @@ public class ActionImpl implements SchedulableAction {
                     return FutureProcessor.completedFuture(getActionDescription());
                 }
 
-                // action is currently executing, so set to canceling, wait till its done, set to canceled and trigger reschedule
+                // action is currently executing, so set to canceling, wait till it's done, set to canceled and trigger reschedule
 
                 if(getActionState() != State.INITIATING) {
                     updateActionStateWhileHoldingWriteLock(State.CANCELING);
@@ -723,8 +723,8 @@ public class ActionImpl implements SchedulableAction {
 
             // check if finished after force
             if (!isActionTaskFinished()) {
-
                 LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
+                StackTracePrinter.printAllStackTraces(null, ActionImpl.class, LOGGER, LogLevel.WARN);
                 StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER);
             }
         }
@@ -752,7 +752,7 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionState(final ActionState.State state) throws InterruptedException {
-         actionDescriptionBuilderLock.lockWriteInterruptibly();
+        actionDescriptionBuilderLock.lockWriteInterruptibly();
         try {
 
             // duplicated state confirmation should be ok to simplify the code, but than skip the update.
