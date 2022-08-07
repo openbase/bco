@@ -3,6 +3,7 @@ package org.openbase.bco.authentication.mock
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.TestInstance
 import org.openbase.jps.core.JPService
 import org.openbase.jps.exception.JPServiceException
 import org.openbase.jul.communication.jp.JPComHost
@@ -36,7 +37,10 @@ import java.util.*
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- */ open class MqttIntegrationTest {
+
+ * */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+open class MqttIntegrationTest {
 
     /** Overwrite method to set custom test properties. */
     open fun setupTestProperties() {}
@@ -44,6 +48,7 @@ import java.util.*
     @BeforeEach
     @Throws(JPServiceException::class)
     fun customSetup() {
+            println("custom")
         synchronized(configLock) {
             resetBrokerProperties()
             setupTestProperties()
@@ -55,46 +60,47 @@ import java.util.*
         var mosquittoConfig: Path? = null
         var broker: GenericContainer<*>? = null
         val configLock = Any()
+    }
 
-        @BeforeAll
-        @Throws(Throwable::class)
-        fun setupMqtt() {
-            synchronized(configLock) {
-                mosquittoConfig = Files.createTempFile("mosquitto_", ".conf")
-                Files.write(
-                    mosquittoConfig, Arrays.asList(
-                        "allow_anonymous true",
-                        "listener " + port
-                    )
+    @BeforeAll
+    fun setupMqtt() {
+        println("setup")
+        synchronized(configLock) {
+            mosquittoConfig = Files.createTempFile("mosquitto_", ".conf")
+            Files.write(
+                mosquittoConfig, Arrays.asList(
+                    "allow_anonymous true",
+                    "listener " + port
                 )
-                broker = GenericContainer(DockerImageName.parse("eclipse-mosquitto"))
-                    .withExposedPorts(port)
-                    .withFileSystemBind(
-                        mosquittoConfig.toString(),
-                        "/mosquitto/config/mosquitto.conf",
-                        BindMode.READ_ONLY
-                    )
-                    .apply { withStartupTimeout(Duration.ofSeconds(30)).start() }
-                    .also { resetBrokerProperties() }
-            }
+            )
+            GenericContainer(DockerImageName.parse("eclipse-mosquitto"))
+                .withExposedPorts(port)
+                .withFileSystemBind(
+                    mosquittoConfig.toString(),
+                    "/mosquitto/config/mosquitto.conf",
+                    BindMode.READ_ONLY
+                )
+                .apply { withStartupTimeout(Duration.ofSeconds(30)).start() }
+                .also { if (broker != null) error("broker was already initialized!") }
+                .also { broker = it }
+                .also { resetBrokerProperties() }
         }
+    }
 
-        @AfterAll
-        @Throws(Throwable::class)
-        fun tearDownMQTT() {
-            synchronized(configLock) {
-                waitForShutdown()
-                broker?.stop()
-                Files.delete(mosquittoConfig)
-            }
+    @AfterAll
+    fun tearDownMQTT() {
+        synchronized(configLock) {
+            waitForShutdown()
+            broker?.stop()
+            Files.delete(mosquittoConfig)
         }
+    }
 
-        @Throws(JPServiceException::class)
-        private fun resetBrokerProperties() {
-            JPService.reset()
-            JPService.registerProperty(JPComPort::class.java, broker!!.firstMappedPort)
-            JPService.registerProperty(JPComHost::class.java, broker!!.host)
-            JPService.setupJUnitTestMode()
-        }
+    @Throws(JPServiceException::class)
+    private fun resetBrokerProperties() {
+        JPService.reset()
+        JPService.registerProperty(JPComPort::class.java, broker!!.firstMappedPort)
+        JPService.registerProperty(JPComHost::class.java, broker!!.host)
+        JPService.setupJUnitTestMode()
     }
 }
