@@ -1,5 +1,5 @@
 # Install dependencies
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk AS builder
 
 ENV \
     JAVA_OPTS="" \
@@ -9,8 +9,19 @@ ENV \
 
 WORKDIR /workspace
 
-# RUN apk add bash vim curl wget jq docker git tar unzip bash-completion ca-certificates gradle
-RUN apk add bash git ca-certificates gradle
+# Setup build deps
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt update && \
+    apt install -y \
+            git \
+            gradle \
+            rsync \
+            curl \
+            ca-certificates \
+            locales \
+            locales-all \
+            wget && \
+    apt clean
 
 # Copy repo into working directory
 COPY . .
@@ -27,7 +38,7 @@ RUN cd lib/jul && \
 RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
 
 # Switch to baseline image
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 
 # # Install app
 COPY --from=builder /workspace/module/app/util/build/install/bco/bin /usr/bin/
@@ -35,7 +46,23 @@ COPY --from=builder /workspace/module/app/util/build/install/bco/lib /usr/lib/
 # COPY --from=builder /workspace/build/share /usr/share/
 
 # Install runtime deps
-RUN apk add bash ca-certificates
+## gosu: required to switch to another user ofter entrypoint is started as root.
+## tini: required to forward app signals such as sigint.
+RUN apt update && \
+    apt install -y software-properties-common && \
+    apt update && \
+    apt install -y \
+            gosu \
+            gnupg \
+            tini \
+            fontconfig \
+            locales \
+            locales-all \
+            ca-certificates \
+            curl \
+            git \
+            wget && \
+    apt clean
 
 # Set variables and locales
 ENV \
