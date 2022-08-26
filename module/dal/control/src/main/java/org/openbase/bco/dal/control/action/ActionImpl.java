@@ -308,6 +308,11 @@ public class ActionImpl implements SchedulableAction {
 
                             } catch (CouldNotPerformException | ExecutionException | java.util.concurrent.TimeoutException | RuntimeException ex) {
 
+                                // recover interruption
+                                if(ExceptionProcessor.isCausedByInterruption(ex)) {
+                                    throw new InterruptedException();
+                                }
+
                                 if (!isDone()) {
                                     updateActionStateIfNotCanceled(State.SUBMISSION_FAILED);
                                 }
@@ -420,6 +425,7 @@ public class ActionImpl implements SchedulableAction {
                 actionDescriptionBuilderLock.unlockRead();
             }
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(new NotAvailableException("ActionDescription", ex));
         }
     }
@@ -431,6 +437,7 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(ex);
         }
 
@@ -591,6 +598,7 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(ex);
         }
         try {
@@ -635,6 +643,7 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(ex);
         }
         try {
@@ -679,6 +688,7 @@ public class ActionImpl implements SchedulableAction {
         try {
             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new RuntimeException(ex);
         }
         try {
