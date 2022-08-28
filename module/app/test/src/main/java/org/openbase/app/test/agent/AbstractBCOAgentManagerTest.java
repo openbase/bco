@@ -50,6 +50,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
 
     @BeforeEach
     public void createAgent() throws Exception {
+        prepareEnvironment();
         try {
             // register agent
             agentConfig = Registries.getUnitRegistry().registerUnitConfig(getAgentConfig()).get(5, TimeUnit.SECONDS);
@@ -75,4 +76,13 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     }
 
     public abstract UnitConfig getAgentConfig() throws CouldNotPerformException;
+
+    /**
+     * *
+     // overwrite me if the environment needs to be adjusted before the agent gets started.
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     */
+    public void prepareEnvironment() throws CouldNotPerformException, InterruptedException {
+    }
 }
