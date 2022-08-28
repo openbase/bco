@@ -68,6 +68,7 @@ import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 /**
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
+@Disabled
 public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PresenceLightAgentTest.class);
