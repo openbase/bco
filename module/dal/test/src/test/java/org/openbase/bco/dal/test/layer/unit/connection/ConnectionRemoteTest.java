@@ -21,22 +21,27 @@ package org.openbase.bco.dal.test.layer.unit.connection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Timeout;
+
+import org.junit.jupiter.api.*;
+import org.openbase.bco.dal.control.layer.unit.ReedContactController;
+import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest;
 import org.openbase.bco.dal.test.layer.unit.location.LocationRemoteTest;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
-import org.slf4j.LoggerFactory;
+import org.openbase.type.domotic.state.ContactStateType.ContactState;
+import org.openbase.type.domotic.state.DoorStateType.DoorState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -63,51 +68,49 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
      *
      * @throws Exception
      */
-//    @Test
-//    @Timeout(15)
-//    public void testDoorStateUpdate() throws Exception {
-//        System.out.println("testDoorStateUpdate");
-//
-//        List<ReedContactController> reedContactControllerList = new ArrayList<>();
-//        for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
-//            UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
-//            if (unitController instanceof ReedContactController) {
-//                reedContactControllerList.add((ReedContactController) unitController);
-//            }
-//        }
-//
-//        ContactState closedState = ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
-//        for (ReedContactController reedContact : reedContactControllerList) {
-//            reedContact.updateContactStateProvider(closedState);
-//        }
-//
-//        System.out.println("ping");
-//        connectionRemote.ping().get();
-//        System.out.println("ping done");
-//        System.out.println("request data of " + ScopeProcessor.generateStringRep(connectionRemote.getScope()));
-//        System.out.println("got data: " + connectionRemote.requestData().get().getDoorState().getValue());
-//        while (connectionRemote.getDoorState().getValue() != DoorState.State.CLOSED) {
-////            System.out.println("current state: " + locationRemote.getData());
-//            System.out.println("current temp: " + connectionRemote.getDoorState().getValue() + " waiting for: " + DoorState.State.CLOSED);
-//            Thread.sleep(10);
-//        }
-//        assertEquals("Doorstate of the connection has not been updated!", DoorState.State.CLOSED, connectionRemote.getDoorState().getValue());
-//
-//        ContactState openState = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
-//        for (ReedContactController reedContact : reedContactControllerList) {
-//            reedContact.updateContactStateProvider(openState);
-//        }
-//
-//        System.out.println("ping");
-//        connectionRemote.ping().get();
-//        System.out.println("ping done");
-//        System.out.println("request data of " + ScopeProcessor.generateStringRep(connectionRemote.getScope()));
-//        System.out.println("got data: " + connectionRemote.requestData().get().getDoorState().getValue());
-//        while (connectionRemote.getDoorState().getValue() != DoorState.State.OPEN) {
-////            System.out.println("current state: " + locationRemote.getData());
-//            System.out.println("current temp: " + connectionRemote.getDoorState().getValue() + " waiting for: " + DoorState.State.OPEN);
-//            Thread.sleep(10);
-//        }
-//        assertEquals("Doorstate of the connection has not been updated!", DoorState.State.OPEN, connectionRemote.getDoorState().getValue());
-//    }
+    @Test
+    @Timeout(15)
+    public void testDoorStateUpdate() throws Exception {
+        System.out.println("testDoorStateUpdate");
+
+        List<ReedContactController> reedContactControllerList = new ArrayList<>();
+        for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
+            UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
+            if (unitController instanceof ReedContactController) {
+                reedContactControllerList.add((ReedContactController) unitController);
+            }
+        }
+
+        ContactState closedState = ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
+        for (ReedContactController reedContact : reedContactControllerList) {
+            reedContact.applyDataUpdate(closedState, ServiceType.CONTACT_STATE_SERVICE);
+        }
+
+        System.out.println("ping");
+        connectionRemote.ping().get();
+        System.out.println("ping done");
+        System.out.println("request data of " + ScopeProcessor.generateStringRep(connectionRemote.getScope()));
+        System.out.println("got data: " + connectionRemote.requestData().get().getDoorState().getValue());
+        while (connectionRemote.getDoorState().getValue() != DoorState.State.CLOSED) {
+            System.out.println("current temp: " + connectionRemote.getDoorState().getValue() + " waiting for: " + DoorState.State.CLOSED);
+            Thread.sleep(10);
+        }
+        Assertions.assertEquals(DoorState.State.CLOSED, connectionRemote.getDoorState().getValue(), "Doorstate of the connection has not been updated!");
+
+        ContactState openState = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
+        for (ReedContactController reedContact : reedContactControllerList) {
+            reedContact.applyDataUpdate(openState, ServiceType.CONTACT_STATE_SERVICE);
+        }
+
+        System.out.println("ping");
+        connectionRemote.ping().get();
+        System.out.println("ping done");
+        System.out.println("request data of " + ScopeProcessor.generateStringRep(connectionRemote.getScope()));
+        System.out.println("got data: " + connectionRemote.requestData().get().getDoorState().getValue());
+        while (connectionRemote.getDoorState().getValue() != DoorState.State.OPEN) {
+            System.out.println("current temp: " + connectionRemote.getDoorState().getValue() + " waiting for: " + DoorState.State.OPEN);
+            Thread.sleep(10);
+        }
+        Assertions.assertEquals(DoorState.State.OPEN, connectionRemote.getDoorState().getValue(), "Doorstate of the connection has not been updated!");
+    }
 }

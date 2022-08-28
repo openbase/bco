@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.action;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -33,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ActionDescriptionProcessorTest {
 
     @Test
+    @Timeout(10)
     void getUnitChainSuffixForNonReplaceableAction() {
 
         final Builder buttonActionDescription = ActionDescription.newBuilder();

@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.test;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
@@ -56,6 +57,7 @@ public class CredentialStoreTest {
      * @throws Exception
      */
     @Test
+    @Timeout(10)
     public void testSavingAndLoading() throws Exception {
         System.out.println("testSavingAndLoading");
 

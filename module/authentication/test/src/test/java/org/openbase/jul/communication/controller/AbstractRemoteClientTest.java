@@ -71,8 +71,8 @@ public class AbstractRemoteClientTest extends MqttIntegrationTest {
      * @throws InterruptedException
      * @throws CouldNotPerformException
      */
-    @Timeout(10)
     @Test
+    @Timeout(10)
     public void testWaitForConnectionState() throws InterruptedException, CouldNotPerformException {
         System.out.println("waitForConnectionState");
         AbstractRemoteClient instance = new AbstractRemoteClientImpl();
@@ -108,8 +108,8 @@ public class AbstractRemoteClientTest extends MqttIntegrationTest {
         instance.shutdown();
     }
 
-    @Timeout(10)
     @Test
+    @Timeout(10)
     public void testDeactivation() throws InterruptedException, CouldNotPerformException {
         System.out.println("testDeactivation");
         final String scope = "/test/deactivation";
@@ -140,8 +140,8 @@ public class AbstractRemoteClientTest extends MqttIntegrationTest {
      *
      * @throws Exception
      */
-    @Timeout(5)
     @Test
+    @Timeout(5)
     public void testReinit() throws Exception {
         System.out.println("testReinit");
 
@@ -188,8 +188,8 @@ public class AbstractRemoteClientTest extends MqttIntegrationTest {
      *
      * @throws Exception if an error occurs.
      */
-    @Timeout(5)
     @Test
+    @Timeout(5)
     public void testTransactionSynchronization() throws Exception {
         final String scope = "/test/transaction/sync";
 

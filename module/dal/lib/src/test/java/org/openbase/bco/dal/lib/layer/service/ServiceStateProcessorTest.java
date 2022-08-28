@@ -25,6 +25,7 @@ package org.openbase.bco.dal.lib.layer.service;
 import static org.junit.jupiter.api.Assertions.*;
 import com.google.protobuf.Message;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.MessageObservable;
@@ -47,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 public class ServiceStateProcessorTest {
 
     @Test
+    @Timeout(10)
     public void updateLatestValueOccurrence() throws Exception {
         PresenceState.Builder builder = PresenceState.newBuilder();
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 2000, builder);

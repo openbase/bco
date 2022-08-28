@@ -144,6 +144,7 @@ public class AuthorizationHelperTest {
      * @throws java.lang.Exception
      */
     @Test
+    @Timeout(10)
     public void testGroupPermissions() throws Exception {
         System.out.println("testGroupPermissions");
         PermissionConfig.MapFieldEntry.Builder groupsBuilder = PermissionConfig.MapFieldEntry.newBuilder()

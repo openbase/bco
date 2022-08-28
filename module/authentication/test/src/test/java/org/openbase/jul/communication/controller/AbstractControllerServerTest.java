@@ -71,8 +71,8 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
      *
      * @throws Exception
      */
-    @Timeout(5)
     @Test
+    @Timeout(5)
     public void testInitialSync() throws Exception {
         String scope = "/test/synchronization";
         final SyncObject waitForDataSync = new SyncObject("WaitForDataSync");
@@ -155,8 +155,8 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
      * This test validates, that at least 10 re-connection cycles can be repeated
      * within a timeout of 5 seconds.
      */
-    @Timeout(5)
     @Test
+    @Timeout(5)
     public void testReconnection() throws Exception {
         int cycles = 10;
         String scope = "/test/reconnection";
@@ -191,8 +191,8 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
     /**
      * Test waiting for data from a communication service.
      */
-    @Timeout(5)
     @Test
+    @Timeout(5)
     public void testWaitForData() throws Exception {
         String scope = "/test/waitfordata";
         UnitConfig location1 = UnitConfig.newBuilder().setId("Location1").build();
@@ -221,8 +221,8 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
     /**
      * Test requesting data from a communication service.
      */
-    @Timeout(5)
     @Test
+    @Timeout(5)
     public void testRequestData() throws Exception {
         String scope = "/test/requestdata";
         UnitConfig location1 = UnitConfig.newBuilder().setId("Location1").build();
@@ -251,8 +251,8 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
      * Test if when there are 2 remotes connected to a communication service
      * the shutdown of one remote affects the communication of the other one.
      */
-    @Timeout(60)
     @Test
+    @Timeout(60)
     public void testRemoteInterference() throws Exception {
         String scope = "/test/interference";
         UnitConfig location1 = UnitConfig.newBuilder().setId("Location1").build();
@@ -300,8 +300,8 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
     /**
      * @throws Exception
      */
-    @Timeout(10)
     @Test
+    @Timeout(10)
     @Disabled // Ignore test since it's pretty unstable.
     public void testNotification() throws Exception {
         String scope = "/test/notification";
@@ -337,8 +337,8 @@ public class AbstractControllerServerTest extends MqttIntegrationTest {
         communicationService.shutdown();
     }
 
-    @Timeout(10)
     @Test
+    @Timeout(10)
     public void testReinit() throws Exception {
         final int TEST_PARALLEL_REINIT_TASKS = 5;
         String scope = "/test/notification";

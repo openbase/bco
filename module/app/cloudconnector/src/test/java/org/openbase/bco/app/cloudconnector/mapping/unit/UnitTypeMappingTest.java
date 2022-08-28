@@ -26,6 +26,7 @@ package org.openbase.bco.app.cloudconnector.mapping.unit;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -45,6 +46,7 @@ public class UnitTypeMappingTest {
      * @throws IllegalArgumentException if the name of a unitTypeMapping does not lead to the according unitType.
      */
     @Test
+    @Timeout(10)
     public void testUnitTypeValidity() throws IllegalArgumentException {
         LOGGER.info("testUnitTypeValidity");
         for (final UnitTypeMapping unitTypeMapping : UnitTypeMapping.values()) {
