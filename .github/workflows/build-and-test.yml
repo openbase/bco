@@ -52,7 +52,7 @@ jobs:
 
   test:
     name: "Test"
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     if: github.event.pull_request.draft == false
     needs: build
@@ -86,7 +86,6 @@ jobs:
 
       - name: Upload test reports
         uses: actions/upload-artifact@v3
-        if: ${{ failure() }}
         with:
           name: Test Reports
           path: "**/build/reports"
