@@ -6,6 +6,7 @@ plugins {
     `maven-publish`
     kotlin("jvm")
     signing
+    id ("com.adarshr.test-logger")
 }
 
 repositories {
