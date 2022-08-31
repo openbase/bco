@@ -44,7 +44,7 @@ import java.util.concurrent.ExecutionException
  * @author [Tamino Huxohl](mailto:pleminoq@openbase.org)
  */
 class StayLoggedInTest : MqttIntegrationTest() {
-    override fun setupTestProperties() {
+    override fun setupCustomProperties() {
         // set the session timeout and use the super method for initialization
         JPService.registerProperty(JPSessionTimeout::class.java, SESSION_TIMEOUT)
     }

@@ -42,19 +42,6 @@ import java.util.*
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 open class MqttIntegrationTest {
 
-    /** Overwrite method to set custom test properties. */
-    open fun setupTestProperties() {}
-
-    @BeforeEach
-    @Throws(JPServiceException::class)
-    fun customSetup() {
-            println("custom")
-        synchronized(configLock) {
-            resetBrokerProperties()
-            setupTestProperties()
-        }
-    }
-
     companion object {
         const val port = 1884
         var mosquittoConfig: Path? = null
@@ -64,7 +51,6 @@ open class MqttIntegrationTest {
 
     @BeforeAll
     fun setupMqtt() {
-        println("setup")
         synchronized(configLock) {
             mosquittoConfig = Files.createTempFile("mosquitto_", ".conf")
             Files.write(
@@ -83,7 +69,7 @@ open class MqttIntegrationTest {
                 .apply { withStartupTimeout(Duration.ofSeconds(30)).start() }
                 .also { if (broker != null) error("broker was already initialized!") }
                 .also { broker = it }
-                .also { resetBrokerProperties() }
+                .also { setupProperties() }
         }
     }
 
@@ -97,10 +83,13 @@ open class MqttIntegrationTest {
     }
 
     @Throws(JPServiceException::class)
-    private fun resetBrokerProperties() {
+    private fun setupProperties() {
         JPService.reset()
         JPService.registerProperty(JPComPort::class.java, broker!!.firstMappedPort)
         JPService.registerProperty(JPComHost::class.java, broker!!.host)
+        setupCustomProperties()
         JPService.setupJUnitTestMode()
     }
+
+    open fun setupCustomProperties() {}
 }

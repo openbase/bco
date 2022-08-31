@@ -1619,12 +1619,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 ) {
                     // Because the service state update was not remapped we can be sure its triggered externally and not via bco.
                     // If in this case the event is initiated by the system, we can be sure that it is caused by a hardware synchronization purpose.
-                    // Therefore we can just apply the update and can skip to force the action execution which could otherwise block some
+                    // Therefore, we can just apply the update and can skip to force the action execution which could otherwise block some
                     // low priority future action for a certain amount of time in case this system action has any priority defined.
                     return serviceState;
                 }
             } catch (NotAvailableException ex) {
-                // if responsible action is not available, than we should continue since this action was maybe externally triggered by a human.
+                // if responsible action is not available, then we should continue since this action was maybe externally triggered by a human.
             }
 
             // force execution to properly apply new state synchronized with the current action scheduling

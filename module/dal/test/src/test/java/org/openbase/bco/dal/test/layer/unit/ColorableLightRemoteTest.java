@@ -68,16 +68,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static ColorableLightRemote colorableLightRemote;
 
-    @Override
-    public void setupTestProperties() {
-        // legacy mode needed for testLegacyRemoteCallGetColor() test.
-        JPService.registerProperty(JPComLegacyMode.class, true);
-        System.out.println("called");
-        // enable to get debug logging
-//         JPService.registerProperty(JPDebugMode.class, true);
-//         JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
-    }
-
     @BeforeAll
     public static void loadUnits() throws Throwable {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
