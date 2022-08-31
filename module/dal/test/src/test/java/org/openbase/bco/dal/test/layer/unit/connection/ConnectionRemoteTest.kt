@@ -1,29 +1,17 @@
 package org.openbase.bco.dal.test.layer.unit.connection
 
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
-import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
-import org.openbase.bco.dal.control.layer.unit.ReedContactController
 import org.openbase.bco.dal.lib.state.States
 import org.openbase.bco.dal.remote.layer.unit.Units
 import org.openbase.bco.dal.remote.layer.unit.connection.ConnectionRemote
 import org.openbase.bco.dal.test.layer.unit.location.AbstractBCOLocationManagerTest
-import org.openbase.bco.dal.test.layer.unit.location.LocationRemoteTest
-import org.openbase.bco.registry.remote.Registries
+import org.openbase.bco.registry.mock.MockRegistry
 import org.openbase.bco.registry.remote.Registries.getUnitRegistry
-import org.openbase.bco.registry.unit.lib.UnitRegistry
-import org.openbase.jul.exception.printer.ExceptionPrinter
-import org.openbase.jul.extension.type.processing.ScopeProcessor
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate
-import org.openbase.type.domotic.state.ConnectionStateType
-import org.openbase.type.domotic.state.ContactStateType.ContactState
 import org.openbase.type.domotic.state.DoorStateType.DoorState
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType
-import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 
 /*
@@ -58,52 +46,46 @@ class ConnectionRemoteTest : AbstractBCOLocationManagerTest() {
      */
     @Test
     @Timeout(5)
+    @RepeatedTest(100)
     // todo: test still a bit unstable if repeated 100 times.
     fun testDoorStateUpdate() {
         println("testDoorStateUpdate")
 
-        val reedContactConfigs = getUnitRegistry()
-            .getUnitConfigsByUnitType(UnitType.REED_CONTACT)
+        val reedContactConfig = getUnitRegistry()
+            .getUnitConfigByAlias(MockRegistry.ALIAS_REED_SWITCH_HEAVEN_STAIRWAY_GATE)
 
-        val reedContactControllers = reedContactConfigs
-            .map { deviceManagerLauncher.launchable.unitControllerRegistry[it.id] }
+        val reedContactController = reedContactConfig
+            .let { deviceManagerLauncher.launchable.unitControllerRegistry[it.id] }
 
-        val reedContacts = reedContactConfigs
-            .map { Units.getUnit(it, true, Units.REED_CONTACT) }
+        val reedContact = reedContactConfig
+            .let { Units.getUnit(it, true, Units.REED_CONTACT) }
 
-        val connectionRemote: ConnectionRemote = Units.getUnit(
-            getUnitRegistry().getUnitConfigsByUnitType(UnitType.CONNECTION)[0],
+        val connectionRemote: ConnectionRemote = Units.getUnitByAlias(
+            MockRegistry.ALIAS_DOOR_STAIRS_HEAVEN_GATE,
             true,
             ConnectionRemote::class.java
         )
 
         // set reeds closed
-        reedContactControllers.forEach {
-            it.applyServiceState(States.Contact.CLOSED, ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE)
-        }
+        reedContactController
+            .applyServiceState(States.Contact.CLOSED, ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE)
         Thread.sleep(100)
 
         // sync remotes
-        reedContacts
-            .plus(connectionRemote)
-            .map { it.requestData() }
-            .forEach { it.get(5, TimeUnit.SECONDS) }
-
+        reedContact.requestData().get(5, TimeUnit.SECONDS)
+        connectionRemote.requestData().get(5, TimeUnit.SECONDS)
 
         // check door closed
         connectionRemote.doorState.value shouldBeEqualComparingTo DoorState.State.CLOSED
 
         // set reeds open
-        reedContactControllers.forEach {
-            it.applyServiceState(States.Contact.OPEN, ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE)
-        }
+        reedContactController
+            .applyServiceState(States.Contact.OPEN, ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE)
         Thread.sleep(100)
 
         // sync remotes
-        reedContacts
-            .plus(connectionRemote)
-            .map { it.requestData() }
-            .forEach { it.get(5, TimeUnit.SECONDS) }
+        reedContact.requestData().get(5, TimeUnit.SECONDS)
+        connectionRemote.requestData().get(5, TimeUnit.SECONDS)
 
         // check door open
         connectionRemote.doorState.value shouldBeEqualComparingTo DoorState.State.OPEN
