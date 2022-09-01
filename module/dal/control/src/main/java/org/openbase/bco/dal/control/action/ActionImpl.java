@@ -515,7 +515,7 @@ public class ActionImpl implements SchedulableAction {
                     }
 
                     // action is currently executing, so set to canceling, wait till it's done, set to canceled and trigger reschedule
-
+                    // TODO: Might be moved out of action lock
                     if (getActionState() != State.INITIATING) {
                         updateActionStateWhileHoldingWriteLock(State.CANCELING);
                     }
@@ -526,6 +526,7 @@ public class ActionImpl implements SchedulableAction {
                         // cancel action task
                         cancelActionTask();
 
+                        // terminate in any way
                         if (!isDone()) {
                             updateActionState(State.CANCELED);
                         }
@@ -713,31 +714,32 @@ public class ActionImpl implements SchedulableAction {
     private void cancelActionTask() {
 
         // finalize if still running
+        if (isActionTaskFinished()) {
+            return;
+        }
+
+        // create a ref copy
+        final Future<ActionDescription> actionTask = this.actionTask;
+
+        // cancel if exist
+        if (actionTask != null) {
+            actionTask.cancel(true);
+        }
+
+        try {
+            waitForActionTaskFinalization(1, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return;
+        } catch (TimeoutException ex) {
+            // timeout
+        }
+
+        // check if finished after force
         if (!isActionTaskFinished()) {
-
-            //create a ref copy
-            final Future<ActionDescription> actionTask = this.actionTask;
-
-            // cancel if exist
-            if (actionTask != null) {
-                actionTask.cancel(true);
-            }
-
-            try {
-                waitForActionTaskFinalization(1, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                return;
-            } catch (TimeoutException ex) {
-                // timeout
-            }
-
-            // check if finished after force
-            if (!isActionTaskFinished()) {
-                LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
-                StackTracePrinter.printAllStackTraces(null, ActionImpl.class, LOGGER, LogLevel.WARN);
-                StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER);
-            }
+            LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
+            StackTracePrinter.printAllStackTraces(null, ActionImpl.class, LOGGER, LogLevel.WARN);
+            StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER);
         }
     }
 

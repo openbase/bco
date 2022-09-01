@@ -1432,6 +1432,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Update was interrupted!",ex);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply Service[" + serviceType.name() + "] Update[" + newState + "] for " + this + "!", ex);
         }
