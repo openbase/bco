@@ -26,8 +26,6 @@ import com.google.protobuf.Any;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.communication.controller.AbstractControllerServerTest.AbstractControllerServerImpl;
-import org.openbase.jul.communication.controller.AbstractControllerServerTest.AbstractRemoteClientImpl;
 import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -258,6 +256,24 @@ public class AbstractRemoteClientTest extends MqttIntegrationTest {
                 ),
                 this
             );
+        }
+    }
+
+    public static class AbstractControllerServerImpl extends AbstractControllerServer<UnitRegistryData, UnitRegistryData.Builder> {
+
+        public AbstractControllerServerImpl(UnitRegistryData.Builder builder) throws InstantiationException {
+            super(builder);
+        }
+
+        @Override
+        public void registerMethods(RPCServer server) throws CouldNotPerformException {
+
+        }
+    }
+
+    public static class AbstractRemoteClientImpl extends AbstractRemoteClient<UnitRegistryData> {
+        public AbstractRemoteClientImpl() {
+            super(UnitRegistryData.class);
         }
     }
 }
