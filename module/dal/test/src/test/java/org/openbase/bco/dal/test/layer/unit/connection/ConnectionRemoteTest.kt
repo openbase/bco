@@ -46,8 +46,6 @@ class ConnectionRemoteTest : AbstractBCOLocationManagerTest() {
      */
     @Test
     @Timeout(5)
-    @RepeatedTest(100)
-    // todo: test still a bit unstable if repeated 100 times.
     fun testDoorStateUpdate() {
         println("testDoorStateUpdate")
 
