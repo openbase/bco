@@ -264,9 +264,17 @@ public class ActionImpl implements SchedulableAction {
                             new FatalImplementationErrorException("Action task is marked as finished even when the task is still running!", this);
                         }
 
+                        boolean retry = false;
+
                         // loop as long as task is not canceled.
                         while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || getActionState() == State.CANCELING)) {
                             try {
+
+                                // wait in case of a retry
+                                if(retry) {
+                                    Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
+                                }
+
                                 // validate action state
                                 if (isDone()) {
                                     LOGGER.error(ActionImpl.this + " was done before executed!");
@@ -341,7 +349,7 @@ public class ActionImpl implements SchedulableAction {
                                     ExceptionPrinter.printHistory("Action execution failed", ex, LOGGER, LogLevel.WARN);
                                 }
 
-                                Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
+                                retry = true;
                             }
                         }
                     } catch (InterruptedException ex) {
@@ -567,14 +575,14 @@ public class ActionImpl implements SchedulableAction {
                     return FutureProcessor.completedFuture(getActionDescription());
                 }
 
-                updateActionStateWhileHoldingWriteLock(State.ABORTING);
-//            return GlobalCachedExecutorService.submit(() -> {
-
-                // cancel action task
-                cancelActionTask();
-
                 // if not done yet
                 if (!isDone()) {
+
+                    updateActionStateWhileHoldingWriteLock(State.ABORTING);
+
+                    // cancel action task
+                    cancelActionTask();
+
                     // if action is interruptible it can be scheduled otherwise it is rejected
                     if (!forceReject && getActionDescription().getInterruptible() && getActionDescription().getSchedulable()) {
                         updateActionState(State.SCHEDULED);
@@ -585,7 +593,6 @@ public class ActionImpl implements SchedulableAction {
 
                 // rescheduling is not necessary because aborting is only done when rescheduling
                 return CompletableFuture.completedFuture(getActionDescription());
-//            });
             } finally {
                 actionDescriptionBuilderLock.unlockWrite();
             }
