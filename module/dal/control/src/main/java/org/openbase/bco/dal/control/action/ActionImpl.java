@@ -269,7 +269,6 @@ public class ActionImpl implements SchedulableAction {
                         // loop as long as task is not canceled.
                         while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || getActionState() == State.CANCELING)) {
                             try {
-
                                 // wait in case of a retry
                                 if(retry) {
                                     Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
@@ -521,35 +520,32 @@ public class ActionImpl implements SchedulableAction {
 
                         return FutureProcessor.completedFuture(getActionDescription());
                     }
-
-                    // action is currently executing, so set to canceling, wait till it's done, set to canceled and trigger reschedule
-                    // TODO: Might be moved out of action lock
-                    if (getActionState() != State.INITIATING) {
-                        updateActionStateWhileHoldingWriteLock(State.CANCELING);
-                    }
                 }
+
+                // action is currently executing, so set to canceling, wait till it's done, set to canceled and trigger reschedule
+                if (getActionState() != State.INITIATING) {
+                    updateActionStateWhileHoldingWriteLock(State.CANCELING);
+                }
+
                 try {
-//                    return GlobalCachedExecutorService.submit(() -> {
+                    // cancel action task
+                    cancelActionTask();
 
-                        // cancel action task
-                        cancelActionTask();
+                    // terminate in any way
+                    if (!isDone()) {
+                        updateActionState(State.CANCELED);
+                    }
 
-                        // terminate in any way
-                        if (!isDone()) {
-                            updateActionState(State.CANCELED);
+                    // trigger reschedule because any next action can be executed.
+                    try {
+                        unit.reschedule();
+                    } catch (CouldNotPerformException ex) {
+                        // if the reschedule is not possible because of a system shutdown everything is fine, otherwise it s s a controller error and there is no need to inform the remote about any error if the cancellation was successful.
+                        if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                            ExceptionPrinter.printHistory("Reschedule of " + unit + " failed after action cancellation!", ex, LOGGER);
                         }
-
-                        // trigger reschedule because any next action can be executed.
-                        try {
-                            unit.reschedule();
-                        } catch (CouldNotPerformException ex) {
-                            // if the reschedule is not possible because of a system shutdown everything is fine, otherwise it s s a controller error and there is no need to inform the remote about any error if the cancellation was successful.
-                            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
-                                ExceptionPrinter.printHistory("Reschedule of " + unit + " failed after action cancellation!", ex, LOGGER);
-                            }
-                        }
-                        return CompletableFuture.completedFuture(getActionDescription());
-//                    });
+                    }
+                    return CompletableFuture.completedFuture(getActionDescription());
                 } catch (RejectedExecutionException ex) {
                     return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel " + this, ex));
                 }
