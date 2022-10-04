@@ -22,6 +22,7 @@ package org.openbase.bco.registry.mock;
  * #L%
  */
 
+import org.apache.commons.io.FileUtils;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
@@ -29,11 +30,14 @@ import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
+import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jps.preset.JPTestMode;
+import org.openbase.jps.preset.JPTmpDirectory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InstantiationException;
@@ -83,6 +87,9 @@ import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import org.openbase.type.spatial.ShapeType.Shape;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -183,6 +190,18 @@ public class MockRegistry {
     protected MockRegistry() throws InstantiationException {
         try {
             JPService.setupJUnitTestMode();
+            var cacheDir = new File(JPService.getValue(JPTmpDirectory.class), "MockRegistryCache");
+            var loadTestData = !cacheDir.exists();
+
+            // restore db from cache
+            if (cacheDir.exists()) {
+                try {
+                    FileUtils.copyDirectory(cacheDir, JPService.getValue(JPBCODatabaseDirectory.class), null, true, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    throw new CouldNotPerformException("Could not restore cache!", e);
+                }
+            }
+
             Registries.prepare();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
@@ -258,55 +277,66 @@ public class MockRegistry {
             LOGGER.debug("Reinitialized remotes!");
             Registries.waitForData();
 
-            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
-                LOGGER.debug("Update serviceTemplates...");
-                for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
-                    final ServiceTemplate.Builder originalServiceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).toBuilder();
-                    originalServiceTemplate.mergeFrom(mockServiceTemplate.getServiceTemplate());
-                    Registries.getTemplateRegistry().updateServiceTemplate(originalServiceTemplate.build()).get();
+
+            if(loadTestData) {
+                registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
+                    LOGGER.debug("Update serviceTemplates...");
+                    for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
+                        final ServiceTemplate.Builder originalServiceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).toBuilder();
+                        originalServiceTemplate.mergeFrom(mockServiceTemplate.getServiceTemplate());
+                        Registries.getTemplateRegistry().updateServiceTemplate(originalServiceTemplate.build()).get();
+                    }
+
+                    LOGGER.debug("Update unit templates...");
+                    // load templates
+                    for (MockUnitTemplate template : MockUnitTemplate.values()) {
+                        final UnitTemplate.Builder originalUnitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).toBuilder();
+                        originalUnitTemplate.mergeFrom(template.getUnitTemplate());
+                        Registries.getTemplateRegistry().updateUnitTemplate(originalUnitTemplate.build()).get();
+                    }
+
+                    LOGGER.debug("Register user...");
+                    registerUser();
+
+                    LOGGER.debug("Register agent classes...");
+                    registerAgentClasses();
+
+                    LOGGER.debug("Register locations...");
+                    registerLocations();
+                    LOGGER.debug("Wait until registry is ready...");
+                    Registries.waitUntilReady();
+
+                    LOGGER.debug("Register devices...");
+                    registerDevices();
+                    LOGGER.debug("Wait until registry is ready...");
+                    Registries.waitUntilReady();
+
+                    LOGGER.debug("Register connections...");
+                    registerConnections();
+
+                    LOGGER.debug("Register activities...");
+                    registerActivities();
+
+                    LOGGER.debug("Wait for final consistency...");
+                    Registries.waitUntilReady();
+                    return null;
+                }));
+
+                LOGGER.debug("Wait for unitTemplate updates; device, location and user registration...");
+                for (Future<Void> task : registryStartupTasks) {
+                    task.get();
                 }
+                registryStartupTasks.clear();
+                LOGGER.debug("UnitTemplates updated and devices, locations, users and agentClasses registered!");
 
-                LOGGER.debug("Update unit templates...");
-                // load templates
-                for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                    final UnitTemplate.Builder originalUnitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).toBuilder();
-                    originalUnitTemplate.mergeFrom(template.getUnitTemplate());
-                    Registries.getTemplateRegistry().updateUnitTemplate(originalUnitTemplate.build()).get();
+                // cache vanilla mock registry.
+                try {
+                    FileUtils.copyDirectory(JPService.getValue(JPBCODatabaseDirectory.class), cacheDir);
+                } catch (IOException e) {
+                    throw new CouldNotPerformException("Could not restore cache!", e);
                 }
-
-                LOGGER.debug("Register user...");
-                registerUser();
-
-                LOGGER.debug("Register agent classes...");
-                registerAgentClasses();
-
-                LOGGER.debug("Register locations...");
-                registerLocations();
-                LOGGER.debug("Wait until registry is ready...");
-                Registries.waitUntilReady();
-
-                LOGGER.debug("Register devices...");
-                registerDevices();
-                LOGGER.debug("Wait until registry is ready...");
-                Registries.waitUntilReady();
-
-                LOGGER.debug("Register connections...");
-                registerConnections();
-
-                LOGGER.debug("Register activities...");
-                registerActivities();
-
-                LOGGER.debug("Wait for final consistency...");
-                Registries.waitUntilReady();
-                return null;
-            }));
-
-            LOGGER.debug("Wait for unitTemplate updates; device, location and user registration...");
-            for (Future<Void> task : registryStartupTasks) {
-                task.get();
             }
-            registryStartupTasks.clear();
-            LOGGER.debug("UnitTemplates updated and devices, locations, users and agentClasses registered!");
+
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             shutdown();
             throw new InstantiationException(this, ex);
