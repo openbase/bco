@@ -75,10 +75,14 @@ public class PublishLocationTransformationRegistryPlugin extends AbstractUnitTra
             final String parentLocationTransformationFrameId = getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId();
 
             // Create the rct transform object with source and target frames
-            Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPose(), parentLocationTransformationFrameId, locationConfig.getPlacementConfig().getTransformationFrameId());
+            Transform transformation = PoseTransformer.Companion.transform(
+                    locationConfig.getPlacementConfig().getPose(),
+                    parentLocationTransformationFrameId,
+                    locationConfig.getPlacementConfig().getTransformationFrameId(),
+                    getRegistry().getName()
+            );
 
             // Publish the transform object
-            transformation.setAuthority(getRegistry().getName());
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
 
             // verify transformation
