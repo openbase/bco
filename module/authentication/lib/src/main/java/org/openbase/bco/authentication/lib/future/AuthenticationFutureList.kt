@@ -6,6 +6,7 @@ import org.openbase.jul.schedule.SyncObject
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 object AuthenticationFutureList {
 
@@ -24,6 +25,8 @@ object AuthenticationFutureList {
             future.get(FUTURE_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)
         } catch (ex: ExecutionException) {
             return true
+        } catch (ex: TimeoutException) {
+            return false
         }
         return false
     }
