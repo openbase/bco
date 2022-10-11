@@ -731,6 +731,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         // switch all off via scene
         final RemoteAction allOffSceneAction = waitForExecution(allOffScene.setActivationState(Activation.ACTIVE));
 
+        colorableLightRedRemoteAction.waitForActionState(ActionState.State.SCHEDULED);
         assertEquals(ActionState.State.SCHEDULED, colorableLightRedRemoteAction.getActionState(), "Manual color action not executing!");
 
         // validate all off and store responsible action
