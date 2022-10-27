@@ -40,6 +40,7 @@ import org.openbase.bco.registry.remote.session.BCOSessionImpl;
 import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilterImpl;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.pattern.Filter;
 import org.openbase.jul.pattern.ListFilter;
@@ -139,12 +140,11 @@ public class RegistrySchemaModule extends SchemaModule {
     @Mutation("updateUnitConfig")
     UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws BCOGraphQLError {
         try {
-            unitConfig = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT)
+            final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT)
                     .getUnitConfigById(unitConfig.getId())
-                    .toBuilder()
-                    .mergeFrom(unitConfig)
-                    .build();
-            return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).updateUnitConfig(unitConfig).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
+                    .toBuilder();
+            ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(unitConfigBuilder, unitConfig);
+            return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).updateUnitConfig(unitConfigBuilder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
         } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
             throw new GenericError(ex);
         }
