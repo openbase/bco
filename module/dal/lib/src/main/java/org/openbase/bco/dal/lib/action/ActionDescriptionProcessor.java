@@ -12,6 +12,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
@@ -1136,7 +1137,7 @@ public class ActionDescriptionProcessor {
             actionParameter.setExecutionTimePeriod(timeUnit.toMicros(executionTimePeriod));
 
             if (actionInitiator != null) {
-                actionParameter.getActionInitiatorBuilder().mergeFrom(actionInitiator);
+                ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(actionParameter.getActionInitiatorBuilder(), actionInitiator);
             }
 
             return generateAndSetResponsibleAction(serviceStateBuilder, targetUnit, actionParameter);
