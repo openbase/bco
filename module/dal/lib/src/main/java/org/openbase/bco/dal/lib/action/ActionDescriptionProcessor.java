@@ -256,24 +256,6 @@ public class ActionDescriptionProcessor {
     }
 
     /**
-     * Method generates a description for the given action chain.
-     *
-     * @param actionDescriptionCollection a collection of depending action descriptions.
-     *
-     * @return a human readable description of the action pipeline.
-     */
-    public static String getDescription(final Collection<ActionDescription> actionDescriptionCollection) {
-        String description = "";
-        for (ActionDescription actionDescription : actionDescriptionCollection) {
-            if (!description.isEmpty()) {
-                description += " > ";
-            }
-            description += actionDescription.getDescription();
-        }
-        return description;
-    }
-
-    /**
      * Generates an action description according to the configuration of this unit remote.
      * The action description is generated using the ActionDescriptionProcessor.
      * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
