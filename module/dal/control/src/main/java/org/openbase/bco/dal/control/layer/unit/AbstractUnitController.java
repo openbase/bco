@@ -1040,7 +1040,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
 
                     // skip further steps if no actions are scheduled
-                    if (!atLeastOneActionToSchedule) {
+                     if (!atLeastOneActionToSchedule) {
                         logger.debug("No valid action on stack, so finish scheduling.");
                         return null;
                     }
