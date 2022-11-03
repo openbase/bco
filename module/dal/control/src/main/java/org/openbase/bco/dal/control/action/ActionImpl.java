@@ -300,14 +300,7 @@ public class ActionImpl implements SchedulableAction {
                                 }
 
                                 // apply new state
-                                actionDescriptionBuilderLock.lockWriteInterruptibly();
-                                try {
-                                    actionDescriptionBuilder.mergeFrom(
-                                        unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS)
-                                    );
-                                } finally {
-                                    actionDescriptionBuilderLock.unlockWrite();
-                                }
+                                unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
 
                                 updateActionStateIfNotCanceled(State.EXECUTING);
 

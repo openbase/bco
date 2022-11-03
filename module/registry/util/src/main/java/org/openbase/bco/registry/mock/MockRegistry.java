@@ -45,6 +45,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
@@ -283,7 +284,7 @@ public class MockRegistry {
                     LOGGER.debug("Update serviceTemplates...");
                     for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
                         final ServiceTemplate.Builder originalServiceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).toBuilder();
-                        originalServiceTemplate.mergeFrom(mockServiceTemplate.getServiceTemplate());
+                        ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(originalServiceTemplate, mockServiceTemplate.getServiceTemplate());
                         Registries.getTemplateRegistry().updateServiceTemplate(originalServiceTemplate.build()).get();
                     }
 
@@ -291,7 +292,7 @@ public class MockRegistry {
                     // load templates
                     for (MockUnitTemplate template : MockUnitTemplate.values()) {
                         final UnitTemplate.Builder originalUnitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).toBuilder();
-                        originalUnitTemplate.mergeFrom(template.getUnitTemplate());
+                        ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(originalUnitTemplate, template.getUnitTemplate());
                         Registries.getTemplateRegistry().updateUnitTemplate(originalUnitTemplate.build()).get();
                     }
 
