@@ -284,7 +284,7 @@ public class MockRegistry {
                     LOGGER.debug("Update serviceTemplates...");
                     for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
                         final ServiceTemplate.Builder originalServiceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).toBuilder();
-                        ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(originalServiceTemplate, mockServiceTemplate.getServiceTemplate());
+                        originalServiceTemplate.mergeFrom(mockServiceTemplate.getServiceTemplate());
                         Registries.getTemplateRegistry().updateServiceTemplate(originalServiceTemplate.build()).get();
                     }
 
@@ -292,7 +292,7 @@ public class MockRegistry {
                     // load templates
                     for (MockUnitTemplate template : MockUnitTemplate.values()) {
                         final UnitTemplate.Builder originalUnitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).toBuilder();
-                        ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(originalUnitTemplate, template.getUnitTemplate());
+                        originalUnitTemplate.mergeFrom(template.getUnitTemplate());
                         Registries.getTemplateRegistry().updateUnitTemplate(originalUnitTemplate.build()).get();
                     }
 
