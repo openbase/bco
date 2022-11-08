@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
@@ -58,7 +59,7 @@ import java.util.logging.Level;
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TestWaitUntilReady {
+public class TestWaitUntilReady extends MqttIntegrationTest  {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestWaitUntilReady.class);
 
@@ -71,7 +72,6 @@ public class TestWaitUntilReady {
     @BeforeAll
     public static void setUpClass() throws Throwable {
         try {
-            JPService.setupJUnitTestMode();
             MockRegistryHolder.newMockRegistry();
             MockRegistry.registerUnitConsistencyHandler(new ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder>, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder>>() {
 
@@ -98,7 +98,7 @@ public class TestWaitUntilReady {
                 public void shutdown() {
                 }
             });
-        } catch (JPServiceException | InstantiationException ex) {
+        } catch (InstantiationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }

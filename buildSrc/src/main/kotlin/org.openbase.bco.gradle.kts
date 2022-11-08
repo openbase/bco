@@ -6,6 +6,7 @@ plugins {
     `maven-publish`
     kotlin("jvm")
     signing
+    id ("com.adarshr.test-logger")
 }
 
 repositories {
@@ -23,7 +24,7 @@ group = "org.openbase"
 val releaseVersion = !version.toString().endsWith("-SNAPSHOT")
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = sourceCompatibility
     withSourcesJar()
     withJavadocJar()
@@ -35,13 +36,16 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.5.21")
     testImplementation("org.junit.jupiter:junit-jupiter:[5.8,5.9-alpha)")
     testImplementation ("org.junit.jupiter:junit-jupiter-api:[5.8,5.9-alpha)")
+    testImplementation(Testing.mockK)
+    testImplementation("io.quarkus:quarkus-junit4-mock:_")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:_")
     testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:[5.8,5.9-alpha)")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
@@ -50,7 +54,7 @@ tasks.withType<Test> {
     maxParallelForks = 1
     logging.captureStandardOutput(LogLevel.WARN)
     maxHeapSize = "7G"
-    failFast = true
+    failFast = false
     setForkEvery(1)
 }
 
@@ -142,5 +146,3 @@ tasks.javadoc {
         (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
     }
 }
-
-

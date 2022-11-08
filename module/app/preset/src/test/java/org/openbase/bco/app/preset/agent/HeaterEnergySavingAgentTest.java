@@ -23,6 +23,8 @@ package org.openbase.bco.app.preset.agent;
  */
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
 import org.junit.jupiter.api.Test;
@@ -56,6 +58,7 @@ import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
  * Michalski</a>
  */
+@Disabled
 public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     public static final String HEATER_ENERGY_SAVING_AGENT_LABEL = "Heater_Energy_Saving_Agent_Unit_Test";

@@ -23,6 +23,7 @@ package org.openbase.app.test.agent;
  */
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -33,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.type.domotic.state.ActivationStateType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType;
 import org.openbase.type.domotic.unit.app.AppClassType.AppClass;
@@ -74,6 +76,12 @@ public abstract class AbstractBCOAppManagerTest extends BCOAppTest {
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
+    }
+
+    @AfterEach
+    public void removeAgent() throws Exception {
+        Registries.getUnitRegistry().removeUnitConfig(appConfig);
+        appRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED);
     }
 
     public abstract Class getAppClass();

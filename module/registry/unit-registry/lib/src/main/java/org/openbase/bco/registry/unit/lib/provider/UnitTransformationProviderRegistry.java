@@ -118,11 +118,11 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
         }
 
         if (!unitConfigSource.getPlacementConfig().hasTransformationFrameId() || unitConfigSource.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation frame id!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation node ID!"));
         }
 
         if (!unitConfigTarget.getPlacementConfig().hasTransformationFrameId() || unitConfigTarget.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!"));
+            return FutureProcessor.canceledFuture(Transform.class, new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation node ID!"));
         }
 
 

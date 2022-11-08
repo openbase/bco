@@ -22,6 +22,8 @@ package org.openbase.jul.communication.controller;
  * #L%
  */
 
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.communication.iface.RPCServer;
@@ -49,7 +51,8 @@ public class FrequentBlockingMethodCallTest {
      * the executor service by repeatedly calling blocking rpc calls.
      * @throws Exception
      */
-//    @Test
+    @Test
+    @Disabled
     public void testFrequentBlockingMethodCall() throws Exception {
         JPService.setupJUnitTestMode();
         final String scope = "/test/blocking";

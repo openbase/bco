@@ -1535,7 +1535,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                         .anyMatch(it -> {
                             try {
                                 if(it.equals(unitConfig.getId())) {
-                                    new FatalImplementationErrorException("Location Loop detected!", this);
+                                    new FatalImplementationErrorException("Location "+LabelProcessor.getBestMatch(unitConfig.getLabel())+" refers it self as child unit!", this);
                                     return false;
                                 }
                                 return isServiceAvailable(serviceType, getUnitConfigById(it));
@@ -1552,11 +1552,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                             .getMemberIdList()
                             .stream()
                             .anyMatch(it -> {
-                                if(it.equals(unitConfig.getId())) {
-                                    new FatalImplementationErrorException("Unit Group Loop detected!", this);
-                                    return false;
-                                }
                                 try {
+                                    if(it.equals(unitConfig.getId())) {
+                                        new FatalImplementationErrorException("Unit Group "+LabelProcessor.getBestMatch(unitConfig.getLabel())+" refers it self as member unit!", this);
+                                        return false;
+                                    }
                                     return isServiceAvailable(serviceType, getUnitConfigById(it));
                                 } catch (NotAvailableException exception) {
                                     return false;

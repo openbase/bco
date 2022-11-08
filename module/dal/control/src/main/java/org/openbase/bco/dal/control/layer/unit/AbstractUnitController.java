@@ -134,7 +134,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     /**
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
-    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(10) : TimeUnit.SECONDS.toMillis(30);
+    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(30) : TimeUnit.SECONDS.toMillis(60);
 
     private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(1) : TimeUnit.SECONDS.toMillis(20);
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
@@ -1432,6 +1432,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Update was interrupted!",ex);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply Service[" + serviceType.name() + "] Update[" + newState + "] for " + this + "!", ex);
         }
@@ -1619,12 +1620,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 ) {
                     // Because the service state update was not remapped we can be sure its triggered externally and not via bco.
                     // If in this case the event is initiated by the system, we can be sure that it is caused by a hardware synchronization purpose.
-                    // Therefore we can just apply the update and can skip to force the action execution which could otherwise block some
+                    // Therefore, we can just apply the update and can skip to force the action execution which could otherwise block some
                     // low priority future action for a certain amount of time in case this system action has any priority defined.
                     return serviceState;
                 }
             } catch (NotAvailableException ex) {
-                // if responsible action is not available, than we should continue since this action was maybe externally triggered by a human.
+                // if responsible action is not available, then we should continue since this action was maybe externally triggered by a human.
             }
 
             // force execution to properly apply new state synchronized with the current action scheduling

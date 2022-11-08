@@ -246,21 +246,6 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     }
 
     /**
-     * Check if this action has been executed and reached a termination state.
-     *
-     * @return true if executed and terminated.
-     */
-    default boolean isDone() {
-        switch (getActionState()) {
-            case CANCELED:
-            case REJECTED:
-            case FINISHED:
-                return true;
-        }
-        return false;
-    }
-
-    /**
      * Check if the action is currently scheduled.
      *
      * @return true if running and false if never started, currently executing or already terminated.
@@ -351,6 +336,18 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
             default:
                 return false;
         }
+    }
+
+    /**
+     * Check if this action has been executed and reached a termination state.
+     *
+     * @return true if executed and terminated.
+     */
+    default boolean isDone() {
+        return switch (getActionState()) {
+            case CANCELED, REJECTED, FINISHED -> true;
+            default -> false;
+        };
     }
 
     /**

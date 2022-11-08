@@ -32,6 +32,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
@@ -48,10 +49,6 @@ import java.util.concurrent.*;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements Future<RETURN> {
-
-    private static final List<AbstractAuthenticationFuture> authenticatedFutureList = new ArrayList<>();
-    private static final SyncObject listSync = new SyncObject("AuthenticatedFutureListSync");
-    private static ScheduledFuture responseVerificationFuture = null;
 
     private final Future<INTERNAL> internalFuture;
     private final SessionManager sessionManager;
@@ -83,38 +80,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
         this.sessionManager = sessionManager;
         this.wrapper = wrapper;
 
-        synchronized (listSync) {
-            if (responseVerificationFuture == null) {
-                // create a task which makes sure that get is called on all of these futures so that tickets are renewed
-                try {
-                    responseVerificationFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
-                        synchronized (listSync) {
-                            for (final AbstractAuthenticationFuture future : new ArrayList<>(authenticatedFutureList)) {
-                                if (future.isCancelled()) {
-                                    authenticatedFutureList.remove(future);
-                                }
-
-                                if (future.isDone()) {
-                                    try {
-                                        future.get();
-                                    } catch (InterruptedException ex) {
-                                        Thread.currentThread().interrupt();
-                                    } catch (ExecutionException ex) {
-                                        authenticatedFutureList.remove(future);
-                                    }
-                                }
-                            }
-                        }
-                    }, 1, 5, TimeUnit.SECONDS);
-                    Shutdownable.registerShutdownHook(() -> responseVerificationFuture.cancel(true));
-                } catch (CouldNotPerformException ex) {
-                    if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
-                        ExceptionPrinter.printHistory("Could not initialize task which makes sure that authenticated response are verified", ex, LoggerFactory.getLogger(AbstractAuthenticationFuture.class));
-                    }
-                }
-            }
-            authenticatedFutureList.add(this);
-        }
+        AuthenticationFutureList.INSTANCE.addFuture(this);
     }
 
     /**
@@ -214,9 +180,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not verify ServiceServer Response", ex);
         } finally {
-            synchronized (listSync) {
-                authenticatedFutureList.remove(this);
-            }
+            AuthenticationFutureList.INSTANCE.removeFuture(this);
         }
     }
 

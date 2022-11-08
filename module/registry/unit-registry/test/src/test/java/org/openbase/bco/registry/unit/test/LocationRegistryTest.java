@@ -10,19 +10,18 @@ package org.openbase.bco.registry.unit.test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
@@ -38,6 +37,9 @@ import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
@@ -289,5 +291,19 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
 
         final UnitConfig rootLocation = Registries.getUnitRegistry().getRootLocationConfig();
         assertEquals(rootLocation, Registries.getUnitRegistry().getUnitConfigByScope(rootLocation.getScope()), "Could not resolve locationUnitConfig by its scope");
+    }
+
+    /**
+     * We had an issue that the root location contained itself as a unit id, which could cause
+     * recursive calls (https://github.com/openbase/bco/issues/65).
+     * This test makes sure that this does not happen.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Timeout(5)
+    public void testRootLocationUnitIds() throws Exception {
+        final UnitConfig rootLocation = Registries.getUnitRegistry().getRootLocationConfig();
+        assertFalse(rootLocation.getLocationConfig().getUnitIdList().contains(rootLocation.getId()), "The root location contains itself in its unit id list!");
     }
 }
