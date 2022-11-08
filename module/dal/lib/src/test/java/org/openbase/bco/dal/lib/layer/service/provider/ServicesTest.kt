@@ -39,26 +39,26 @@ class ServicesTest : AbstractBCORegistryTest() {
     @Timeout(value = 30)
     fun testComputeActionImpact() {
         val unitRegistry = Registries.getUnitRegistry(true)
-        val serviceStateBuilder = ServiceStateDescription.newBuilder()
-        serviceStateBuilder.unitId = unitRegistry.rootLocationConfig.id
-        serviceStateBuilder.serviceState = Services.serializeServiceState(
-            States.Power.ON,
-            true
-        )
-        serviceStateBuilder.serviceType = ServiceTemplate.ServiceType.POWER_STATE_SERVICE
-        val impact = Services.computeActionImpact(serviceStateBuilder.build())
-        impact.forEach(
-            Consumer {
-                it.actionId shouldBe Action.PRECOMPUTED_ACTION_ID
-            }
-        )
+        val serviceState = ServiceStateDescription.newBuilder().apply {
+            unitId = unitRegistry.rootLocationConfig.id
+            serviceState = Services.serializeServiceState(
+                States.Power.ON,
+                true
+            )
+            serviceType = ServiceTemplate.ServiceType.POWER_STATE_SERVICE
+        }.build()
+
+        val impact = Services.computeActionImpact(serviceState)
+            .onEach { it.actionId shouldBe Action.PRECOMPUTED_ACTION_ID }
+
         val impactedUnitIdList = impact
             .map { it.serviceStateDescription.unitId }
             .distinct()
             .sorted()
+
         val affectedUnitsUnsorted = unitRegistry.getUnitConfigsByLocationIdAndServiceType(
             unitRegistry.rootLocationConfig.id,
-            serviceStateBuilder.serviceType
+            serviceState.serviceType
         )
             .map { it.id }
             .plus(unitRegistry.rootLocationConfig.id) // by design the action impacts also contain the location itself
