@@ -23,6 +23,8 @@ package org.openbase.bco.app.preset.agent;
  */
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
@@ -56,6 +58,7 @@ import org.slf4j.LoggerFactory;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Disabled
 public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerStateSynchroniserAgentTest.class);

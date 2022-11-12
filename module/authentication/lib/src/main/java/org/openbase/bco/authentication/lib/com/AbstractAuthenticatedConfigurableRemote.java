@@ -25,10 +25,13 @@ package org.openbase.bco.authentication.lib.com;
 import com.google.protobuf.Message;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
+import org.jetbrains.annotations.NotNull;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.future.ReLoginFuture;
 import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
+import org.openbase.jul.communication.data.RPCResponse;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.RejectedException;
@@ -37,10 +40,12 @@ import org.openbase.jul.communication.controller.AbstractConfigurableRemote;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.communication.EventType.Event;
+import org.openbase.type.communication.mqtt.ResponseType;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG extends Message> extends AbstractConfigurableRemote<M, CONFIG> {
@@ -77,50 +82,52 @@ public class AbstractAuthenticatedConfigurableRemote<M extends Message, CONFIG e
     }
 
     @Override
-    protected Function1<Event, Unit> generateHandler() {
+    protected Function2<Event, Map<String, String>, Unit> generateHandler() {
         return new AuthenticatedUpdateHandler();
     }
 
     @Override
-    protected Future<M> internalRequestStatus() {
+    protected Future<RPCResponse<M>> internalRequestStatus() {
         try {
             final SessionManager sessionManager = SessionManager.getInstance();
             if (sessionManager.isLoggedIn()) {
                 final TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.initializeServiceServerRequest();
+                final Future<RPCResponse<AuthenticatedValue>> requestFuture = getRpcClient().callMethod(
+                        AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
+                        AuthenticatedValue.class,
+                        ticketAuthenticatorWrapper
+                );
                 final Future<AuthenticatedValue> authenticatedValueFuture =
                         FutureProcessor.postProcess(
                             (input, timeout, timeUnit) -> input.getResponse(),
-                            getRpcClient().callMethod(
-                                AuthenticatedRequestable.REQUEST_DATA_AUTHENTICATED_METHOD,
-                                AuthenticatedValue.class,
-                                ticketAuthenticatorWrapper
-                            )
+                            requestFuture
                         );
                 final ReLoginFuture<AuthenticatedValue> reloginFuture = new ReLoginFuture<>(
                         authenticatedValueFuture,
                         sessionManager
                 );
-                return new AuthenticatedValueFuture<>(reloginFuture,
+                final AuthenticatedValueFuture authenticationFuture =  new AuthenticatedValueFuture<>(reloginFuture,
                         getDataClass(),
                         ticketAuthenticatorWrapper,
                         sessionManager
                 );
+                return new AuthenticatedRPCResponseFuture<>(requestFuture, authenticationFuture);
             } else {
                 return super.internalRequestStatus();
             }
         } catch (RejectedException ex) {
-            return FutureProcessor.canceledFuture(getDataClass(), ex);
+            return FutureProcessor.canceledFuture(null, ex);
         }
     }
 
-    private class AuthenticatedUpdateHandler implements Function1<Event, Unit> {
+    private class AuthenticatedUpdateHandler implements Function2<Event, Map<String, String>, Unit> {
 
         @Override
-        public Unit invoke(Event event) {
+        public Unit invoke(Event event, Map<String, String> userProperties) {
             try {
 
                 if (!SessionManager.getInstance().isLoggedIn() || !event.hasPayload()) {
-                    applyEventUpdate(event);
+                    applyEventUpdate(event, userProperties);
                     return null;
                 }
 

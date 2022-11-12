@@ -114,7 +114,7 @@ includeBuild("lib/jul")
 
 pluginManagement {
     plugins {
-        id("de.fayard.refreshVersions") version "0.40.1"
+        id("de.fayard.refreshVersions") version "0.40.2"
     }
 }
 

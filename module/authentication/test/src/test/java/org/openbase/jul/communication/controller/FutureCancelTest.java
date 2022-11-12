@@ -24,6 +24,7 @@ package org.openbase.jul.communication.controller;
 
 import com.google.protobuf.Any;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.communication.config.CommunicatorConfig;
 import org.openbase.jul.communication.data.RPCResponse;
@@ -90,6 +91,7 @@ public class FutureCancelTest extends MqttIntegrationTest implements Requestable
      * @throws Exception
      */
     @Test
+    @Timeout(10)
     public void testFutureCancellation() throws Exception {
         System.out.println("TestFutureCancellation");
 

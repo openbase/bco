@@ -68,16 +68,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static ColorableLightRemote colorableLightRemote;
 
-    @Override
-    public void setupTestProperties() {
-        // legacy mode needed for testLegacyRemoteCallGetColor() test.
-        JPService.registerProperty(JPComLegacyMode.class, true);
-        System.out.println("called");
-        // enable to get debug logging
-//         JPService.registerProperty(JPDebugMode.class, true);
-//         JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
-    }
-
     @BeforeAll
     public static void loadUnits() throws Throwable {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
@@ -100,55 +90,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         HSBColor color = HSBColor.newBuilder().setBrightness(0.50).setSaturation(0.70).setHue(150).build();
         waitForExecution(colorableLightRemote.setColor(color));
         assertEquals(color, colorableLightRemote.getData().getColorState().getColor().getHsbColor(), "Color has not been set in time!");
-    }
-
-    /**
-     * Test controlling a colorable light using a light remote.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Timeout(15)
-    public void testControllingViaLightRemote() throws Exception {
-        System.out.println("testControllingViaLightRemote");
-
-        waitForExecution(colorableLightRemote.setPowerState(State.OFF));
-        final LightRemote lightRemote = new LightRemote();
-        try {
-            // create a light remote from colorable light config and wait for data
-            lightRemote.setSessionManager(SessionManager.getInstance());
-            lightRemote.init(colorableLightRemote.getConfig());
-            lightRemote.activate();
-            lightRemote.waitForData();
-
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-
-            // test if the initial state was synced correctly
-            assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
-
-            // test controlling via light remote
-            waitForExecution(lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()));
-            lightRemote.requestData().get();
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
-
-            // test controlling via colorable light remote
-            waitForExecution(colorableLightRemote.setPowerState(State.OFF));
-            lightRemote.requestData().get();
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-            assertEquals(colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        } finally {
-            // custom remote not handled by shutdown hook so make sure to call shutdown
-            lightRemote.shutdown();
-        }
     }
 
     /**

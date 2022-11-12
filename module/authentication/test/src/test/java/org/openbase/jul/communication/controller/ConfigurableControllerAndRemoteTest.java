@@ -45,8 +45,8 @@ public class ConfigurableControllerAndRemoteTest extends MqttIntegrationTest {
     public ConfigurableControllerAndRemoteTest() {
     }
 
-    @Timeout(10)
     @Test
+    @Timeout(10)
     public void initTest() throws Exception {
         System.out.println("initTest");
 
@@ -80,8 +80,8 @@ public class ConfigurableControllerAndRemoteTest extends MqttIntegrationTest {
         remote.shutdown();
     }
 
-    @Timeout(10)
     @Test
+    @Timeout(10)
     public void applyConfigUpdateTest() throws Exception {
         System.out.println("applyConfigUpdateTest");
 

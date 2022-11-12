@@ -1,12 +1,11 @@
 # Install dependencies
-FROM ubuntu:latest AS builder
+FROM eclipse-temurin:17-jdk AS builder
 
 ENV \
     JAVA_OPTS="" \
     LC_ALL="en_US.UTF-8" \
     LANG="en_US.UTF-8" \
-    LANGUAGE="en_US.UTF-8" \
-    JAVA_VERSION="17"
+    LANGUAGE="en_US.UTF-8"
 
 WORKDIR /workspace
 
@@ -14,10 +13,11 @@ WORKDIR /workspace
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
     apt install -y \
-            openjdk-17-jdk \
             git \
+            gradle \
             rsync \
             curl \
+            ca-certificates \
             locales \
             locales-all \
             wget && \
@@ -38,9 +38,9 @@ RUN cd lib/jul && \
 RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
 
 # Switch to baseline image
-FROM ubuntu:latest
+FROM eclipse-temurin:17-jre
 
-# # Install adhoc
+# # Install app
 COPY --from=builder /workspace/module/app/util/build/install/bco/bin /usr/bin/
 COPY --from=builder /workspace/module/app/util/build/install/bco/lib /usr/lib/
 # COPY --from=builder /workspace/build/share /usr/share/
@@ -75,8 +75,7 @@ ENV \
     BCO_HOME="/home/bco/data" \
     BCO_LOGS="/home/bco/data/log" \
     BCO_BINARY="/usr/bin/bco" \
-    BCO_OPTIONS="" \
-    JAVA_VERSION="11"
+    BCO_OPTIONS=""
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.build-date=$BUILD_DATE \
@@ -91,31 +90,6 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.vcs-type="Git" \
     org.label-schema.vcs-url="https://github.com/openbase/bco.git" \
     maintainer="Divine Threepwood <divine@openbase.org>"
-
-    
-# Install java
-ENV JAVA_HOME='/usr/lib/jvm/default-jvm'
-# Limit JDK crypto policy by default to comply with local laws which may prohibit use of unlimited strength cryptography
-RUN mkdir -p "${JAVA_HOME}" && \
-    zulu8_amd64_url='https://cdn.azul.com/zulu/bin/zulu8.46.0.19-ca-jdk8.0.252-linux_x64.tar.gz' && \
-    zulu8_armhf_url='https://cdn.azul.com/zulu-embedded/bin/zulu8.46.0.225-ca-jdk8.0.252-linux_aarch32hf.tar.gz' && \
-    zulu8_arm64_url='https://cdn.azul.com/zulu-embedded/bin/zulu8.46.0.225-ca-jdk8.0.252-linux_aarch64.tar.gz' && \
-    zulu11_amd64_url='https://cdn.azul.com/zulu/bin/zulu11.39.15-ca-jdk11.0.7-linux_x64.tar.gz' && \
-    zulu11_armhf_url='https://cdn.azul.com/zulu-embedded/bin/zulu11.39.61-ca-jdk11.0.7-linux_aarch32hf.tar.gz' && \
-    zulu11_arm64_url='https://cdn.azul.com/zulu-embedded/bin/zulu11.39.61-ca-jdk11.0.7-linux_aarch64.tar.gz' && \
-    url_var="zulu${JAVA_VERSION}_$(dpkg --print-architecture)_url" && \
-    eval "java_url=\$$url_var" && \
-    echo "${java_url}" && \
-    wget -nv -O /tmp/java.tar.gz "${java_url}" && \
-    tar --exclude='demo' --exclude='sample' --exclude='src.zip' -xf /tmp/java.tar.gz --strip-components=1 -C "${JAVA_HOME}" && \
-    if [ "${JAVA_VERSION}" = "8" ]; then \
-        sed -i 's/^#crypto.policy=unlimited/crypto.policy=limited/' "${JAVA_HOME}/jre/lib/security/java.security"; \
-    elif [ "${JAVA_VERSION}" = "11" ]; then \
-        sed -i 's/^crypto.policy=unlimited/crypto.policy=limited/' "${JAVA_HOME}/conf/security/java.security"; \
-    fi && \
-    rm /tmp/java.tar.gz && \
-    update-alternatives --install /usr/bin/java java "${JAVA_HOME}/bin/java" 50 && \
-    update-alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 50
 
 # Expose volume
 VOLUME ${BCO_HOME}

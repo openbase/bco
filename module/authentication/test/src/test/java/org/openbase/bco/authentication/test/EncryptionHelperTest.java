@@ -54,6 +54,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
+    @Timeout(10)
     public void testSymmetricHashing() {
         LOGGER.info("test if hashing method hashes symmetrically");
         byte[] hash1 = EncryptionHelper.hash("test");
@@ -84,6 +85,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
+    @Timeout(10)
     public void testExceptionsWithWrongKeySymmetric() {
         LOGGER.info("testExceptionsWithWrongKey");
 
@@ -99,6 +101,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
+    @Timeout(10)
     public void testExceptionsWithWrongKeyAsymmetric() {
         LOGGER.info("testExceptionsWithWrongKeyAsymmetric");
 

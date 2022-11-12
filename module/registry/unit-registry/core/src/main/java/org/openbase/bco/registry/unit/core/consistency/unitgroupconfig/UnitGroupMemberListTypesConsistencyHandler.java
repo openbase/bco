@@ -93,6 +93,9 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
             unitGroup.clearMemberId();
             for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
                 UnitType unitType = getUnitConfigById(memberId).getUnitType();
+                if (unitType == UnitType.UNIT_GROUP) {
+                    unitType = getUnitConfigById(memberId).getUnitGroupConfig().getUnitType();
+                }
                 if (unitType == unitGroup.getUnitType() || getSubTypes(unitGroup.getUnitType()).contains(unitType)) {
                     memberIds.add(memberId);
                 } else {

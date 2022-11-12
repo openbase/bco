@@ -397,7 +397,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
                 cancelTask.get();
             }
         } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not wait for at least on test action!", ex);
+            throw new CouldNotPerformException("Could not wait for at least one test action!", ex);
         }
 
         testActions.clear();

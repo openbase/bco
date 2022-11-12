@@ -20,8 +20,7 @@ import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation.OR
 import org.openbase.jul.schedule.Timeout
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State.ACTIVE
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State.INACTIVE
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State.*
 import org.openbase.type.domotic.state.PowerStateType.PowerState
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State.ON
 import java.util.concurrent.ExecutionException
@@ -106,9 +105,11 @@ class MasterSlavePowerCycleAgent : AbstractTriggerableAgent() {
     override fun trigger(activationState: ActivationState) {
 
         // sync slave
-        when (activationState.value) {
-            ACTIVE -> observe(slave!!.setPowerState(ON, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)))
-            INACTIVE -> cancelAllObservedActions()
+        activationState.value?.let { value ->
+            when (value) {
+                ACTIVE -> observe(slave!!.setPowerState(ON, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)))
+                INACTIVE, UNKNOWN -> cancelAllObservedActions()
+            }
         }
     }
 }
