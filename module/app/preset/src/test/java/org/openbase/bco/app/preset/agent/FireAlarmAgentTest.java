@@ -51,7 +51,6 @@ import org.openbase.type.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorDat
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
 
-@Disabled
 public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FireAlarmAgentTest.class);
