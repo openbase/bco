@@ -300,7 +300,9 @@ public class ActionImpl implements SchedulableAction {
                                 }
 
                                 // apply new state
+                                LOGGER.error("[" +myId+"]"+" performOperationService: "+ actionTask.hashCode());
                                 unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
+                                LOGGER.error("[" +myId+"]"+" performOperationService end: "+ actionTask.hashCode());
 
                                 updateActionStateIfNotCanceled(State.EXECUTING);
 
@@ -719,7 +721,10 @@ public class ActionImpl implements SchedulableAction {
 
         // cancel if exist
         if (actionTask != null) {
+            LOGGER.warn("[" +myId+"]"+" cancel["+actionTask.isDone()+"] and interrupt "+ actionTask.hashCode());
             actionTask.cancel(true);
+        } else {
+            LOGGER.warn("[" +myId+"]"+" no interruption performed");
         }
 
         try {
@@ -733,7 +738,7 @@ public class ActionImpl implements SchedulableAction {
 
         // check if finished after force
         if (!isActionTaskFinished()) {
-            LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
+            LOGGER.error("[" +myId+"]"+" Can not cancel " + this + " it seems the execution has stuck.");
             StackTracePrinter.printAllStackTraces(null, ActionImpl.class, LOGGER, LogLevel.WARN);
             StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER);
         }
@@ -760,9 +765,13 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
+    private String myId  = "";
+
     private void updateActionState(final ActionState.State state) throws InterruptedException {
         actionDescriptionBuilderLock.lockWriteInterruptibly();
         try {
+
+            myId = getActionDescription().getActionId() + " - " + MultiLanguageTextProcessor.getBestMatch(getActionDescription().getDescription(), "?");
 
             // duplicated state confirmation should be ok to simplify the code, but than skip the update.
             if (getActionState() == state) {
@@ -808,10 +817,10 @@ public class ActionImpl implements SchedulableAction {
             }
 
             // print update in debug mode
-            if (JPService.debugMode()) {
+//            if (JPService.debugMode()) {
                 LOGGER.info("State[" + state.name() + "] " + this);
                 //StackTracePrinter.printStackTrace(LOGGER, LogLevel.INFO);
-            }
+//            }
 
             // perform the update
             actionDescriptionBuilder.getActionStateBuilder().setValue(state);
