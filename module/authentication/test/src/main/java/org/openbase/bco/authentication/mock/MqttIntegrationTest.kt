@@ -54,7 +54,7 @@ open class MqttIntegrationTest {
         synchronized(configLock) {
             mosquittoConfig = Files.createTempFile("mosquitto_", ".conf")
             Files.write(
-                mosquittoConfig, Arrays.asList(
+                mosquittoConfig, listOf(
                     "allow_anonymous true",
                     "listener " + port
                 )
