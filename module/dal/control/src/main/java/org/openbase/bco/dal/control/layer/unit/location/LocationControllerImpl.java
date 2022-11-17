@@ -123,6 +123,7 @@ public class LocationControllerImpl extends AbstractAggregatedBaseUnitController
             try {
                 childList.add(Units.getUnit(Registries.getUnitRegistry().getUnitConfigById(childId), waitForData, LOCATION));
             } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
                 throw new CouldNotPerformException("Could not get all child locations!", ex);
             }
         }
