@@ -38,7 +38,7 @@ import java.lang.reflect.InvocationTargetException
  *
  * @author [Timo Michalski](mailto:tmichalski@techfak.uni-bielefeld.de)
 </DT></UR> */
-class GenericBoundedDoubleValueTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?>(
+class GenericBoundedDoubleValueTrigger<UR : AbstractUnitRemote<DT>, DT : Message>(
     unitRemote: UR,
     boundary: Double,
     triggerOperation: TriggerOperation?,

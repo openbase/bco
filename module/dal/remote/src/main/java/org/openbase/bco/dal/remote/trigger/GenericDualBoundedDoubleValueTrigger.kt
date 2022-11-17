@@ -40,7 +40,7 @@ import java.lang.reflect.InvocationTargetException
  *
  * @author [Timo Michalski](mailto:tmichalski@techfak.uni-bielefeld.de)
 </DT></UR> */
-open class GenericDualBoundedDoubleValueTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?>(
+open class GenericDualBoundedDoubleValueTrigger<UR : AbstractUnitRemote<DT>, DT : Message>(
     unitRemote: UR,
     upperBoundary: Double,
     lowerBoundary: Double,

@@ -31,7 +31,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType
  * @param <UR> UnitRemote
  * @param <DT> DataType
 </DT></UR> */
-class IlluminanceDualBoundaryTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?>(
+class IlluminanceDualBoundaryTrigger<UR : AbstractUnitRemote<DT>, DT : Message>(
     unitRemote: UR,
     upperBoundary: Double,
     lowerIllumination: Double,

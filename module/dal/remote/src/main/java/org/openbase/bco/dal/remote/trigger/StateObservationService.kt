@@ -32,9 +32,9 @@ object StateObservationService {
     ) {
         synchronized(lock) {
             observerMap[unitRemote.id]
-                .let { it as InternalObserver<DT> }
-                .also { it.removeTrigger(trigger, dataObserver) }
-                .takeIf { it.noSubscription }
+                ?.let { it as InternalObserver<DT> }
+                ?.also { it.removeTrigger(trigger, dataObserver) }
+                ?.takeIf { it.noSubscription }
                 ?.also { unitRemote.removeDataObserver(it) }
                 ?.also { observerMap.remove(unitRemote.id) }
         }

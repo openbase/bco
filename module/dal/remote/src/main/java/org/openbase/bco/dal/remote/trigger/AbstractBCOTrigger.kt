@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory
  * @param <STE> StateTypeEnum
  * @author [Timo Michalski](mailto:tmichalski@techfak.uni-bielefeld.de)
 </STE></DT></UR> */
-abstract class AbstractBCOTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?, STE>(
+abstract class AbstractBCOTrigger<UR : AbstractUnitRemote<DT>, DT : Message, STE>(
     private val unitRemote: UR,
     private val targetState: STE,
     private val serviceType: ServiceTemplateType.ServiceTemplate.ServiceType
@@ -52,10 +52,10 @@ abstract class AbstractBCOTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?, S
 
     init {
         dataObserver =
-            Observer { source: DataProvider<DT>?, data: DT -> verifyCondition(data, targetState, serviceType) }
+            Observer { source: DataProvider<DT>, data: DT -> verifyCondition(data, targetState, serviceType) }
         connectionObserver = Observer { source: Remote<*>?, data: ConnectionStateType.ConnectionState.State ->
             if (data == ConnectionStateType.ConnectionState.State.CONNECTED) {
-                verifyCondition(unitRemote!!.data, targetState, serviceType)
+                verifyCondition(unitRemote.data, targetState, serviceType)
             } else {
                 notifyChange(
                     TimestampProcessor.updateTimestampWithCurrentTime(
@@ -76,7 +76,7 @@ abstract class AbstractBCOTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?, S
 
     @Throws(CouldNotPerformException::class, InterruptedException::class)
     override fun activate() {
-        unitRemote!!.addDataObserver(dataObserver)
+        StateObservationService.registerTrigger(dataObserver, unitRemote, this)
         unitRemote.addConnectionStateObserver(connectionObserver)
         active = true
         if (unitRemote.isDataAvailable) {
@@ -86,7 +86,7 @@ abstract class AbstractBCOTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?, S
 
     @Throws(CouldNotPerformException::class, InterruptedException::class)
     override fun deactivate() {
-        unitRemote!!.removeDataObserver(dataObserver)
+        StateObservationService.removeTrigger(dataObserver, unitRemote, this)
         unitRemote.removeConnectionStateObserver(connectionObserver)
         active = false
         notifyChange(

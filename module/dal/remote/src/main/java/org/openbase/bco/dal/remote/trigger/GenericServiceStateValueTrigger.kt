@@ -35,7 +35,7 @@ import org.openbase.type.domotic.state.ActivationStateType
  *
  * @author [Divine Threepwood](mailto:divine@openbase.org)
 </STE></DT></UR> */
-class GenericServiceStateValueTrigger<UR : AbstractUnitRemote<DT>?, DT : Message?, STE : Enum<STE>>(
+class GenericServiceStateValueTrigger<UR : AbstractUnitRemote<DT>, DT : Message, STE : Enum<STE>>(
     unitRemote: UR,
     targetState: STE,
     serviceType: ServiceTemplateType.ServiceTemplate.ServiceType
