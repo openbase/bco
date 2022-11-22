@@ -1369,21 +1369,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public void applyDataUpdate(Message newState, final ServiceType serviceType) throws CouldNotPerformException {
         try {
-            logger.error("wait for lock...");
-//            if (!builderSetup.tryLockWrite(5, TimeUnit.SECONDS, this)) {
-//                throw new InvalidStateException("Unit seems to be stuck!");
-//            }
-
-            while (!builderSetup.tryLockWrite(100, TimeUnit.MILLISECONDS, this)) {
-
-                if(Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException();
-                }
-
-                logger.warn("stucked");
+            if (!builderSetup.tryLockWrite(5, TimeUnit.SECONDS, this)) {
+                throw new InvalidStateException("Unit seems to be stuck!");
             }
-
-
 
             // builder write unlock  block
             try {
@@ -1443,11 +1431,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 builderSetup.unlockWrite(NotificationStrategy.AFTER_LAST_RELEASE);
             }
         } catch (InterruptedException ex) {
-            logger.error("recover interruption");
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Update was interrupted!",ex);
-        } catch (Throwable ex) {
-            logger.error("Failed");
+        } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply Service[" + serviceType.name() + "] Update[" + newState + "] for " + this + "!", ex);
         }
     }
