@@ -267,7 +267,7 @@ public class ActionImpl implements SchedulableAction {
                         boolean retry = false;
 
                         // loop as long as task is not canceled.
-                        while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || getActionState() == State.CANCELING)) {
+                        while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || isTerminating())) {
                             try {
                                 // wait in case of a retry
                                 if(retry) {
@@ -400,7 +400,9 @@ public class ActionImpl implements SchedulableAction {
         final TimeoutSplitter timeoutSplitter = new TimeoutSplitter(timeout, timeUnit);
         synchronized (actionTaskLock) {
             while (!isActionTaskFinished()) {
+                LOGGER.warn("wait for lock");
                 actionTaskLock.wait(timeoutSplitter.getTime());
+                LOGGER.warn("continue");
             }
         }
     }
@@ -723,6 +725,7 @@ public class ActionImpl implements SchedulableAction {
         if (actionTask != null) {
             LOGGER.warn("[" +myId+"]"+" cancel["+actionTask.isDone()+"] and interrupt "+ actionTask.hashCode());
             actionTask.cancel(true);
+            LOGGER.warn("interrupted hopefully");
         } else {
             LOGGER.warn("[" +myId+"]"+" no interruption performed");
         }
@@ -746,12 +749,14 @@ public class ActionImpl implements SchedulableAction {
 
     private void updateActionStateIfNotCanceled(final ActionState.State state) throws InterruptedException {
         synchronized (actionTaskLock) {
-            if (actionTask.isCancelled() || getActionState() == State.CANCELING) {
+            if (isTerminating()) {
                 throw new InterruptedException();
             }
         }
         updateActionState(state);
     }
+
+
 
     private void updateActionStateWhileHoldingWriteLock(final ActionState.State state) {
         if (!actionDescriptionBuilderLock.isAnyWriteLockHeldByCurrentThread()) {
@@ -806,13 +811,6 @@ public class ActionImpl implements SchedulableAction {
 
                 case ABORTING:
                 case CANCELING:
-                    // mark action task already as canceled, to make sure the task is not
-                    // updating any further action states which would otherwise introduce invalid state transitions.
-                    synchronized (actionTaskLock) {
-                        if (!isActionTaskFinished()) {
-                            actionTask.cancel(false);
-                        }
-                    }
                     break;
             }
 
@@ -848,6 +846,7 @@ public class ActionImpl implements SchedulableAction {
             executionStateChangeSync.notifyAll();
         }
     }
+
 
     private void validateStateTransition(final ActionState.State state) throws InvalidStateException {
         // validate state transition
