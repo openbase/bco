@@ -104,7 +104,7 @@ public class UnitConfigFilterImpl implements ListFilter<UnitConfig>, UnitConfigF
         }
 
         // filter by username
-        if (properties.hasUserConfig() && unitConfig.hasUserConfig() && !(properties.getUserConfig().getUserName().equals(unitConfig.getUserConfig().getUserName()))) {
+        if (properties.hasUserConfig() && unitConfig.hasUserConfig() && !(properties.getUserConfig().getUserName().equalsIgnoreCase(unitConfig.getUserConfig().getUserName()))) {
             return false;
         }
 

@@ -9,20 +9,70 @@ import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter
 class UnitConfigFilterTest {
 
     @Test
-    fun `test filter for username`() {
+    fun `test filter for username with exact cases`() {
         val username1 = "Guybrush"
         val username2 = "LeChuck"
 
-        val userGuybrush = UnitConfig.newBuilder()
-        userGuybrush.userConfigBuilder.userName = username1
-        val userLeChuck = UnitConfig.newBuilder()
-        userLeChuck.userConfigBuilder.userName = username2
+        val userGuybrush = UnitConfig
+            .newBuilder()
+            .also { it.userConfigBuilder.userName = username1 }
+            .build()
 
-        val filterConfig = UnitFilter.newBuilder()
-        filterConfig.propertiesBuilder.userConfigBuilder.userName = username1
-        val guybrushFilter = UnitConfigFilterImpl(filterConfig.build())
+        val userLeChuck = UnitConfig
+            .newBuilder()
+            .also { it.userConfigBuilder.userName = username2 }
+            .build()
 
-        guybrushFilter.match(userGuybrush.build()) shouldBe true
-        guybrushFilter.match(userLeChuck.build()) shouldBe false
+        val guybrushFilter = UnitFilter
+            .newBuilder()
+            .also { it.propertiesBuilder.userConfigBuilder.userName = username1 }
+            .build()
+            .let {  UnitConfigFilterImpl(it) }
+
+        val lechuckFilter = UnitFilter
+            .newBuilder()
+            .also {it.propertiesBuilder.userConfigBuilder.userName = username1 }
+            .build()
+            .let { UnitConfigFilterImpl(it) }
+
+        guybrushFilter.match(userGuybrush) shouldBe true
+        guybrushFilter.match(userLeChuck) shouldBe false
+
+        lechuckFilter.match(userGuybrush) shouldBe true
+        lechuckFilter.match(userLeChuck) shouldBe false
+    }
+
+    @Test
+    fun `test filter for username with alternating cases`() {
+        val username1 = "Guybrush"
+        val username2 = "LeChuck"
+
+        val userGuybrush = UnitConfig
+            .newBuilder()
+            .also { it.userConfigBuilder.userName = username1.uppercase() }
+            .build()
+
+        val userLeChuck = UnitConfig
+            .newBuilder()
+            .also { it.userConfigBuilder.userName = username2.lowercase() }
+            .build()
+
+        val guybrushFilter = UnitFilter
+            .newBuilder()
+            .also { it.propertiesBuilder.userConfigBuilder.userName = username1 }
+            .build()
+            .let {  UnitConfigFilterImpl(it) }
+
+        val lechuckFilter = UnitFilter
+            .newBuilder()
+            .also {it.propertiesBuilder.userConfigBuilder.userName = username1 }
+            .build()
+            .let { UnitConfigFilterImpl(it) }
+
+        guybrushFilter.match(userGuybrush) shouldBe true
+        guybrushFilter.match(userLeChuck) shouldBe false
+
+        lechuckFilter.match(userGuybrush) shouldBe true
+        lechuckFilter.match(userLeChuck) shouldBe false
     }
 }

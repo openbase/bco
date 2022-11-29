@@ -351,6 +351,19 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
     }
 
     /**
+     * Check if this action is terminating, which means it was canceled
+     * or aborted but has not reached a terminating state yet.
+     *
+     * @return true if canceling or aborting.
+     */
+    default boolean isTerminating() {
+        return switch (getActionState()) {
+            case CANCELING, ABORTING -> true;
+            default -> false;
+        };
+    }
+
+    /**
      * Return the current state of this action.
      *
      * @return the action state
