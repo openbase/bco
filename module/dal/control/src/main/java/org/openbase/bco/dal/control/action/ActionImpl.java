@@ -735,6 +735,7 @@ public class ActionImpl implements SchedulableAction {
 
         // check if finished after force
         if (!isActionTaskFinished()) {
+            LOGGER.error("Can not finalize " + this + " it seems the execution has stuck.");
             StackTracePrinter.printAllStackTraces(null, ActionImpl.class, LOGGER, LogLevel.WARN);
             StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER);
         }
