@@ -63,12 +63,9 @@ import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightD
 import org.openbase.type.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
 
-
-
 /**
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-@Disabled
 public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PresenceLightAgentTest.class);
@@ -88,14 +85,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     private UnitStateAwaiter<LightSensorData, LightSensorRemote> lightSensorStateAwaiter;
     private UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter;
 
-    public PresenceLightAgentTest() throws CouldNotPerformException, InterruptedException {
-        locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
-        colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT).get(0);
-        motionDetectorRemote = locationRemote.getUnits(UnitType.MOTION_DETECTOR, true, Units.MOTION_DETECTOR).get(0);
-        lightSensorRemote = locationRemote.getUnits(UnitType.LIGHT_SENSOR, true, Units.LIGHT_SENSOR).get(0);
-
-    }
-
     //@BeforeAll //uncomment to enable debug mode
     public static void showActionInspector() throws Throwable {
 
@@ -109,6 +98,11 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
     @Override
     public void prepareEnvironment() throws CouldNotPerformException, InterruptedException {
+
+        locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
+        colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT).get(0);
+        motionDetectorRemote = locationRemote.getUnits(UnitType.MOTION_DETECTOR, true, Units.MOTION_DETECTOR).get(0);
+        lightSensorRemote = locationRemote.getUnits(UnitType.LIGHT_SENSOR, true, Units.LIGHT_SENSOR).get(0);
 
         // set location emphasis to economy to make the agent more responsive on presence changes
         waitForExecution(locationRemote.setEconomyEmphasis(1));
@@ -147,7 +141,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
      */
     @Test
     @Timeout(30)
-    @Disabled
     public void testPresenceLightAgent() throws Exception {
 
         // test if on motion the lights are turned on

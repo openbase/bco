@@ -58,17 +58,12 @@ import org.slf4j.LoggerFactory;
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-@Disabled
 public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerStateSynchroniserAgentTest.class);
 
     private static final String AGENT_ALIAS = "Power_State_Sync_Agent_Unit_Test";
     private static final long STATE_AWAIT_TIMEOUT = 1000;
-
-    public PowerStateSynchroniserAgentTest() {
-    }
-
     private String sourceId;
     private String targetId1;
     private String targetId2;

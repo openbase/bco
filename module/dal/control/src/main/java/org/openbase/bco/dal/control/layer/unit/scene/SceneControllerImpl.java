@@ -403,6 +403,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             for (Entry<UnitRemote<?>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                 try {
                     unitActionReferenceEntry.getKey().addServiceStateObserver(ServiceTempus.CURRENT, unitActionReferenceEntry.getValue().getServiceType(), this);
+                    unitActionReferenceEntry.getKey().addServiceStateObserver(ServiceTempus.REQUESTED, unitActionReferenceEntry.getValue().getServiceType(), this);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not observe service state of action impact!", ex, LOGGER, LogLevel.WARN);
                 }
@@ -416,7 +417,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 } catch (CouldNotPerformException e) {
                     // ignore if this action can not be checks since the validation will at least check its state.
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
             }
 
@@ -428,7 +429,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             try {
                 for (Entry<UnitRemote<? extends Message>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                     try {
-                        // skip unit in case its offline, since than the verification is automatically
+                        // skip unit in case its offline, since then the verification is automatically
                         // performed when its back online but those unnecessary timeouts are avoided.
                         if (unitActionReferenceEntry.getKey().isConnected()) {
                             continue;
@@ -479,6 +480,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             // deregister observation
             for (Entry<UnitRemote<?>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                 unitActionReferenceEntry.getKey().removeServiceStateObserver(ServiceTempus.CURRENT, unitActionReferenceEntry.getValue().getServiceType(), this);
+                unitActionReferenceEntry.getKey().removeServiceStateObserver(ServiceTempus.REQUESTED, unitActionReferenceEntry.getValue().getServiceType(), this);
             }
         }
     }
