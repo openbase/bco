@@ -1117,6 +1117,8 @@ public class RemoteAction implements Action {
                     } else {
                         futureObservationTask.get(timeSplit.getTime(), timeSplit.getTimeUnit());
                     }
+                } catch (CancellationException ex) {
+                    throw new CouldNotPerformException(ex.getCause());
                 } catch (java.util.concurrent.TimeoutException ex) {
                     throw new org.openbase.jul.exception.TimeoutException();
                 }
@@ -1232,4 +1234,3 @@ public class RemoteAction implements Action {
         return Action.toString(this);
     }
 }
-

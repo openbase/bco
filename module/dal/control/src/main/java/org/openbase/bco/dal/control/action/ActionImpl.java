@@ -267,7 +267,7 @@ public class ActionImpl implements SchedulableAction {
                         boolean retry = false;
 
                         // loop as long as task is not canceled.
-                        while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || getActionState() == State.CANCELING)) {
+                        while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || isTerminating())) {
                             try {
                                 // wait in case of a retry
                                 if(retry) {
@@ -282,12 +282,12 @@ public class ActionImpl implements SchedulableAction {
 
                                 if (!isValid()) {
                                     LOGGER.debug(ActionImpl.this + " no longer valid and will be rejected!");
-                                    updateActionStateIfNotCanceled(State.REJECTED);
+                                    updateActionStateIfNotTerminating(State.REJECTED);
                                     break;
                                 }
 
                                 // Submission
-                                updateActionStateIfNotCanceled(State.SUBMISSION);
+                                updateActionStateIfNotTerminating(State.SUBMISSION);
 
                                 // only update requested state if it is an operation state, else throw an exception if not in provider control mode
                                 if (hasOperationService) {
@@ -302,11 +302,11 @@ public class ActionImpl implements SchedulableAction {
                                 // apply new state
                                 unit.performOperationService(serviceState, serviceDescription.getServiceType()).get(EXECUTION_FAILURE_TIMEOUT, TimeUnit.MILLISECONDS);
 
-                                updateActionStateIfNotCanceled(State.EXECUTING);
+                                updateActionStateIfNotTerminating(State.EXECUTING);
 
                                 // action can be finished if not done yet and time has expired or execution time was never required.
                                 if (!isDone() && (isExpired() || getExecutionTimePeriod(TimeUnit.MICROSECONDS) == 0)) {
-                                    updateActionStateIfNotCanceled(State.FINISHED);
+                                    updateActionStateIfNotTerminating(State.FINISHED);
                                 }
                                 break;
 
@@ -319,18 +319,18 @@ public class ActionImpl implements SchedulableAction {
                                 }
 
                                 if (!isDone()) {
-                                    updateActionStateIfNotCanceled(State.SUBMISSION_FAILED);
+                                    updateActionStateIfNotTerminating(State.SUBMISSION_FAILED);
                                 }
 
                                 // handle if action was rejected by the unit itself
                                 if (ex.getCause() instanceof RejectedException) {
-                                    updateActionStateIfNotCanceled(State.REJECTED);
+                                    updateActionStateIfNotTerminating(State.REJECTED);
                                     break;
                                 }
 
                                 // avoid execution in case unit is shutting down
                                 if (unit.isShutdownInProgress() || ExceptionProcessor.isCausedBySystemShutdown(ex)) {
-                                    updateActionStateIfNotCanceled(State.REJECTED);
+                                    updateActionStateIfNotTerminating(State.REJECTED);
                                     break;
                                 }
 
@@ -533,7 +533,9 @@ public class ActionImpl implements SchedulableAction {
                     try {
                         unit.reschedule();
                     } catch (CouldNotPerformException ex) {
-                        // if the reschedule is not possible because of a system shutdown everything is fine, otherwise it s s a controller error and there is no need to inform the remote about any error if the cancellation was successful.
+                        // if the reschedule is not possible because of a system shutdown everything is fine,
+                        // otherwise it is a controller error and there is no need to inform the remote about
+                        // any error if the cancellation was successful.
                         if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
                             ExceptionPrinter.printHistory("Reschedule of " + unit + " failed after action cancellation!", ex, LOGGER);
                         }
@@ -739,9 +741,9 @@ public class ActionImpl implements SchedulableAction {
         }
     }
 
-    private void updateActionStateIfNotCanceled(final ActionState.State state) throws InterruptedException {
+    private void updateActionStateIfNotTerminating(final ActionState.State state) throws InterruptedException {
         synchronized (actionTaskLock) {
-            if (actionTask.isCancelled() || getActionState() == State.CANCELING) {
+            if (isTerminating()) {
                 throw new InterruptedException();
             }
         }
@@ -763,7 +765,6 @@ public class ActionImpl implements SchedulableAction {
     private void updateActionState(final ActionState.State state) throws InterruptedException {
         actionDescriptionBuilderLock.lockWriteInterruptibly();
         try {
-
             // duplicated state confirmation should be ok to simplify the code, but than skip the update.
             if (getActionState() == state) {
                 return;
@@ -797,13 +798,6 @@ public class ActionImpl implements SchedulableAction {
 
                 case ABORTING:
                 case CANCELING:
-                    // mark action task already as canceled, to make sure the task is not
-                    // updating any further action states which would otherwise introduce invalid state transitions.
-                    synchronized (actionTaskLock) {
-                        if (!isActionTaskFinished()) {
-                            actionTask.cancel(false);
-                        }
-                    }
                     break;
             }
 

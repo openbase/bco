@@ -34,6 +34,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.trigger.Trigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation;
+import org.openbase.jul.pattern.trigger.TriggerPriority;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.jul.schedule.SyncObject;
@@ -164,6 +165,11 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
      */
     public void registerActivationTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException {
         try {
+            /*
+             * We need to take care that agents that schedule new actions are prioritized
+             * in contrast to the one which cancel their actions.
+             */
+            trigger.setPriority(TriggerPriority.HIGH);
             activationTriggerPool.addTrigger(trigger, aggregation);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agent pool", ex);
@@ -172,6 +178,11 @@ public abstract class AbstractTriggerableAgent extends AbstractAgentController {
 
     public void registerDeactivationTrigger(Trigger trigger, TriggerAggregation aggregation) throws CouldNotPerformException {
         try {
+            /*
+             * We need to take care that agents that cancel their actions are handled with low priority
+             * to avoid termination actions to get accidentally activated.
+             */
+            trigger.setPriority(TriggerPriority.LOW);
             deactivationTriggerPool.addTrigger(trigger, aggregation);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agent pool", ex);

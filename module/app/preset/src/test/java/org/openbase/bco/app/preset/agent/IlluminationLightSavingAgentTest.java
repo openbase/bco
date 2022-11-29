@@ -24,7 +24,6 @@ package org.openbase.bco.app.preset.agent;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
@@ -61,15 +60,11 @@ import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
  * Michalski</a>
  */
-@Disabled
 public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(IlluminationLightSavingAgentTest.class);
 
     public static final String ILLUMINATION_LIGHT_SAVING_AGENT_LABEL = "Illumination_Light_Saving_Agent_Unit_Test";
-
-    public IlluminationLightSavingAgentTest() throws Exception {
-    }
 
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
