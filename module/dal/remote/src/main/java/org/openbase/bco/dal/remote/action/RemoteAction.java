@@ -838,13 +838,8 @@ public class RemoteAction implements Action {
      * All information about the action itself will be kept to still enable action state requests.
      */
     private void cleanup() {
-
-        LOGGER.info("cleanup {}", this);
-
         // cancel observation task
         if (futureObservationTask != null && !futureObservationTask.isDone()) {
-
-            LOGGER.error("d");
             StackTracePrinter.printStackTrace(LOGGER);
             futureObservationTask.cancel(true);
         }
