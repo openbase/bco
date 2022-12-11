@@ -840,7 +840,6 @@ public class RemoteAction implements Action {
     private void cleanup() {
         // cancel observation task
         if (futureObservationTask != null && !futureObservationTask.isDone()) {
-            StackTracePrinter.printStackTrace(LOGGER);
             futureObservationTask.cancel(true);
         }
 
