@@ -74,7 +74,7 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//    @Timeout(10)
+    @Timeout(10)
     public void testAbsenceEnergySavingAgent() throws Exception {
         System.out.println("testAbsenceEnergySavingAgent");
 
