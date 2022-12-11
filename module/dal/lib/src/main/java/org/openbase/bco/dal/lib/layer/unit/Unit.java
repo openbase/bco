@@ -92,6 +92,15 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
     String META_CONFIG_UNIT_INFRASTRUCTURE_FLAG = "INFRASTRUCTURE";
 
     /**
+     * @return all aliases that are associated with this unit.
+     * @throws NotAvailableException in case the config of this unit is not yet available.
+     */
+    default List<String> getAliases() throws NotAvailableException {
+        return getConfig().getAliasList().stream().toList();
+    }
+
+
+    /**
      * Returns the type of this unit.
      *
      * @return UnitType the unit type defining which unit template is provided by this unit.

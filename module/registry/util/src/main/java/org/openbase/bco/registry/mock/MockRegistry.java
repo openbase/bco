@@ -118,6 +118,10 @@ public class MockRegistry {
     public static final String ALIAS_DEVICE_MOTION_SENSOR_HEAVEN = "F_MotionSensor_Device_Heaven";
     public static final String ALIAS_DEVICE_MOTION_SENSOR_HELL = "F_MotionSensor_Device_Hell";
     public static final String ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY = "F_MotionSensor_Device_Stairway";
+    public static final String ALIAS_MOTION_SENSOR = "F_MotionSensor";
+    public static final String ALIAS_MOTION_SENSOR_HEAVEN = "F_MotionSensor_Heaven";
+    public static final String ALIAS_MOTION_SENSOR_HELL = "F_MotionSensor_Hell";
+    public static final String ALIAS_MOTION_SENSOR_STAIRWAY = "F_MotionSensor_Stairway";
     public static final String ALIAS_DEVICE_POWER_PLUG = "PW_PowerPlug_Device";
     public static final String ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS_DOOR = "Reed_Heaven_Stairs";
     public static final String ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS_DOOR = "Reed_Hell_Stairs";
@@ -674,10 +678,25 @@ public class MockRegistry {
                     UnitType.TEMPERATURE_SENSOR,
                     UnitType.TAMPER_DETECTOR);
 
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR, serialNumber, motionSensorClass));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY, serialNumber, motionSensorClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HEAVEN, serialNumber, motionSensorClass, ALIAS_LOCATION_HEAVEN));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HELL, serialNumber, motionSensorClass, ALIAS_LOCATION_HELL));
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR, serialNumber, motionSensorClass)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY, serialNumber, motionSensorClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR_STAIRWAY);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HEAVEN, serialNumber, motionSensorClass, ALIAS_LOCATION_HEAVEN)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR_HEAVEN);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HELL, serialNumber, motionSensorClass, ALIAS_LOCATION_HELL)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR_HELL);
 
             // button
             DeviceClass buttonClass = registerDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730210000, "429496730210000", COMPANY_GIRA,
