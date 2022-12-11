@@ -573,7 +573,9 @@ public class SceneRemoteTest extends AbstractBCOTest {
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             System.out.println("Current iteration: " + i);
 
+            LOGGER.warn("turn on...");
             waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+            LOGGER.warn("turn on... continue ");
 
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
@@ -585,7 +587,9 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertEquals(State.ACTIVE, sceneRemoteOn.getActivationState().getValue(), "Location on scene is not active");
             assertEquals(State.INACTIVE, sceneRemoteOff.getActivationState().getValue(), "Location off scene is not inactive");
 
+            LOGGER.warn("turn off...");
             waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
+            LOGGER.warn("turn off... continue");
 
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
