@@ -818,7 +818,6 @@ public class RemoteAction implements Action {
      * Method resets the entire action remote. After calling no further action states are available.
      */
     public void reset() {
-        LOGGER.warn("reset");
         cleanup();
 
         // reset auto extension task
