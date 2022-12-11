@@ -22,6 +22,9 @@ package org.openbase.bco.dal.remote.action;
  * #L%
  */
 
+import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.state.ActionStateType.ActionState;
@@ -54,5 +57,28 @@ public class Actions {
         final RemoteAction remoteAction = new RemoteAction(actionFuture);
         remoteAction.waitForActionState(actionState, timeout, timeUnit);
         return remoteAction;
+    }
+
+    public static boolean validateInitialAction(Message serviceState) {
+        try {
+            return validateInitialAction(ServiceStateProcessor.getResponsibleAction(serviceState));
+        } catch (CouldNotPerformException e) {
+            // skip validation is error case.
+        }
+        return false;
+    }
+
+    public static boolean validateInitialAction(ActionDescription actionDescription) {
+        try {
+            final RemoteAction initialActionOfIncomingServiceState =
+                    new RemoteAction(ActionDescriptionProcessor.getInitialActionReference(actionDescription));
+            initialActionOfIncomingServiceState.waitForRegistration();
+            return initialActionOfIncomingServiceState.isValid();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } catch (CouldNotPerformException e) {
+            // skip if validation failed.
+        }
+        return false;
     }
 }
