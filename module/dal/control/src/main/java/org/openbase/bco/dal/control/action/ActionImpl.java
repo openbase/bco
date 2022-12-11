@@ -68,6 +68,9 @@ public class ActionImpl implements SchedulableAction {
 
     protected final AbstractUnitController<?, ?> unit;
     private final SyncObject executionStateChangeSync = new SyncObject("ExecutionStateChangeSync");
+
+    // any code that accesses the data lock while holding the action task lock should previously lock the data lock.
+    // otherwise deadlocks can occur.
     private final SyncObject actionTaskLock = new SyncObject("ActionTaskLock");
     private final BundledReentrantReadWriteLock actionDescriptionBuilderLock;
     private ActionDescription.Builder actionDescriptionBuilder;
@@ -741,10 +744,15 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionStateIfNotTerminating(final ActionState.State state) throws InterruptedException {
-        synchronized (actionTaskLock) {
-            if (isTerminating()) {
-                throw new InterruptedException();
+        actionDescriptionBuilderLock.lockReadInterruptibly();
+        try {
+            synchronized (actionTaskLock) {
+                if (isTerminating()) {
+                    throw new InterruptedException();
+                }
             }
+        } finally {
+            actionDescriptionBuilderLock.unlockRead();
         }
         updateActionState(state);
     }
