@@ -481,10 +481,6 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
         try {
             List<LightSensorController> lightSensorControllerList = new ArrayList<>();
             for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
-                if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                    continue;
-                }
-
                 UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
                 if (unitController instanceof LightSensorController) {
                     lightSensorControllerList.add((LightSensorController) unitController);
