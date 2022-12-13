@@ -573,9 +573,9 @@ public class SceneRemoteTest extends AbstractBCOTest {
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             System.out.println("Current iteration: " + i);
 
-            LOGGER.warn("turn on...");
+            LOGGER.debug("turn on...");
             waitForExecution(sceneRemoteOn.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
-            LOGGER.warn("turn on... continue ");
+            LOGGER.debug("turn on... continue ");
 
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
@@ -587,9 +587,9 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertEquals(State.ACTIVE, sceneRemoteOn.getActivationState().getValue(), "Location on scene is not active");
             assertEquals(State.INACTIVE, sceneRemoteOff.getActivationState().getValue(), "Location off scene is not inactive");
 
-            LOGGER.warn("turn off...");
+            LOGGER.debug("turn off...");
             waitForExecution(sceneRemoteOff.setActivationState(State.ACTIVE, SCENE_ACTION_PARAM));
-            LOGGER.warn("turn off... continue");
+            LOGGER.debug("turn off... continue");
 
             internalLight.requestData().get();
             internalPowerSwitch.requestData().get();
@@ -601,7 +601,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertEquals(State.INACTIVE, sceneRemoteOn.getActivationState().getValue(), "Location on scene is not inactive");
             assertEquals(State.ACTIVE, sceneRemoteOff.getActivationState().getValue(), "Location off scene is not active");
 
-            System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
+            LOGGER.debug("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
         }
     }
 
