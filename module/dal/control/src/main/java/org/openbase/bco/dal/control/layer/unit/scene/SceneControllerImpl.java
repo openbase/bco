@@ -329,7 +329,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                 // if the timeout is exhausted than just continue since we want to keep on trying as long as the scene is active.
                                 continue;
                             } catch (CancellationException | CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory("Optional " + optionalAction + " of " + getLabel("?") + " could not executed!", ex, logger, LogLevel.TRACE);
+                                ExceptionPrinter.printHistory("Optional " + optionalAction + " of " + getLabel("?") + " could not be executed!", ex, logger, LogLevel.TRACE);
                             }
                         }
 
@@ -463,10 +463,10 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             }
 
             if (!responsibleAction.isValid()) {
-                throw new VerificationFailedException("The activation of "+getLabel("?") + " is not valid anymore.");
+                throw new VerificationFailedException("The activation of " + getLabel("?") + " is not valid anymore.");
             }
 
-            // skip in case to service state was delivered
+            // skip in case no service state was delivered
             if(serviceState.toString().isBlank()) {
                 return;
             }

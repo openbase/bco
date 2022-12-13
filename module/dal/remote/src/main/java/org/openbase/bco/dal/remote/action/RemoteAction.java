@@ -261,7 +261,7 @@ public class RemoteAction implements Action {
             }
 
             if (force) {
-                // we do not need to cancel a running actions because its rejected on the target unit anyway when the new action is executed.
+                // we do not need to cancel a running action because it is rejected on the target unit anyway when the new action is executed.
                 reset();
             }
 
