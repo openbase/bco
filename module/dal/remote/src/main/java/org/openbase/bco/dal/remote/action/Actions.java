@@ -63,7 +63,7 @@ public class Actions {
         try {
             return validateInitialAction(ServiceStateProcessor.getResponsibleAction(serviceState));
         } catch (CouldNotPerformException e) {
-            // skip validation is error case.
+            // skip validation in error case.
         }
         return false;
     }
