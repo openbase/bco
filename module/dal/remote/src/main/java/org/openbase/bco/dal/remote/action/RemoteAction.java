@@ -1217,12 +1217,12 @@ public class RemoteAction implements Action {
      */
     @Override
     public String toString() {
-        String description;
+        String description = null;
         try {
             // use action description for printing since it offers most detailed information about the action
             description = ActionDescriptionProcessor.toString(getActionDescription());
         } catch (NotAvailableException e) {
-            description = "";
+            // continue with next resolution strategy
         }
 
         // resolve via reference
