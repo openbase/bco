@@ -316,7 +316,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                 // if the timeout is exhausted then just continue since we want to keep on trying as long as the scene is active.
                                 continue;
                             } catch (CancellationException | CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory("Required " + requiredAction + " of " + getLabel("?") + " could not executed!", ex, logger, LogLevel.DEBUG);
+                                ExceptionPrinter.printHistory("Required " + requiredAction + " of " + getLabel("?") + " could not be executed!", ex, logger, LogLevel.DEBUG);
                                 return FutureProcessor.canceledFuture(ActionDescription.class, new RejectedException("Required action " + requiredAction + " could not be executed", ex));
                             }
                         }
