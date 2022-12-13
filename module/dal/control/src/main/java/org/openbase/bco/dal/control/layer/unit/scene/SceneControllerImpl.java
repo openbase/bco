@@ -334,7 +334,6 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                         }
 
                         // register an observer which will deactivate the scene if one required action is now longer running
-                        // observer will cleanup itself after the action is no longer valid so no need to care fore it.
                         try {
                             actionObserver = new RequiredActionObserver(requiredActionImpactList, getActionById(responsibleActionBuilder.getActionId(), "SceneController"));
                         } catch (NotAvailableException ex) {
@@ -437,7 +436,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         private void verifyAllStates() {
             try {
-                // logger.trace("verify "+unitAndRequiredServiceStateMap.entrySet().size()+ " states of "+ getLabel("?"));
+                logger.trace(() -> "verify "+unitAndRequiredServiceStateMap.entrySet().size()+ " states of "+ getLabel("?"));
                 for (Entry<UnitRemote<? extends Message>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                     try {
                         // skip unit in case its offline, since then the verification is automatically
@@ -472,7 +471,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             }
 
             if (!Services.equalServiceStates(unitAndRequiredServiceStateMap.get(unit).getServiceState(), serviceState)) {
-                // LOGGER.warn(unitAndRequiredServiceStateMap.get(unit).getServiceState() + " is not equals " + serviceState.toString().substring(0, 20) + " and will cancel: " + SceneControllerImpl.this.getLabel("?"));
+                logger.trace(() -> unitAndRequiredServiceStateMap.get(unit).getServiceState() + " is not equals " + serviceState.toString().substring(0, 20) + " and will cancel: " + SceneControllerImpl.this.getLabel("?"));
                 if(Actions.validateInitialAction(serviceState)) {
                     throw new VerificationFailedException("State of " + unit + "not meet!");
                 }
@@ -493,7 +492,6 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         @Override
         public void update(ServiceStateProvider<Message> serviceStateProvider, Message serviceState) throws Exception {
             try {
-                // logger.error("Incomming service state update from "+ serviceStateProvider.getServiceProvider().getId() + " triggered from "+ serviceState.toString());
                 verifyState(serviceStateProvider.getServiceProvider(), serviceState);
             } catch (VerificationFailedException ex) {
                 unsatisfiedState();

@@ -69,8 +69,10 @@ public class ActionImpl implements SchedulableAction {
     protected final AbstractUnitController<?, ?> unit;
     private final SyncObject executionStateChangeSync = new SyncObject("ExecutionStateChangeSync");
 
-    // any code that accesses the data lock while holding the action task lock should previously lock the data lock.
-    // otherwise deadlocks can occur.
+    // IMPORTANT LOCKING NOTE: There is no need to acquire the actionDescriptionBuilderLock in every case we need the action task exclusively.
+    // However, in case you acquire the action task lock and need to access the actionDescriptionBuilder within its synchronize scope,
+    // the actionDescriptionBuilderLock has to be acquired first before locking the action task.
+    // Otherwise, there is a high risk of deadlocks.
     private final SyncObject actionTaskLock = new SyncObject("ActionTaskLock");
     private final BundledReentrantReadWriteLock actionDescriptionBuilderLock;
     private ActionDescription.Builder actionDescriptionBuilder;
