@@ -1720,7 +1720,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
             // final reschedule for cleanup
-            reschedule();
+            if(!isShutdownInProgress()) {
+                reschedule();
+            }
         } finally {
             builderSetup.unlockWrite(NotificationStrategy.AFTER_LAST_RELEASE);
         }

@@ -83,12 +83,19 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
         }
     }
 
+    @BeforeEach
+    public void notifyAboutTestStart() {
+        LOGGER.info("===================================== Start BCO Test =====================================");
+    }
+
     /**
      * Method is automatically called after each test run and there is no need to call it manually.
      * If you want to cancel all actions manually please use method {@code cancelAllTestActions()} to get feedback about the cancellation process.
      */
     @AfterEach
     public void autoCancelActionsAfterTestRun() {
+
+        LOGGER.info("===================================== Finish BCO Test =====================================");
 
         // before canceling pending actions lets just validate that the test did not cause any deadlocks
         assertFalse(StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER), "Deadlocks found!");

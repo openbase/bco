@@ -138,15 +138,21 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (final ServiceDescription serviceDescription : AbstractUnitRemote.this.getUnitTemplate().getServiceDescriptionList()) {
-                    if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
+
+                    // a requested state observation only makes sense if the state can be modified.
+                    if (serviceTempus == ServiceTempus.REQUESTED && serviceDescription.getPattern() != ServicePattern.OPERATION) {
                         continue;
                     }
+
                     // check if already handled
                     if (serviceTypeSet.contains(serviceDescription.getServiceType())) {
                         continue;
                     }
+
+                    // register service type as handled.
                     serviceTypeSet.add(serviceDescription.getServiceType());
 
+                    // perform service notification based on new data.
                     try {
                         Message serviceData = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
                         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);

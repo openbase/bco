@@ -68,6 +68,11 @@ public class ActionImpl implements SchedulableAction {
 
     protected final AbstractUnitController<?, ?> unit;
     private final SyncObject executionStateChangeSync = new SyncObject("ExecutionStateChangeSync");
+
+    // IMPORTANT LOCKING NOTE: There is no need to acquire the actionDescriptionBuilderLock in every case we need the action task exclusively.
+    // However, in case you acquire the action task lock and need to access the actionDescriptionBuilder within its synchronize scope,
+    // the actionDescriptionBuilderLock has to be acquired first before locking the action task.
+    // Otherwise, there is a high risk of deadlocks.
     private final SyncObject actionTaskLock = new SyncObject("ActionTaskLock");
     private final BundledReentrantReadWriteLock actionDescriptionBuilderLock;
     private ActionDescription.Builder actionDescriptionBuilder;
@@ -742,10 +747,15 @@ public class ActionImpl implements SchedulableAction {
     }
 
     private void updateActionStateIfNotTerminating(final ActionState.State state) throws InterruptedException {
-        synchronized (actionTaskLock) {
-            if (isTerminating()) {
-                throw new InterruptedException();
+        actionDescriptionBuilderLock.lockReadInterruptibly();
+        try {
+            synchronized (actionTaskLock) {
+                if (isTerminating()) {
+                    throw new InterruptedException();
+                }
             }
+        } finally {
+            actionDescriptionBuilderLock.unlockRead();
         }
         updateActionState(state);
     }
