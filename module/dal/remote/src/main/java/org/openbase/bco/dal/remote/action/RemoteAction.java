@@ -261,7 +261,7 @@ public class RemoteAction implements Action {
             }
 
             if (force) {
-                // we do not need to cancel a running actions because its rejected on the target unit anyway when the new action is executed.
+                // we do not need to cancel a running action because it is rejected on the target unit anyway when the new action is executed.
                 reset();
             }
 
@@ -1217,12 +1217,12 @@ public class RemoteAction implements Action {
      */
     @Override
     public String toString() {
-        String description;
+        String description = null;
         try {
             // use action description for printing since it offers most detailed information about the action
             description = ActionDescriptionProcessor.toString(getActionDescription());
         } catch (NotAvailableException e) {
-            description = "";
+            // continue with next resolution strategy
         }
 
         // resolve via reference
