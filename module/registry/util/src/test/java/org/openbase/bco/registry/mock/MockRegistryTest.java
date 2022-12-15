@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.BeforeAll;
+import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -35,7 +36,7 @@ import org.openbase.jul.schedule.Stopwatch;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class MockRegistryTest {
+public class MockRegistryTest extends MqttIntegrationTest {
 
     public MockRegistryTest() {
     }

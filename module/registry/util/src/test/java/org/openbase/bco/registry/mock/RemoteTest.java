@@ -26,6 +26,7 @@ import org.junit.jupiter.api.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class RemoteTest {
+public class RemoteTest extends MqttIntegrationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RemoteTest.class);
 
