@@ -103,9 +103,10 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
                 ), mrPinkUserToken
             )
             Assertions.assertTrue(
-                !locationRemoteAction.id.isEmpty(),
+                locationRemoteAction.id.isNotEmpty(),
                 "Action of location does not offer an id after submission!"
             )
+
             for (unit in units) {
                 var actionIsExecuting = false
                 for (actionReference in unit.actionList[0].actionCauseList) {
@@ -156,7 +157,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     }
 
     @Test
-    @Timeout(10)
+    @Timeout(15)
     @Throws(Exception::class)
     fun testExtentionCancelation() {
         println("testExtentionCancelation")
@@ -164,7 +165,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
 
         // apply low prio action
         println("apply low prio action...")
-        val lowPrioLongtermActionExtentionFlag: Flag = Flag()
+        val lowPrioLongtermActionExtentionFlag = Flag()
         val lowPrioLongtermAction = RemoteAction(
             locationRemote.setPowerState(
                 PowerStateType.PowerState.State.OFF, ActionParameterType.ActionParameter.newBuilder().setPriority(
@@ -182,7 +183,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
         println("wait for low prio action...")
         waitForRegistration(lowPrioLongtermAction)
         println("apply normal prio action...")
-        val dominantActionExtentionFlag: Flag = Flag()
+        val dominantActionExtentionFlag = Flag()
         val dominantAction = RemoteAction(
             locationRemote.setPowerState(PowerStateType.PowerState.State.ON, mrPinkActionParameter),
             mrPinkUserToken
@@ -190,6 +191,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
             println("dominant action is extended")
             dominantActionExtentionFlag.value = true
             true
+
         }
         println("wait for normal prio action...")
         waitForExecution(dominantAction)
@@ -262,10 +264,10 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
         println("test successful")
     }
 
-    internal inner class Flag {
+    internal data class Flag(
         @Volatile
-        var value = false
-    }
+        var value: Boolean = false,
+    )
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(RemoteActionTest::class.java)
