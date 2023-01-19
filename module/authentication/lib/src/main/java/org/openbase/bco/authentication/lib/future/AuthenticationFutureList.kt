@@ -31,6 +31,7 @@ object AuthenticationFutureList {
 
     init {
         synchronized(listSync) {
+
             // create a task which makes sure that get is called on all of these futures so that tickets are renewed
             val responseVerificationFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(
                 {
@@ -38,6 +39,7 @@ object AuthenticationFutureList {
                     //       get finished successfully.
                     synchronized(listSync) {
                         authenticatedFutureList
+                            .toList() // ATTENTION: this is important because the futures may remove themselves from the list on get calls
                             .filter { it.isCancelled || isDone(it) }
                             .let { authenticatedFutureList.removeAll(it) }
 
