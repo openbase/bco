@@ -77,7 +77,7 @@ public abstract class AbstractGatewayController extends AbstractHostUnitControll
                 }
             }
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Hosted units description of Device", this, ex);
+            throw new NotAvailableException("HostedUnitConfigs", this.getClass(), ex);
         }
         return unitConfigs;
     }

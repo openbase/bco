@@ -530,7 +530,7 @@ public class Services extends ServiceStateProcessor {
                 try {
                     boolean serviceStateAvailable = (boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance);
                     if (!serviceStateAvailable) {
-                        throw new NotAvailableException(serviceType.name(), instance);
+                        throw new NotAvailableException(serviceType.name(), instance.getClass().getSimpleName());
                     }
                 } catch (CouldNotPerformException ex) {
                     // validation just not supported by this instance.

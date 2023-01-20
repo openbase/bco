@@ -127,7 +127,9 @@ public class SessionManager implements Shutdownable, Session {
             // register shutdown hook and delay it some time so other instances can still prepare the shutdown with their permissions.
             Shutdownable.registerShutdownHook(this, 3000);
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not register session manager shutdown hook", ex, LOGGER, LogLevel.WARN);
+            if (!ExceptionProcessor.isCausedBySystemShutdown(ex)) {
+                ExceptionPrinter.printHistory("Could not register session manager shutdown hook", ex, LOGGER, LogLevel.WARN);
+            }
         }
         this.userClientPair = UserClientPair.newBuilder();
         // create login observable
