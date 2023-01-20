@@ -14,6 +14,7 @@ dependencies {
     api(project(":bco.registry.unit.core"))
     api(project(":bco.registry.message.core"))
     api(project(":bco.registry.remote"))
+    testImplementation(project(":bco.authentication.test"))
 }
 
 description = "BCO Registry Utility"

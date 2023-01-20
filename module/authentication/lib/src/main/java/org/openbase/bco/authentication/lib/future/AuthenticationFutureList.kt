@@ -18,27 +18,29 @@ object AuthenticationFutureList {
     private val authenticatedFutureList: MutableList<AbstractAuthenticationFuture<*, *>> = ArrayList()
     private val logger = LoggerFactory.getLogger("AuthenticationFuture")
 
-    private fun isFailed(future: AbstractAuthenticationFuture<*, *>): Boolean {
-        try {
-            // Note: the abstract authentication future will remove itself from this list if
-            //       get finished successfully.
-            future.get(FUTURE_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)
-        } catch (ex: ExecutionException) {
-            return true
-        } catch (ex: TimeoutException) {
-            return false
-        }
-        return false
+
+    private fun isDone(future: AbstractAuthenticationFuture<*, *>): Boolean = try {
+        future
+            .get(FUTURE_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)
+            .let { true }
+    } catch (e: TimeoutException) {
+        false
+    } catch (e: ExecutionException) {
+        true
     }
 
     init {
         synchronized(listSync) {
+
             // create a task which makes sure that get is called on all of these futures so that tickets are renewed
             val responseVerificationFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(
                 {
+                    // Note: the abstract authentication future will remove itself from this list if
+                    //       get finished successfully.
                     synchronized(listSync) {
                         authenticatedFutureList
-                            .filter { it.isCancelled || isFailed(it) }
+                            .toList() // ATTENTION: this is important because the futures may remove themselves from the list on get calls
+                            .filter { it.isCancelled || isDone(it) }
                             .let { authenticatedFutureList.removeAll(it) }
 
                     }
