@@ -2,7 +2,6 @@ package org.openbase.bco.authentication.mock
 
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
 import org.openbase.jps.core.JPService
 import org.openbase.jps.exception.JPServiceException
@@ -67,7 +66,7 @@ open class MqttIntegrationTest {
                     BindMode.READ_ONLY
                 )
                 .apply { withStartupTimeout(Duration.ofSeconds(30)).start() }
-                .also { if (broker?.takeIf { it.containerId != null } != null) error("broker was already initialized!") }
+                .also { broker?.containerId?.also { error("broker was already initialized!") } }
                 .also { broker = it }
                 .also { setupProperties() }
         }
