@@ -10,19 +10,18 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -34,6 +33,8 @@ import org.openbase.bco.dal.remote.layer.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -41,14 +42,17 @@ import org.openbase.type.domotic.state.ActionStateType.ActionState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -119,6 +123,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         PowerState powerState = null;
         final ActionParameter parameter = ActionParameter.newBuilder().setExecutionTimePeriod(100000000).build();
 
+        final List<Future> tasks = new ArrayList<>();
+
         for (int i = 0; i < 500; i++) {
             if ((i & 1) == 0) {
                 // even
@@ -128,8 +134,10 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
                 powerState = Power.OFF;
             }
             // do not observe in order to speed up the calls
-            powerSwitchRemote.setPowerState(powerState, parameter);
-            Thread.sleep(1);
+            tasks.add(powerSwitchRemote.setPowerState(powerState, parameter));
+
+            // avoid cpu burn
+            Thread.yield();
         }
 
         // make sure unit is still responding
@@ -139,15 +147,32 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
             assertTrue(true, "PowerSwitch did not response in time after massive load!");
         }
 
+        // cancel actions to avoid further interferences
+        tasks.forEach((it) -> it.cancel(true));
+
+        // wait until all actions are processed (nothing has changed for some time).
+        Instant now = Instant.now();
+        while (!Thread.currentThread().isInterrupted()) {
+            Instant latestEventTime = Instant.ofEpochMilli(
+                    TimestampProcessor.getTimestamp(
+                            powerSwitchRemote.getPowerState(),
+                            TimeUnit.MILLISECONDS
+                    )
+            );
+            if (Duration.between(now, latestEventTime).toMillis() > 500) {
+                break;
+            }
+        }
+
         // invert state
         powerState = powerState == Power.ON ? Power.OFF : Power.ON;
 
+        // make sure unit is still controllable
         final RemoteAction testAction = observe(powerSwitchRemote.setPowerState(powerState), true);
-
         try {
             testAction.waitForActionState(State.EXECUTING);
-        } catch (CancellationException ex) {
-            fail("Power action is not executing and instead: "+testAction.getActionState().name());
+        } catch (CouldNotPerformException ex) {
+            fail("Power action is not executing and instead: " + testAction.getActionState().name());
         }
 
         // make sure the final state is correctly applied.
