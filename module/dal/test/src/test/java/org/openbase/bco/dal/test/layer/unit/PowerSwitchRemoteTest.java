@@ -160,6 +160,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
             if (Duration.between(now, latestEventTime).toMillis() > 500) {
                 break;
             }
+            Thread.sleep(10);
         }
 
         // invert state
