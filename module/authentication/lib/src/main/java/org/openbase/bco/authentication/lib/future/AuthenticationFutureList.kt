@@ -1,8 +1,12 @@
 package org.openbase.bco.authentication.lib.future
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.openbase.jul.iface.Shutdownable
 import org.openbase.jul.schedule.GlobalScheduledExecutorService
 import org.openbase.jul.schedule.SyncObject
+import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
@@ -18,14 +22,14 @@ object AuthenticationFutureList {
     private val incomingFutures: MutableList<AbstractAuthenticationFuture<*, *>> = ArrayList()
     private val authenticatedFutures: MutableList<AbstractAuthenticationFuture<*, *>> = ArrayList()
 
-    fun isDone(future: AbstractAuthenticationFuture<*, *>): Boolean = try {
-        future
-            .get(FUTURE_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS)
-            .let { true }
+    fun <F : AbstractAuthenticationFuture<*, *>> takeIfDone(future: F): F? = try {
+        future.apply { get(FUTURE_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS) }
     } catch (e: TimeoutException) {
-        false
+        null
     } catch (e: ExecutionException) {
-        true
+        future
+    } catch (e: CancellationException) {
+        future
     }
 
     init {
@@ -40,13 +44,14 @@ object AuthenticationFutureList {
                         incomingFutures.clear()
                     }
 
-                    // Note: the abstract authentication future will remove itself from this list if get finished successfully.
-                    authenticatedFutures
-                        .toList() // ATTENTION: this is important because the futures may remove themselves from the list on get calls
-                        .filter { it.isCancelled || isDone(it) }
-                        .toList()
-                        .let { authenticatedFutures.removeAll(it) }
-
+                    runBlocking {
+                        authenticatedFutures
+                            .filter { it.isCancelled }
+                            .map { async { takeIfDone(it) } }
+                            .awaitAll()
+                            .filterNotNull()
+                            .let { authenticatedFutures.removeAll(it) }
+                    }
                 }
             }, INITIAL_DELAY_IN_S, SCHEDULE_RATE_IN_S, TimeUnit.SECONDS
         )
