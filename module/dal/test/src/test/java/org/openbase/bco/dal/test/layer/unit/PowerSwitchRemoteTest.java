@@ -23,6 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -114,7 +115,8 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(15)
+    @Timeout(10)
+    @RepeatedTest(5)
     public void testPowerStateServicePerformance() throws Exception {
         System.out.println("testPowerStateServicePerformance");
 
@@ -140,7 +142,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
 
         // make sure unit is still responding
         try {
-            powerSwitchRemote.requestData().get(1, TimeUnit.SECONDS);
+            powerSwitchRemote.requestData().get(100, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             assertTrue(true, "PowerSwitch did not response in time after massive load!");
         }
@@ -149,7 +151,6 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         tasks.forEach((it) -> it.cancel(true));
 
         // wait until all actions are processed (nothing has changed for some time).
-        Instant now = Instant.now();
         while (!Thread.currentThread().isInterrupted()) {
             Instant latestEventTime = Instant.ofEpochMilli(
                     TimestampProcessor.getTimestamp(
@@ -157,10 +158,13 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
                             TimeUnit.MILLISECONDS
                     )
             );
-            if (Duration.between(now, latestEventTime).toMillis() > 500) {
+            System.out.println("Duration: " + Duration.between(Instant.now(), latestEventTime).toMillis());
+            if (Duration.between(latestEventTime, Instant.now()).toMillis() > 50) {
                 break;
             }
-            Thread.sleep(10);
+
+            // avoid cpu burn
+            Thread.yield();
         }
 
         // invert state
