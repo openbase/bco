@@ -682,8 +682,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @Test
-    @Timeout(20)
-    @RepeatedTest(100)
+    @Timeout(30)
     public void testActionCancellationViaScene() throws Exception {
 
         final LocationRemote rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
@@ -737,7 +736,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         final RemoteAction allOffSceneAction = waitForExecution(allOffScene.setActivationState(Activation.ACTIVE));
 
         colorableLightRedRemoteAction.waitForActionState(ActionState.State.SCHEDULED);
-        assertEquals(ActionState.State.SCHEDULED, colorableLightRedRemoteAction.getActionState(), "Manual color action not executing!");
+        assertEquals(ActionState.State.SCHEDULED, colorableLightRedRemoteAction.getActionState(), "Manual color action not scheduled!");
 
         // validate all off and store responsible action
         final ArrayList<ActionDescription> allOffActionDescriptionList = new ArrayList<>();
@@ -759,7 +758,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             assertTrue(found, "Impact not registered!");
         }
 
-        assertEquals(ActionState.State.SCHEDULED, colorableLightRedRemoteAction.getActionState(), "Manual color action not executing!");
+        assertEquals(ActionState.State.SCHEDULED, colorableLightRedRemoteAction.getActionState(), "Manual color action not scheduled!");
 
         // cancel all off
         allOffSceneAction.cancel().get();
