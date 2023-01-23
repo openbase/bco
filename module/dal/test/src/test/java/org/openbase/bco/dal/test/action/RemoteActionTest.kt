@@ -15,6 +15,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry
 import org.openbase.jul.exception.printer.ExceptionPrinter
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor
 import org.openbase.type.domotic.action.ActionDescriptionType
+import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription
 import org.openbase.type.domotic.action.ActionParameterType
 import org.openbase.type.domotic.action.ActionPriorityType
 import org.openbase.type.domotic.authentication.AuthTokenType
@@ -23,6 +24,8 @@ import org.openbase.type.domotic.state.PowerStateType
 import org.openbase.type.domotic.unit.UnitConfigType
 import org.openbase.type.domotic.unit.UnitTemplateType
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CancellationException
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 /*-
@@ -262,6 +265,13 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
             }
         }
         println("test successful")
+    }
+
+    @Test
+    fun `should not fail on cancel if action was never executed`() {
+
+        val failedServiceCall = CompletableFuture.failedFuture<ActionDescription>(CancellationException())
+        RemoteAction(failedServiceCall).cancel().get()
     }
 
     internal data class Flag(
