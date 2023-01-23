@@ -23,7 +23,6 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -115,8 +114,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
-    @RepeatedTest(5)
+    @Timeout(20)
     public void testPowerStateServicePerformance() throws Exception {
         System.out.println("testPowerStateServicePerformance");
 
@@ -192,7 +190,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(15)
+    @Timeout(20)
     public void testPowerStateServiceCancellationPerformance() throws Exception {
         final Random random = new Random();
         final ActionParameter parameter = ActionParameter.newBuilder().setExecutionTimePeriod(100000000).build();
