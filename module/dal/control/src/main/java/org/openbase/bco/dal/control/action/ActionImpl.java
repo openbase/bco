@@ -32,8 +32,8 @@ import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.TimeoutException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -251,7 +251,11 @@ public class ActionImpl implements SchedulableAction {
                     return FutureProcessor.canceledFuture(ActionDescription.class, ex);
                 }
 
-                assert actionTask == null;
+                // validate
+                if (actionTask != null) {
+                    new FatalImplementationErrorException("Action task still running while initializing a new one.", this);
+                }
+
                 actionTask = GlobalCachedExecutorService.submit(() -> {
                     try {
 
@@ -275,7 +279,7 @@ public class ActionImpl implements SchedulableAction {
                         while (!(Thread.currentThread().isInterrupted() || actionTask == null || actionTask.isCancelled() || isTerminating())) {
                             try {
                                 // wait in case of a retry
-                                if(retry) {
+                                if (retry) {
                                     Thread.sleep(EXECUTION_FAILURE_TIMEOUT);
                                 }
 
@@ -357,8 +361,8 @@ public class ActionImpl implements SchedulableAction {
                             updateActionState(State.REJECTED);
                         }
                     } finally {
+                        actionTask = null;
                         synchronized (actionTaskLock) {
-                            actionTask = null;
                             actionTaskLock.notifyAll();
                         }
                     }
@@ -603,10 +607,6 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public void schedule() {
-
-        // cancel action task
-        cancelActionTask();
-
         try {
             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
@@ -614,6 +614,9 @@ public class ActionImpl implements SchedulableAction {
             throw new RuntimeException(ex);
         }
         try {
+
+            // cancel action task
+            cancelActionTask();
 
             if (isProcessing()) {
                 final Future<ActionDescription> abortionTask = abort(true);
@@ -648,10 +651,6 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public void reject() {
-
-        // cancel action task
-        cancelActionTask();
-
         try {
             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
@@ -659,6 +658,9 @@ public class ActionImpl implements SchedulableAction {
             throw new RuntimeException(ex);
         }
         try {
+
+            // cancel action task
+            cancelActionTask();
 
             if (isProcessing()) {
                 final Future<ActionDescription> abortionTask = abort(true);
@@ -693,10 +695,6 @@ public class ActionImpl implements SchedulableAction {
      */
     @Override
     public void finish() {
-
-        // cancel action task
-        cancelActionTask();
-
         try {
             actionDescriptionBuilderLock.lockWriteInterruptibly();
         } catch (InterruptedException ex) {
@@ -704,6 +702,9 @@ public class ActionImpl implements SchedulableAction {
             throw new RuntimeException(ex);
         }
         try {
+
+            // cancel action task
+            cancelActionTask();
 
             // if not already finished then we force the state.
             if (!isDone() && getActionState() != State.CANCELING) {

@@ -10,21 +10,18 @@ package org.openbase.bco.app.preset.agent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
@@ -37,11 +34,10 @@ import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.type.domotic.state.BlindStateType.BlindState.State;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.AlarmStateType.AlarmState;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
+import org.openbase.type.domotic.state.BlindStateType.BlindState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -49,14 +45,15 @@ import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightD
 import org.openbase.type.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 import org.openbase.type.domotic.unit.dal.SmokeDetectorDataType.SmokeDetectorData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FireAlarmAgentTest.class);
-
     public static final String FIRE_ALARM_AGENT_LABEL = "Fire_Alarm_Agent_Unit_Test";
-
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(FireAlarmAgentTest.class);
     private static final AlarmState ALARM = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
     private static final AlarmState NO_ALARM = AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
     private static final BlindState CLOSED = BlindState.newBuilder().setOpeningRatio(0).build();
@@ -72,7 +69,7 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
         System.out.println("testFireAlarmAgent");
 
         LocationRemote locationRemote = Units.getUnitByAlias(MockRegistry.ALIAS_LOCATION_STAIRWAY_TO_HEAVEN, true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT,true, Units.COLORABLE_LIGHT).get(0);
+        ColorableLightRemote colorableLightRemote = locationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT).get(0);
         RollerShutterRemote rollerShutterRemote = locationRemote.getUnits(UnitType.ROLLER_SHUTTER, true, Units.ROLLER_SHUTTER).get(0);
         SmokeDetectorRemote smokeDetectorRemote = locationRemote.getUnits(UnitType.SMOKE_DETECTOR, true, Units.SMOKE_DETECTOR).get(0);
         SmokeDetectorController smokeDetectorController = (SmokeDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId());

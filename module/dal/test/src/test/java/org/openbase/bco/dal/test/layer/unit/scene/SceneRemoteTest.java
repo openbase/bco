@@ -10,21 +10,19 @@ package org.openbase.bco.dal.test.layer.unit.scene;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
@@ -88,6 +86,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -195,23 +195,6 @@ public class SceneRemoteTest extends AbstractBCOTest {
             }
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    /**
-     * Method is for unit tests where one has to make sure that all actions are removed from the action stack in order to minimize influence of other tests.
-     *
-     * @throws InterruptedException is thrown if the thread was externally interrupted
-     */
-    @AfterEach
-    public void cancelAllOngoingActions() throws InterruptedException {
-        LOGGER.info("Cancel all ongoing actions...");
-        try {
-            for (UnitController<?, ?> deviceController : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
-                deviceController.cancelAllActions();
-            }
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not cancel all ongoing actions!", ex, LOGGER);
         }
     }
 
@@ -385,6 +368,23 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     /**
+     * Method is for unit tests where one has to make sure that all actions are removed from the action stack in order to minimize influence of other tests.
+     *
+     * @throws InterruptedException is thrown if the thread was externally interrupted
+     */
+    @AfterEach
+    public void cancelAllOngoingActions() throws InterruptedException {
+        LOGGER.info("Cancel all ongoing actions...");
+        try {
+            for (UnitController<?, ?> deviceController : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
+                deviceController.cancelAllActions();
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not cancel all ongoing actions!", ex, LOGGER);
+        }
+    }
+
+    /**
      * Test triggering a scene per remote.
      *
      * @throws Exception
@@ -463,7 +463,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         unitGroupRemote.requestData().get();
 
         // for the group the values can be slightly modified because of computing averages
-        assertEquals(GROUP_COLOR_VALUE.getBrightness(), unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness(), 0.01,"Brightness in unitGroupRemote has not been set");
+        assertEquals(GROUP_COLOR_VALUE.getBrightness(), unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness(), 0.01, "Brightness in unitGroupRemote has not been set");
         assertEquals(GROUP_COLOR_VALUE.getHue(), unitGroupRemote.getColorState().getColor().getHsbColor().getHue(), 0.01, "Hue in unitGroupRemote has not been set");
         assertEquals(GROUP_COLOR_VALUE.getSaturation(), unitGroupRemote.getColorState().getColor().getHsbColor().getSaturation(), 0.01, "Saturation in unitGroupRemote has not been set");
     }
@@ -523,11 +523,11 @@ public class SceneRemoteTest extends AbstractBCOTest {
             sceneRemoteDevicesOff.requestData().get();
             sceneRemoteDevicesOn.requestData().get();
 
-            assertTrue(internalLight.getPowerState().getValue() == POWER_OFF, "internalLight has not switched off at interaction "+i);
-            assertTrue(internalPowerSwitch.getPowerState().getValue() == POWER_OFF, "internalPowerSwitch has not switched off at interaction "+i);
+            assertTrue(internalLight.getPowerState().getValue() == POWER_OFF, "internalLight has not switched off at interaction " + i);
+            assertTrue(internalPowerSwitch.getPowerState().getValue() == POWER_OFF, "internalPowerSwitch has not switched off at interaction " + i);
 
-            assertEquals(State.ACTIVE, sceneRemoteDevicesOff.getActivationState().getValue(), "Devices off scene is not active at interaction "+i);
-            assertEquals(State.INACTIVE, sceneRemoteDevicesOn.getActivationState().getValue(), "Devices on scene is not inactive at interaction "+i);
+            assertEquals(State.ACTIVE, sceneRemoteDevicesOff.getActivationState().getValue(), "Devices off scene is not active at interaction " + i);
+            assertEquals(State.INACTIVE, sceneRemoteDevicesOn.getActivationState().getValue(), "Devices on scene is not inactive at interaction " + i);
 
             System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
 
@@ -639,7 +639,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
             try {
                 actionImpactList.add(new RemoteAction(Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true).resolveRelatedActionDescription(sceneAction.getActionId())));
             } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory("Can not lookup action["+actionReference.getActionId()+"] of "+sceneAction.getActionId(), ex, LOGGER);
+                ExceptionPrinter.printHistory("Can not lookup action[" + actionReference.getActionId() + "] of " + sceneAction.getActionId(), ex, LOGGER);
             }
         }
 
@@ -683,6 +683,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
     @Test
     @Timeout(20)
+    @RepeatedTest(100)
     public void testActionCancellationViaScene() throws Exception {
 
         final LocationRemote rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
@@ -769,7 +770,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         // validate cancellation and make sure all lights are RED again
         for (ColorableLightRemote colorableLight : colorableLights) {
             colorableLight.requestData().get();
-            assertEquals(States.Color.RED.getColor(), colorableLight.getColorState().getColor(), "Color not restored! Current action is: "+MultiLanguageTextProcessor.getBestMatch(colorableLight.getColorState().getResponsibleAction().getDescription()));
+            assertEquals(States.Color.RED.getColor(), colorableLight.getColorState().getColor(), "Color not restored! Current action is: " + MultiLanguageTextProcessor.getBestMatch(colorableLight.getColorState().getResponsibleAction().getDescription()));
         }
         session.logout();
     }
@@ -788,7 +789,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         // validate that all lights are initially off
         for (ColorableLightRemote colorableLight : colorableLights) {
             colorableLight.requestData().get();
-            assertEquals(Power.OFF.getValue(), colorableLight.getPowerState().getValue(), "Light is not off but: "+ MultiLanguageTextProcessor.getBestMatch(colorableLight.getColorState().getResponsibleAction().getDescription(), "?"));
+            assertEquals(Power.OFF.getValue(), colorableLight.getPowerState().getValue(), "Light is not off but: " + MultiLanguageTextProcessor.getBestMatch(colorableLight.getColorState().getResponsibleAction().getDescription(), "?"));
         }
 
         // validate that the room is initially off
@@ -851,9 +852,9 @@ public class SceneRemoteTest extends AbstractBCOTest {
         Thread.sleep(AGGREGATION_TIME);  // let us wait some time to let the aggregation takes place.
         rootLocationRemote.requestData().get();
         assertTrue(
-            ColorStateProviderService.equalServiceStates(rootLocationRemote.getColorState(),
-            Color.BLUE),
-            "Scene does not apply its color, expected: " + Color.BLUE.getColor() + " but was: " + rootLocationRemote.getColorState().getColor() + "!"
+                ColorStateProviderService.equalServiceStates(rootLocationRemote.getColorState(),
+                        Color.BLUE),
+                "Scene does not apply its color, expected: " + Color.BLUE.getColor() + " but was: " + rootLocationRemote.getColorState().getColor() + "!"
         );
 
         // deactivate blue
@@ -862,7 +863,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
         // validate that all lights are red again
         for (ColorableLightRemote colorableLight : colorableLights) {
             colorableLight.requestData().get();
-            assertEquals(Color.RED.getColor(), colorableLight.getColorState().getColor(), "Light is not red but: "+ MultiLanguageTextProcessor.getBestMatch(colorableLight.getColorState().getResponsibleAction().getDescription(), "?"));
+            assertEquals(Color.RED.getColor(), colorableLight.getColorState().getColor(), "Light is not red but: " + MultiLanguageTextProcessor.getBestMatch(colorableLight.getColorState().getResponsibleAction().getDescription(), "?"));
         }
 
         // validate the room is red again
