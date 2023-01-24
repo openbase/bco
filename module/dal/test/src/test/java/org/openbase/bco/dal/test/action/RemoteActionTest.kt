@@ -14,7 +14,6 @@ import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin
 import org.openbase.bco.registry.unit.lib.UnitRegistry
 import org.openbase.jul.exception.printer.ExceptionPrinter
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor
-import org.openbase.type.domotic.action.ActionDescriptionType
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription
 import org.openbase.type.domotic.action.ActionParameterType
 import org.openbase.type.domotic.action.ActionPriorityType
@@ -50,6 +49,13 @@ import java.util.concurrent.TimeUnit
  * #L%
  */
 class RemoteActionTest : AbstractBCOLocationManagerTest() {
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(RemoteActionTest::class.java)
+        private var mrPinkUserToken: AuthTokenType.AuthToken? = null
+        private var mrPinkUserId: String? = null
+        private var mrPinkActionParameter: ActionParameterType.ActionParameter? = null
+    }
 
     @BeforeAll
     fun setupRemoteActionTest() {
@@ -100,14 +106,11 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
             val powerState = if (i % 2 == 0) PowerStateType.PowerState.State.ON else PowerStateType.PowerState.State.OFF
             val locationRemoteAction = waitForExecution(
                 locationRemote.setPowerState(
-                    powerState,
-                    UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT,
-                    mrPinkActionParameter
+                    powerState, UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, mrPinkActionParameter
                 ), mrPinkUserToken
             )
             Assertions.assertTrue(
-                locationRemoteAction.id.isNotEmpty(),
-                "Action of location does not offer an id after submission!"
+                locationRemoteAction.id.isNotEmpty(), "Action of location does not offer an id after submission!"
             )
 
             for (unit in units) {
@@ -134,7 +137,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
             // validate that action is cancelled on all units
             for (colorableLightRemote in units) {
 //                System.out.println("process: " + colorableLightRemote);
-                var causedAction: ActionDescriptionType.ActionDescription? = null
+                var causedAction: ActionDescription? = null
                 for (description in colorableLightRemote.actionList) {
 //                    System.out.println("    action: " + ActionDescriptionProcessor.toString(description));
                     for (cause in description.actionCauseList) {
@@ -188,8 +191,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
         println("apply normal prio action...")
         val dominantActionExtentionFlag = Flag()
         val dominantAction = RemoteAction(
-            locationRemote.setPowerState(PowerStateType.PowerState.State.ON, mrPinkActionParameter),
-            mrPinkUserToken
+            locationRemote.setPowerState(PowerStateType.PowerState.State.ON, mrPinkActionParameter), mrPinkUserToken
         ) {
             println("dominant action is extended")
             dominantActionExtentionFlag.value = true
@@ -274,15 +276,8 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
         RemoteAction(failedServiceCall).cancel().get()
     }
 
-    internal data class Flag(
-        @Volatile
-        var value: Boolean = false,
-    )
 
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(RemoteActionTest::class.java)
-        private var mrPinkUserToken: AuthTokenType.AuthToken? = null
-        private var mrPinkUserId: String? = null
-        private var mrPinkActionParameter: ActionParameterType.ActionParameter? = null
-    }
+    internal data class Flag(
+        @Volatile var value: Boolean = false,
+    )
 }
