@@ -29,8 +29,12 @@ object AuthenticationFutureList {
     val size get() = authenticatedFutures.size
     val incomingSize get() = incomingFutures.size
 
-    fun <F : Future<*>> takeIfDone(future: F): F? = try {
-        future.apply { get(FUTURE_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS) }
+    fun <F : Future<*>> takeIfTerminated(future: F): F? = try {
+        if (future.isCancelled) {
+            future
+        } else {
+            future.apply { get(FUTURE_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS) }
+        }
     } catch (e: TimeoutException) {
         null
     } catch (e: ExecutionException) {
@@ -53,12 +57,10 @@ object AuthenticationFutureList {
 
                     runBlocking {
                         authenticatedFutures
-                            .map { async { takeIfDone(it) } }
+                            .map { async { takeIfTerminated(it) } }
                             .awaitAll()
                             .filterNotNull()
-                            .let {
-                                authenticatedFutures.removeAll(it)
-                            }
+                            .let { authenticatedFutures.removeAll(it) }
                     }
 
                     notificationLock.withLock {

@@ -26,19 +26,19 @@ class AuthenticationFutureListTest {
 
     @Timeout(3)
     @Test
-    fun testTakeIfDone() {
+    fun testTakeIfTerminated() {
         val completedFuture = FutureProcessor.completedFuture()
-        AuthenticationFutureList.takeIfDone(completedFuture) shouldBe completedFuture
+        AuthenticationFutureList.takeIfTerminated(completedFuture) shouldBe completedFuture
 
         val failedFuture = FutureProcessor.toCompletableFuture { throw CouldNotPerformException("Failed") }
-        AuthenticationFutureList.takeIfDone(failedFuture) shouldBe failedFuture
+        AuthenticationFutureList.takeIfTerminated(failedFuture) shouldBe failedFuture
 
         val canceledFuture = FutureProcessor.canceledFuture(CancellationException("Cancelled"))
-        AuthenticationFutureList.takeIfDone(canceledFuture) shouldBe canceledFuture
+        AuthenticationFutureList.takeIfTerminated(canceledFuture) shouldBe canceledFuture
 
         val timeout = 100L
         val runningFuture = FutureProcessor.toCompletableFuture { Thread.sleep(timeout) }
-        AuthenticationFutureList.takeIfDone(runningFuture) shouldBe null
+        AuthenticationFutureList.takeIfTerminated(runningFuture) shouldBe null
     }
 
     @Timeout(5)
