@@ -166,7 +166,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     @Timeout(15)
     @Throws(Exception::class)
     fun testExtensionCancellation() {
-        println("testExtentionCancelation")
+        println("testExtensionCancellation")
         val locationRemote = Units.getUnit(Registries.getUnitRegistry().rootLocationConfig, true, Units.LOCATION)
 
         // apply low prio action
