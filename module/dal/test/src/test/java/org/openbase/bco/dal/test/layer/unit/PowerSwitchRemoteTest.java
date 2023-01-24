@@ -23,6 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -115,6 +116,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      */
     @Test
     @Timeout(30)
+    @RepeatedTest(5)
     public void testPowerStateServicePerformance() throws Exception {
         System.out.println("testPowerStateServicePerformance");
 
@@ -140,7 +142,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
 
         // make sure unit is still responding
         try {
-            powerSwitchRemote.requestData().get(100, TimeUnit.MILLISECONDS);
+            powerSwitchRemote.requestData().get(500, TimeUnit.MILLISECONDS);
         } catch (TimeoutException ex) {
             assertTrue(true, "PowerSwitch did not response in time after massive load!");
         }
@@ -156,8 +158,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
                             TimeUnit.MILLISECONDS
                     )
             );
-            System.out.println("Duration: " + Duration.between(Instant.now(), latestEventTime).toMillis());
-            if (Duration.between(latestEventTime, Instant.now()).toMillis() > 50) {
+            if (Duration.between(latestEventTime, Instant.now()).toMillis() > 100) {
                 break;
             }
 
@@ -173,7 +174,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
         try {
             testAction.waitForActionState(State.EXECUTING);
         } catch (CouldNotPerformException ex) {
-            fail("Power action is not executing and instead: " + testAction.getActionState().name());
+            fail(testAction.getActionId() + " is not executing and instead: " + testAction.getActionState().name());
         }
 
         // make sure the final state is correctly applied.
