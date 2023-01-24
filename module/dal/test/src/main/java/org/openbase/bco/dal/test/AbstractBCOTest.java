@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,20 +23,17 @@ package org.openbase.bco.dal.test;
  */
 
 import lombok.NonNull;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
-import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.communication.mqtt.test.MqttIntegrationTest;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -50,6 +47,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
