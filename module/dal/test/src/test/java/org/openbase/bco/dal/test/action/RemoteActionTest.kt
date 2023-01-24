@@ -162,7 +162,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     @Test
     @Timeout(15)
     @Throws(Exception::class)
-    fun testExtentionCancelation() {
+    fun testExtensionCancellation() {
         println("testExtentionCancelation")
         val locationRemote = Units.getUnit(Registries.getUnitRegistry().rootLocationConfig, true, Units.LOCATION)
 
