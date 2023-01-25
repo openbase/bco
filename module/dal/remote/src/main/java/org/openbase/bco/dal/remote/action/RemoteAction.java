@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -36,7 +36,6 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -75,8 +74,19 @@ public class RemoteAction implements Action {
     private final ObservableImpl<RemoteAction, ActionDescription> actionDescriptionObservable;
     private final AuthToken authToken;
     private final List<RemoteAction> impactedRemoteActions = new ArrayList<>();
-
+    private final Observer impactActionObserver = new Observer<RemoteAction, ActionDescription>() {
+        @Override
+        public void update(RemoteAction source, ActionDescription observable) throws Exception {
+            actionDescriptionObservable.notifyObservers(source, observable);
+        }
+    };
+    private final SyncObject cancelLock = new SyncObject("CancelLock");
     private Future<ActionDescription> cleanupTask = null;
+    private ActionDescription actionDescription;
+    private ActionReference actionReference;
+    private UnitRemote<?> targetUnit;
+    private Future<ActionDescription> futureObservationTask;
+    private ScheduledFuture<?> autoExtensionTask;
     private final Observer unitObserver = (source, data) -> {
 
         // check if initial actionDescription is available
@@ -90,24 +100,11 @@ public class RemoteAction implements Action {
             ExceptionPrinter.printHistory("Incoming DataType[" + data.getClass().getSimpleName() + "] does not provide an action list!", ex, LOGGER, LogLevel.WARN);
         }
     };
-
-    private final Observer impactActionObserver = new Observer<RemoteAction, ActionDescription>() {
-        @Override
-        public void update(RemoteAction source, ActionDescription observable) throws Exception {
-            actionDescriptionObservable.notifyObservers(source, observable);
-        }
-    };
-
-    private ActionDescription actionDescription;
-    private ActionReference actionReference;
-    private UnitRemote<?> targetUnit;
-    private Future<ActionDescription> futureObservationTask;
-    private ScheduledFuture<?> autoExtensionTask;
     private String actionId;
     private ServiceType serviceType;
     private String targetUnitId;
     private Callable<Boolean> autoExtendCheckCallback;
-
+    private Future<ActionDescription> cancelTask = null;
 
     public RemoteAction(final Future<ActionDescription> actionFuture) {
         this(actionFuture, null, null);
@@ -239,6 +236,14 @@ public class RemoteAction implements Action {
         }
     }
 
+    private static boolean checkIfStateWasPassed(final ActionState.State actionState, final long timestamp, final ActionDescription actionDescription) {
+        try {
+            return TimestampProcessor.getTimestamp(ServiceStateProcessor.getLatestValueOccurrence(actionState, actionDescription), TimeUnit.MILLISECONDS) > timestamp;
+        } catch (NotAvailableException e) {
+            return false;
+        }
+    }
+
     public Future<ActionDescription> execute(final ActionDescription causeActionDescription) {
         return execute(causeActionDescription, false);
     }
@@ -317,7 +322,7 @@ public class RemoteAction implements Action {
             } catch (CancellationException ex) {
                 // in case the action is canceled, this is done via the futureObservationTask which than causes this cancellation exception.
                 // But in this case we need to cancel the initial future as well.
-                if(!future.isDone()) {
+                if (!future.isDone()) {
                     future.cancel(true);
                 }
                 throw new ExecutionException(ex);
@@ -653,10 +658,6 @@ public class RemoteAction implements Action {
         }
     }
 
-    private Future<ActionDescription> cancelTask = null;
-    private final SyncObject cancelLock = new SyncObject("CancelLock");
-
-
     /**
      * {@inheritDoc}
      *
@@ -671,12 +672,13 @@ public class RemoteAction implements Action {
             return cancelTask;
         }
     }
+
     private Future<ActionDescription> internalCancel() {
         Future<ActionDescription> future = null;
         try {
             synchronized (executionSync) {
 
-                if(cancelTask != null) {
+                if (cancelTask != null) {
                     return cancelTask;
                 }
 
@@ -702,7 +704,7 @@ public class RemoteAction implements Action {
                 }
 
                 // if precomputed, then we are not responsible for the cancellation
-                if(PRECOMPUTED_ACTION_ID.equals(actionId)) {
+                if (PRECOMPUTED_ACTION_ID.equals(actionId)) {
                     future = FutureProcessor.completedFuture(getActionDescription());
                     return future;
                 }
@@ -738,7 +740,8 @@ public class RemoteAction implements Action {
                         }, targetUnit.getDataFuture());
                     }
                 } else {
-                    future = FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Could not cancel action since target unit is not known!"));
+                    // action was canceled before the action was submitted, so we are not able to cancel it again.
+                    future = FutureProcessor.completedFuture(actionDescription);
                 }
                 return registerPostActionStateUpdate(future, State.CANCELED);
             }
@@ -752,7 +755,7 @@ public class RemoteAction implements Action {
                 // otherwise create cleanup task
                 final Future<ActionDescription> passthroughFuture = future;
                 try {
-                    if(cleanupTask == null || cleanupTask.isDone()) {
+                    if (cleanupTask == null || cleanupTask.isDone()) {
                         cleanupTask = GlobalCachedExecutorService.submit(() -> {
                             try {
                                 return passthroughFuture.get(10, TimeUnit.SECONDS);
@@ -762,7 +765,7 @@ public class RemoteAction implements Action {
                                 throw new CouldNotProcessException("Could not cancel " + RemoteAction.this.toString(), ex);
                             } finally {
                                 // clear
-                                if(!cleanupTask.isCancelled()) {
+                                if (!cleanupTask.isCancelled()) {
                                     cleanup();
                                 }
                             }
@@ -875,7 +878,7 @@ public class RemoteAction implements Action {
             cancelTask = null;
         }
 
-        if(cleanupTask != null) {
+        if (cleanupTask != null) {
             cleanupTask.cancel(true);
         }
     }
@@ -1018,20 +1021,12 @@ public class RemoteAction implements Action {
             while (actionDescription == null || (actionDescription.getActionState().getValue() != actionState) && !checkIfStateWasPassed(actionState, timeSplit.getTimestamp(), actionDescription)) {
                 // Waiting makes no sense if the action is done but the state is still not reached.
                 if (actionDescription != null && isDone()) {
-                    throw new CouldNotPerformException(targetUnit.getLabel()+ " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
+                    throw new CouldNotPerformException(targetUnit.getLabel() + " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
                 }
-                LOGGER.trace(getTargetUnit().getLabel()+ " - wait for action ["+this+"] to be in state ["+actionState+"] ");
+                LOGGER.trace(getTargetUnit().getLabel() + " - wait for action [" + this + "] to be in state [" + actionState + "] ");
                 executionSync.wait(timeSplit.getTime());
-                LOGGER.trace(getTargetUnit().getLabel()+ " - got update while waiting for action ["+this+"] to be in state ["+actionState+"] ");
+                LOGGER.trace(getTargetUnit().getLabel() + " - got update while waiting for action [" + this + "] to be in state [" + actionState + "] ");
             }
-        }
-    }
-
-    private static boolean checkIfStateWasPassed(final ActionState.State actionState, final long timestamp, final ActionDescription actionDescription) {
-        try {
-            return TimestampProcessor.getTimestamp(ServiceStateProcessor.getLatestValueOccurrence(actionState, actionDescription), TimeUnit.MILLISECONDS) > timestamp;
-        } catch (NotAvailableException e) {
-            return false;
         }
     }
 
@@ -1238,4 +1233,6 @@ public class RemoteAction implements Action {
         // use default as fallback
         return Action.toString(this) + " - " + description;
     }
+
+
 }
