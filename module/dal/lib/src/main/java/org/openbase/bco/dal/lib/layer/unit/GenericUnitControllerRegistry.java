@@ -33,12 +33,4 @@ import org.openbase.jul.exception.NotAvailableException;
  */
 public interface GenericUnitControllerRegistry<D extends AbstractMessage, DB extends D.Builder<DB>> extends UnitControllerRegistry<UnitController<D, DB>> {
 
-    /**
-     * Returns a unit controller instance with the given scope.
-     *
-     * @param scope the scope of the unit as string.
-     * @return the scope matching unit controller.
-     * @throws NotAvailableException is thrown in case there is no unit registered for the given scope.
-     */
-    UnitController<D, DB> getUnitByScope(final String scope) throws NotAvailableException;
 }

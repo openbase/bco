@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib.future;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -24,21 +24,14 @@ package org.openbase.bco.authentication.lib.future;
 
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.jul.communication.data.RPCResponse;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.ExceptionProcessor;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.schedule.GlobalScheduledExecutorService;
-import org.openbase.jul.schedule.SyncObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Abstract future that automatically verifies the response from a server.
@@ -179,8 +172,6 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
                     ticketAuthenticatorWrapper));
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not verify ServiceServer Response", ex);
-        } finally {
-            AuthenticationFutureList.INSTANCE.removeFuture(this);
         }
     }
 
@@ -208,6 +199,7 @@ public abstract class AbstractAuthenticationFuture<RETURN, INTERNAL> implements 
      * @param internalType The result from the internal future.
      *
      * @return Ticket extracted from the internal type.
+     *
      * @throws NotAvailableException is thrown in case the internal type does not offer an ticket.
      */
     protected abstract TicketAuthenticatorWrapper getTicketFromInternal(INTERNAL internalType) throws NotAvailableException;

@@ -25,6 +25,7 @@ package org.openbase.bco.dal.test.layer.unit.location;
 import com.google.protobuf.Message;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -36,6 +37,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.state.States;
+import org.openbase.bco.dal.lib.state.States.Motion;
 import org.openbase.bco.dal.lib.state.States.Power;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
@@ -44,6 +46,7 @@ import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
+import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.BCOSessionImpl;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -89,20 +92,6 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LocationRemoteTest.class);
 
-    private static LocationRemote rootLocationRemote;
-
-    public LocationRemoteTest() {
-    }
-
-    @BeforeAll
-    public static void loadUnits() throws Throwable {
-        try {
-            rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
-        }
-    }
-
     /**
      * Test if changes in locations are published to underlying units.
      *
@@ -112,6 +101,9 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     @Timeout(10)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
+
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
 
         try {
             List<PowerStateOperationService> powerServiceList = new ArrayList<>();
@@ -161,6 +153,9 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     @Timeout(15)
     public void testUnitToLocationPipeline() throws Exception {
         System.out.println("testUnitToLocationPipeline");
+
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
 
         List<TemperatureSensorController> temperatureSensorList = new ArrayList<>();
         List<TemperatureControllerController> temperatureControllerList = new ArrayList<>();
@@ -222,6 +217,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     @Test
     @Timeout(15)
     public void testRecordAndRestoreSnapshots() throws Exception {
+
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+
         BlindState snapshotBlindState = BlindState.newBuilder().setValue(BlindState.State.DOWN).setOpeningRatio(0).build();
         BlindState newBlindState = BlindState.newBuilder().setValue(BlindState.State.UP).setOpeningRatio(0.5).build();
         ColorState snapshotColorState = ColorState.newBuilder().setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBColor.newBuilder().setBrightness(1).setHue(0).setSaturation(1))).build();
@@ -293,6 +292,9 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testManipulatingByUnitType() throws Exception {
         System.out.println("testManipulatingByUnitType");
 
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+
         try {
             List<UnitType> lightTypes = Registries.getTemplateRegistry().getSubUnitTypes(UnitType.LIGHT);
             lightTypes.add(UnitType.LIGHT);
@@ -353,25 +355,17 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testPresenceState() throws Exception {
         System.out.println("testPresenceState");
 
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+
         try {
-            MotionDetectorController motionDetectorController = null;
-            for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
-                if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                    continue;
-                }
+            MotionDetectorController motionDetectorController = (MotionDetectorController)
+                    deviceManagerLauncher
+                            .getLaunchable()
+                            .getUnitControllerRegistry()
+                            .getUnitByAlias(MockRegistry.ALIAS_MOTION_SENSOR_HELL);
 
-                UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
-                if (unitController instanceof MotionDetectorController) {
-                    motionDetectorController = (MotionDetectorController) unitController;
-                }
-            }
-
-            if (motionDetectorController == null) {
-                fail("Mock registry does not contain a motionDetector!");
-                return;
-            }
-
-            motionDetectorController.applyServiceState(MotionState.newBuilder().setValue(MotionState.State.MOTION).build(), ServiceType.MOTION_STATE_SERVICE);
+            motionDetectorController.applyServiceState(Motion.MOTION, ServiceType.MOTION_STATE_SERVICE);
 
             while (rootLocationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
@@ -379,7 +373,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
             }
             assertEquals(PresenceState.State.PRESENT, rootLocationRemote.getPresenceState().getValue(), "PresenceState of location has not been updated!");
 
-            motionDetectorController.applyServiceState(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build(), ServiceType.MOTION_STATE_SERVICE);
+            motionDetectorController.applyServiceState(Motion.NO_MOTION, ServiceType.MOTION_STATE_SERVICE);
 
             Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
             while (rootLocationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
@@ -402,8 +396,12 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testColorableLightControlViaLocation() throws Exception {
         System.out.println("testColorableLightControlViaLocation");
 
-        final List<? extends ColorableLightRemote> colorableLightRemotes = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT, true);
-        final List<? extends LightRemote> lightRemotes = rootLocationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT, true);
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+        final List<? extends ColorableLightRemote> colorableLightRemotes =
+                rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, true, Units.COLORABLE_LIGHT, true);
+        final List<? extends LightRemote> lightRemotes =
+                rootLocationRemote.getUnits(UnitType.LIGHT, true, Units.LIGHT, true);
 
         // ==== TEST SUBTYPES
 
@@ -477,13 +475,12 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testIlluminanceState() throws Exception {
         System.out.println("testIlluminanceState");
 
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+        
         try {
             List<LightSensorController> lightSensorControllerList = new ArrayList<>();
             for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
-                if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-                    continue;
-                }
-
                 UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
                 if (unitController instanceof LightSensorController) {
                     lightSensorControllerList.add((LightSensorController) unitController);
@@ -532,6 +529,9 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+        
         // wait for data
         rootLocationRemote.waitForData();
         waitForExecution(rootLocationRemote.setPowerState(State.OFF));
@@ -560,6 +560,9 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     public void testActionCancellation() throws Exception {
         System.out.println("testActionCancellation");
 
+        final LocationRemote rootLocationRemote =
+                Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
+        
         final List<? extends ColorableLightRemote> colorableLightRemotes = rootLocationRemote.getUnits(UnitType.COLORABLE_LIGHT, false, Units.COLORABLE_LIGHT);
         // validate that location has at least one unit of the type used in this test
         assertTrue(colorableLightRemotes.size() > 0, "Cannot execute test if location does not have a colorable light!");
@@ -609,56 +612,45 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @Test
-    @Timeout(20)
+    @Timeout(5)
     public void testLocationModificationViaApplyAction() throws Exception {
-
 
         final UnitRemote<?> unit = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig().getId(), true);
 
         final List<RemoteAction> remoteActions = new ArrayList<>();
 
-        final Builder locationDataBuilder = LocationData.newBuilder();
-        locationDataBuilder.setPowerState(Power.ON);
-
         final BCOSessionImpl bcoSession = new BCOSessionImpl(new SessionManager());
         bcoSession.loginUserViaUsername("admin", "admin", false);
 
         final String token = bcoSession.generateAuthToken().getAuthenticationToken();
-        final LocationData data = locationDataBuilder.build();
+
+        LocationData locationData = LocationData.newBuilder().setPowerState(Power.ON).build();
 
         for (final ServiceType serviceType : unit.getSupportedServiceTypes()) {
 
-            if (!Services.hasServiceState(serviceType, ServiceTempus.CURRENT, data)) {
+            if (!Services.hasServiceState(serviceType, ServiceTempus.CURRENT, locationData)) {
                 continue;
             }
 
-            final Message serviceState = Services.invokeProviderServiceMethod(serviceType, data);
-
+            final Message serviceState = Services.invokeProviderServiceMethod(serviceType, locationData);
             final ActionParameter.Builder builder = ActionDescriptionProcessor.generateDefaultActionParameter(serviceState, serviceType, unit);
             final AuthToken authToken = AuthToken.newBuilder().setAuthenticationToken(token).build();
             builder.setAuthToken(authToken);
 
             builder.getServiceStateDescriptionBuilder().setUnitId(unit.getId());
 
-            System.err.println("action parameter:" + builder.toString());
+            logger.debug("action parameter:" + builder);
             try {
-                System.err.println("action registered:" + unit.applyAction(builder).get());
+                logger.debug("action registered:" + unit.applyAction(builder).get());
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
 
-
-            RemoteAction remoteAction = new RemoteAction(unit.applyAction(builder), authToken);
-            // register action to be automatically cancelled after test
-            observe(remoteAction);
-            remoteActions.add(remoteAction);
-
-//            final RemoteAction action = new RemoteAction(builder.build());
-//            action.execute();
+            remoteActions.add(
+                observe(unit.applyAction(builder), authToken, true)
+            );
         }
 
-
-        // TODO: blocked by https://github.com/openbase/bco.dal/issues/170
         if (!remoteActions.isEmpty()) {
             for (final RemoteAction remoteAction : remoteActions) {
                 remoteAction.waitForRegistration(5, TimeUnit.SECONDS);
