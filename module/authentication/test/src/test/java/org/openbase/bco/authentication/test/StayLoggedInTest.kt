@@ -11,8 +11,8 @@ import org.openbase.bco.authentication.lib.SessionManager
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout
 import org.openbase.bco.authentication.mock.MockClientStore
 import org.openbase.bco.authentication.mock.MockCredentialStore
-import org.openbase.bco.authentication.mock.MqttIntegrationTest
 import org.openbase.jps.core.JPService
+import org.openbase.jul.communication.mqtt.test.MqttIntegrationTest
 import org.openbase.jul.exception.initialCauseMessage
 import org.openbase.jul.exception.printer.ExceptionPrinter
 import java.util.concurrent.ExecutionException
