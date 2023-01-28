@@ -59,6 +59,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     private int powerStateObserverUpdateNumber = 0;
 
     @BeforeAll
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
     }

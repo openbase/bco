@@ -10,12 +10,12 @@ package org.openbase.app.test.agent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,6 +25,7 @@ package org.openbase.app.test.agent;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
@@ -47,6 +48,7 @@ public class BCOAppTest extends AbstractBCOTest {
     protected static LocationManagerLauncher locationManagerLauncher;
 
     @BeforeAll
+    @Timeout(30)
     public static void setupBcoApp() throws Throwable {
         try {
             LOGGER.trace("Start device manager...");
@@ -77,6 +79,7 @@ public class BCOAppTest extends AbstractBCOTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownBCOApp() throws Throwable {
         LOGGER.info("Tear down app tests...");
         try {
@@ -104,6 +107,7 @@ public class BCOAppTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
+    @Timeout(30)
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

@@ -22,8 +22,10 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.CredentialStore;
@@ -43,6 +45,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
@@ -52,8 +56,10 @@ public class SessionManagerTest extends AuthenticationTest {
 
     private static CredentialStore clientStore;
     private static String INITIAL_USER_ID = "InitialUserId";
+    private int notificationCounter = 0;
 
     @BeforeEach
+    @Timeout(30)
     public void setupSessionManager() throws Throwable {
         clientStore = new MockClientStore();
 
@@ -380,7 +386,6 @@ public class SessionManagerTest extends AuthenticationTest {
         manager.loginUser(userId, secondPassword, false);
     }
 
-
     /**
      * Test of SessionManager.login() for client.
      *
@@ -442,8 +447,6 @@ public class SessionManagerTest extends AuthenticationTest {
 
         assertEquals(manager.isAdmin(), true);
     }
-
-    private int notificationCounter = 0;
 
     /**
      * Test if the login observable notifies correctly.

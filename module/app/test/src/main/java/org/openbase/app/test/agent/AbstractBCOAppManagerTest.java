@@ -10,22 +10,21 @@ package org.openbase.app.test.agent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.app.AppRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
@@ -52,6 +51,7 @@ public abstract class AbstractBCOAppManagerTest extends BCOAppTest {
     protected AppRemote appRemote = null;
 
     @BeforeEach
+    @Timeout(30)
     public void prepareAppManager() throws Exception {
         try {
             // setup and register app class
@@ -79,6 +79,7 @@ public abstract class AbstractBCOAppManagerTest extends BCOAppTest {
     }
 
     @AfterEach
+    @Timeout(30)
     public void removeAgent() throws Exception {
         Registries.getUnitRegistry().removeUnitConfig(appConfig);
         appRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED);

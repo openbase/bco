@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,8 +33,11 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
+
 import java.security.KeyPair;
-import static org.junit.jupiter.api.Assertions.*;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -47,6 +50,7 @@ public class CredentialStoreTest {
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
         JPService.registerProperty(JPResetCredentials.class);
@@ -81,7 +85,7 @@ public class CredentialStoreTest {
         // start a second registry which loads the file from the first one
         CredentialStore loadingCredentialStore = new CredentialStore();
         loadingCredentialStore.init(storeFileName);
-        
+
         // test if they produce the same result
         try {
             byte[] passwordHash = loadingCredentialStore.getCredentials(userId).toByteArray();
