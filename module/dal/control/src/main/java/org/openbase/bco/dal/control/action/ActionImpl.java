@@ -738,6 +738,14 @@ public class ActionImpl implements SchedulableAction {
         // cancel if exist
         if (actionTask != null) {
             actionTask.cancel(true);
+
+            // in case the task is directly cancel by this because the task was never canceled, we need to notify
+            // all waiting tasks about the cancellation
+            synchronized (actionTaskLock) {
+                if (isActionTaskFinished()) {
+                    actionTaskLock.notifyAll();
+                }
+            }
         }
 
         try {
