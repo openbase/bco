@@ -43,6 +43,7 @@ public class MockRegistryTest extends MqttIntegrationTest {
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void setUpClass() throws JPServiceException {
         JPService.setupJUnitTestMode();
     }

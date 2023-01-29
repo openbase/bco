@@ -10,12 +10,12 @@ package org.openbase.app.test.agent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -24,6 +24,7 @@ package org.openbase.app.test.agent;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
@@ -49,6 +50,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected AgentRemote agentRemote = null;
 
     @BeforeEach
+    @Timeout(30)
     public void createAgent() throws Exception {
         prepareEnvironment();
         try {
@@ -70,6 +72,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     }
 
     @AfterEach
+    @Timeout(30)
     public void removeAgent() throws Exception {
         Registries.getUnitRegistry().removeUnitConfig(agentConfig);
         agentRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED);
@@ -78,8 +81,8 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     public abstract UnitConfig getAgentConfig() throws CouldNotPerformException;
 
     /**
-     * *
-     // overwrite me if the environment needs to be adjusted before the agent gets started.
+     * overwrite this method if the environment needs to be adjusted before the agent gets started.
+     *
      * @throws CouldNotPerformException
      * @throws InterruptedException
      */

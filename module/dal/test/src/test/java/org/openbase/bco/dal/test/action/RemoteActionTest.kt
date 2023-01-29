@@ -58,6 +58,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     }
 
     @BeforeAll
+    @Timeout(30)
     fun setupRemoteActionTest() {
         // create new user token for test
         try {
