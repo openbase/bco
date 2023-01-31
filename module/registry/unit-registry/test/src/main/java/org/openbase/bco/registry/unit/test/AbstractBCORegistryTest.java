@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.test;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.communication.mqtt.test.MqttIntegrationTest;
@@ -56,6 +57,7 @@ public abstract class AbstractBCORegistryTest extends MqttIntegrationTest {
     final Logger logger = LoggerFactory.getLogger(getClass());
 
     @BeforeEach
+    @Timeout(30)
     public void setupMockRegistry() throws Exception {
         try {
             MockRegistryHolder.newMockRegistry();
@@ -66,6 +68,7 @@ public abstract class AbstractBCORegistryTest extends MqttIntegrationTest {
     }
 
     @AfterEach
+    @Timeout(30)
     public void tearDownMockRegistry() throws Exception {
         try {
             MockRegistryHolder.shutdownMockRegistry();

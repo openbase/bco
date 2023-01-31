@@ -50,6 +50,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceStateTraitMapperFactoryTest.class);
 
     @BeforeEach
+    @Timeout(30)
     public void setupTest() throws Exception {
         MockRegistryHolder.newMockRegistry();
 
@@ -57,6 +58,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
     }
 
     @AfterEach
+    @Timeout(30)
     public void tearDownTest() {
         MockRegistryHolder.shutdownMockRegistry();
     }
