@@ -16,6 +16,7 @@ import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation
 import org.openbase.jul.schedule.Timeout
 import org.openbase.type.domotic.service.ServiceTemplateType
 import org.openbase.type.domotic.state.ActivationStateType
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState
 import org.openbase.type.domotic.state.PresenceStateType
 import org.openbase.type.domotic.unit.UnitConfigType
 import org.openbase.type.domotic.unit.UnitTemplateType
@@ -158,11 +159,10 @@ class PresenceLightSceneAgent : AbstractTriggerableAgent() {
 
         // activate presence scene
         when (activationState.value) {
-            ActivationStateType.ActivationState.State.ACTIVE -> observe(
-                presenceScene!!.setActivationState(
-                    ActivationStateType.ActivationState.State.ACTIVE, getDefaultActionParameter(
-                        Timeout.INFINITY_TIMEOUT
-                    )
+            ActivationState.State.ACTIVE -> observe(
+                presenceScene?.setActivationState(
+                    ActivationState.State.ACTIVE,
+                    getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)
                 )
             )
 
