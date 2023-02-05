@@ -19,6 +19,7 @@ class AuthenticationFutureListTest {
     companion object {
         @JvmStatic
         @BeforeAll
+        @Timeout(30)
         fun setup() {
             JPService.setupJUnitTestMode()
         }

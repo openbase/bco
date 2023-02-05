@@ -69,6 +69,7 @@ public class TestWaitUntilReady extends MqttIntegrationTest {
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void setUpClass() throws Throwable {
         try {
             MockRegistryHolder.newMockRegistry();
@@ -103,6 +104,7 @@ public class TestWaitUntilReady extends MqttIntegrationTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownClass() throws Throwable {
         try {
             MockRegistryHolder.shutdownMockRegistry();

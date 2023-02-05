@@ -65,6 +65,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         powerSwitchRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, PowerSwitchRemote.class);
     }

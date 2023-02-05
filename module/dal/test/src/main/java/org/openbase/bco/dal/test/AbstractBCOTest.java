@@ -23,10 +23,7 @@ package org.openbase.bco.dal.test;
  */
 
 import lombok.NonNull;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.dal.remote.action.RemoteAction;
@@ -63,6 +60,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     private final List<RemoteAction> testActions = Collections.synchronizedList(new ArrayList<>());
 
     @BeforeAll
+    @Timeout(30)
     public static void setupBCO() throws Throwable {
         try {
             mockRegistry = MockRegistryHolder.newMockRegistry();
@@ -73,6 +71,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownBCO() throws Throwable {
         try {
             Units.reset(AbstractBCOTest.class);
@@ -84,6 +83,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     }
 
     @BeforeEach
+    @Timeout(30)
     public void notifyAboutTestStart() {
         LOGGER.info("===================================== Start BCO Test =====================================");
     }
@@ -93,6 +93,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
      * If you want to cancel all actions manually please use method {@code cancelAllTestActions()} to get feedback about the cancellation process.
      */
     @AfterEach
+    @Timeout(30)
     public void autoCancelActionsAfterTestRun() {
 
         LOGGER.info("===================================== Finish BCO Test =====================================");

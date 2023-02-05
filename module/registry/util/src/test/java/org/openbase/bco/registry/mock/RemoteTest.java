@@ -44,6 +44,7 @@ public class RemoteTest extends MqttIntegrationTest {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RemoteTest.class);
 
     @BeforeAll
+    @Timeout(30)
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
@@ -54,6 +55,7 @@ public class RemoteTest extends MqttIntegrationTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownClass() {
         try {
             MockRegistryHolder.shutdownMockRegistry();
