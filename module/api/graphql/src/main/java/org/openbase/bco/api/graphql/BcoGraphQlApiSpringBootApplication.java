@@ -33,7 +33,7 @@ import com.google.inject.Provides;
 import graphql.Scalars;
 import graphql.execution.instrumentation.Instrumentation;
 import graphql.kickstart.execution.context.DefaultGraphQLContext;
-import graphql.kickstart.execution.context.GraphQLContext;
+import graphql.kickstart.execution.context.GraphQLKickstartContext;
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
 import graphql.schema.*;
 import org.dataloader.DataLoader;
@@ -58,11 +58,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,6 +74,8 @@ public class BcoGraphQlApiSpringBootApplication {
     private static Logger LOGGER = LoggerFactory.getLogger(BcoGraphQlApiSpringBootApplication.class);
 
     private final Injector injector;
+    @Value("${graphql.url:/graphql}")
+    private String graphqlurl;
 
     {
         injector = Guice.createInjector(
@@ -91,23 +89,6 @@ public class BcoGraphQlApiSpringBootApplication {
                 new RegistrySchemaModule(),
                 new UnitSchemaModule()
         );
-    }
-
-    @Value("${graphql.url:/graphql}")
-    private String graphqlurl;
-
-    @Bean
-    public FilterRegistrationBean<CorsFilter> corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(false);
-        config.addAllowedOrigin("*");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-        source.registerCorsConfiguration(graphqlurl, config);
-        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
-        bean.setOrder(0);
-        return bean;
     }
 
     @Bean
@@ -264,18 +245,18 @@ public class BcoGraphQlApiSpringBootApplication {
         return new GraphQLServletContextBuilder() {
 
             @Override
-            public GraphQLContext build(HttpServletRequest request, HttpServletResponse response) {
-                return new DefaultBCOGraphQLContext(dataLoaderRegistry, null, request);
+            public GraphQLKickstartContext build(HttpServletRequest request, HttpServletResponse response) {
+                return new DefaultBCOGraphQLContext(dataLoaderRegistry, request);
             }
 
             @Override
-            public GraphQLContext build() {
+            public GraphQLKickstartContext build() {
                 return new DefaultGraphQLContext(dataLoaderRegistry, null);
             }
 
             @Override
-            public GraphQLContext build(Session session, HandshakeRequest request) {
-                return new BCOGraphQLWebsocketContext(dataLoaderRegistry, null, session, request);
+            public GraphQLKickstartContext build(Session session, HandshakeRequest request) {
+                return new BCOGraphQLWebsocketContext(dataLoaderRegistry, session, request);
             }
         };
     }
