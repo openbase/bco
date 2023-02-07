@@ -2,29 +2,16 @@ package org.openbase.bco.app.preset.agent
 
 import org.openbase.bco.dal.remote.layer.unit.Units
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote
-import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote
 import org.openbase.bco.dal.remote.trigger.GenericBoundedDoubleValueTrigger
 import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger
-import org.openbase.bco.registry.remote.Registries
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.exception.InitializationException
-import org.openbase.jul.exception.NotAvailableException
 import org.openbase.jul.exception.VerificationFailedException
-import org.openbase.jul.exception.printer.ExceptionPrinter
-import org.openbase.jul.extension.type.processing.LabelProcessor.addLabel
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation
-import org.openbase.jul.schedule.Timeout
 import org.openbase.type.domotic.service.ServiceTemplateType
-import org.openbase.type.domotic.state.ActivationStateType
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState
 import org.openbase.type.domotic.state.PresenceStateType
 import org.openbase.type.domotic.unit.UnitConfigType
-import org.openbase.type.domotic.unit.UnitTemplateType
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData
-import java.util.*
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 /*
  * #%L
@@ -49,8 +36,7 @@ import java.util.concurrent.TimeoutException
  */ /**
  * @author [Timo Michalski](mailto:tmichalski@techfak.uni-bielefeld.de)
  */
-class PresenceLightSceneAgent : AbstractTriggerableAgent() {
-    private var presenceScene: SceneRemote? = null
+class PresenceLightSceneAgent : AbstractSceneAgent() {
 
     @Throws(InitializationException::class, InterruptedException::class)
     override fun init(config: UnitConfigType.UnitConfig) {
@@ -90,88 +76,7 @@ class PresenceLightSceneAgent : AbstractTriggerableAgent() {
         }
     }
 
-    @Throws(CouldNotPerformException::class, InterruptedException::class)
-    override fun applyConfigUpdate(config: UnitConfigType.UnitConfig): UnitConfigType.UnitConfig {
-        getManageWriteLockInterruptible(this).use { ignored ->
-            val unitConfig = super.applyConfigUpdate(config)
-            val relatedSceneAlias = getConfig().getAlias(0) + "_" + PRESENCE_LIGHT_SCENE_PREFIX
-
-            // legacy handling to update outdated aliases
-            try {
-                val outDatedScene = Registries.getUnitRegistry().getUnitConfigByAliasAndUnitType(
-                    PRESENCE_LIGHT_SCENE_PREFIX, UnitTemplateType.UnitTemplate.UnitType.SCENE
-                ).toBuilder()
-
-                // update alias
-                val aliases = ArrayList(outDatedScene.aliasList)
-                aliases.remove(PRESENCE_LIGHT_SCENE_PREFIX)
-                aliases.add(relatedSceneAlias)
-                outDatedScene.clearAlias()
-                outDatedScene.addAllAlias(aliases)
-
-                // save
-                try {
-                    Registries.getUnitRegistry().updateUnitConfig(outDatedScene.build())[5, TimeUnit.SECONDS]
-                } catch (exx: ExecutionException) {
-                    ExceptionPrinter.printHistory<Exception>("Could not register Presence Light Group", exx, logger)
-                } catch (exx: TimeoutException) {
-                    ExceptionPrinter.printHistory<Exception>("Could not register Presence Light Group", exx, logger)
-                }
-            } catch (ex: NotAvailableException) {
-                // this should be the normal case so just continue...
-            }
-
-            // create presence scene if not available otherwise load config of existing one
-            var presenceLightSceneConfig: UnitConfigType.UnitConfig? = null
-            try {
-                presenceLightSceneConfig = Registries.getUnitRegistry()
-                    .getUnitConfigByAliasAndUnitType(relatedSceneAlias, UnitTemplateType.UnitTemplate.UnitType.SCENE)
-            } catch (ex: NotAvailableException) {
-                val presenceLightSceneBuilder = UnitConfigType.UnitConfig.newBuilder()
-                presenceLightSceneBuilder.addAlias(relatedSceneAlias)
-                presenceLightSceneBuilder.unitType = UnitTemplateType.UnitTemplate.UnitType.SCENE
-                addLabel(presenceLightSceneBuilder.labelBuilder, Locale.ENGLISH, "Presence Light Scene")
-                addLabel(presenceLightSceneBuilder.labelBuilder, Locale.GERMAN, "Anwesenheitslicht Scene")
-                try {
-                    // save
-                    presenceLightSceneConfig = Registries.getUnitRegistry()
-                        .registerUnitConfig(presenceLightSceneBuilder.build())[5, TimeUnit.SECONDS]
-                } catch (exx: ExecutionException) {
-                    ExceptionPrinter.printHistory("Could not register Presence Light Group", ex, logger)
-                } catch (exx: TimeoutException) {
-                    ExceptionPrinter.printHistory("Could not register Presence Light Group", ex, logger)
-                }
-            }
-
-            // load presence scene
-            presenceScene = Units.getUnit(presenceLightSceneConfig, false, Units.SCENE)
-            return unitConfig
-        }
-    }
-
-    @Throws(
-        CouldNotPerformException::class,
-        ExecutionException::class,
-        InterruptedException::class,
-        TimeoutException::class
-    )
-    override fun trigger(activationState: ActivationStateType.ActivationState) {
-
-        // activate presence scene
-        when (activationState.value) {
-            ActivationState.State.ACTIVE -> observe(
-                presenceScene?.setActivationState(
-                    ActivationState.State.ACTIVE,
-                    getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)
-                )
-            )
-
-            else -> cancelAllObservedActions()
-        }
-    }
-
     companion object {
-        const val PRESENCE_LIGHT_SCENE_PREFIX = "PresenceLightScene"
         const val MIN_ILLUMINANCE_UNTIL_TRIGGER = 100.0
     }
 }

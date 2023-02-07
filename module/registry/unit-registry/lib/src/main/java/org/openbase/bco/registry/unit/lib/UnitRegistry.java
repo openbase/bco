@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -31,7 +31,6 @@ import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
-import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilter;
 import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilterImpl;
 import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
 import org.openbase.jul.annotation.RPCMethod;
@@ -47,7 +46,6 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryService;
 import org.openbase.type.communication.ScopeType.Scope;
-import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.AuthenticationTokenType.AuthenticationToken;
 import org.openbase.type.domotic.authentication.AuthorizationTokenType.AuthorizationToken;
@@ -55,7 +53,6 @@ import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceConfigType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
-import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
@@ -72,11 +69,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
-import java.rmi.ServerError;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable, RegistryService {
 
@@ -193,6 +190,26 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
             }
         }
         return unitConfigs;
+    }
+
+    /**
+     * Returns the ids of all units that are bind to the given unitId.
+     *
+     * @param unitId    defines the target of the binding.
+     * @param unitTypes an optional filter that can be used to filter the results by specific unit types.
+     *
+     * @return {@inheritDoc}
+     *
+     * @throws NotAvailableException {@inheritDoc}
+     */
+    default List<UnitConfig> getBindings(String unitId, final List<UnitType> unitTypes) throws CouldNotPerformException {
+        validateData();
+        return getUnitConfigs().stream().filter(unitConfig ->
+                unitConfig.getBindingIdList().stream().anyMatch(bindingId ->
+                        bindingId.equals(unitId)
+                                && (unitTypes == null || unitTypes.contains(unitConfig.getUnitType()))
+                )
+        ).collect(Collectors.toList());
     }
 
     @RPCMethod
@@ -312,7 +329,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all registered unit configs. It allows to filter unit configs.
      *
      * @param includeDisabledUnits if true all unit configs that are disabled will be included as well.
-     * @param unitFilter if set, only units that match the filter will be returned.
+     * @param unitFilter           if set, only units that match the filter will be returned.
      *
      * @return the unit config collection as queried.
      *
@@ -339,7 +356,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all registered unit configs. It allows to filter unit configs.
      *
      * @param includeDisabledUnits if true all unit configs that are disabled will be included as well.
-     * @param unitFilter if set, only units that match the filter will be returned.
+     * @param unitFilter           if set, only units that match the filter will be returned.
      *
      * @return the unit config collection as queried.
      *
@@ -367,7 +384,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all registered unit configs. It allows to filter unit configs.
      *
      * @param includeDisabledUnits if true all unit configs that are disabled will be included as well.
-     * @param unitFilter if set, only units that match the filter will be returned.
+     * @param unitFilter           if set, only units that match the filter will be returned.
      *
      * @return the unit config collection as queried.
      *
@@ -1500,7 +1517,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         for (String unitConfigId : getUnitConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
                 unitConfig = getUnitConfigById(unitConfigId);
-                if(isServiceAvailable(serviceType, unitConfig)) {
+                if (isServiceAvailable(serviceType, unitConfig)) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
@@ -1513,7 +1530,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     default boolean isServiceAvailable(final ServiceType serviceType, final UnitConfig unitConfig) {
         for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
 
-            if(serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) {
+            if (serviceConfig.getServiceDescription().getPattern() != ServicePattern.PROVIDER) {
                 continue;
             }
 
@@ -1528,33 +1545,33 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
             switch (unitConfig.getUnitType()) {
                 case LOCATION:
-                    if(unitConfig
-                        .getLocationConfig()
-                        .getUnitIdList()
-                        .stream()
-                        .anyMatch(it -> {
-                            try {
-                                if(it.equals(unitConfig.getId())) {
-                                    new FatalImplementationErrorException("Location "+LabelProcessor.getBestMatch(unitConfig.getLabel())+" refers it self as child unit!", this);
+                    if (unitConfig
+                            .getLocationConfig()
+                            .getUnitIdList()
+                            .stream()
+                            .anyMatch(it -> {
+                                try {
+                                    if (it.equals(unitConfig.getId())) {
+                                        new FatalImplementationErrorException("Location " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " refers it self as child unit!", this);
+                                        return false;
+                                    }
+                                    return isServiceAvailable(serviceType, getUnitConfigById(it));
+                                } catch (NotAvailableException exception) {
                                     return false;
                                 }
-                                return isServiceAvailable(serviceType, getUnitConfigById(it));
-                            } catch (NotAvailableException exception) {
-                                return false;
-                            }
-                        })) {
+                            })) {
                         return true;
                     }
                     break;
                 case UNIT_GROUP:
-                    if(unitConfig
+                    if (unitConfig
                             .getUnitGroupConfig()
                             .getMemberIdList()
                             .stream()
                             .anyMatch(it -> {
                                 try {
-                                    if(it.equals(unitConfig.getId())) {
-                                        new FatalImplementationErrorException("Unit Group "+LabelProcessor.getBestMatch(unitConfig.getLabel())+" refers it self as member unit!", this);
+                                    if (it.equals(unitConfig.getId())) {
+                                        new FatalImplementationErrorException("Unit Group " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " refers it self as member unit!", this);
                                         return false;
                                     }
                                     return isServiceAvailable(serviceType, getUnitConfigById(it));
@@ -1567,7 +1584,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                     break;
                 default:
                     new FatalImplementationErrorException(
-                            "Unit["+LabelProcessor.getBestMatch(unitConfig.getLabel(), "?")+"] provides an aggregated service thats not allowed for units of type: "+ unitConfig.getUnitType().name()
+                            "Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel(), "?") + "] provides an aggregated service thats not allowed for units of type: " + unitConfig.getUnitType().name()
                             , this
                     );
             }

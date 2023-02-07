@@ -2,28 +2,15 @@ package org.openbase.bco.app.preset.agent
 
 import org.openbase.bco.dal.remote.layer.unit.Units
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote
-import org.openbase.bco.dal.remote.layer.unit.scene.SceneRemote
 import org.openbase.bco.dal.remote.trigger.GenericServiceStateValueTrigger
-import org.openbase.bco.registry.remote.Registries
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.exception.InitializationException
-import org.openbase.jul.exception.NotAvailableException
 import org.openbase.jul.exception.VerificationFailedException
-import org.openbase.jul.exception.printer.ExceptionPrinter
-import org.openbase.jul.extension.type.processing.LabelProcessor.addLabel
 import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation
-import org.openbase.jul.schedule.Timeout
 import org.openbase.type.domotic.service.ServiceTemplateType
-import org.openbase.type.domotic.state.ActivationStateType
-import org.openbase.type.domotic.state.PresenceStateType
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState
 import org.openbase.type.domotic.unit.UnitConfigType
-import org.openbase.type.domotic.unit.UnitTemplateType
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData
-import java.util.*
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
 
 /*
  * #%L
@@ -48,8 +35,7 @@ import java.util.concurrent.TimeoutException
  */ /**
  * @author [Timo Michalski](mailto:tmichalski@techfak.uni-bielefeld.de)
  */
-class PresenceSceneAgent : AbstractTriggerableAgent() {
-    private var presenceScene: SceneRemote? = null
+class PresenceSceneAgent : AbstractSceneAgent() {
 
     @Throws(InitializationException::class, InterruptedException::class)
     override fun init(config: UnitConfigType.UnitConfig) {
@@ -62,7 +48,7 @@ class PresenceSceneAgent : AbstractTriggerableAgent() {
             registerActivationTrigger(
                 GenericServiceStateValueTrigger<LocationRemote, LocationData, PresenceState.State>(
                     locationRemote,
-                    PresenceStateType.PresenceState.State.PRESENT,
+                    PresenceState.State.PRESENT,
                     ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE
                 ), TriggerAggregation.OR
             )
@@ -71,70 +57,12 @@ class PresenceSceneAgent : AbstractTriggerableAgent() {
             registerDeactivationTrigger(
                 GenericServiceStateValueTrigger<LocationRemote, LocationData, PresenceState.State>(
                     locationRemote,
-                    PresenceStateType.PresenceState.State.ABSENT,
+                    PresenceState.State.ABSENT,
                     ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE
                 ), TriggerAggregation.OR
             )
         } catch (ex: CouldNotPerformException) {
             throw InitializationException(this, ex)
         }
-    }
-
-    @Throws(CouldNotPerformException::class, InterruptedException::class)
-    override fun applyConfigUpdate(config: UnitConfigType.UnitConfig): UnitConfigType.UnitConfig {
-        getManageWriteLockInterruptible(this).use { ignored ->
-            val unitConfig = super.applyConfigUpdate(config)
-
-            // create xmas scene if not available otherwise load config of existing one
-            var xMasLightSceneConfig: UnitConfigType.UnitConfig? = null
-            try {
-                xMasLightSceneConfig = Registries.getUnitRegistry()
-                    .getUnitConfigByAliasAndUnitType(XMAS_SCENE, UnitTemplateType.UnitTemplate.UnitType.SCENE)
-            } catch (ex: NotAvailableException) {
-                val presenceLightSceneBuilder = UnitConfigType.UnitConfig.newBuilder()
-                presenceLightSceneBuilder.unitType = UnitTemplateType.UnitTemplate.UnitType.SCENE
-                presenceLightSceneBuilder.addAlias(XMAS_SCENE)
-                addLabel(presenceLightSceneBuilder.labelBuilder, Locale.ENGLISH, "Presence Scene")
-                addLabel(presenceLightSceneBuilder.labelBuilder, Locale.GERMAN, "Anwesenheits Scene")
-                try {
-                    xMasLightSceneConfig = Registries.getUnitRegistry()
-                        .registerUnitConfig(presenceLightSceneBuilder.build())[5, TimeUnit.SECONDS]
-                } catch (exx: ExecutionException) {
-                    ExceptionPrinter.printHistory("Could not register XMas Light Group", ex, logger)
-                } catch (exx: TimeoutException) {
-                    ExceptionPrinter.printHistory("Could not register XMas Light Group", ex, logger)
-                }
-            }
-
-            // load xmas scene
-            presenceScene = Units.getUnit(xMasLightSceneConfig, false, Units.SCENE)
-            return unitConfig
-        }
-    }
-
-    @Throws(
-        CouldNotPerformException::class,
-        ExecutionException::class,
-        InterruptedException::class,
-        TimeoutException::class
-    )
-    override fun trigger(activationState: ActivationStateType.ActivationState) {
-
-        // activate xmas scene
-        when (activationState.value) {
-            ActivationStateType.ActivationState.State.ACTIVE -> observe(
-                presenceScene!!.setActivationState(
-                    ActivationStateType.ActivationState.State.ACTIVE, getDefaultActionParameter(
-                        Timeout.INFINITY_TIMEOUT
-                    )
-                )
-            )
-
-            else -> cancelAllObservedActions()
-        }
-    }
-
-    companion object {
-        const val XMAS_SCENE = "PresenceScene"
     }
 }

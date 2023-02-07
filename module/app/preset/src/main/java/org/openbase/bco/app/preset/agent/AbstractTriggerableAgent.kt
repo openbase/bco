@@ -20,7 +20,7 @@ import org.openbase.jul.schedule.SyncObject
 import org.openbase.type.domotic.action.ActionDescriptionType
 import org.openbase.type.domotic.service.ServiceTemplateType
 import org.openbase.type.domotic.service.ServiceTempusTypeType
-import org.openbase.type.domotic.state.ActivationStateType
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState
 import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
@@ -52,15 +52,15 @@ import java.util.concurrent.TimeoutException
 abstract class AbstractTriggerableAgent : AbstractAgentController() {
     private val activationTriggerPool: TriggerPool
     private val deactivationTriggerPool: TriggerPool
-    private val activationTriggerPoolObserver: Observer<Trigger, ActivationStateType.ActivationState>
-    private val deactivationTriggerPoolObserver: Observer<Trigger, ActivationStateType.ActivationState>
+    private val activationTriggerPoolObserver: Observer<Trigger, ActivationState>
+    private val deactivationTriggerPoolObserver: Observer<Trigger, ActivationState>
     private val triggerSync = SyncObject("TriggerSync")
-    private var currentTriggerActivationState: ActivationStateType.ActivationState.State
+    private var currentTriggerActivationState: ActivationState.State
     private val parentLocationEmphasisRescheduleEventFilter: RecurrenceEventFilter<Void>
     private val emphasisStateObserver: Observer<ServiceStateProvider<Message?>, Message>
 
     init {
-        currentTriggerActivationState = ActivationStateType.ActivationState.State.UNKNOWN
+        currentTriggerActivationState = ActivationState.State.UNKNOWN
         activationTriggerPool = TriggerPool()
         deactivationTriggerPool = TriggerPool()
 
@@ -77,28 +77,28 @@ abstract class AbstractTriggerableAgent : AbstractAgentController() {
             }
         emphasisStateObserver =
             Observer { source: ServiceStateProvider<Message?>?, data: Message? -> parentLocationEmphasisRescheduleEventFilter.trigger() }
-        activationTriggerPoolObserver = Observer { source: Trigger?, data: ActivationStateType.ActivationState ->
+        activationTriggerPoolObserver = Observer { source: Trigger?, data: ActivationState ->
             logger.debug("activationTriggerPoolObserver current " + currentTriggerActivationState.name + " trigger: " + data.value.name)
             synchronized(triggerSync) {
                 try {
                     //triggerInternal(data);
                     when (currentTriggerActivationState) {
-                        ActivationStateType.ActivationState.State.ACTIVE -> {
+                        ActivationState.State.ACTIVE -> {
 
                             // do not handle activation update when deactivation trigger are registered.
                             if (!deactivationTriggerPool.isEmpty) {
                                 return@Observer
                             }
-                            if (data.value == ActivationStateType.ActivationState.State.INACTIVE) {
+                            if (data.value == ActivationState.State.INACTIVE) {
                                 triggerInternal(data)
                             }
                         }
 
-                        ActivationStateType.ActivationState.State.INACTIVE -> if (data.value == ActivationStateType.ActivationState.State.ACTIVE) {
+                        ActivationState.State.INACTIVE -> if (data.value == ActivationState.State.ACTIVE) {
                             triggerInternal(data)
                         }
 
-                        ActivationStateType.ActivationState.State.UNKNOWN -> triggerInternal(data)
+                        ActivationState.State.UNKNOWN -> triggerInternal(data)
                         else -> {}
                     }
                 } catch (ex: CancellationException) {
@@ -106,16 +106,16 @@ abstract class AbstractTriggerableAgent : AbstractAgentController() {
                 }
             }
         }
-        deactivationTriggerPoolObserver = Observer { source: Trigger?, data: ActivationStateType.ActivationState ->
+        deactivationTriggerPoolObserver = Observer { source: Trigger?, data: ActivationState ->
             logger.info("deactivationTriggerPoolObserver current " + currentTriggerActivationState.name + " trigger: " + data.value.name)
             synchronized(triggerSync) {
                 try {
                     // deactivate agent if agent is active and deactivation pool is triggering an active state.
                     when (currentTriggerActivationState) {
-                        ActivationStateType.ActivationState.State.ACTIVE, ActivationStateType.ActivationState.State.UNKNOWN ->                             // if the deactivation pool is active we need to send a deactivation trigger
-                            if (data.value == ActivationStateType.ActivationState.State.ACTIVE) {
+                        ActivationState.State.ACTIVE, ActivationState.State.UNKNOWN ->                             // if the deactivation pool is active we need to send a deactivation trigger
+                            if (data.value == ActivationState.State.ACTIVE) {
                                 triggerInternal(
-                                    data.toBuilder().setValue(ActivationStateType.ActivationState.State.INACTIVE)
+                                    data.toBuilder().setValue(ActivationState.State.INACTIVE)
                                         .build()
                                 )
                             }
@@ -174,7 +174,7 @@ abstract class AbstractTriggerableAgent : AbstractAgentController() {
     }
 
     @Throws(CouldNotPerformException::class, InterruptedException::class)
-    override fun execute(activationState: ActivationStateType.ActivationState): ActionDescriptionType.ActionDescription {
+    override fun execute(activationState: ActivationState): ActionDescriptionType.ActionDescription {
         logger.debug("Activating [{}]", getBestMatch(config.label))
         activationTriggerPool.activate()
         deactivationTriggerPool.activate()
@@ -189,7 +189,7 @@ abstract class AbstractTriggerableAgent : AbstractAgentController() {
     }
 
     @Throws(CouldNotPerformException::class, InterruptedException::class)
-    override fun stop(activationState: ActivationStateType.ActivationState) {
+    override fun stop(activationState: ActivationState) {
         logger.debug("Deactivating [{}]", getBestMatch(config.label))
         activationTriggerPool.deactivate()
         deactivationTriggerPool.deactivate()
@@ -222,7 +222,7 @@ abstract class AbstractTriggerableAgent : AbstractAgentController() {
         super.shutdown()
     }
 
-    private fun triggerInternal(activationState: ActivationStateType.ActivationState) {
+    private fun triggerInternal(activationState: ActivationState) {
         currentTriggerActivationState = activationState.value
         GlobalCachedExecutorService.submit<Any> {
             synchronized(triggerSync) {
@@ -238,5 +238,5 @@ abstract class AbstractTriggerableAgent : AbstractAgentController() {
         InterruptedException::class,
         TimeoutException::class
     )
-    protected abstract fun trigger(activationState: ActivationStateType.ActivationState?)
+    protected abstract fun trigger(activationState: ActivationState)
 }

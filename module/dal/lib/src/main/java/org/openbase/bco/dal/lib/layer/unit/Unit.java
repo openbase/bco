@@ -99,6 +99,14 @@ public interface Unit<D extends Message> extends LabelProvider, ScopeProvider, I
         return getConfig().getAliasList();
     }
 
+    /**
+     * @return the ids of all units that are bind to these unit.
+     *
+     * @throws NotAvailableException in case the config of this unit is not yet available.
+     */
+    default List<String> getBindings() throws NotAvailableException {
+        return getConfig().getBindingIdList();
+    }
 
     /**
      * Returns the type of this unit.
