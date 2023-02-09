@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,9 +23,7 @@ package org.openbase.bco.dal.test.layer.unit;
  */
 
 import com.google.protobuf.Message;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -64,17 +62,21 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
 
+    private static final SessionManager sessionManager = new SessionManager();
     private static ColorableLightRemote colorableLightRemote;
     private static UnitController<?, ?> colorableLightController;
-    private static final SessionManager sessionManager = new SessionManager();
     private static AuthToken adminToken = null;
 
     public AbstractUnitControllerTest() {
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void loginUser() throws Throwable {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, Units.COLORABLE_LIGHT);
         colorableLightController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(colorableLightRemote.getId());
@@ -85,12 +87,15 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             adminToken = TokenGenerator.generateAuthToken(sessionManager);
         }
     }
+
     @AfterAll
+    @Timeout(30)
     public static void logoutUser() throws Throwable {
         sessionManager.logout();
     }
 
     @BeforeEach
+    @Timeout(30)
     public void setupUnitController() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         for (ActionDescription actionDescription : colorableLightController.getActionList()) {
 
@@ -105,6 +110,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
     }
 
     @AfterEach
+    @Timeout(30)
     public void tearDownUnitController() throws CouldNotPerformException, InterruptedException, TimeoutException, ExecutionException {
         // cleanup leftover actions which were manually submitted to the controller.
         colorableLightController.cancelAllActions();
@@ -119,7 +125,7 @@ public class AbstractUnitControllerTest extends AbstractBCODeviceManagerTest {
             colorableLightRemote.requestData().get();
             assertEquals(State.ON, colorableLightRemote.getData().getPowerState().getValue(), "Power state updated was not applied to remote instance!");
             colorableLightController.applyServiceState(States.Power.OFF, ServiceType.POWER_STATE_SERVICE);
-            assertEquals(State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue(), "Power state updated was not applied because of: "+ MultiLanguageTextProcessor.getBestMatch(((ColorableLightData) colorableLightController.getData()).getPowerState().getResponsibleAction().getDescription(), "?"));
+            assertEquals(State.OFF, ((ColorableLightData) colorableLightController.getData()).getPowerState().getValue(), "Power state updated was not applied because of: " + MultiLanguageTextProcessor.getBestMatch(((ColorableLightData) colorableLightController.getData()).getPowerState().getResponsibleAction().getDescription(), "?"));
             colorableLightRemote.requestData().get();
             assertEquals(State.OFF, colorableLightRemote.getData().getPowerState().getValue(), "Power state updated was not applied to remote instance!");
 

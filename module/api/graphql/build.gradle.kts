@@ -1,5 +1,3 @@
-import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
-
 plugins {
     id("org.openbase.bco")
     id("org.springframework.boot")
@@ -20,8 +18,8 @@ dependencies {
     api(Spring.boot.webflux)
     api("org.springframework:spring-webmvc:_")
 
-    api( rootProject.files("lib/external/rejoiner-0.5.0-bco.jar"))
-    api( rootProject.files("lib/external/rejoiner-guice-0.5.0-bco.jar"))
+    api(rootProject.files("lib/external/rejoiner-0.5.0-bco.jar"))
+    api(rootProject.files("lib/external/rejoiner-guice-0.5.0-bco.jar"))
 // disabled since rejoiner is linked locally.
 //    api("com.google.api.graphql:rejoiner-guice:_") {
 //        exclude(group = "com.google.inject", module = "guice")

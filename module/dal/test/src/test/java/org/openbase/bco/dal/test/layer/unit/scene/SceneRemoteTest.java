@@ -148,6 +148,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void setupSceneTest() throws Throwable {
         try {
             //JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
@@ -176,6 +177,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownSceneTest() throws Throwable {
         try {
             if (sceneManagerLauncher != null) {
@@ -373,6 +375,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
+    @Timeout(30)
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {
