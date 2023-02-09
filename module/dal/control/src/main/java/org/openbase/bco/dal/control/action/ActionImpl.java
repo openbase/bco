@@ -81,6 +81,13 @@ public class ActionImpl implements SchedulableAction {
     private volatile Future<ActionDescription> actionTask;
 
     /**
+     * This flag ist required to handle the case when the action task was
+     * initiated but never started because of any interruption.
+     * In this case the flag is false but the actionTask non null.
+     */
+    private volatile Boolean actionTaskRunning = false;
+
+    /**
      * Constructor creates a new action object which helps to manage its execution during the scheduling process.
      * <p>
      * Note: This constructor always aspects a new action which will be prepared during construction.
@@ -198,7 +205,7 @@ public class ActionImpl implements SchedulableAction {
             // when the action task finishes it will finally reset the action task to null.
             // actionTask.isDone(); is not a solution at all because when the action task is
             // canceled then the method already returns true but the task is maybe still running.
-            return actionTask == null;
+            return actionTask == null || !actionTaskRunning;
         }
     }
 
@@ -256,7 +263,9 @@ public class ActionImpl implements SchedulableAction {
                     new FatalImplementationErrorException("Action task still running while initializing a new one.", this);
                 }
 
+                actionTaskRunning = false;
                 actionTask = GlobalCachedExecutorService.submit(() -> {
+                    actionTaskRunning = true;
                     try {
 
                         // validate operation service
@@ -362,6 +371,7 @@ public class ActionImpl implements SchedulableAction {
                         }
                     } finally {
                         actionTask = null;
+                        actionTaskRunning = false;
                         synchronized (actionTaskLock) {
                             actionTaskLock.notifyAll();
                         }
@@ -728,6 +738,14 @@ public class ActionImpl implements SchedulableAction {
         // cancel if exist
         if (actionTask != null) {
             actionTask.cancel(true);
+
+            // if the task is canceled before it is scheduled, we need to notify
+            // all waiting tasks about the cancellation
+            synchronized (actionTaskLock) {
+                if (!actionTaskRunning) {
+                    actionTaskLock.notifyAll();
+                }
+            }
         }
 
         try {
