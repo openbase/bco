@@ -85,7 +85,7 @@ public class ActionImpl implements SchedulableAction {
      * initiated but never started because of any interruption.
      * In this case the flag is false but the actionTask non null.
      */
-    private volatile Boolean actionTaskRunning;
+    private volatile Boolean actionTaskRunning = false;
 
     /**
      * Constructor creates a new action object which helps to manage its execution during the scheduling process.
@@ -742,7 +742,7 @@ public class ActionImpl implements SchedulableAction {
             // in case the task is directly cancel by this because the task was never canceled, we need to notify
             // all waiting tasks about the cancellation
             synchronized (actionTaskLock) {
-                if (isActionTaskFinished()) {
+                if (!actionTaskRunning) {
                     actionTaskLock.notifyAll();
                 }
             }
