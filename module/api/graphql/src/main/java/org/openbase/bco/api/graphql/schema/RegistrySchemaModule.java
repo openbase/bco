@@ -34,18 +34,18 @@ import org.openbase.bco.api.graphql.error.BCOGraphQLError;
 import org.openbase.bco.api.graphql.error.GenericError;
 import org.openbase.bco.api.graphql.error.ServerError;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.remote.session.BCOSessionImpl;
-import org.openbase.bco.registry.unit.lib.filter.UnitConfigFilterImpl;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
-import org.openbase.jul.pattern.Filter;
-import org.openbase.jul.pattern.ListFilter;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.configuration.MetaConfigType;
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken;
+import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
@@ -54,19 +54,33 @@ import org.openbase.type.language.LabelType;
 import org.openbase.type.spatial.PlacementConfigType;
 import org.openbase.type.spatial.ShapeType;
 
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 
 public class RegistrySchemaModule extends SchemaModule {
 
     // ===================================== Queries ===================================================================
 
+    public static ImmutableList<UnitConfig> getUnitConfigs(final UnitFilter unitFilter, Boolean includeDisabledUnits) throws BCOGraphQLError {
+        try {
+            if ((includeDisabledUnits == null)) {
+                includeDisabledUnits = false;
+            }
+            return ImmutableList.copyOf(
+                    Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigs(includeDisabledUnits, unitFilter));
+
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            throw new GenericError(ex);
+        }
+    }
+
     /**
      * Check if an authentication token retrieved by the login method is still valid.
      *
      * @param token the token to be checked
+     *
      * @return if the token is valid and can be used to authenticate further requests
      */
     @Query("verifyToken")
@@ -80,9 +94,11 @@ public class RegistrySchemaModule extends SchemaModule {
      *
      * @param username     the name of the user as plain text string.
      * @param passwordHash the password hash of the user that need to be generted first (see note below).
+     *
      * @return the login token.
      * <p>
      * Note: The hash of the default admin password is: '''R+gZ+PFuauhav8rRVa3XlWXXSEyi5BcdrbeXLEY3tDQ='''
+     *
      * @throws BCOGraphQLError
      */
     @Query("login")
@@ -111,7 +127,8 @@ public class RegistrySchemaModule extends SchemaModule {
             sessionManager.changePassword(userId, oldPassword, newPassword).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
 
             return true;
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
@@ -130,12 +147,12 @@ public class RegistrySchemaModule extends SchemaModule {
         return getUnitConfigs(unitFilter, includeDisabledUnits);
     }
 
+    // ===================================== Mutations =================================================================
+
     @Query("gatewayClasses")
     ImmutableList<GatewayClass> gatewayClasses() throws CouldNotPerformException, InterruptedException {
         return ImmutableList.copyOf(Registries.getClassRegistry(true).getGatewayClasses());
     }
-
-    // ===================================== Mutations =================================================================
 
     @Mutation("updateUnitConfig")
     UnitConfig updateUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws BCOGraphQLError {
@@ -145,7 +162,8 @@ public class RegistrySchemaModule extends SchemaModule {
                     .toBuilder();
             ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(unitConfigBuilder, unitConfig);
             return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).updateUnitConfig(unitConfigBuilder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
@@ -155,7 +173,8 @@ public class RegistrySchemaModule extends SchemaModule {
         try {
             final UnitConfig unitConfig = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitId);
             return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).removeUnitConfig(unitConfig).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
@@ -164,7 +183,8 @@ public class RegistrySchemaModule extends SchemaModule {
     UnitConfig registerUnitConfig(@Arg("unitConfig") UnitConfig unitConfig) throws BCOGraphQLError {
         try {
             return Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).registerUnitConfig(unitConfig).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
@@ -179,7 +199,8 @@ public class RegistrySchemaModule extends SchemaModule {
             LabelProcessor.replace(builder.getLabelBuilder(), oldLabel, label);
 
             return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getLabel();
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
@@ -190,7 +211,8 @@ public class RegistrySchemaModule extends SchemaModule {
             final UnitConfig.Builder builder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitId).toBuilder();
             builder.getPlacementConfigBuilder().setLocationId(locationId);
             return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getPlacementConfig();
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
@@ -201,7 +223,8 @@ public class RegistrySchemaModule extends SchemaModule {
             final UnitConfig.Builder unitConfigBuilder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(locationId).toBuilder();
             unitConfigBuilder.getPlacementConfigBuilder().getShapeBuilder().clearFloor().addAllFloor(shape.getFloorList());
             return Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getPlacementConfig().getShape();
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
@@ -212,13 +235,16 @@ public class RegistrySchemaModule extends SchemaModule {
             final UnitConfig.Builder builder = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigById(unitId).toBuilder();
             builder.getPlacementConfigBuilder().clearPose().setPose(pose);
             return Registries.getUnitRegistry().updateUnitConfig(builder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getPlacementConfig().getPose();
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException |
+                 TimeoutException ex) {
             throw new GenericError(ex);
         }
     }
 
+    // ===================================== Service Methods ===========================================================
+
     @Mutation("updateMetaConfig")
-    MetaConfigType.MetaConfig updateMetaConfig(@Arg("unitId") String unitId, @Arg("entry") EntryType.Entry entry) throws BCOGraphQLError {
+    MetaConfigType.MetaConfig updateMetaConfig(@Arg("unitId") String unitId, @Arg("entry") EntryType.Entry entry, DataFetchingEnvironment env) throws BCOGraphQLError {
         try {
             final UnitRegistryRemote unitRegistry = Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
 
@@ -233,23 +259,14 @@ public class RegistrySchemaModule extends SchemaModule {
             if (!entry.getValue().isEmpty()) {
                 metaConfigBuilder.addEntry(entry);
             }
-            return unitRegistry.updateUnitConfig(unitConfigBuilder.build()).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getMetaConfig();
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException | TimeoutException ex) {
-            throw new GenericError(ex);
-        }
-    }
 
-    // ===================================== Service Methods ===========================================================
-
-    public static ImmutableList<UnitConfig> getUnitConfigs(final UnitFilter unitFilter, Boolean includeDisabledUnits) throws BCOGraphQLError {
-        try {
-            if ((includeDisabledUnits == null)) {
-                includeDisabledUnits = false;
-            }
-            return ImmutableList.copyOf(
-                    Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT).getUnitConfigs(includeDisabledUnits, unitFilter));
-
-        } catch (RuntimeException | CouldNotPerformException | InterruptedException ex) {
+            final SessionManager sessionManager = SessionManager.getInstance();
+            final AuthToken authToken = AuthToken.newBuilder().setAuthenticationToken(((AbstractBCOGraphQLContext) env.getContext()).getToken()).build();
+            final AuthenticatedValue request = sessionManager.initializeRequest(unitConfigBuilder.build(), authToken);
+            final Future<AuthenticatedValue> future = unitRegistry.updateUnitConfigAuthenticated(request);
+            final AuthenticatedValueFuture<UnitConfig> authFuture = new AuthenticatedValueFuture(future, UnitConfig.class, request.getTicketAuthenticatorWrapper(), sessionManager);
+            return authFuture.get().getMetaConfig();
+        } catch (RuntimeException | CouldNotPerformException | InterruptedException | ExecutionException ex) {
             throw new GenericError(ex);
         }
     }

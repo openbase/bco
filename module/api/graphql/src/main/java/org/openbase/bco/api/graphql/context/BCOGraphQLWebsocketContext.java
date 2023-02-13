@@ -32,6 +32,7 @@ import java.util.Locale;
 
 public class BCOGraphQLWebsocketContext extends AbstractBCOGraphQLContext implements GraphQLWebSocketContext {
 
+
     private final Session session;
     private final HandshakeRequest handshakeRequest;
 
@@ -43,14 +44,14 @@ public class BCOGraphQLWebsocketContext extends AbstractBCOGraphQLContext implem
         this.session = session;
         this.handshakeRequest = handshakeRequest;
 
-        if (handshakeRequest.getHeaders().get("Authorization") != null) {
-            this.token = handshakeRequest.getHeaders().get("Authorization").get(0);
+        if (handshakeRequest.getHeaders().get(GQLHeader.AUTHORIZATION.getKey()) != null) {
+            this.token = handshakeRequest.getHeaders().get(GQLHeader.AUTHORIZATION.getKey()).get(0);
         } else {
             this.token = null;
         }
 
-        if (handshakeRequest.getHeaders().get("Accept-Language") != null) {
-            final String language = handshakeRequest.getHeaders().get("Accept-Language").get(0);
+        if (handshakeRequest.getHeaders().get(GQLHeader.ACCEPT_LANGUAGE.getKey()) != null) {
+            final String language = handshakeRequest.getHeaders().get(GQLHeader.ACCEPT_LANGUAGE.getKey()).get(0);
             this.languageCode = (language != null) ? language : Locale.getDefault().getLanguage();
         } else {
             this.languageCode = Locale.getDefault().getLanguage();
