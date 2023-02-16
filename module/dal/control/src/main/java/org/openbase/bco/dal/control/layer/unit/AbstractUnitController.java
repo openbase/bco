@@ -1991,6 +1991,13 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
                 }
 
+                // skip invoking the operation service if the new state matches the current state
+                if (Services.equalServiceStates(
+                        serviceState,
+                        Services.invokeProviderServiceMethod(serviceType, operationService))) {
+                    return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, ActionDescription::getDefaultInstance));
+                }
+
                 // invoke operation service routine
                 return (Future<ActionDescription>) Services.invokeOperationServiceMethod(serviceType, operationService, serviceState);
             }
