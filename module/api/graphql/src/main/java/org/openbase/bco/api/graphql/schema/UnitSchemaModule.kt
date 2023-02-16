@@ -42,7 +42,8 @@ import java.util.concurrent.TimeUnit
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */   class UnitSchemaModule : SchemaModule() {
+ */
+class UnitSchemaModule : SchemaModule() {
     // ===================================== Schema Modifications ======================================================
     @SchemaModification(addField = "config", onType = UnitDataType.UnitData::class)
     @Throws(
@@ -104,7 +105,7 @@ import java.util.concurrent.TimeUnit
     fun unit(
         @Arg("unitId") unitId: String,
         @Arg("data") data: UnitDataType.UnitData,
-        env: DataFetchingEnvironment
+        env: DataFetchingEnvironment,
     ): UnitDataType.UnitData {
         return try {
             setServiceStates(
@@ -128,7 +129,7 @@ import java.util.concurrent.TimeUnit
     fun units(
         @Arg("filter") unitFilter: UnitFilterType.UnitFilter?,
         @Arg("data") data: UnitDataType.UnitData,
-        env: DataFetchingEnvironment
+        env: DataFetchingEnvironment,
     ): ImmutableList<UnitDataType.UnitData> {
         return try {
             val dataList: MutableList<UnitDataType.UnitData> = ArrayList()
@@ -163,7 +164,7 @@ import java.util.concurrent.TimeUnit
         data: UnitDataType.UnitData,
         env: DataFetchingEnvironment,
         timeout: Long,
-        timeUnit: TimeUnit
+        timeUnit: TimeUnit,
     ): UnitDataType.UnitData {
         return setServiceStates(unitConfig.id, data, env, timeout, timeUnit)
     }
@@ -174,7 +175,7 @@ import java.util.concurrent.TimeUnit
         data: UnitDataType.UnitData,
         env: DataFetchingEnvironment,
         timeout: Long,
-        timeUnit: TimeUnit
+        timeUnit: TimeUnit,
     ): UnitDataType.UnitData {
         val unit = Units.getUnit(unitId, timeout, timeUnit)
         val remoteActions: MutableList<RemoteAction> = ArrayList()
