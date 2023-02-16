@@ -1,4 +1,8 @@
-package org.openbase.bco.api.graphql.context;
+package org.openbase.bco.api.graphql.context
+
+import graphql.kickstart.execution.context.DefaultGraphQLContext
+import org.dataloader.DataLoaderRegistry
+import org.openbase.jul.exception.NotAvailableException
 
 /*-
  * #%L
@@ -20,21 +24,14 @@ package org.openbase.bco.api.graphql.context;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
+ */ abstract class AbstractBCOGraphQLContext(
+    dataLoaderRegistry: DataLoaderRegistry?,
+) : DefaultGraphQLContext(dataLoaderRegistry) {
+    @get:Throws(NotAvailableException::class)
+    abstract val token: String?
+    abstract val languageCode: String?
 
-import graphql.kickstart.execution.context.DefaultGraphQLContext;
-import org.dataloader.DataLoaderRegistry;
-import org.openbase.jul.exception.NotAvailableException;
-
-public abstract class AbstractBCOGraphQLContext extends DefaultGraphQLContext {
-
-    public static final String DATA_LOADER_UNITS = "units";
-
-    public AbstractBCOGraphQLContext(DataLoaderRegistry dataLoaderRegistry) {
-        super(dataLoaderRegistry);
+    companion object {
+        const val DATA_LOADER_UNITS = "units"
     }
-
-    public abstract String getToken() throws NotAvailableException;
-
-    public abstract String getLanguageCode();
 }

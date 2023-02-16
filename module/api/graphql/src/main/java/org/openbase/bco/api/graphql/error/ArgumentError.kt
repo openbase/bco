@@ -1,4 +1,4 @@
-package org.openbase.bco.api.graphql.error;
+package org.openbase.bco.api.graphql.error
 
 /*-
  * #%L
@@ -21,15 +21,7 @@ package org.openbase.bco.api.graphql.error;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+class ArgumentError(cause: Throwable) : BCOGraphQLError(cause) {
 
-import graphql.ErrorClassification;
-
-public enum ErrorType implements ErrorClassification {
-
-    ARGUMENT_ERROR,
-    AUTHORIZATION_ERROR,
-    SERVER_ERROR;
-
-    private ErrorType() {
-    }
+    override fun getErrorType() = ErrorType.ARGUMENT_ERROR
 }
