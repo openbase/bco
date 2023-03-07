@@ -46,7 +46,10 @@ import org.openbase.bco.registry.unit.core.consistency.locationconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneServiceStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.ServiceStateDescriptionHierarchyConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.*;
-import org.openbase.bco.registry.unit.core.consistency.userconfig.*;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLanguageConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserPermissionConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.*;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
@@ -191,6 +194,22 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 throw new InitializationException(this, ex);
             }
         }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        this.addDataObserver(clearUnitConfigsByTypeObserver);
+        CachedTemplateRegistryRemote.getRegistry().addDataObserver(clearUnitConfigsByTypeObserver);
+
+        super.activate();
+    }
+
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        this.removeDataObserver(clearUnitConfigsByTypeObserver);
+        CachedTemplateRegistryRemote.getRegistry().removeDataObserver(clearUnitConfigsByTypeObserver);
+
+        super.deactivate();
     }
 
     /**
@@ -553,9 +572,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param unitAlias {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -577,9 +594,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      *
      * @param unitAlias {@inheritDoc}
      * @param unitType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -659,9 +674,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param filterDisabledUnits {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      * @throws NotAvailableException    {@inheritDoc}
      */
@@ -685,7 +698,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -697,7 +709,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -748,9 +759,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param serviceType
-     *
      * @return
-     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -771,9 +780,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      *
      * @param unitType
      * @param serviceTypes
-     *
      * @return
-     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -1041,7 +1048,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param authorizationToken {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
@@ -1060,7 +1066,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override

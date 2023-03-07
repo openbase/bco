@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -34,8 +34,10 @@ import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.communication.controller.RPCUtils;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
@@ -153,12 +155,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         unitConfigRemoteRegistry.addDataObserver(aliasMapUpdateObserver);
+        unitConfigRemoteRegistry.addDataObserver(clearUnitConfigsByTypeObserver);
+        CachedUnitRegistryRemote.getRegistry().addDataObserver(clearUnitConfigsByTypeObserver);
         super.activate();
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         unitConfigRemoteRegistry.removeDataObserver(aliasMapUpdateObserver);
+        unitConfigRemoteRegistry.removeDataObserver(clearUnitConfigsByTypeObserver);
+        CachedUnitRegistryRemote.getRegistry().removeDataObserver(clearUnitConfigsByTypeObserver);
         super.deactivate();
     }
 
@@ -334,7 +340,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
@@ -351,9 +356,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitConfigId {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
@@ -370,9 +373,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitAlias {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -394,9 +395,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      *
      * @param unitAlias {@inheritDoc}
      * @param unitType  {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -457,9 +456,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param filterDisabledUnits {@inheritDoc}
-     *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      * @throws NotAvailableException    {@inheritDoc}
      */
@@ -481,7 +478,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -502,7 +498,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -878,7 +873,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param authorizationToken {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
@@ -895,7 +889,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
-     *
      * @return {@inheritDoc}
      */
     @Override
