@@ -258,7 +258,7 @@ import java.util.concurrent.*
                 ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
             ).getUnitConfigById(unitId).toBuilder()
             val context = env.getContext<AbstractBCOGraphQLContext>()
-            val oldLabel = getBestMatch(context.languageCode, builder.label)
+            val oldLabel = getBestMatch(context.languageCode!!, builder.label)
             replace(builder.labelBuilder, oldLabel, label)
             Registries.getUnitRegistry()
                 .updateUnitConfig(builder.build())[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT].label
