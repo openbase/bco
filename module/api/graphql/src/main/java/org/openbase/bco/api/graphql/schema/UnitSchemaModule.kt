@@ -46,57 +46,49 @@ import java.util.concurrent.TimeUnit
 class UnitSchemaModule : SchemaModule() {
     // ===================================== Schema Modifications ======================================================
     @SchemaModification(addField = "config", onType = UnitDataType.UnitData::class)
-    @Throws(
-        CouldNotPerformException::class, InterruptedException::class
-    )
-    fun addConfigToData(data: UnitDataType.UnitData): UnitConfigType.UnitConfig {
-        return Registries.getUnitRegistry(
-            ServerError.Companion.BCO_TIMEOUT_SHORT,
-            ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-        ).getUnitConfigById(data.id)
-    }
+    @Throws(CouldNotPerformException::class, InterruptedException::class)
+    fun addConfigToData(data: UnitDataType.UnitData): UnitConfigType.UnitConfig = Registries.getUnitRegistry(
+        ServerError.BCO_TIMEOUT_SHORT,
+        ServerError.BCO_TIMEOUT_TIME_UNIT
+    ).getUnitConfigById(data.id)
 
     // ===================================== Queries ===================================================================
     @Query("unit")
     @Throws(BCOGraphQLError::class)
-    fun unit(@Arg("unitId") id: String?): UnitDataType.UnitData {
-        return try {
-            val unit =
-                Units.getUnit(id, ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT)
-            merge(UnitDataType.UnitData.newBuilder(), unit.data).build() as UnitDataType.UnitData
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        }
+    fun unit(@Arg("unitId") id: String?): UnitDataType.UnitData = try {
+        Units
+            .getUnit(id, ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT)
+            .let { unit -> merge(UnitDataType.UnitData.newBuilder(), unit.data).build() as UnitDataType.UnitData }
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
     }
 
     @Query("units")
     @Throws(BCOGraphQLError::class)
-    fun units(@Arg("filter") unitFilter: UnitFilterType.UnitFilter?): ImmutableList<UnitDataType.UnitData> {
-        return try {
-            val dataList: MutableList<UnitDataType.UnitData> = ArrayList()
-            for (unitConfig in Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigs(unitFilter)) {
-                val unit = Units.getUnit(
-                    unitConfig,
-                    ServerError.Companion.BCO_TIMEOUT_SHORT,
-                    ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-                )
-                dataList.add(merge(UnitDataType.UnitData.newBuilder(), unit.data).build() as UnitDataType.UnitData)
-            }
-            ImmutableList.copyOf(dataList)
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
+    fun units(@Arg("filter") unitFilter: UnitFilterType.UnitFilter?): ImmutableList<UnitDataType.UnitData> = try {
+        val dataList: MutableList<UnitDataType.UnitData> = ArrayList()
+        for (unitConfig in Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUnitConfigs(unitFilter)) {
+            val unit = Units.getUnit(
+                unitConfig,
+                ServerError.BCO_TIMEOUT_SHORT,
+                ServerError.BCO_TIMEOUT_TIME_UNIT
+            )
+            dataList.add(merge(UnitDataType.UnitData.newBuilder(), unit.data).build() as UnitDataType.UnitData)
         }
+        ImmutableList.copyOf(dataList)
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
     }
 
     // ===================================== Queries ===================================================================
@@ -106,22 +98,14 @@ class UnitSchemaModule : SchemaModule() {
         @Arg("unitId") unitId: String,
         @Arg("data") data: UnitDataType.UnitData,
         env: DataFetchingEnvironment,
-    ): UnitDataType.UnitData {
-        return try {
-            setServiceStates(
-                unitId,
-                data,
-                env,
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            )
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        }
+    ): UnitDataType.UnitData = try {
+        setServiceStates(unitId, data, env)
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
     }
 
     @Mutation("units")
@@ -130,31 +114,17 @@ class UnitSchemaModule : SchemaModule() {
         @Arg("filter") unitFilter: UnitFilterType.UnitFilter?,
         @Arg("data") data: UnitDataType.UnitData,
         env: DataFetchingEnvironment,
-    ): ImmutableList<UnitDataType.UnitData> {
-        return try {
-            val dataList: MutableList<UnitDataType.UnitData> = ArrayList()
-            for (unitConfig in Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigs(unitFilter)) {
-                dataList.add(
-                    setServiceStates(
-                        unitConfig,
-                        data,
-                        env,
-                        ServerError.Companion.BCO_TIMEOUT_SHORT,
-                        ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-                    )
-                )
-            }
-            ImmutableList.copyOf(dataList)
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        }
+    ): ImmutableList<UnitDataType.UnitData> = try {
+        Registries.getUnitRegistry(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT)
+            .getUnitConfigs(unitFilter)
+            .map { config -> setServiceStates(config, data, env) }
+            .let { ImmutableList.copyOf(it) }
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
     }
 
     // ===================================== Service Methods ===========================================================
@@ -163,8 +133,8 @@ class UnitSchemaModule : SchemaModule() {
         unitConfig: UnitConfigType.UnitConfig,
         data: UnitDataType.UnitData,
         env: DataFetchingEnvironment,
-        timeout: Long,
-        timeUnit: TimeUnit,
+        timeout: Long = ServerError.BCO_TIMEOUT_SHORT,
+        timeUnit: TimeUnit = ServerError.BCO_TIMEOUT_TIME_UNIT,
     ): UnitDataType.UnitData {
         return setServiceStates(unitConfig.id, data, env, timeout, timeUnit)
     }
@@ -174,8 +144,8 @@ class UnitSchemaModule : SchemaModule() {
         unitId: String,
         data: UnitDataType.UnitData,
         env: DataFetchingEnvironment,
-        timeout: Long,
-        timeUnit: TimeUnit,
+        timeout: Long = ServerError.BCO_TIMEOUT_SHORT,
+        timeUnit: TimeUnit = ServerError.BCO_TIMEOUT_TIME_UNIT,
     ): UnitDataType.UnitData {
         val unit = Units.getUnit(unitId, timeout, timeUnit)
         val remoteActions: MutableList<RemoteAction> = ArrayList()
@@ -200,14 +170,12 @@ class UnitSchemaModule : SchemaModule() {
         }
         val unitDataBuilder = UnitDataType.UnitData.newBuilder()
         // TODO: blocked by https://github.com/openbase/bco.dal/issues/170
-        if (!remoteActions.isEmpty()) {
-            for (remoteAction in remoteActions) {
-                remoteAction.waitForRegistration(
-                    ServerError.Companion.BCO_TIMEOUT_SHORT,
-                    ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-                )
-                unitDataBuilder.addTriggeredAction(remoteAction.actionDescription)
-            }
+        for (remoteAction in remoteActions) {
+            remoteAction.waitForRegistration(
+                ServerError.BCO_TIMEOUT_SHORT,
+                ServerError.BCO_TIMEOUT_TIME_UNIT
+            )
+            unitDataBuilder.addTriggeredAction(remoteAction.actionDescription)
         }
         merge(unitDataBuilder, unit.data)
         return unitDataBuilder.build()

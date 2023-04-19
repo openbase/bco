@@ -3,23 +3,24 @@ package org.openbase.bco.api.graphql.schema
 import com.google.api.graphql.rejoiner.*
 import com.google.common.collect.ImmutableList
 import graphql.schema.DataFetchingEnvironment
-import org.openbase.bco.api.graphql.context.AbstractBCOGraphQLContext
+import org.openbase.bco.api.graphql.context.context
 import org.openbase.bco.api.graphql.error.ArgumentError
 import org.openbase.bco.api.graphql.error.BCOGraphQLError
 import org.openbase.bco.api.graphql.error.GenericError
 import org.openbase.bco.api.graphql.error.ServerError
 import org.openbase.bco.authentication.lib.SessionManager
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture
 import org.openbase.bco.authentication.lib.iface.BCOSession
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.bco.registry.remote.session.BCOSessionImpl
+import org.openbase.bco.registry.unit.remote.registerUnitConfigAuthenticated
+import org.openbase.bco.registry.unit.remote.removeUnitConfigAuthenticated
+import org.openbase.bco.registry.unit.remote.updateUnitConfigAuthenticated
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields
 import org.openbase.jul.extension.type.processing.LabelProcessor.getBestMatch
 import org.openbase.jul.extension.type.processing.LabelProcessor.replace
 import org.openbase.type.configuration.EntryType
 import org.openbase.type.configuration.MetaConfigType
-import org.openbase.type.domotic.authentication.AuthTokenType
 import org.openbase.type.domotic.unit.UnitConfigType
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.unit.UnitFilterType
@@ -79,23 +80,21 @@ import java.util.concurrent.*
      */
     @Query("login")
     @Throws(BCOGraphQLError::class)
-    fun login(@Arg("username") username: String?, @Arg("password") passwordHash: String?): String {
-        return try {
-            val session: BCOSession = BCOSessionImpl()
-            session.loginUserViaUsername(username, Base64.getDecoder().decode(passwordHash), false)
-            session.generateAuthToken(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).authenticationToken
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+    fun login(@Arg("username") username: String?, @Arg("password") passwordHash: String?): String = try {
+        val session: BCOSession = BCOSessionImpl()
+        session.loginUserViaUsername(username, Base64.getDecoder().decode(passwordHash), false)
+        session.generateAuthToken(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).authenticationToken
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
     @Query("changePassword")
@@ -104,52 +103,47 @@ import java.util.concurrent.*
         @Arg("username") username: String?,
         @Arg("oldPassword") oldPassword: String?,
         @Arg("newPassword") newPassword: String?,
-    ): String {
+    ): String = try {
+        val userId = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUserUnitIdByUserName(username)
+        val sessionManager = SessionManager()
         try {
-            val userId = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUserUnitIdByUserName(username)
-            val sessionManager = SessionManager()
-            try {
-                sessionManager.loginUser(userId, oldPassword, false)
-            } catch (ex: CouldNotPerformException) {
-                throw ArgumentError(ex)
-            }
-            sessionManager.changePassword(
-                userId,
-                oldPassword,
-                newPassword
-            )[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT]
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
+            sessionManager.loginUser(userId, oldPassword, false)
         } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
+            throw ArgumentError(ex)
         }
-        return "läuft"
-    }
+        sessionManager.changePassword(
+            userId,
+            oldPassword,
+            newPassword
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
+    }.let { "" }
 
     @Query("unitConfig")
     @Throws(BCOGraphQLError::class)
-    fun getUnitConfigById(@Arg("id") id: String?, env: DataFetchingEnvironment?): UnitConfigType.UnitConfig {
-        return try {
-            Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigById(id)
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        }
+    fun getUnitConfigById(@Arg("id") id: String?): UnitConfigType.UnitConfig = try {
+        Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUnitConfigById(id)
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
     }
 
     @Query("unitConfigs")
@@ -157,92 +151,97 @@ import java.util.concurrent.*
     fun queryGetUnitConfigs(
         @Arg("filter") unitFilter: UnitFilterType.UnitFilter?,
         @Arg("includeDisabledUnits") includeDisabledUnits: Boolean?,
-    ): ImmutableList<UnitConfigType.UnitConfig> {
-        return getUnitConfigs(unitFilter, includeDisabledUnits)
-    }
+    ): ImmutableList<UnitConfigType.UnitConfig> = getUnitConfigs(unitFilter, includeDisabledUnits)
 
-    // ===================================== Mutations =================================================================
     @Query("gatewayClasses")
     @Throws(CouldNotPerformException::class, InterruptedException::class)
-    fun gatewayClasses(): ImmutableList<GatewayClassType.GatewayClass> {
-        return ImmutableList.copyOf(Registries.getClassRegistry(true).gatewayClasses)
-    }
+    fun gatewayClasses(): ImmutableList<GatewayClassType.GatewayClass> =
+        ImmutableList.copyOf(Registries.getClassRegistry(true).gatewayClasses)
 
     @Mutation("updateUnitConfig")
     @Throws(BCOGraphQLError::class)
-    fun updateUnitConfig(@Arg("unitConfig") unitConfig: UnitConfigType.UnitConfig): UnitConfigType.UnitConfig {
-        return try {
-            val unitConfigBuilder = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            )
-                .getUnitConfigById(unitConfig.id)
-                .toBuilder()
-            unitConfigBuilder.mergeFromWithoutRepeatedFields(unitConfig)
-            Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            )
-                .updateUnitConfig(unitConfigBuilder.build())[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT]
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+    fun updateUnitConfig(
+        @Arg("unitConfig") unitConfig: UnitConfigType.UnitConfig,
+        env: DataFetchingEnvironment,
+    ): UnitConfigType.UnitConfig = try {
+        val unitConfigBuilder = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        )
+            .getUnitConfigById(unitConfig.id)
+            .toBuilder()
+        unitConfigBuilder.mergeFromWithoutRepeatedFields(unitConfig)
+        Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).updateUnitConfigAuthenticated(
+            unitConfigBuilder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
     @Mutation("removeUnitConfig")
     @Throws(BCOGraphQLError::class)
-    fun removeUnitConfig(@Arg("unitId") unitId: String?): UnitConfigType.UnitConfig {
-        return try {
-            val unitConfig = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigById(unitId)
-            Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            )
-                .removeUnitConfig(unitConfig)[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT]
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+    fun removeUnitConfig(
+        @Arg("unitId") unitId: String?,
+        env: DataFetchingEnvironment,
+    ): UnitConfigType.UnitConfig = try {
+        val unitConfig = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUnitConfigById(unitId)
+        Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).removeUnitConfigAuthenticated(
+            unitConfig,
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
     @Mutation("registerUnitConfig")
     @Throws(BCOGraphQLError::class)
-    fun registerUnitConfig(@Arg("unitConfig") unitConfig: UnitConfigType.UnitConfig?): UnitConfigType.UnitConfig {
-        return try {
-            Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            )
-                .registerUnitConfig(unitConfig)[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT]
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+    fun registerUnitConfig(
+        @Arg("unitConfig") unitConfig: UnitConfigType.UnitConfig?,
+        env: DataFetchingEnvironment,
+    ): UnitConfigType.UnitConfig = try {
+        Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).registerUnitConfigAuthenticated(
+            unitConfig,
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
     @Mutation("updateLabel")
@@ -251,28 +250,27 @@ import java.util.concurrent.*
         @Arg("unitId") unitId: String?,
         @Arg("label") label: String?,
         env: DataFetchingEnvironment,
-    ): LabelType.Label {
-        return try {
-            val builder = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigById(unitId).toBuilder()
-            val context = env.getContext<AbstractBCOGraphQLContext>()
-            val oldLabel = getBestMatch(context.languageCode!!, builder.label)
-            replace(builder.labelBuilder, oldLabel, label)
-            Registries.getUnitRegistry()
-                .updateUnitConfig(builder.build())[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT].label
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+    ): LabelType.Label = try {
+        val builder = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUnitConfigById(unitId).toBuilder()
+        val oldLabel = getBestMatch(env.context.languageCode!!, builder.label)
+        replace(builder.labelBuilder, oldLabel, label)
+        Registries.getUnitRegistry().updateUnitConfigAuthenticated(
+            builder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT].label
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
     @Mutation("updateLocation")
@@ -280,148 +278,141 @@ import java.util.concurrent.*
     fun updateLocation(
         @Arg("unitId") unitId: String?,
         @Arg("locationId") locationId: String?,
-    ): PlacementConfigType.PlacementConfig {
-        return try {
-            val builder = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigById(unitId).toBuilder()
-            builder.placementConfigBuilder.locationId = locationId
-            Registries.getUnitRegistry()
-                .updateUnitConfig(builder.build())[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT].placementConfig
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+        env: DataFetchingEnvironment,
+    ): PlacementConfigType.PlacementConfig = try {
+        val builder = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUnitConfigById(unitId).toBuilder()
+        builder.placementConfigBuilder.locationId = locationId
+        Registries.getUnitRegistry().updateUnitConfigAuthenticated(
+            builder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT].placementConfig
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
     @Mutation("updateFloorPlan")
     @Throws(BCOGraphQLError::class)
-    fun updateFloorPlan(@Arg("locationId") locationId: String?, @Arg("shape") shape: ShapeType.Shape): ShapeType.Shape {
-        return try {
-            val unitConfigBuilder = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigById(locationId).toBuilder()
-            unitConfigBuilder.placementConfigBuilder.shapeBuilder.clearFloor().addAllFloor(shape.floorList)
-            Registries.getUnitRegistry()
-                .updateUnitConfig(unitConfigBuilder.build())[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT].placementConfig.shape
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+    fun updateFloorPlan(
+        @Arg("locationId") locationId: String?,
+        @Arg("shape") shape: ShapeType.Shape,
+        env: DataFetchingEnvironment,
+    ): ShapeType.Shape = try {
+        val unitConfigBuilder = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUnitConfigById(locationId).toBuilder()
+        unitConfigBuilder.placementConfigBuilder.shapeBuilder.clearFloor().addAllFloor(shape.floorList)
+        Registries.getUnitRegistry().updateUnitConfigAuthenticated(
+            unitConfigBuilder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT].placementConfig.shape
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
     @Mutation("updatePose")
     @Throws(BCOGraphQLError::class)
-    fun updatePose(@Arg("unitId") unitId: String?, @Arg("pose") pose: PoseType.Pose?): PoseType.Pose {
-        return try {
-            val builder = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            ).getUnitConfigById(unitId).toBuilder()
-            builder.placementConfigBuilder.clearPose().pose = pose
-            Registries.getUnitRegistry()
-                .updateUnitConfig(builder.build())[ServerError.Companion.BCO_TIMEOUT_SHORT, ServerError.Companion.BCO_TIMEOUT_TIME_UNIT].placementConfig.pose
-        } catch (ex: RuntimeException) {
-            throw GenericError(ex)
-        } catch (ex: CouldNotPerformException) {
-            throw GenericError(ex)
-        } catch (ex: InterruptedException) {
-            throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        } catch (ex: TimeoutException) {
-            throw GenericError(ex)
-        }
+    fun updatePose(
+        @Arg("unitId") unitId: String?,
+        @Arg("pose") pose: PoseType.Pose?,
+        env: DataFetchingEnvironment,
+    ): PoseType.Pose = try {
+        val builder = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUnitConfigById(unitId).toBuilder()
+        builder.placementConfigBuilder.clearPose().pose = pose
+        Registries.getUnitRegistry().updateUnitConfigAuthenticated(
+            builder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT].placementConfig.pose
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
     }
 
-    // ===================================== Service Methods ===========================================================
+
     @Mutation("updateMetaConfig")
     @Throws(BCOGraphQLError::class)
     fun updateMetaConfig(
         @Arg("unitId") unitId: String?,
         @Arg("entry") entry: EntryType.Entry,
         env: DataFetchingEnvironment,
-    ): MetaConfigType.MetaConfig {
-        return try {
-            val unitRegistry = Registries.getUnitRegistry(
-                ServerError.Companion.BCO_TIMEOUT_SHORT,
-                ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-            )
-            val unitConfigBuilder = unitRegistry.getUnitConfigById(unitId).toBuilder()
-            val metaConfigBuilder = unitConfigBuilder.metaConfigBuilder
-            for (i in 0 until metaConfigBuilder.entryCount) {
-                if (metaConfigBuilder.getEntry(i).key == entry.key) {
-                    metaConfigBuilder.removeEntry(i)
-                    break
-                }
+    ): MetaConfigType.MetaConfig = try {
+        val unitRegistry = Registries.getUnitRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        )
+        val unitConfigBuilder = unitRegistry.getUnitConfigById(unitId).toBuilder()
+        val metaConfigBuilder = unitConfigBuilder.metaConfigBuilder
+        for (i in 0 until metaConfigBuilder.entryCount) {
+            if (metaConfigBuilder.getEntry(i).key == entry.key) {
+                metaConfigBuilder.removeEntry(i)
+                break
             }
-            if (!entry.value.isEmpty()) {
-                metaConfigBuilder.addEntry(entry)
-            }
-            val sessionManager = SessionManager.getInstance()
-            val authToken = AuthTokenType.AuthToken.newBuilder()
-                .setAuthenticationToken((env.getContext<Any>() as AbstractBCOGraphQLContext).token).build()
-            val request = sessionManager.initializeRequest(unitConfigBuilder.build(), authToken)
-            val future = unitRegistry.updateUnitConfigAuthenticated(request)
-            val authFuture: AuthenticatedValueFuture<UnitConfig> = AuthenticatedValueFuture(
-                future,
-                UnitConfig::class.java,
-                request.ticketAuthenticatorWrapper,
-                sessionManager
+        }
+        if (!entry.value.isEmpty()) {
+            metaConfigBuilder.addEntry(entry)
+        }
+
+        unitRegistry.updateUnitConfigAuthenticated(
+            unitConfigBuilder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]!!.metaConfig
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    }
+
+    companion object {
+        @Throws(BCOGraphQLError::class)
+        fun getUnitConfigs(
+            unitFilter: UnitFilterType.UnitFilter?,
+            includeDisabledUnits: Boolean?,
+        ): ImmutableList<UnitConfig> = try {
+            ImmutableList.copyOf(
+                Registries.getUnitRegistry(
+                    ServerError.BCO_TIMEOUT_SHORT,
+                    ServerError.BCO_TIMEOUT_TIME_UNIT
+                ).getUnitConfigs(includeDisabledUnits ?: true, unitFilter)
             )
-            authFuture.get()!!.metaConfig
         } catch (ex: RuntimeException) {
             throw GenericError(ex)
         } catch (ex: CouldNotPerformException) {
             throw GenericError(ex)
         } catch (ex: InterruptedException) {
             throw GenericError(ex)
-        } catch (ex: ExecutionException) {
-            throw GenericError(ex)
-        }
-    }
-
-    companion object {
-        // ===================================== Queries ===================================================================
-        @Throws(BCOGraphQLError::class)
-        fun getUnitConfigs(
-            unitFilter: UnitFilterType.UnitFilter?,
-            includeDisabledUnits: Boolean?,
-        ): ImmutableList<UnitConfigType.UnitConfig> {
-            var includeDisabledUnits: Boolean? = includeDisabledUnits
-            return try {
-                if (includeDisabledUnits == null) {
-                    includeDisabledUnits = true
-                }
-                ImmutableList.copyOf(
-                    Registries.getUnitRegistry(
-                        ServerError.Companion.BCO_TIMEOUT_SHORT,
-                        ServerError.Companion.BCO_TIMEOUT_TIME_UNIT
-                    ).getUnitConfigs(includeDisabledUnits, unitFilter)
-                )
-            } catch (ex: RuntimeException) {
-                throw GenericError(ex)
-            } catch (ex: CouldNotPerformException) {
-                throw GenericError(ex)
-            } catch (ex: InterruptedException) {
-                throw GenericError(ex)
-            }
         }
     }
 }

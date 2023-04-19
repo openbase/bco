@@ -3,6 +3,7 @@ package org.openbase.bco.api.graphql.context
 import graphql.kickstart.execution.context.DefaultGraphQLContext
 import org.dataloader.DataLoaderRegistry
 import org.openbase.jul.exception.NotAvailableException
+import org.openbase.type.domotic.authentication.AuthTokenType
 
 /*-
  * #%L
@@ -24,12 +25,16 @@ import org.openbase.jul.exception.NotAvailableException
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */ abstract class AbstractBCOGraphQLContext(
+ */
+abstract class AbstractBCOGraphQLContext(
     dataLoaderRegistry: DataLoaderRegistry?,
 ) : DefaultGraphQLContext(dataLoaderRegistry) {
     @get:Throws(NotAvailableException::class)
     abstract val token: String?
     abstract val languageCode: String?
+
+    val auth: AuthTokenType.AuthToken?
+        get() = AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(token).build()
 
     companion object {
         const val DATA_LOADER_UNITS = "units"
