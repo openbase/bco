@@ -1,4 +1,4 @@
-package org.openbase.bco.api.graphql.context;
+package org.openbase.bco.api.graphql.error
 
 /*-
  * #%L
@@ -10,31 +10,18 @@ package org.openbase.bco.api.graphql.context;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+class ArgumentError(cause: Throwable) : BCOGraphQLError(cause) {
 
-import graphql.kickstart.execution.context.DefaultGraphQLContext;
-import org.dataloader.DataLoaderRegistry;
-import org.openbase.jul.exception.NotAvailableException;
-
-public abstract class AbstractBCOGraphQLContext extends DefaultGraphQLContext {
-
-    public static final String DATA_LOADER_UNITS = "units";
-
-    public AbstractBCOGraphQLContext(DataLoaderRegistry dataLoaderRegistry) {
-        super(dataLoaderRegistry);
-    }
-
-    public abstract String getToken() throws NotAvailableException;
-
-    public abstract String getLanguageCode();
+    override fun getErrorType() = ErrorType.ARGUMENT_ERROR
 }

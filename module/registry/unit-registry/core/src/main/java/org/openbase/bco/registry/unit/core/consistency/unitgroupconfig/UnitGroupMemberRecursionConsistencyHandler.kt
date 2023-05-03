@@ -1,6 +1,5 @@
 package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig
 
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.exception.InvalidStateException
 import org.openbase.jul.extension.protobuf.IdentifiableMessage
@@ -8,9 +7,7 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap
 import org.openbase.jul.extension.type.processing.LabelProcessor
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler
 import org.openbase.jul.storage.registry.EntryModification
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry
 import org.openbase.jul.storage.registry.ProtoBufRegistry
-import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 
 /*
@@ -35,14 +32,14 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
  * #L%
  */ /** @author [Tamino Huxohl](mailto:pleminoq@openbase.org) */
 class UnitGroupMemberRecursionConsistencyHandler
-    : AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig?, UnitConfig.Builder?>() {
+    : AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder>() {
 
     @Throws(CouldNotPerformException::class, EntryModification::class)
     override fun processData(
         id: String,
-        entry: IdentifiableMessage<String?, UnitConfig?, UnitConfig.Builder?>,
-        entryMap: ProtoBufMessageMap<String, UnitConfig?, UnitConfig.Builder?>,
-        registry: ProtoBufRegistry<String?, UnitConfig?, UnitConfig.Builder?>
+        entry: IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>,
+        entryMap: ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder>,
+        registry: ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder>,
     ) {
         val unitGroupUnitConfig = entry.message ?: return
         val memberIds = unitGroupUnitConfig.unitGroupConfig.memberIdList.toList()
@@ -50,14 +47,16 @@ class UnitGroupMemberRecursionConsistencyHandler
         unitGroupUnitConfig
             .takeIf { memberIds.containsUnit(it, registry) }
             ?.let {
-                throw InvalidStateException("UnitGroup[${LabelProcessor.getBestMatch(unitGroupUnitConfig.label)}] " +
-                        "refers itself as member!")
+                throw InvalidStateException(
+                    "UnitGroup[${LabelProcessor.getBestMatch(unitGroupUnitConfig.label)}] " +
+                            "refers itself as member!"
+                )
             }
     }
 
     private fun List<String>.containsUnit(
         unit: UnitConfig,
-        registry: ProtoBufRegistry<String?, UnitConfig?, UnitConfig.Builder?>
+        registry: ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder>,
     ): Boolean = this
         .filter { registry.contains(it) }
         .mapNotNull { registry.get(it).message }

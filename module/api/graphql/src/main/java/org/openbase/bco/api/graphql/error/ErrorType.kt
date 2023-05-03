@@ -1,4 +1,6 @@
-package org.openbase.bco.api.graphql.error;
+package org.openbase.bco.api.graphql.error
+
+import graphql.ErrorClassification
 
 /*-
  * #%L
@@ -20,16 +22,6 @@ package org.openbase.bco.api.graphql.error;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
-
-import graphql.ErrorClassification;
-
-public enum ErrorType implements ErrorClassification {
-
-    ARGUMENT_ERROR,
-    AUTHORIZATION_ERROR,
-    SERVER_ERROR;
-
-    private ErrorType() {
-    }
+ */   enum class ErrorType : ErrorClassification {
+    ARGUMENT_ERROR, AUTHORIZATION_ERROR, SERVER_ERROR
 }

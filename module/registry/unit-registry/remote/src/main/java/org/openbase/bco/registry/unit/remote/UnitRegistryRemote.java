@@ -340,6 +340,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -356,7 +357,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitConfigId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
@@ -373,7 +376,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param unitAlias {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -395,7 +400,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      *
      * @param unitAlias {@inheritDoc}
      * @param unitType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -456,7 +463,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param filterDisabledUnits {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      * @throws NotAvailableException    {@inheritDoc}
      */
@@ -478,6 +487,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -498,6 +508,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -873,6 +884,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param authorizationToken {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -889,6 +901,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override

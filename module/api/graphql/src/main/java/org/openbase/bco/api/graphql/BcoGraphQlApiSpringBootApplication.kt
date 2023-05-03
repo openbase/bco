@@ -1,4 +1,40 @@
-package org.openbase.bco.api.graphql;
+package org.openbase.bco.api.graphql
+
+import com.google.api.graphql.execution.GuavaListenableFutureSupport
+import com.google.api.graphql.rejoiner.*
+import com.google.inject.Guice
+import com.google.inject.Injector
+import com.google.inject.Key
+import com.google.inject.Provides
+import graphql.Scalars
+import graphql.execution.instrumentation.Instrumentation
+import graphql.kickstart.execution.context.DefaultGraphQLContext
+import graphql.kickstart.execution.context.GraphQLKickstartContext
+import graphql.kickstart.servlet.context.GraphQLServletContextBuilder
+import graphql.schema.*
+import org.dataloader.DataLoader
+import org.dataloader.DataLoaderRegistry
+import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader
+import org.openbase.bco.api.graphql.context.AbstractBCOGraphQLContext
+import org.openbase.bco.api.graphql.context.BCOGraphQLWebsocketContext
+import org.openbase.bco.api.graphql.context.DefaultBCOGraphQLContext
+import org.openbase.bco.api.graphql.schema.RegistrySchemaModule
+import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd
+import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove
+import org.openbase.bco.api.graphql.schema.UnitSchemaModule
+import org.openbase.bco.api.graphql.subscriptions.SubscriptionModule
+import org.openbase.bco.registry.remote.Registries
+import org.openbase.bco.registry.unit.lib.UnitRegistry
+import org.openbase.jul.exception.NotAvailableException
+import org.openbase.type.domotic.unit.UnitFilterType
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.context.annotation.Bean
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.websocket.Session
+import javax.websocket.server.HandshakeRequest
 
 /*-
  * #%L
@@ -20,122 +56,76 @@ package org.openbase.bco.api.graphql;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
+ */@SpringBootApplication
+open class BcoGraphQlApiSpringBootApplication {
+    private var injector: Injector? = null
 
-import com.google.api.graphql.execution.GuavaListenableFutureSupport;
-import com.google.api.graphql.rejoiner.GqlInputConverter;
-import com.google.api.graphql.rejoiner.Schema;
-import com.google.api.graphql.rejoiner.SchemaProviderModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Provides;
-import graphql.Scalars;
-import graphql.execution.instrumentation.Instrumentation;
-import graphql.kickstart.execution.context.DefaultGraphQLContext;
-import graphql.kickstart.execution.context.GraphQLKickstartContext;
-import graphql.kickstart.servlet.context.GraphQLServletContextBuilder;
-import graphql.schema.*;
-import org.dataloader.DataLoader;
-import org.dataloader.DataLoaderRegistry;
-import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader;
-import org.openbase.bco.api.graphql.context.AbstractBCOGraphQLContext;
-import org.openbase.bco.api.graphql.context.BCOGraphQLWebsocketContext;
-import org.openbase.bco.api.graphql.context.DefaultBCOGraphQLContext;
-import org.openbase.bco.api.graphql.schema.RegistrySchemaModule;
-import org.openbase.bco.api.graphql.schema.SchemaModificationsAdd;
-import org.openbase.bco.api.graphql.schema.SchemaModificationsRemove;
-import org.openbase.bco.api.graphql.schema.UnitSchemaModule;
-import org.openbase.bco.api.graphql.subscriptions.SubscriptionModule;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.type.domotic.unit.UnitDataType.UnitData;
-import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter;
-import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
+    @Value("\${graphql.url:/graphql}")
+    private val graphqlurl: String? = null
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.websocket.Session;
-import javax.websocket.server.HandshakeRequest;
-import java.util.List;
-
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-
-@SpringBootApplication
-public class BcoGraphQlApiSpringBootApplication {
-
-    private static Logger LOGGER = LoggerFactory.getLogger(BcoGraphQlApiSpringBootApplication.class);
-
-    private final Injector injector;
-    @Value("${graphql.url:/graphql}")
-    private String graphqlurl;
-
-    {
+    init {
         injector = Guice.createInjector(
-                new SchemaProviderModule(),
-
-                // WARNING:
-                // The order of those two is important, see either class descriptions for details
-                new SchemaModificationsRemove(),
-                new SchemaModificationsAdd(),
-
-                new RegistrySchemaModule(),
-                new UnitSchemaModule()
-        );
+            SchemaProviderModule(),  // WARNING:
+            // The order of those two is important, see either class descriptions for details
+            SchemaModificationsRemove(),
+            SchemaModificationsAdd(),
+            RegistrySchemaModule(),
+            UnitSchemaModule()
+        )
     }
 
     @Bean
-    GraphQLSchema schema() {
-        GraphQLSchema schema = injector.getInstance(Key.get(GraphQLSchema.class, Schema.class));
-
-        final GraphQLOutputType unitDataOutputType = (GraphQLOutputType) schema.getType("openbase_type_domotic_unit_UnitData");
-        final GraphQLOutputType unitConfigOutputType = (GraphQLOutputType) schema.getType("openbase_type_domotic_unit_UnitConfig");
-        final GraphQLInputType unitFilterInputType = (GraphQLInputType) schema.getType("Input_openbase_type_domotic_unit_UnitFilter");
-        final GqlInputConverter unitFilterInputConverter = GqlInputConverter.newBuilder().add(UnitFilter.getDescriptor().getFile()).build();
-
-        GraphQLObjectType.Builder builder = GraphQLObjectType.newObject().name("Subscription");
-        builder.field(newFieldDefinition().name("units").type(unitDataOutputType)
+    open fun schema(): GraphQLSchema {
+        var schema = injector!!.getInstance(
+            Key.get(
+                GraphQLSchema::class.java, Schema::class.java
+            )
+        )
+        val unitDataOutputType = schema.getType("openbase_type_domotic_unit_UnitData") as GraphQLOutputType?
+        val unitConfigOutputType = schema.getType("openbase_type_domotic_unit_UnitConfig") as GraphQLOutputType?
+        val unitFilterInputType = schema.getType("Input_openbase_type_domotic_unit_UnitFilter") as GraphQLInputType?
+        val unitFilterInputConverter =
+            GqlInputConverter.newBuilder().add(UnitFilterType.UnitFilter.getDescriptor().file).build()
+        val builder = GraphQLObjectType.newObject().name("Subscription")
+        builder.field(
+            GraphQLFieldDefinition.newFieldDefinition().name("units").type(unitDataOutputType)
                 .argument(GraphQLArgument.newArgument().name("filter").type(unitFilterInputType).build())
-                .build());
-        builder.field(newFieldDefinition().name("unitConfigs").type(GraphQLList.list(unitConfigOutputType))
+                .build()
+        )
+        builder.field(
+            GraphQLFieldDefinition.newFieldDefinition().name("unitConfigs").type(GraphQLList.list(unitConfigOutputType))
                 .argument(GraphQLArgument.newArgument().name("filter").type(unitFilterInputType))
                 .argument(GraphQLArgument.newArgument().name("includeDisabledUnits").type(Scalars.GraphQLBoolean))
-                .build());
-
-        GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
-                .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), new DataFetcher<Publisher<UnitData>>() {
-                    @Override
-                    public Publisher<UnitData> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-                        UnitFilter unitFilter = (UnitFilter) unitFilterInputConverter.createProtoBuf(UnitFilter.getDescriptor(), UnitFilter.newBuilder(), dataFetchingEnvironment.getArgument("filter"));
-                        return SubscriptionModule.subscribeUnits(unitFilter);
+                .build()
+        )
+        val codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.codeRegistry)
+            .dataFetcher(FieldCoordinates.coordinates("Subscription", "units"), DataFetcher { dataFetchingEnvironment ->
+                val unitFilter = unitFilterInputConverter.createProtoBuf(
+                    UnitFilterType.UnitFilter.getDescriptor(),
+                    UnitFilterType.UnitFilter.newBuilder(),
+                    dataFetchingEnvironment.getArgument("filter")
+                ) as UnitFilterType.UnitFilter
+                SubscriptionModule.subscribeUnits(unitFilter)
+            })
+            .dataFetcher(
+                FieldCoordinates.coordinates("Subscription", "unitConfigs"),
+                DataFetcher { dataFetchingEnvironment ->
+                    val unitFilter = unitFilterInputConverter.createProtoBuf(
+                        UnitFilterType.UnitFilter.getDescriptor(),
+                        UnitFilterType.UnitFilter.newBuilder(),
+                        dataFetchingEnvironment.getArgument("filter")
+                    ) as UnitFilterType.UnitFilter
+                    var includeDisabledUnits = false
+                    if (dataFetchingEnvironment.getArgument<Any>("includeDisabledUnits") != null) {
+                        includeDisabledUnits = dataFetchingEnvironment.getArgument("includeDisabledUnits")
                     }
+                    SubscriptionModule.subscribeUnitConfigs(unitFilter, includeDisabledUnits)
                 })
-                .dataFetcher(FieldCoordinates.coordinates("Subscription", "unitConfigs"), new DataFetcher<Publisher<List<UnitConfig>>>() {
-                    @Override
-                    public Publisher<List<UnitConfig>> get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-                        UnitFilter unitFilter = (UnitFilter) unitFilterInputConverter.createProtoBuf(UnitFilter.getDescriptor(), UnitFilter.newBuilder(), dataFetchingEnvironment.getArgument("filter"));
-
-                        Boolean includeDisabledUnits = false;
-                        if (dataFetchingEnvironment.getArgument("includeDisabledUnits") != null) {
-                            includeDisabledUnits = dataFetchingEnvironment.getArgument("includeDisabledUnits");
-                        }
-
-                        return SubscriptionModule.subscribeUnitConfigs(unitFilter, includeDisabledUnits);
-                    }
-                })
-                .build();
-
+            .build()
         schema = GraphQLSchema.newSchema(schema)
-                .subscription(builder.build())
-                .codeRegistry(codeRegistry)
-                .build();
+            .subscription(builder.build())
+            .codeRegistry(codeRegistry)
+            .build()
 
         //final GraphQLObjectType.Builder queryTypeBuilder = GraphQLObjectType.newObject(schema.getQueryType());
         // final GraphQLObjectType.Builder mutationTypeBuilder = GraphQLObjectType.newObject(schema.getMutationType());
@@ -201,9 +191,7 @@ public class BcoGraphQlApiSpringBootApplication {
                 .query(queryTypeBuilder.build())
                 .mutation(mutationTypeBuilder.build())
                 .codeRegistry(codeRegistry)
-                .build();*/
-
-        return schema;
+                .build();*/return schema
     }
 
     /*@Bean
@@ -211,80 +199,74 @@ public class BcoGraphQlApiSpringBootApplication {
         System.out.println("Add exec strategy..");
         return GraphQL.newGraphQL(schema()).subscriptionExecutionStrategy(new SubscriptionExecutionStrategy()).build();
     }*/
-//
-//    @Bean
-//    public GraphQL graphQL() {
-//        return GraphQL.newGraphQL(schemaProvider().getSchema()).build();
-//    }
-
+    //
+    //    @Bean
+    //    public GraphQL graphQL() {
+    //        return GraphQL.newGraphQL(schemaProvider().getSchema()).build();
+    //    }
     @Bean
-    public Instrumentation instrumentation() {
-        return GuavaListenableFutureSupport.listenableFutureInstrumentation();
+    open fun instrumentation(): Instrumentation {
+        return GuavaListenableFutureSupport.listenableFutureInstrumentation()
     }
 
     @Bean
-    public UnitRegistry unitRegistry() {
-        try {
-            return Registries.getUnitRegistry();
-        } catch (NotAvailableException e) {
-            e.printStackTrace();
-            return null;
+    open fun unitRegistry(): UnitRegistry? {
+        return try {
+            Registries.getUnitRegistry()
+        } catch (e: NotAvailableException) {
+            e.printStackTrace()
+            null
         }
     }
 
     @Bean
     @Provides
-    public DataLoaderRegistry buildDataLoaderRegistry(BCOUnitBatchLoader bcoUnitBatchLoader) {
-        DataLoaderRegistry registry = new DataLoaderRegistry();
-        registry.register(AbstractBCOGraphQLContext.DATA_LOADER_UNITS, new DataLoader<>(bcoUnitBatchLoader));
-        return registry;
+    open fun buildDataLoaderRegistry(bcoUnitBatchLoader: BCOUnitBatchLoader): DataLoaderRegistry {
+        val registry = DataLoaderRegistry()
+        registry.register(AbstractBCOGraphQLContext.Companion.DATA_LOADER_UNITS, DataLoader(bcoUnitBatchLoader))
+        return registry
     }
 
     @Bean
-    public GraphQLServletContextBuilder contextBuilder(DataLoaderRegistry dataLoaderRegistry) {
-        return new GraphQLServletContextBuilder() {
-
-            @Override
-            public GraphQLKickstartContext build(HttpServletRequest request, HttpServletResponse response) {
-                return new DefaultBCOGraphQLContext(dataLoaderRegistry, request);
+    open fun contextBuilder(dataLoaderRegistry: DataLoaderRegistry): GraphQLServletContextBuilder {
+        return object : GraphQLServletContextBuilder {
+            override fun build(request: HttpServletRequest, response: HttpServletResponse): GraphQLKickstartContext {
+                return DefaultBCOGraphQLContext(dataLoaderRegistry, request)
             }
 
-            @Override
-            public GraphQLKickstartContext build() {
-                return new DefaultGraphQLContext(dataLoaderRegistry, null);
+            override fun build(): GraphQLKickstartContext {
+                return DefaultGraphQLContext(dataLoaderRegistry, null)
             }
 
-            @Override
-            public GraphQLKickstartContext build(Session session, HandshakeRequest request) {
-                return new BCOGraphQLWebsocketContext(dataLoaderRegistry, session, request);
+            override fun build(session: Session, request: HandshakeRequest): GraphQLKickstartContext {
+                return BCOGraphQLWebsocketContext(
+                    session = session,
+                    handshakeRequest = request,
+                    dataLoaderRegistry = dataLoaderRegistry
+                )
             }
-        };
-    }
+        }
+    } //    @Autowired
 
-
-//    @Autowired
-//    GraphQLDataFetchers graphQLDataFetchers;
-
-//    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
-//        String schema = "type Query{hello: String}";
-//
-//        SchemaParser schemaParser = new SchemaParser();
-//        TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schema);
-//
-//        RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring()
-//                .type("Query", builder -> builder.dataFetcher("hello", new StaticDataFetcher("world")))
-//                .build();
-//
-//        SchemaGenerator schemaGenerator = new SchemaGenerator();
-//        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
-//
-//        GraphQL build = GraphQL.newGraphQL(new GraphQLProvider().buildSchema()).build();
-//        ExecutionResult executionResult = build.execute("{bookById(id: \"book-1\"){name}}");
-//
-//        System.out.println(executionResult.getData().toString());
-
-//    }
-
+    //    GraphQLDataFetchers graphQLDataFetchers;
+    //    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
+    //        String schema = "type Query{hello: String}";
+    //
+    //        SchemaParser schemaParser = new SchemaParser();
+    //        TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schema);
+    //
+    //        RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring()
+    //                .type("Query", builder -> builder.dataFetcher("hello", new StaticDataFetcher("world")))
+    //                .build();
+    //
+    //        SchemaGenerator schemaGenerator = new SchemaGenerator();
+    //        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
+    //
+    //        GraphQL build = GraphQL.newGraphQL(new GraphQLProvider().buildSchema()).build();
+    //        ExecutionResult executionResult = build.execute("{bookById(id: \"book-1\"){name}}");
+    //
+    //        System.out.println(executionResult.getData().toString());
+    //    }
     /*private static final ImmutableList<GraphQLFieldDefinition> STATIC_FIELD =
             ImmutableList.of(newFieldDefinition().type(Scalars.GraphQLString).name("_").staticValue("-").build());
 
@@ -371,13 +353,16 @@ public class BcoGraphQlApiSpringBootApplication {
         return builder.build();
     }
 
-    /** Returns the GraphQL name of the supplied proto. */
+    / ** Returns the GraphQL name of the supplied proto. */
     /*static String getReferenceName(Descriptors.GenericDescriptor descriptor) {
         return CharMatcher.anyOf(".").replaceFrom(descriptor.getFullName(), "_");
     }
 
-    /** Returns a reference to the GraphQL type corresponding to the supplied proto. */
+    / ** Returns a reference to the GraphQL type corresponding to the supplied proto. */
     /*static GraphQLTypeReference getReference(Descriptors.GenericDescriptor descriptor) {
         return new GraphQLTypeReference(getReferenceName(descriptor));
     }*/
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(BcoGraphQlApiSpringBootApplication::class.java)
+    }
 }
