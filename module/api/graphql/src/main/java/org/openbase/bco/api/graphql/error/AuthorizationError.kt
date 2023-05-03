@@ -1,4 +1,6 @@
-package org.openbase.bco.api.graphql.error;
+package org.openbase.bco.api.graphql.error
+
+import graphql.ErrorClassification
 
 /*-
  * #%L
@@ -20,18 +22,8 @@ package org.openbase.bco.api.graphql.error;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
-
-import graphql.ErrorClassification;
-
-public class AuthorizationError extends BCOGraphQLError {
-
-    public AuthorizationError(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    @Override
-    public ErrorClassification getErrorType() {
-        return ErrorType.AUTHORIZATION_ERROR;
+ */   class AuthorizationError(cause: Throwable) : BCOGraphQLError(cause) {
+    override fun getErrorType(): ErrorClassification {
+        return ErrorType.AUTHORIZATION_ERROR
     }
 }

@@ -1,4 +1,7 @@
-package org.openbase.bco.api.graphql.error;
+package org.openbase.bco.api.graphql.error
+
+import graphql.ErrorClassification
+import java.util.concurrent.TimeUnit
 
 /*-
  * #%L
@@ -20,32 +23,18 @@ package org.openbase.bco.api.graphql.error;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
+ */   class ServerError : BCOGraphQLError {
+    @JvmOverloads
+    constructor(message: String?, cause: Throwable) : super(cause)
+    constructor(cause: Throwable) : super(cause)
 
-import graphql.ErrorClassification;
-
-import java.util.concurrent.TimeUnit;
-
-public class ServerError extends BCOGraphQLError {
-
-    public static final long BCO_TIMEOUT_SHORT = 10;
-    public static final long BCO_TIMEOUT_LONG = 20;
-    public static final TimeUnit BCO_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
-
-    public ServerError(String message) {
-        this(message, null);
+    override fun getErrorType(): ErrorClassification {
+        return ErrorType.SERVER_ERROR
     }
 
-    public ServerError(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public ServerError(final Throwable cause) {
-        super(cause.getMessage(), cause);
-    }
-
-    @Override
-    public ErrorClassification getErrorType() {
-        return ErrorType.SERVER_ERROR;
+    companion object {
+        const val BCO_TIMEOUT_SHORT: Long = 10
+        const val BCO_TIMEOUT_LONG: Long = 20
+        val BCO_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS
     }
 }
