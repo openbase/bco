@@ -164,7 +164,11 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         unitConfigRemoteRegistry.removeDataObserver(aliasMapUpdateObserver);
         unitConfigRemoteRegistry.removeDataObserver(clearUnitConfigsByTypeObserver);
-        CachedUnitRegistryRemote.getRegistry().removeDataObserver(clearUnitConfigsByTypeObserver);
+        try {
+            CachedUnitRegistryRemote.getRegistry().removeDataObserver(clearUnitConfigsByTypeObserver);
+        } catch (NotAvailableException e) {
+            // just continue
+        }
         super.deactivate();
     }
 
