@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.printer;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -107,27 +107,19 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
     }
 
     public UnitStatePrinter(final PrintStream printStream, final Config config) throws InstantiationException {
-        try {
-            this.config = config;
-            this.outputConsumer = null;
-            this.printStream = printStream;
-            this.customUnitPool = new CustomUnitPool();
-            this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        this.config = config;
+        this.outputConsumer = null;
+        this.printStream = printStream;
+        this.customUnitPool = new CustomUnitPool();
+        this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
     }
 
     public UnitStatePrinter(final Consumer<String> outputConsumer, final Config config) throws InstantiationException {
-        try {
-            this.config = config;
-            this.outputConsumer = outputConsumer;
-            this.printStream = null;
-            this.customUnitPool = new CustomUnitPool();
-            this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        this.config = config;
+        this.outputConsumer = outputConsumer;
+        this.printStream = null;
+        this.customUnitPool = new CustomUnitPool();
+        this.unitStateObserver = (source, data) -> print((Unit) source.getServiceProvider(), source.getServiceType(), data);
     }
 
     @SafeVarargs
@@ -220,11 +212,11 @@ public class UnitStatePrinter implements Manageable<Collection<Filter<UnitConfig
 
                 // compute related units to filter
                 for (ActionReferenceType.ActionReference cause : responsibleAction.getActionCauseList()) {
-                    relatedUnitIdServiceTypePair.add("['" + IdResolver.getId(cause.getServiceStateDescription().getUnitId()) + "', "+cause.getServiceStateDescription().getServiceType().name().toLowerCase()+"]");
+                    relatedUnitIdServiceTypePair.add("['" + IdResolver.getId(cause.getServiceStateDescription().getUnitId()) + "', " + cause.getServiceStateDescription().getServiceType().name().toLowerCase() + "]");
                 }
 
                 for (ActionReferenceType.ActionReference impact : responsibleAction.getActionImpactList()) {
-                    relatedUnitIdServiceTypePair.add("['" + IdResolver.getId(impact.getServiceStateDescription().getUnitId()) + "', "+impact.getServiceStateDescription().getServiceType().name().toLowerCase()+"]");
+                    relatedUnitIdServiceTypePair.add("['" + IdResolver.getId(impact.getServiceStateDescription().getUnitId()) + "', " + impact.getServiceStateDescription().getServiceType().name().toLowerCase() + "]");
                 }
             }
 
