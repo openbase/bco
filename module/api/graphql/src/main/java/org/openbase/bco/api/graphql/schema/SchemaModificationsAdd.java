@@ -245,6 +245,11 @@ public class SchemaModificationsAdd extends SchemaModule {
         return getLabelForContext(gatewayClass.getLabel(), env.getContext());
     }
 
+    @SchemaModification(addField = "labelString", onType = ServiceTemplate.class)
+    String addLabelBestMatch(ServiceTemplate serviceTemplate, DataFetchingEnvironment env) {
+        return getLabelForContext(serviceTemplate.getLabel(), env.getContext());
+    }
+
     @SchemaModification(addField = "descriptionString", onType = GatewayClass.class)
     String addDescriptionBestMatch(GatewayClass gatewayClass, DataFetchingEnvironment env) {
         return getTextForContext(gatewayClass.getDescription(), env.getContext());
