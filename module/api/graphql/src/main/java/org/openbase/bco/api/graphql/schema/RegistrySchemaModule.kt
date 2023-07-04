@@ -24,6 +24,8 @@ import org.openbase.type.configuration.MetaConfigType
 import org.openbase.type.domotic.unit.UnitConfigType
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.unit.UnitFilterType
+import org.openbase.type.domotic.unit.agent.AgentClassType
+import org.openbase.type.domotic.unit.app.AppClassType
 import org.openbase.type.domotic.unit.gateway.GatewayClassType
 import org.openbase.type.geometry.PoseType
 import org.openbase.type.language.LabelType
@@ -157,6 +159,16 @@ import java.util.concurrent.*
     @Throws(CouldNotPerformException::class, InterruptedException::class)
     fun gatewayClasses(): ImmutableList<GatewayClassType.GatewayClass> =
         ImmutableList.copyOf(Registries.getClassRegistry(true).gatewayClasses)
+
+    @Query("agentClasses")
+    @Throws(CouldNotPerformException::class, InterruptedException::class)
+    fun agentClasses(): ImmutableList<AgentClassType.AgentClass> =
+        ImmutableList.copyOf(Registries.getClassRegistry(true).agentClasses)
+
+    @Query("appClasses")
+    @Throws(CouldNotPerformException::class, InterruptedException::class)
+    fun appClasses(): ImmutableList<AppClassType.AppClass> =
+        ImmutableList.copyOf(Registries.getClassRegistry(true).appClasses)
 
     @Mutation("updateUnitConfig")
     @Throws(BCOGraphQLError::class)
