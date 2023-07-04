@@ -116,6 +116,16 @@ public class SchemaModificationsAdd extends SchemaModule {
         return getLabelForContext(unitTemplate.getLabel(), env.getContext());
     }
 
+    @SchemaModification(addField = "labelString", onType = AgentClass.class)
+    String addLabelBestMatch(AgentClass agentClass, DataFetchingEnvironment env) {
+        return getLabelForContext(agentClass.getLabel(), env.getContext());
+    }
+
+    @SchemaModification(addField = "labelString", onType = AppClass.class)
+    String addLabelBestMatch(AppClass appClass, DataFetchingEnvironment env) {
+        return getLabelForContext(appClass.getLabel(), env.getContext());
+    }
+
     @SchemaModification(addField = "descriptionString", onType = UnitConfig.class)
     String addDescriptionBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
         return getTextForContext(unitConfig.getDescription(), env.getContext());
