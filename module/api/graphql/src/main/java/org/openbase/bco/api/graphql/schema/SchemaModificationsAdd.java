@@ -126,6 +126,21 @@ public class SchemaModificationsAdd extends SchemaModule {
         return getLabelForContext(appClass.getLabel(), env.getContext());
     }
 
+    @SchemaModification(addField = "labelString", onType = DeviceClass.class)
+    String addLabelBestMatch(DeviceClass deviceClass, DataFetchingEnvironment env) {
+        return getLabelForContext(deviceClass.getLabel(), env.getContext());
+    }
+
+    @SchemaModification(addField = "labelString", onType = GatewayClass.class)
+    String addLabelBestMatch(GatewayClass gatewayClass, DataFetchingEnvironment env) {
+        return getLabelForContext(gatewayClass.getLabel(), env.getContext());
+    }
+
+    @SchemaModification(addField = "labelString", onType = ServiceTemplate.class)
+    String addLabelBestMatch(ServiceTemplate serviceTemplate, DataFetchingEnvironment env) {
+        return getLabelForContext(serviceTemplate.getLabel(), env.getContext());
+    }
+
     @SchemaModification(addField = "descriptionString", onType = UnitConfig.class)
     String addDescriptionBestMatch(UnitConfig unitConfig, DataFetchingEnvironment env) {
         return getTextForContext(unitConfig.getDescription(), env.getContext());
@@ -233,21 +248,6 @@ public class SchemaModificationsAdd extends SchemaModule {
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Tile");
         }
-    }
-
-    @SchemaModification(addField = "labelString", onType = DeviceClass.class)
-    String addLabelBestMatch(DeviceClass deviceClass, DataFetchingEnvironment env) {
-        return getLabelForContext(deviceClass.getLabel(), env.getContext());
-    }
-
-    @SchemaModification(addField = "labelString", onType = GatewayClass.class)
-    String addLabelBestMatch(GatewayClass gatewayClass, DataFetchingEnvironment env) {
-        return getLabelForContext(gatewayClass.getLabel(), env.getContext());
-    }
-
-    @SchemaModification(addField = "labelString", onType = ServiceTemplate.class)
-    String addLabelBestMatch(ServiceTemplate serviceTemplate, DataFetchingEnvironment env) {
-        return getLabelForContext(serviceTemplate.getLabel(), env.getContext());
     }
 
     @SchemaModification(addField = "descriptionString", onType = GatewayClass.class)
