@@ -21,9 +21,13 @@ import org.openbase.jul.extension.type.processing.LabelProcessor.getBestMatch
 import org.openbase.jul.extension.type.processing.LabelProcessor.replace
 import org.openbase.type.configuration.EntryType
 import org.openbase.type.configuration.MetaConfigType
+import org.openbase.type.domotic.service.ServiceTemplateType
 import org.openbase.type.domotic.unit.UnitConfigType
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.unit.UnitFilterType
+import org.openbase.type.domotic.unit.UnitTemplateType
+import org.openbase.type.domotic.unit.agent.AgentClassType
+import org.openbase.type.domotic.unit.app.AppClassType
 import org.openbase.type.domotic.unit.gateway.GatewayClassType
 import org.openbase.type.geometry.PoseType
 import org.openbase.type.language.LabelType
@@ -157,6 +161,26 @@ import java.util.concurrent.*
     @Throws(CouldNotPerformException::class, InterruptedException::class)
     fun gatewayClasses(): ImmutableList<GatewayClassType.GatewayClass> =
         ImmutableList.copyOf(Registries.getClassRegistry(true).gatewayClasses)
+
+    @Query("agentClasses")
+    @Throws(CouldNotPerformException::class, InterruptedException::class)
+    fun agentClasses(): ImmutableList<AgentClassType.AgentClass> =
+        ImmutableList.copyOf(Registries.getClassRegistry(true).agentClasses)
+
+    @Query("appClasses")
+    @Throws(CouldNotPerformException::class, InterruptedException::class)
+    fun appClasses(): ImmutableList<AppClassType.AppClass> =
+        ImmutableList.copyOf(Registries.getClassRegistry(true).appClasses)
+
+    @Query("unitTemplates")
+    @Throws(CouldNotPerformException::class, InterruptedException::class)
+    fun unitTemplates(): ImmutableList<UnitTemplateType.UnitTemplate> =
+        ImmutableList.copyOf(Registries.getTemplateRegistry(true).unitTemplates)
+
+    @Query("serviceTemplates")
+    @Throws(CouldNotPerformException::class, InterruptedException::class)
+    fun serviceTemplates(): ImmutableList<ServiceTemplateType.ServiceTemplate> =
+        ImmutableList.copyOf(Registries.getTemplateRegistry(true).serviceTemplates)
 
     @Mutation("updateUnitConfig")
     @Throws(BCOGraphQLError::class)
