@@ -158,66 +158,17 @@ class CustomUnitPool : Manageable<Collection<Filter<UnitConfigType.UnitConfig>>>
         try {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lockInterruptibly()
             try {
-                // todo: why not filter before diff? That would make so much things easier here.
-                unitConfigDiff.diffMessages(Registries.getUnitRegistry().unitConfigs)
+                // update list diff
+                Registries.getUnitRegistry().unitConfigs
+                    .filter { unitConfig -> filterSet.all { it.match(unitConfig) } }
+                    .let { unitConfigDiff.diffMessages(it) }
 
                 // handle new units
-                unitLoop@ for ((key, value) in unitConfigDiff.newMessageMap) {
+                unitConfigDiff.newMessageMap.keys.forEach { addUnitRemote(it) }
 
-                    // apply unit filter
-                    for (filter in filterSet) {
-                        if (filter.pass(value.message)) {
-                            continue@unitLoop
-                        }
-                    }
-                    addUnitRemote(key)
-                }
-
-                // handle updated units
-                unitLoop@ for ((key, value) in unitConfigDiff.updatedMessageMap) {
-                    for (filter in filterSet) {
-
-                        // remove known units which pass the filter
-                        if (filter.pass(value.message) && unitRemoteRegistry.contains(key)) {
-                            removeUnitRemote(key)
-                            continue@unitLoop
-                        }
-
-                        // we are done if unit is already known
-                        if (unitRemoteRegistry.contains(key)) {
-                            continue@unitLoop
-                        }
-
-                        // filter if required
-                        if (filter.pass(value.message)) {
-                            continue@unitLoop
-                        }
-                    }
-
-                    // unit has not been removed, is not already in the pool and is not skipped by the filters, therefore we need to add it
-                    addUnitRemote(key)
-                }
 
                 //handle removed units
-                for ((key) in unitConfigDiff.removedMessageMap) {
-                    if (unitRemoteRegistry.contains(key)) {
-                        removeUnitRemote(key)
-                    }
-                }
-
-                // validate already registered units
-                unitLoop@ for (unit in ArrayList<UnitRemote<out Message>>(
-                    unitRemoteRegistry.entries
-                )) {
-
-                    // apply unit filter
-                    for (filter in filterSet) {
-                        if (filter.pass(unit.config)) {
-                            removeUnitRemote(unit.id)
-                            continue@unitLoop
-                        }
-                    }
-                }
+                unitConfigDiff.removedMessageMap.keys.forEach { removeUnitRemote(it) }
             } finally {
                 UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock()
             }

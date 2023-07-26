@@ -121,6 +121,7 @@ import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTempl
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends AbstractMessage & Serializable, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -262,6 +263,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
+            printDebug("new scope is: " + ScopeProcessor.generateStringRep(scope));
             super.init(Registries.getUnitRegistry(true).getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -282,6 +284,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (config == null) {
                 throw new NotAvailableException("config");
             }
+            printDebug("new scope is: " + ScopeProcessor.generateStringRep(config.getScope()));
 
             if (!config.hasId()) {
                 throw new NotAvailableException("config.id");
@@ -682,7 +685,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param actionId     the id of the action retrieved.
      * @param lockConsumer string identifying the task. Required because this method has to lock the builder setup because
      *                     of access to the {@link #scheduledActionList}.
+     *
      * @return the action identified by the provided id as described above.
+     *
      * @throws NotAvailableException if not action with the provided id could be found.
      */
     public SchedulableAction getActionById(final String actionId, final String lockConsumer) throws NotAvailableException, InterruptedException {
@@ -714,6 +719,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param userId the id of the user whose permissions are checked.
      * @param action the action checked.
+     *
      * @throws PermissionDeniedException if the user has no permissions to modify the provided action.
      * @throws CouldNotPerformException  if the permissions check could not be performed.
      */
@@ -887,6 +893,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
+     *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
     public Action reschedule() throws CouldNotPerformException, InterruptedException {
@@ -898,8 +905,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * If the current action is not finished it will be rejected.
      *
      * @param actionToSchedule a new action to schedule. If null it will be ignored.
+     *
      * @return the {@code action} which is ranked highest and which is therefore currently allocating this unit.
      * If there is no action left to schedule null is returned.
+     *
      * @throws CouldNotPerformException is throw in case the scheduling is currently not possible, e.g. because of a system shutdown.
      */
     private Action reschedule(final SchedulableAction actionToSchedule) throws CouldNotPerformException, InterruptedException {
@@ -1153,6 +1162,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * Syncs the action list into the given {@code dataBuilder}.
      *
      * @param dataBuilder used to synchronize with.
+     *
      * @throws CouldNotPerformException is thrown if the sync failed.
      */
     private void syncActionList(final DB dataBuilder) throws CouldNotPerformException {
@@ -1479,7 +1489,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * @param serviceState    the prototype of the new state.
      * @param serviceType     the service type of the new state.
      * @param internalBuilder the builder object used to access the currently applied state.
+     *
      * @return the computed state.
+     *
      * @throws RejectedException        in case the state would not change anything compared to the current one.
      * @throws CouldNotPerformException if the state could not be computed.
      */
@@ -1764,6 +1776,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param internalBuilder The data builder of this unit which already contains the updated state.
      * @param serviceType     The service type which has been updated.
+     *
      * @throws InterruptedException is thrown if the thread is externally interrupted.
      */
     protected void applyCustomDataUpdate(DB internalBuilder, ServiceType serviceType) throws InterruptedException {
@@ -1851,7 +1864,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      * otherwise the parent location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -1919,6 +1934,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceType      the type of the new service.
      * @param operationService the service which performes the operation.
+     *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
     protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
@@ -1952,6 +1968,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @param serviceState {@inheritDoc}
      * @param serviceType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
