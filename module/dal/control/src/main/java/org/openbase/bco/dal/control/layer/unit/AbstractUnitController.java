@@ -263,7 +263,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            printDebug("new scope is: " + ScopeProcessor.generateStringRep(scope));
             super.init(Registries.getUnitRegistry(true).getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
