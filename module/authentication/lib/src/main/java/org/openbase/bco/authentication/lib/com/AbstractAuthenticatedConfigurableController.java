@@ -89,7 +89,7 @@ public abstract class AbstractAuthenticatedConfigurableController<M extends Abst
 
     @Override
     public AuthenticatedValue requestDataAuthenticated(final TicketAuthenticatorWrapper ticket) throws CouldNotPerformException {
-        printDebug("requestStatusAuthenticated of " + this);
+        logger.trace("requestStatusAuthenticated of " + this);
         // evaluate the ticket
         final AuthenticationBaseData authenticationBaseData = AuthenticatedServerManager.getInstance().verifyClientServerTicket(ticket);
 

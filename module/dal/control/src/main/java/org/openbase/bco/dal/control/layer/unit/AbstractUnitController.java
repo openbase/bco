@@ -284,7 +284,6 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (config == null) {
                 throw new NotAvailableException("config");
             }
-            printDebug("new scope is: " + ScopeProcessor.generateStringRep(config.getScope()));
 
             if (!config.hasId()) {
                 throw new NotAvailableException("config.id");
