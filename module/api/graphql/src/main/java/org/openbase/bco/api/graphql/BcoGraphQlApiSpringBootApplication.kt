@@ -27,7 +27,6 @@ import org.openbase.bco.registry.remote.Registries
 import org.openbase.bco.registry.unit.lib.UnitRegistry
 import org.openbase.jul.exception.NotAvailableException
 import org.openbase.type.domotic.unit.UnitFilterType
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
@@ -122,88 +121,12 @@ open class BcoGraphQlApiSpringBootApplication {
                     SubscriptionModule.subscribeUnitConfigs(unitFilter, includeDisabledUnits)
                 })
             .build()
-        schema = GraphQLSchema.newSchema(schema)
+        return GraphQLSchema.newSchema(schema)
             .subscription(builder.build())
             .codeRegistry(codeRegistry)
             .build()
-
-        //final GraphQLObjectType.Builder queryTypeBuilder = GraphQLObjectType.newObject(schema.getQueryType());
-        // final GraphQLObjectType.Builder mutationTypeBuilder = GraphQLObjectType.newObject(schema.getMutationType());
-        //TODO: can I define that these arguments can not be null as in an SDL
-        //TODO: would the preferred way be to define these in an sdl?
-        /*queryTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("login").type(Scalars.GraphQLString)
-                .argument(GraphQLArgument.newArgument().name("username").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
-                .argument(GraphQLArgument.newArgument().name("password").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
-                .build());
-        mutationTypeBuilder.field(GraphQLFieldDefinition.newFieldDefinition().name("changePassword").type(Scalars.GraphQLBoolean)
-                .argument(GraphQLArgument.newArgument().name("username").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
-                .argument(GraphQLArgument.newArgument().name("oldPassword").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
-                .argument(GraphQLArgument.newArgument().name("newPassword").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)).build())
-                .build());
-
-        final GraphQLCodeRegistry codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.getCodeRegistry())
-                .dataFetcher(FieldCoordinates.coordinates(schema.getQueryType().getName(), "login"), new DataFetcher<String>() {
-
-                    @Override
-                    public String get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-                        final String username = dataFetchingEnvironment.getArgument("username");
-                        final String password = dataFetchingEnvironment.getArgument("password");
-
-                        try {
-                            final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
-                            final SessionManager sessionManager = new SessionManager();
-                            sessionManager.loginUser(userId, password, false);
-                            AuthenticatedValueType.AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(AuthenticationTokenType.AuthenticationToken.newBuilder().setUserId(userId).build(), null);
-                            String tokenValue = new AuthenticatedValueFuture<>(Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
-                                    String.class,
-                                    authenticatedValue.getTicketAuthenticatorWrapper(),
-                                    sessionManager).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
-                            return tokenValue;
-                        } catch (NotAvailableException ex) {
-
-                            throw new ArgumentError(ex);
-                        } catch (Throwable ex) {
-                            System.out.println("Which ex is thrown here? " + ex.getClass().getSimpleName() + ", " + ex.getMessage());
-                            throw new Exception(ex);
-                        }
-                    }
-                })
-                .dataFetcher(FieldCoordinates.coordinates(schema.getMutationType().getName(), "changePassword"), new DataFetcher<Boolean>() {
-                    @Override
-                    public Boolean get(DataFetchingEnvironment dataFetchingEnvironment) throws Exception {
-                        final String username = dataFetchingEnvironment.getArgument("username");
-                        final String oldPassword = dataFetchingEnvironment.getArgument("oldPassword");
-                        final String newPassword = dataFetchingEnvironment.getArgument("newPassword");
-
-                        final String userId = Registries.getUnitRegistry().getUserUnitIdByUserName(username);
-
-                        final SessionManager sessionManager = new SessionManager();
-                        sessionManager.loginUser(userId, oldPassword, false);
-                        sessionManager.changePassword(userId, oldPassword, newPassword).get(ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT);
-
-                        return true;
-                    }
-                })
-                .build();
-
-
-        schema = GraphQLSchema.newSchema(schema)
-                .query(queryTypeBuilder.build())
-                .mutation(mutationTypeBuilder.build())
-                .codeRegistry(codeRegistry)
-                .build();*/return schema
     }
 
-    /*@Bean
-    public GraphQL graphQL() {
-        System.out.println("Add exec strategy..");
-        return GraphQL.newGraphQL(schema()).subscriptionExecutionStrategy(new SubscriptionExecutionStrategy()).build();
-    }*/
-    //
-    //    @Bean
-    //    public GraphQL graphQL() {
-    //        return GraphQL.newGraphQL(schemaProvider().getSchema()).build();
-    //    }
     @Bean
     open fun instrumentation(): Instrumentation {
         return GuavaListenableFutureSupport.listenableFutureInstrumentation()
@@ -246,123 +169,5 @@ open class BcoGraphQlApiSpringBootApplication {
                 )
             }
         }
-    } //    @Autowired
-
-    //    GraphQLDataFetchers graphQLDataFetchers;
-    //    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
-    //        String schema = "type Query{hello: String}";
-    //
-    //        SchemaParser schemaParser = new SchemaParser();
-    //        TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schema);
-    //
-    //        RuntimeWiring runtimeWiring = RuntimeWiring.newRuntimeWiring()
-    //                .type("Query", builder -> builder.dataFetcher("hello", new StaticDataFetcher("world")))
-    //                .build();
-    //
-    //        SchemaGenerator schemaGenerator = new SchemaGenerator();
-    //        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
-    //
-    //        GraphQL build = GraphQL.newGraphQL(new GraphQLProvider().buildSchema()).build();
-    //        ExecutionResult executionResult = build.execute("{bookById(id: \"book-1\"){name}}");
-    //
-    //        System.out.println(executionResult.getData().toString());
-    //    }
-    /*private static final ImmutableList<GraphQLFieldDefinition> STATIC_FIELD =
-            ImmutableList.of(newFieldDefinition().type(Scalars.GraphQLString).name("_").staticValue("-").build());
-
-    private static GraphQLFieldDefinition convertField(
-            Descriptors.FieldDescriptor fieldDescriptor, SchemaOptions schemaOptions) {
-        DataFetcher<?> dataFetcher = new ProtoDataFetcher(fieldDescriptor);
-        GraphQLFieldDefinition.Builder builder =
-                newFieldDefinition()
-                        .type(convertType(fieldDescriptor, schemaOptions))
-                        .dataFetcher(dataFetcher)
-                        .name(fieldDescriptor.getJsonName());
-        builder.description(schemaOptions.commentsMap().get(fieldDescriptor.getFullName()));
-        if (fieldDescriptor.getOptions().hasDeprecated()
-                && fieldDescriptor.getOptions().getDeprecated()) {
-            builder.deprecate("deprecated in proto");
-        }
-        return builder.build();
-    }
-
-    static GraphQLObjectType convert(
-            Descriptors.Descriptor descriptor,
-            GraphQLInterfaceType nodeInterface) {
-        ImmutableList<GraphQLFieldDefinition> graphQLFieldDefinitions =
-                descriptor.getFields().stream()
-                        .map(field -> convertField(field))
-                        .collect(toImmutableList());
-
-        // TODO: add back relay support
-
-        //    Optional<GraphQLFieldDefinition> relayId =
-        //        descriptor.getFields().stream()
-        //            .filter(field -> field.getOptions().hasExtension(RelayOptionsProto.relayOptions))
-        //            .map(
-        //                field ->
-        //                    newFieldDefinition()
-        //                        .name("id")
-        //                        .type(new GraphQLNonNull(GraphQLID))
-        //                        .description("Relay ID")
-        //                        .dataFetcher(
-        //                            data ->
-        //                                new Relay()
-        //                                    .toGlobalId(
-        //                                        getReferenceName(descriptor),
-        //                                        data.<Message>getSource().getField(field).toString()))
-        //                        .build())
-        //            .findFirst();
-
-        //   if (relayId.isPresent()) {
-        //      return GraphQLObjectType.newObject()
-        //          .name(getReferenceName(descriptor))
-        //          .withInterface(nodeInterface)
-        //          .field(relayId.get())
-        //          .fields(
-        //              graphQLFieldDefinitions
-        //                  .stream()
-        //                  .map(
-        //                      field ->
-        //                          field.getName().equals("id")
-        //                              ? GraphQLFieldDefinition.newFieldDefinition()
-        //                                  .name("rawId")
-        //                                  .description(field.getDescription())
-        //                                  .type(field.getType())
-        //                                  .dataFetcher(field.getDataFetcher())
-        //                                  .build()
-        //                              : field)
-        //                  .collect(ImmutableList.toImmutableList()))
-        //          .build();
-        //    }
-
-        return GraphQLObjectType.newObject()
-                .name(getReferenceName(descriptor))
-                .fields(graphQLFieldDefinitions.isEmpty() ? STATIC_FIELD : graphQLFieldDefinitions)
-                .build();
-    }
-
-    static GraphQLEnumType convert(
-            Descriptors.EnumDescriptor descriptor) {
-        GraphQLEnumType.Builder builder = GraphQLEnumType.newEnum().name(getReferenceName(descriptor));
-        for (Descriptors.EnumValueDescriptor value : descriptor.getValues()) {
-            builder.value(
-                    value.getName(),
-                    value.getName());
-        }
-        return builder.build();
-    }
-
-    / ** Returns the GraphQL name of the supplied proto. */
-    /*static String getReferenceName(Descriptors.GenericDescriptor descriptor) {
-        return CharMatcher.anyOf(".").replaceFrom(descriptor.getFullName(), "_");
-    }
-
-    / ** Returns a reference to the GraphQL type corresponding to the supplied proto. */
-    /*static GraphQLTypeReference getReference(Descriptors.GenericDescriptor descriptor) {
-        return new GraphQLTypeReference(getReferenceName(descriptor));
-    }*/
-    companion object {
-        private val LOGGER = LoggerFactory.getLogger(BcoGraphQlApiSpringBootApplication::class.java)
     }
 }
