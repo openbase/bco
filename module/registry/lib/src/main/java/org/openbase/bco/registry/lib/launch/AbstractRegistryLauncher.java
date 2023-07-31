@@ -31,9 +31,9 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
  * @param <L>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractRegistryLauncher<L extends AbstractRegistryController> extends AbstractLauncher<L> {
+public abstract class AbstractRegistryLauncher<L extends AbstractRegistryController<?,?>> extends AbstractLauncher<L> {
 
-    public AbstractRegistryLauncher(Class applicationClass, Class<L> launchableClass) throws InstantiationException {
+    public AbstractRegistryLauncher(Class<?> applicationClass, Class<L> launchableClass) throws InstantiationException {
         super(applicationClass, launchableClass);
     }
 
