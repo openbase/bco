@@ -49,7 +49,7 @@ import java.util.function.Consumer
     private val BACKPRESSURE_STRATEGY = BackpressureStrategy.BUFFER
 
     @Throws(BCOGraphQLError::class)
-    fun subscribeUnits(unitFilter: UnitFilter?): Publisher<UnitDataType.UnitData> {
+    fun subscribeUnits(unitFilter: UnitFilter): Publisher<UnitDataType.UnitData> {
         return try {
             val subscriptionUnitPool = CustomUnitPool()
             subscriptionUnitPool.init(unitFilter)
