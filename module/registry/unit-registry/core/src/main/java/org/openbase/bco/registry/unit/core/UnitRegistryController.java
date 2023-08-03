@@ -207,8 +207,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         this.removeDataObserver(clearUnitConfigsByTypeObserver);
-        CachedTemplateRegistryRemote.getRegistry().removeDataObserver(clearUnitConfigsByTypeObserver);
-
+        try {
+            CachedTemplateRegistryRemote.getRegistry().removeDataObserver(clearUnitConfigsByTypeObserver);
+        } catch (NotAvailableException e) {
+            // just continue
+        }
         super.deactivate();
     }
 
@@ -572,7 +575,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param unitAlias {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -594,7 +599,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      *
      * @param unitAlias {@inheritDoc}
      * @param unitType  {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
@@ -674,7 +681,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param filterDisabledUnits {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      * @throws NotAvailableException    {@inheritDoc}
      */
@@ -698,6 +707,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -709,6 +719,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -759,7 +770,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param serviceType
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -780,7 +793,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      *
      * @param unitType
      * @param serviceTypes
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -1048,6 +1063,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param authorizationToken {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -1066,6 +1082,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param authenticatedValue {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
