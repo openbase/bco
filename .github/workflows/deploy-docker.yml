@@ -33,8 +33,9 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
-            type=ref,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
             type=ref,event=branch
+            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
