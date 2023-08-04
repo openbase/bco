@@ -23,6 +23,15 @@ package org.openbase.bco.device.openhab.communication;
  */
 
 import com.google.gson.*;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.sse.InboundSseEvent;
+import jakarta.ws.rs.sse.SseEventSource;
 import org.glassfish.jersey.client.oauth2.OAuth2ClientSupport;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
 import org.openbase.bco.registry.remote.Registries;
@@ -48,16 +57,6 @@ import org.openbase.type.domotic.unit.gateway.GatewayClassType;
 import org.openhab.core.types.CommandDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.sse.InboundSseEvent;
-import javax.ws.rs.sse.SseEventSource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -89,7 +88,6 @@ public abstract class OpenHABRestConnection implements Shutdownable {
 
     private boolean shutdownInitiated = false;
 
-    protected final JsonParser jsonParser;
     protected final Gson gson;
 
     private ScheduledFuture<?> connectionTask;
@@ -114,7 +112,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
                     return false;
                 }
             }).create();
-            this.jsonParser = new JsonParser();
+
             this.restClient = ClientBuilder.newClient();
             try {
                 restClient.register(OAuth2ClientSupport.feature(getToken()));
@@ -230,7 +228,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
         final Consumer<InboundSseEvent> evenConsumer = inboundSseEvent -> {
             // dispatch event
             try {
-                final JsonObject payload = jsonParser.parse(inboundSseEvent.readData()).getAsJsonObject();
+                final JsonObject payload = JsonParser.parseString(inboundSseEvent.readData()).getAsJsonObject();
                 for (Entry<String, ObservableImpl<Object, JsonObject>> topicObserverEntry : topicObservableMap.entrySet()) {
                     try {
                         if (payload.get(TOPIC_KEY).getAsString().matches(topicObserverEntry.getKey())) {
@@ -251,7 +249,7 @@ public abstract class OpenHABRestConnection implements Shutdownable {
         };
 
         final Runnable reconnectHandler = () -> {
-            checkConnectionState();
+            setConnectState(State.RECONNECTING);
         };
 
         sseSource.register(evenConsumer, errorHandler, reconnectHandler);
