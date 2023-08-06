@@ -1,7 +1,9 @@
 package org.openbase.bco.api.graphql
 
 import com.google.api.graphql.execution.GuavaListenableFutureSupport
-import com.google.api.graphql.rejoiner.*
+import com.google.api.graphql.rejoiner.GqlInputConverter
+import com.google.api.graphql.rejoiner.Schema
+import com.google.api.graphql.rejoiner.SchemaProviderModule
 import com.google.inject.Guice
 import com.google.inject.Injector
 import com.google.inject.Key
@@ -12,6 +14,10 @@ import graphql.kickstart.execution.context.DefaultGraphQLContext
 import graphql.kickstart.execution.context.GraphQLKickstartContext
 import graphql.kickstart.servlet.context.GraphQLServletContextBuilder
 import graphql.schema.*
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import jakarta.websocket.Session
+import jakarta.websocket.server.HandshakeRequest
 import org.dataloader.DataLoader
 import org.dataloader.DataLoaderRegistry
 import org.openbase.bco.api.graphql.batchloader.BCOUnitBatchLoader
@@ -30,10 +36,6 @@ import org.openbase.type.domotic.unit.UnitFilterType
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.websocket.Session
-import javax.websocket.server.HandshakeRequest
 
 /*-
  * #%L

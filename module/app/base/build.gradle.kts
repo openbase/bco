@@ -53,7 +53,7 @@ dependencies {
     api(project(":bco.app.cloud.connector"))
     api(project(":bco.app.influxdb.connector"))
     api(project(":bco.api.graphql"))
-    api("commons-collections:commons-collections:_")
+    api("org.apache.commons:commons-collections4:_")
     testImplementation(project(":bco.dal.test"))
 }
 

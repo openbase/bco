@@ -26,8 +26,9 @@ import java.util.function.Consumer
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */ abstract class AbstractObserverMapper<S, T, E> : Observer<S, T> {
+ */ abstract class AbstractObserverMapper<S, T, E : Any> : Observer<S, T> {
     private var emitter: ObservableEmitter<E>? = null
+
     @Throws(Exception::class)
     override fun update(source: S, target: T) {
         if (emitter == null) {
@@ -42,6 +43,7 @@ import java.util.function.Consumer
 
     @Throws(Exception::class)
     abstract fun mapData(source: S, data: T): E
+
     @Throws(CouldNotPerformException::class)
     open fun doAfterRemoveObserver() {
     }
@@ -51,10 +53,10 @@ import java.util.function.Consumer
     }
 
     companion object {
-        fun <S, T, E> createObservable(
+        fun <S, T, E : Any> createObservable(
             addObserver: Consumer<Observer<S, T>>,
             removeObserver: Consumer<Observer<S, T>>,
-            obs: AbstractObserverMapper<S, T, E>
+            obs: AbstractObserverMapper<S, T, E>,
         ): Observable<E> {
             var observable = Observable.create { emitter: ObservableEmitter<E>? ->
                 obs.setEmitter(emitter)

@@ -1,8 +1,8 @@
 package org.openbase.bco.api.graphql.context
 
+import jakarta.servlet.http.HttpServletRequest
 import org.dataloader.DataLoaderRegistry
 import java.util.*
-import javax.servlet.http.HttpServletRequest
 
 /*-
  * #%L
