@@ -159,6 +159,10 @@ class RegistrySchemaModule : SchemaModule() {
         @Arg("includeDisabledUnits") includeDisabledUnits: Boolean?,
     ): ImmutableList<UnitConfigType.UnitConfig> = getUnitConfigs(unitFilter, includeDisabledUnits)
 
+    @Query("userMessages")
+    @Throws(BCOGraphQLError::class)
+    fun userMessages(): ImmutableList<UserMessage> = getUserMessages()
+
     @Query("gatewayClasses")
     @Throws(CouldNotPerformException::class, InterruptedException::class)
     fun gatewayClasses(): ImmutableList<GatewayClassType.GatewayClass> =
