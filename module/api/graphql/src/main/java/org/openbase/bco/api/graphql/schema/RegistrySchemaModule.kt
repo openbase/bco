@@ -21,6 +21,7 @@ import org.openbase.jul.extension.type.processing.LabelProcessor.getBestMatch
 import org.openbase.jul.extension.type.processing.LabelProcessor.replace
 import org.openbase.type.configuration.EntryType
 import org.openbase.type.configuration.MetaConfigType
+import org.openbase.type.domotic.communication.UserMessageType.UserMessage
 import org.openbase.type.domotic.service.ServiceTemplateType
 import org.openbase.type.domotic.unit.UnitConfigType
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
@@ -56,7 +57,8 @@ import java.util.concurrent.*
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */   class RegistrySchemaModule : SchemaModule() {
+ */
+class RegistrySchemaModule : SchemaModule() {
     /**
      * Check if an authentication token retrieved by the login method is still valid.
      *
@@ -430,6 +432,23 @@ import java.util.concurrent.*
                     ServerError.BCO_TIMEOUT_SHORT,
                     ServerError.BCO_TIMEOUT_TIME_UNIT
                 ).getUnitConfigs(includeDisabledUnits ?: true, unitFilter)
+            )
+        } catch (ex: RuntimeException) {
+            throw GenericError(ex)
+        } catch (ex: CouldNotPerformException) {
+            throw GenericError(ex)
+        } catch (ex: InterruptedException) {
+            throw GenericError(ex)
+        }
+
+        @Throws(BCOGraphQLError::class)
+        fun getUserMessages(
+        ): ImmutableList<UserMessage> = try {
+            ImmutableList.copyOf(
+                Registries.getMessageRegistry(
+                    ServerError.BCO_TIMEOUT_SHORT,
+                    ServerError.BCO_TIMEOUT_TIME_UNIT
+                ).userMessages
             )
         } catch (ex: RuntimeException) {
             throw GenericError(ex)
