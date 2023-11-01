@@ -11,6 +11,7 @@ on:
   pull_request:
     branches:
       - dev
+      - beta
     types: [opened, labeled, synchronize, reopened, ready_for_review]
 
 jobs:
@@ -33,6 +34,7 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
+            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -82,6 +84,7 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
+            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -115,6 +118,7 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
+            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}

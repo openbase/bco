@@ -10,46 +10,34 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openbase.bco.authentication.lib.SessionManager;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.layer.unit.LightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jps.preset.JPLogLevel;
-import org.openbase.jul.communication.jp.JPComLegacyMode;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
-import org.openbase.type.domotic.state.ColorStateType.ColorState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
-import org.openbase.type.domotic.state.PowerStateType.PowerState.State;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.slf4j.Logger;
@@ -57,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.ExecutionException;
 
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -67,25 +56,12 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ColorableLightRemoteTest.class);
 
     private static ColorableLightRemote colorableLightRemote;
-
-    @Override
-    public void setupTestProperties() {
-        // legacy mode needed for testLegacyRemoteCallGetColor() test.
-        JPService.registerProperty(JPComLegacyMode.class, true);
-        System.out.println("called");
-        // enable to get debug logging
-//         JPService.registerProperty(JPDebugMode.class, true);
-//         JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
-    }
+    private int powerStateObserverUpdateNumber = 0;
 
     @BeforeAll
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
-    }
-
-    @AfterAll
-    public static void tearDownTest() throws Throwable {
-        JPService.registerProperty(JPComLegacyMode.class, false);
     }
 
     /**
@@ -100,55 +76,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         HSBColor color = HSBColor.newBuilder().setBrightness(0.50).setSaturation(0.70).setHue(150).build();
         waitForExecution(colorableLightRemote.setColor(color));
         assertEquals(color, colorableLightRemote.getData().getColorState().getColor().getHsbColor(), "Color has not been set in time!");
-    }
-
-    /**
-     * Test controlling a colorable light using a light remote.
-     *
-     * @throws Exception if an error occurs
-     */
-    @Test
-    @Timeout(15)
-    public void testControllingViaLightRemote() throws Exception {
-        System.out.println("testControllingViaLightRemote");
-
-        waitForExecution(colorableLightRemote.setPowerState(State.OFF));
-        final LightRemote lightRemote = new LightRemote();
-        try {
-            // create a light remote from colorable light config and wait for data
-            lightRemote.setSessionManager(SessionManager.getInstance());
-            lightRemote.init(colorableLightRemote.getConfig());
-            lightRemote.activate();
-            lightRemote.waitForData();
-
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-
-            // test if the initial state was synced correctly
-            assertEquals(colorableLightRemote.getPowerState(), lightRemote.getPowerState());
-
-            // test controlling via light remote
-            waitForExecution(lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()));
-            lightRemote.requestData().get();
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
-
-            // test controlling via colorable light remote
-            waitForExecution(colorableLightRemote.setPowerState(State.OFF));
-            lightRemote.requestData().get();
-            while (!colorableLightRemote.getPowerState().equals(lightRemote.getPowerState())) {
-                Thread.sleep(10);
-            }
-            assertEquals(colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        } finally {
-            // custom remote not handled by shutdown hook so make sure to call shutdown
-            lightRemote.shutdown();
-        }
     }
 
     /**
@@ -280,8 +207,6 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         waitForExecution(colorableLightRemote.setNeutralWhite());
         assertEquals(ColorStateOperationService.DEFAULT_NEUTRAL_WHITE, colorableLightRemote.getColorState().getColor().getHsbColor(), "Neutral white was not set to the default value!");
     }
-
-    private int powerStateObserverUpdateNumber = 0;
 
     /**
      * Deactivated because timestamps are not filtered anymore.

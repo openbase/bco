@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit.object;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,19 +23,23 @@ package org.openbase.bco.dal.remote.layer.unit.object;
  */
 
 import kotlin.Unit;
-import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
 import org.openbase.bco.dal.remote.layer.unit.AbstractUnitRemote;
 import org.openbase.jul.communication.data.RPCResponse;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.communication.EventType.Event;
-import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.dal.ObjectDataType.ObjectData;
 
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -84,7 +88,7 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public void addHandler(Function1<Event, Unit> handler, boolean wait) {
+    public void addHandler(Function2<Event, Map<String, String>, Unit> handler, boolean wait) {
         // dummy has no function
     }
 

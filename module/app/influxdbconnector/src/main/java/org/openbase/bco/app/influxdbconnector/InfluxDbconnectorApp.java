@@ -349,8 +349,13 @@ public class InfluxDbconnectorApp extends AbstractAppController {
                     point.addTag(entry.getKey(), entry.getValue());
                 }
             }
+
             List<LabelType.Label.MapFieldEntry> entryList = unit.getConfig().getLabel().getEntryList();
             for (LabelType.Label.MapFieldEntry entry : entryList) {
+                // skip entries that offer a language key but do not provide any label.
+                if(entry.getValueList().isEmpty()) {
+                    continue;
+                }
                 point.addTag("label_" + entry.getKey(), entry.getValue(0));
             }
 

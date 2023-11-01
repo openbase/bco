@@ -1,5 +1,15 @@
 rootProject.name = "bco"
 
+pluginManagement {
+    plugins {
+        id("de.fayard.refreshVersions") version "0.51.0"
+    }
+}
+
+plugins {
+    id("de.fayard.refreshVersions")
+}
+
 include("authentication")
 include("registry")
 include("dal")
@@ -111,13 +121,3 @@ project(":bco.device.openhab").projectDir = file("module/device/openhab")
 
 // includeBuild("lib/type") // not supported yet since its not a gradle project
 includeBuild("lib/jul")
-
-pluginManagement {
-    plugins {
-        id("de.fayard.refreshVersions") version "0.40.1"
-    }
-}
-
-plugins {
-    id("de.fayard.refreshVersions")
-}

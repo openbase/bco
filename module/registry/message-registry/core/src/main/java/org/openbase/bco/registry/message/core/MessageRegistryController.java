@@ -68,13 +68,6 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
     public MessageRegistryController() throws InstantiationException, InterruptedException {
         super(JPMessageRegistryScope.class, MessageRegistryData.newBuilder());
         try {
-            // verify that database exists and fail if not so no further errors are printed because they are based on this property.
-            try {
-                LOGGER.info("Use bco registry at " + JPService.getProperty(JPBCODatabaseDirectory.class).getValue());
-            } catch (JPServiceException ex) {
-                throw new NotAvailableException("Database");
-            }
-
             this.userMessageRegistry = new ProtoBufFileSynchronizedRegistry<>(UserMessage.class, getBuilderSetup(), getDataFieldDescriptor(MessageRegistryData.USER_MESSAGE_FIELD_NUMBER), USER_MESSAGE_ID_GENERATOR, JPService.getProperty(JPUserMessageDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
         } catch (JPServiceException | NullPointerException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);

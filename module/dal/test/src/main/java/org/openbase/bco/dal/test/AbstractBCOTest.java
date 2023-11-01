@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,20 +23,14 @@ package org.openbase.bco.dal.test;
  */
 
 import lombok.NonNull;
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.iface.BCOSession;
-import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.communication.mqtt.test.MqttIntegrationTest;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -51,6 +45,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
+
 /**
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
@@ -63,6 +60,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     private final List<RemoteAction> testActions = Collections.synchronizedList(new ArrayList<>());
 
     @BeforeAll
+    @Timeout(30)
     public static void setupBCO() throws Throwable {
         try {
             mockRegistry = MockRegistryHolder.newMockRegistry();
@@ -73,6 +71,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownBCO() throws Throwable {
         try {
             Units.reset(AbstractBCOTest.class);
@@ -83,12 +82,21 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
         }
     }
 
+    @BeforeEach
+    @Timeout(30)
+    public void notifyAboutTestStart() {
+        LOGGER.info("===================================== Start BCO Test =====================================");
+    }
+
     /**
      * Method is automatically called after each test run and there is no need to call it manually.
      * If you want to cancel all actions manually please use method {@code cancelAllTestActions()} to get feedback about the cancellation process.
      */
     @AfterEach
+    @Timeout(30)
     public void autoCancelActionsAfterTestRun() {
+
+        LOGGER.info("===================================== Finish BCO Test =====================================");
 
         // before canceling pending actions lets just validate that the test did not cause any deadlocks
         assertFalse(StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER), "Deadlocks found!");
@@ -397,7 +405,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
                 cancelTask.get();
             }
         } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not wait for at least on test action!", ex);
+            throw new CouldNotPerformException("Could not wait for at least one test action!", ex);
         }
 
         testActions.clear();

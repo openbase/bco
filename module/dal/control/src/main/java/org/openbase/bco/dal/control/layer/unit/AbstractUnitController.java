@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,7 +27,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
-import lombok.val;
 import org.openbase.bco.authentication.lib.*;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalIdentifiedProcessable;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
@@ -115,7 +114,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
@@ -134,7 +132,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     /**
      * Timeout defining how long finished actions will be minimally kept in the action list.
      */
-    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(10) : TimeUnit.SECONDS.toMillis(30);
+    private static final long FINISHED_ACTION_REMOVAL_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(30) : TimeUnit.SECONDS.toMillis(60);
 
     private static final long SUBMISSION_ACTION_MATCHING_TIMEOUT = JPService.testMode() ? TimeUnit.SECONDS.toMillis(1) : TimeUnit.SECONDS.toMillis(20);
     private static final ServiceJSonProcessor SERVICE_JSON_PROCESSOR = new ServiceJSonProcessor();
@@ -729,7 +727,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 userId = User.OTHER;
             }
 
-            if(action.getId().equals(terminatingActionId)) {
+            if (action.getId().equals(terminatingActionId)) {
                 throw new InvalidStateException("Its not allowed to cancel the termination action!");
             }
 
@@ -1139,7 +1137,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     public void notifyScheduledActionList() throws InterruptedException {
 
         // skip notification when builder setup is locked since then the notification is performed anyway.
-        if(!builderSetup.tryLockWrite(10, TimeUnit.SECONDS, LOCK_CONSUMER_NOTIFICATION)) {
+        if (!builderSetup.tryLockWrite(10, TimeUnit.SECONDS, LOCK_CONSUMER_NOTIFICATION)) {
             logger.warn("Skip action list sync since builder setup is busy.");
             // todo: we might want to mark the data object as dirty, since the action list is not up to date in this case.
             return;
@@ -1360,7 +1358,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
 
         for (SchedulableAction schedulableAction : new ArrayList<>(scheduledActionList)) {
-            if(!schedulableAction.isDone()) {
+            if (!schedulableAction.isDone()) {
                 schedulableAction.reject();
             }
         }
@@ -1432,6 +1430,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Update was interrupted!", ex);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply Service[" + serviceType.name() + "] Update[" + newState + "] for " + this + "!", ex);
         }
@@ -1619,12 +1618,12 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 ) {
                     // Because the service state update was not remapped we can be sure its triggered externally and not via bco.
                     // If in this case the event is initiated by the system, we can be sure that it is caused by a hardware synchronization purpose.
-                    // Therefore we can just apply the update and can skip to force the action execution which could otherwise block some
+                    // Therefore, we can just apply the update and can skip to force the action execution which could otherwise block some
                     // low priority future action for a certain amount of time in case this system action has any priority defined.
                     return serviceState;
                 }
             } catch (NotAvailableException ex) {
-                // if responsible action is not available, than we should continue since this action was maybe externally triggered by a human.
+                // if responsible action is not available, then we should continue since this action was maybe externally triggered by a human.
             }
 
             // force execution to properly apply new state synchronized with the current action scheduling
@@ -1713,13 +1712,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
                 // cancel all other actions on the stack
                 final Action removedAction = scheduledActionList.remove(i);
-                if(!removedAction.isDone()) {
+                if (!removedAction.isDone()) {
                     removedAction.cancel();
                 }
             }
 
             // final reschedule for cleanup
-            reschedule();
+            if (!isShutdownInProgress()) {
+                reschedule();
+            }
         } finally {
             builderSetup.unlockWrite(NotificationStrategy.AFTER_LAST_RELEASE);
         }
@@ -1915,9 +1916,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         // in test mode we should directly reschedule so the termination action takes place.
-        if(JPService.testMode()) {
+        if (JPService.testMode()) {
             try {
-                if(!terminatingActionId.equals(TERMINATION_ACTION_NOT_AVAILABLE)) {
+                if (!terminatingActionId.equals(TERMINATION_ACTION_NOT_AVAILABLE)) {
                     getActionById(terminatingActionId, getClass().getSimpleName()).execute().get(3, TimeUnit.SECONDS);
                 }
             } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
@@ -1988,6 +1989,15 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     }
                 }
 
+                // skip invoking the operation service if the new state matches the current state
+                if (Services.equalServiceStates(
+                        serviceState,
+                        Services.invokeProviderServiceMethod(serviceType, operationService))) {
+                    // apply the service state which updates the responsible action
+                    applyDataUpdate(serviceState, serviceType);
+                    return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, ActionDescription::getDefaultInstance));
+                }
+
                 // invoke operation service routine
                 return (Future<ActionDescription>) Services.invokeOperationServiceMethod(serviceType, operationService, serviceState);
             }
@@ -2008,7 +2018,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             }
 
             // handle invalid case
-            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered for "+ this));
+            return FutureProcessor.canceledFuture(ActionDescription.class, new CouldNotPerformException("Operation service for type[" + serviceType.name() + "] not registered for " + this));
 
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);

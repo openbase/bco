@@ -12,6 +12,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
@@ -253,24 +254,6 @@ public class ActionDescriptionProcessor {
         } catch (CouldNotPerformException ex) {
             return false;
         }
-    }
-
-    /**
-     * Method generates a description for the given action chain.
-     *
-     * @param actionDescriptionCollection a collection of depending action descriptions.
-     *
-     * @return a human readable description of the action pipeline.
-     */
-    public static String getDescription(final Collection<ActionDescription> actionDescriptionCollection) {
-        String description = "";
-        for (ActionDescription actionDescription : actionDescriptionCollection) {
-            if (!description.isEmpty()) {
-                description += " > ";
-            }
-            description += actionDescription.getDescription();
-        }
-        return description;
     }
 
     /**
@@ -1154,7 +1137,7 @@ public class ActionDescriptionProcessor {
             actionParameter.setExecutionTimePeriod(timeUnit.toMicros(executionTimePeriod));
 
             if (actionInitiator != null) {
-                actionParameter.getActionInitiatorBuilder().mergeFrom(actionInitiator);
+                ProtoBufBuilderProcessor.mergeFromWithoutRepeatedFields(actionParameter.getActionInitiatorBuilder(), actionInitiator);
             }
 
             return generateAndSetResponsibleAction(serviceStateBuilder, targetUnit, actionParameter);

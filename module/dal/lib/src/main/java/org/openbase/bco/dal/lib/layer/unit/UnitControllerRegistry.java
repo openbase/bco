@@ -34,11 +34,11 @@ import org.openbase.jul.storage.registry.SynchronizableRegistry;
 public interface UnitControllerRegistry<CONTROLLER extends UnitController<?,?>> extends SynchronizableRegistry<String, CONTROLLER>, Activatable {
 
     /**
-     * Returns a unit controller instance with the given scope.
+     * Returns a unit controller instance with the given alias.
      *
-     * @param scope the scope of the unit as string.
-     * @return the scope matching unit controller.
-     * @throws NotAvailableException is thrown in case there is no unit registered for the given scope.
+     * @param alias the alias used for identification.
+     * @return the controller instance associated with the given alias.
+     * @throws NotAvailableException is thrown in case there is no unit with the given alias available.
      */
-    CONTROLLER getUnitByScope(final String scope) throws NotAvailableException;
+    CONTROLLER getUnitByAlias(final String alias) throws NotAvailableException;
 }

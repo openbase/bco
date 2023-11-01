@@ -10,19 +10,21 @@ package org.openbase.app.test.agent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
@@ -31,6 +33,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +50,9 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected AgentRemote agentRemote = null;
 
     @BeforeEach
-    public void setupAgentManager() throws Exception {
+    @Timeout(30)
+    public void createAgent() throws Exception {
+        prepareEnvironment();
         try {
             // register agent
             agentConfig = Registries.getUnitRegistry().registerUnitConfig(getAgentConfig()).get(5, TimeUnit.SECONDS);
@@ -66,5 +71,21 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
         }
     }
 
+    @AfterEach
+    @Timeout(30)
+    public void removeAgent() throws Exception {
+        Registries.getUnitRegistry().removeUnitConfig(agentConfig);
+        agentRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED);
+    }
+
     public abstract UnitConfig getAgentConfig() throws CouldNotPerformException;
+
+    /**
+     * overwrite this method if the environment needs to be adjusted before the agent gets started.
+     *
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     */
+    public void prepareEnvironment() throws CouldNotPerformException, InterruptedException {
+    }
 }

@@ -32,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.remote.Registries;
@@ -53,6 +54,7 @@ public class ServiceTest extends AbstractBCOTest {
      * Test of getServiceStateClass method, of class Service.
      */
     @Test
+    @Timeout(10)
     public void testDetectServiceDataClass() throws Exception {
         System.out.println("detectServiceDataClass");
         try {
@@ -69,6 +71,7 @@ public class ServiceTest extends AbstractBCOTest {
      * Test of getServiceStateEnumValues method, of class Service.
      */
     @Test
+    @Timeout(10)
     public void testGetServiceStateValues() throws Exception {
         System.out.println("getServiceStateEnumValues");
         try {
@@ -86,6 +89,7 @@ public class ServiceTest extends AbstractBCOTest {
      * Test of getServiceStateEnumValues method, of class Service.
      */
     @Test
+    @Timeout(10)
     public void testGenerateServiceStateBuilder() throws Exception {
         System.out.println("getServiceStateEnumValues");
         try {

@@ -20,8 +20,7 @@ import org.openbase.jul.pattern.trigger.TriggerPool.TriggerAggregation.OR
 import org.openbase.jul.schedule.Timeout
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State.ACTIVE
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State.INACTIVE
+import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State.*
 import org.openbase.type.domotic.state.PowerStateType.PowerState
 import org.openbase.type.domotic.state.PowerStateType.PowerState.State.ON
 import java.util.concurrent.ExecutionException
@@ -52,18 +51,17 @@ import java.util.concurrent.TimeoutException
  */
 class MasterSlavePowerCycleAgent : AbstractTriggerableAgent() {
     private var master: PowerConsumptionSensorRemote? = null
-    private var slave: PowerStateServiceRemote? = null
+    private var slave: PowerStateServiceRemote = PowerStateServiceRemote()
+
     @Throws(InitializationException::class, InterruptedException::class)
     override fun init(config: UnitConfig) {
         super.init(config)
         try {
             val variableProvider = MetaConfigVariableProvider("AgentConfig", config.metaConfig)
-            if (master != null) {
-                master!!.shutdown()
-            }
-            if (slave != null) {
-                slave!!.shutdown()
-            }
+
+            master?.shutdown()
+            slave.shutdown()
+
             slave = PowerStateServiceRemote()
 
             // resolve master
@@ -75,23 +73,25 @@ class MasterSlavePowerCycleAgent : AbstractTriggerableAgent() {
 
             // resolve master
             try {
-                slave!!.init(Registries.getUnitRegistry(true).getUnitConfigById(variableProvider.getValue("SLAVE_ID")))
+                slave.init(Registries.getUnitRegistry(true).getUnitConfigById(variableProvider.getValue("SLAVE_ID")))
             } catch (ex: NotAvailableException) {
-                slave!!.init(
+                slave.init(
                     Registries.getUnitRegistry(true).getUnitConfigByAlias(variableProvider.getValue("SLAVE_ALIAS"))
                 )
             }
 
             // activation trigger
-            registerActivationTrigger(
-                GenericBoundedDoubleValueTrigger(
-                    master,
-                    variableProvider.getValue("HIGH_ACTIVE_POWER_THRESHOLD", "1.0").toDouble(),
-                    HIGH_ACTIVE,
-                    POWER_CONSUMPTION_STATE_SERVICE,
-                    "getConsumption"
-                ), OR
-            )
+            master?.let { master ->
+                registerActivationTrigger(
+                    GenericBoundedDoubleValueTrigger(
+                        master,
+                        variableProvider.getValue("HIGH_ACTIVE_POWER_THRESHOLD", "1.0").toDouble(),
+                        HIGH_ACTIVE,
+                        POWER_CONSUMPTION_STATE_SERVICE,
+                        "getConsumption"
+                    ), OR
+                )
+            }
         } catch (ex: CouldNotPerformException) {
             throw InitializationException(this, ex)
         }
@@ -106,9 +106,11 @@ class MasterSlavePowerCycleAgent : AbstractTriggerableAgent() {
     override fun trigger(activationState: ActivationState) {
 
         // sync slave
-        when (activationState.value) {
-            ACTIVE -> observe(slave!!.setPowerState(ON, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)))
-            INACTIVE -> cancelAllObservedActions()
+        activationState.value?.let { value ->
+            when (value) {
+                ACTIVE -> observe(slave.setPowerState(ON, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)))
+                INACTIVE, UNKNOWN -> cancelAllObservedActions()
+            }
         }
     }
 }

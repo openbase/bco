@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -46,7 +46,10 @@ import org.openbase.bco.registry.unit.core.consistency.locationconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneServiceStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.ServiceStateDescriptionHierarchyConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.*;
-import org.openbase.bco.registry.unit.core.consistency.userconfig.*;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLanguageConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserPermissionConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.*;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.auth.AuthorizationWithTokenHelper;
@@ -193,6 +196,25 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         }
     }
 
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        this.addDataObserver(clearUnitConfigsByTypeObserver);
+        CachedTemplateRegistryRemote.getRegistry().addDataObserver(clearUnitConfigsByTypeObserver);
+
+        super.activate();
+    }
+
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        this.removeDataObserver(clearUnitConfigsByTypeObserver);
+        try {
+            CachedTemplateRegistryRemote.getRegistry().removeDataObserver(clearUnitConfigsByTypeObserver);
+        } catch (NotAvailableException e) {
+            // just continue
+        }
+        super.deactivate();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -259,6 +281,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupPlacementConfigConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
+        unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberRecursionConsistencyHandler());
 
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());

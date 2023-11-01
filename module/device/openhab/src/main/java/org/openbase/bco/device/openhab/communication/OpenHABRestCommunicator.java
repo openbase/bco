@@ -24,7 +24,9 @@ package org.openbase.bco.device.openhab.communication;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import jakarta.ws.rs.core.MediaType;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -41,7 +43,6 @@ import org.openhab.core.types.Command;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,11 +91,11 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     // ==========================================================================================================================================
 
     public EnrichedThingDTO registerThing(final ThingDTO thingDTO) throws CouldNotPerformException {
-        return jsonToClass(jsonParser.parse(postJson(THINGS_TARGET, thingDTO)), EnrichedThingDTO.class);
+        return jsonToClass(JsonParser.parseString(postJson(THINGS_TARGET, thingDTO)), EnrichedThingDTO.class);
     }
 
     public EnrichedThingDTO updateThing(final EnrichedThingDTO enrichedThingDTO) throws CouldNotPerformException {
-        return jsonToClass(jsonParser.parse(putJson(THINGS_TARGET + SEPARATOR + enrichedThingDTO.UID, enrichedThingDTO)), EnrichedThingDTO.class);
+        return jsonToClass(JsonParser.parseString(putJson(THINGS_TARGET + SEPARATOR + enrichedThingDTO.UID, enrichedThingDTO)), EnrichedThingDTO.class);
     }
 
     public EnrichedThingDTO deleteThing(final EnrichedThingDTO enrichedThingDTO) throws CouldNotPerformException {
@@ -102,19 +103,19 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     }
 
     public EnrichedThingDTO deleteThing(final String thingUID) throws CouldNotPerformException {
-        return jsonToClass(jsonParser.parse(delete(THINGS_TARGET + SEPARATOR + thingUID)), EnrichedThingDTO.class);
+        return jsonToClass(JsonParser.parseString(delete(THINGS_TARGET + SEPARATOR + thingUID)), EnrichedThingDTO.class);
     }
 
     public EnrichedThingDTO getThing(final String thingUID) throws NotAvailableException {
         try {
-            return jsonToClass(jsonParser.parse(get(THINGS_TARGET + SEPARATOR + thingUID)), EnrichedThingDTO.class);
+            return jsonToClass(JsonParser.parseString(get(THINGS_TARGET + SEPARATOR + thingUID)), EnrichedThingDTO.class);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Thing[" + thingUID + "]");
         }
     }
 
     public List<EnrichedThingDTO> getThings() throws CouldNotPerformException {
-        return jsonElementToTypedList(jsonParser.parse(get(THINGS_TARGET)), EnrichedThingDTO.class);
+        return jsonElementToTypedList(JsonParser.parseString(get(THINGS_TARGET)), EnrichedThingDTO.class);
     }
 
     // ==========================================================================================================================================
@@ -128,11 +129,11 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     }
 
     public List<ItemDTO> registerItems(final List<ItemDTO> itemDTOList) throws CouldNotPerformException {
-        return jsonElementToTypedList(jsonParser.parse(putJson(ITEMS_TARGET, itemDTOList)), ItemDTO.class);
+        return jsonElementToTypedList(JsonParser.parseString(putJson(ITEMS_TARGET, itemDTOList)), ItemDTO.class);
     }
 
     public ItemDTO updateItem(final ItemDTO itemDTO) throws CouldNotPerformException {
-        return jsonToClass(jsonParser.parse(putJson(ITEMS_TARGET + SEPARATOR + itemDTO.name, itemDTO)), ItemDTO.class);
+        return jsonToClass(JsonParser.parseString(putJson(ITEMS_TARGET + SEPARATOR + itemDTO.name, itemDTO)), ItemDTO.class);
     }
 
     public ItemDTO deleteItem(final ItemDTO itemDTO) throws CouldNotPerformException {
@@ -141,16 +142,16 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
 
     public ItemDTO deleteItem(final String itemName) throws CouldNotPerformException {
         LOGGER.warn("Delete item {}", itemName);
-        return jsonToClass(jsonParser.parse(delete(ITEMS_TARGET + SEPARATOR + itemName)), ItemDTO.class);
+        return jsonToClass(JsonParser.parseString(delete(ITEMS_TARGET + SEPARATOR + itemName)), ItemDTO.class);
     }
 
     public List<EnrichedItemDTO> getItems() throws CouldNotPerformException {
-        return jsonElementToTypedList(jsonParser.parse(get(ITEMS_TARGET)), EnrichedItemDTO.class);
+        return jsonElementToTypedList(JsonParser.parseString(get(ITEMS_TARGET)), EnrichedItemDTO.class);
     }
 
     public EnrichedItemDTO getItem(final String itemName) throws NotAvailableException {
         try {
-            return jsonToClass(jsonParser.parse(get(ITEMS_TARGET + SEPARATOR + itemName)), EnrichedItemDTO.class);
+            return jsonToClass(JsonParser.parseString(get(ITEMS_TARGET + SEPARATOR + itemName)), EnrichedItemDTO.class);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Item with name[" + itemName + "]");
         }
@@ -194,7 +195,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     }
 
     public List<ItemChannelLinkDTO> getItemChannelLinks() throws CouldNotPerformException {
-        return jsonElementToTypedList(jsonParser.parse(get(LINKS_TARGET)), ItemChannelLinkDTO.class);
+        return jsonElementToTypedList(JsonParser.parseString(get(LINKS_TARGET)), ItemChannelLinkDTO.class);
     }
 
     // ==========================================================================================================================================
@@ -222,7 +223,7 @@ public class OpenHABRestCommunicator extends OpenHABRestConnection {
     }
 
     public List<DiscoveryResultDTO> getDiscoveryResults() throws CouldNotPerformException {
-        return jsonElementToTypedList(jsonParser.parse(get(INBOX_TARGET)), DiscoveryResultDTO.class);
+        return jsonElementToTypedList(JsonParser.parseString(get(INBOX_TARGET)), DiscoveryResultDTO.class);
     }
 
     // ==========================================================================================================================================
