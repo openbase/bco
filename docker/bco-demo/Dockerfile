@@ -23,7 +23,7 @@ FROM openbaseorg/bco:${BCO_BASE_IMAGE_VERSION}
 ENV \
     JAVA_OPTS="" \
     OPENHAB_CONF="/etc/openhab2" \
-    BCO_OPTIONS="--db /tmp/bco/db" \
+    BCO_OPTIONS="--db /tmp/bco/db --host ${MQTT_BROKER}" \
     BCO_MODULE_PREPARE_SCRIPT="bco-module-prepare.sh"
 
 # Basic build-time metadata as defined at http://label-schema.org
@@ -51,7 +51,7 @@ COPY --from=builder /workspace/db /usr/share/bco/db/
 
 # Configure healthcheck
 # todo: make sure only device offered by this device manager are checked
-HEALTHCHECK --interval=15m --timeout=2m CMD bco-validate >/dev/null || exit 1
+HEALTHCHECK --interval=15m --timeout=2m CMD bco-validate --host ${MQTT_BROKER} >/dev/null || exit 1
 
 # switch to root, let the entrypoint drop back to bco user
 USER root
