@@ -120,12 +120,12 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
         return identifiableEnrichedThingDTO.getId().startsWith(BCO_BINDING_ID);
     }
 
-    private String getUnitId(ThingDTO thingDTO) {
+    private String getUnitId(EnrichedThingDTO thingDTO) {
         String[] split = thingDTO.UID.split(":");
         return split[split.length - 1];
     }
 
-    private void registerAndValidateItems(final ThingDTO thingDTO) throws CouldNotPerformException {
+    private void registerAndValidateItems(final EnrichedThingDTO thingDTO) throws CouldNotPerformException {
         // save current item channel links to compute if some already exist
         final List<ItemChannelLinkDTO> itemChannelLinks = OpenHABRestCommunicator.getInstance().getItemChannelLinks();
         // retrieve the unit belonging to the thing
