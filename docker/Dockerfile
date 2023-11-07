@@ -75,7 +75,8 @@ ENV \
     BCO_HOME="/home/bco/data" \
     BCO_LOGS="/home/bco/data/log" \
     BCO_BINARY="/usr/bin/bco" \
-    BCO_OPTIONS=""
+    MQTT_BROKER="mqtt-broker" \
+    BCO_OPTIONS="--host ${MQTT_BROKER}"
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.build-date=$BUILD_DATE \
@@ -111,7 +112,7 @@ ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Configure healthcheck
 # todo: make sure only the registry availability is checks since devices are not maintained by this instance.
-HEALTHCHECK --interval=15m --timeout=2m CMD bco-validate >/dev/null || exit 1
+HEALTHCHECK --interval=15m --timeout=2m CMD bco-validate --host ${MQTT_BROKER} > /dev/null || exit 1
 
 # switch to root, let the entrypoint drop back to bco user
 USER root
