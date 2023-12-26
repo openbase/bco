@@ -30,6 +30,7 @@ import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
+import org.openbase.bco.dal.control.message.MessageManagerLauncher;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.remote.Registries;
@@ -46,6 +47,7 @@ public class BCOAppTest extends AbstractBCOTest {
     protected static AppManagerLauncher appManagerLauncher;
     protected static DeviceManagerLauncher deviceManagerLauncher;
     protected static LocationManagerLauncher locationManagerLauncher;
+    protected static MessageManagerLauncher messageManagerLauncher;
 
     @BeforeAll
     @Timeout(30)
@@ -66,6 +68,10 @@ public class BCOAppTest extends AbstractBCOTest {
             LOGGER.trace("Start app manager...");
             appManagerLauncher = new AppManagerLauncher();
             appManagerLauncher.launch().get();
+
+            LOGGER.trace("Start message manager...");
+            messageManagerLauncher = new MessageManagerLauncher();
+            messageManagerLauncher.launch().get();
 
             LOGGER.trace("Finally wait for registry...");
             Registries.waitForData();

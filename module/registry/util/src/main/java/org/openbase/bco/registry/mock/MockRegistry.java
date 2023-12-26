@@ -10,12 +10,12 @@ package org.openbase.bco.registry.mock;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -31,12 +31,12 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
+import org.openbase.bco.registry.message.core.MessageRegistryLauncher;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jps.preset.JPTestMode;
 import org.openbase.jps.preset.JPTmpDirectory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -45,7 +45,6 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
@@ -174,6 +173,7 @@ public class MockRegistry {
     public static final String USER_NAME = "uSeRnAmE";
     public static final String USER_FIRST_NAME = "Max";
     public static final String USER_LAST_NAME = "Mustermann";
+    public static final Map<String, String> APP_CLASS_LABEL_ID_MAP = new HashMap<>();
     public static final Map<String, String> AGENT_CLASS_LABEL_ID_MAP = new HashMap<>();
     public static final AxisAlignedBoundingBox3DFloat DEFAULT_BOUNDING_BOX = AxisAlignedBoundingBox3DFloat.newBuilder()
             .setHeight(10)
@@ -191,6 +191,7 @@ public class MockRegistry {
     private static ClassRegistryLauncher classRegistryLauncher;
     private static TemplateRegistryLauncher templateRegistryLauncher;
     private static UnitRegistryLauncher unitRegistryLauncher;
+    private static MessageRegistryLauncher messageRegistryLauncher;
 
     protected MockRegistry() throws InstantiationException {
         try {
@@ -263,6 +264,15 @@ public class MockRegistry {
                 }
                 return null;
             }));
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
+                try {
+                    messageRegistryLauncher = new MessageRegistryLauncher();
+                    messageRegistryLauncher.launch().get();
+                } catch (CouldNotPerformException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+                }
+                return null;
+            }));
             LOGGER.debug("Starting all registries: unit, class, template, activity...");
             for (Future<Void> task : registryStartupTasks) {
                 while (true) {
@@ -283,7 +293,7 @@ public class MockRegistry {
             Registries.waitForData();
 
 
-            if(loadTestData) {
+            if (loadTestData) {
                 registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                     LOGGER.debug("Update serviceTemplates...");
                     for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
@@ -471,6 +481,14 @@ public class MockRegistry {
         LabelProcessor.addLabel(agentUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
         agentUnitConfig.addAlias(alias);
         return agentUnitConfig;
+    }
+
+    public static UnitConfig.Builder generateAppConfig(final String alias, final String locationAlias) throws CouldNotPerformException {
+        final UnitConfig.Builder appUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.APP);
+        appUnitConfig.getPlacementConfigBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigByAlias(locationAlias).getId());
+        LabelProcessor.addLabel(appUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
+        appUnitConfig.addAlias(alias);
+        return appUnitConfig;
     }
 
     protected void shutdown() {

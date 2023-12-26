@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -34,6 +34,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -48,7 +49,10 @@ import org.openbase.type.timing.TimestampType.Timestamp;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class ServiceStateProcessor {
@@ -181,7 +185,8 @@ public class ServiceStateProcessor {
             entryMessageBuilder.setField(valueDescriptor, timestamp);
             entryMessageBuilder.setField(keyDescriptor, enumValueDescriptor);
             entryMessage = entryMessageBuilder.build();
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassCastException ex) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException |
+                 ClassCastException ex) {
             throw new CouldNotPerformException("Could not build service state entry!", ex);
         }
 
@@ -317,7 +322,7 @@ public class ServiceStateProcessor {
 
         // handle termination:
         // make sure duplicated service states are only processed ones.
-        if(processedServiceStates.contains(serviceStateDescription)) {
+        if (processedServiceStates.contains(serviceStateDescription)) {
             return Collections.emptySet();
         } else {
             processedServiceStates.add(serviceStateDescription);
@@ -377,7 +382,7 @@ public class ServiceStateProcessor {
                     }
 
                     // register location itself as impact in case it's affected by child units through aggregation
-                    if(!locationChildUnits.isEmpty()) {
+                    if (!locationChildUnits.isEmpty()) {
                         actionImpactList.add(buildActionImpact(serviceStateDescription).setIntermediary(true).build());
                     }
                     break;
@@ -440,6 +445,15 @@ public class ServiceStateProcessor {
     }
 
     public static Message deserializeServiceState(final ServiceStateDescriptionOrBuilder serviceStateDescriptionOrBuilder) throws CouldNotPerformException {
+
+        if (!serviceStateDescriptionOrBuilder.hasServiceState() || serviceStateDescriptionOrBuilder.getServiceState().isEmpty()) {
+            throw new VerificationFailedException("ServiceStateDescription does not provide any service state: " + serviceStateDescriptionOrBuilder);
+        }
+
+        if (!serviceStateDescriptionOrBuilder.hasServiceStateClassName() || serviceStateDescriptionOrBuilder.getServiceStateClassName().isEmpty()) {
+            throw new VerificationFailedException("ServiceStateDescription does not provide any service state class name: " + serviceStateDescriptionOrBuilder);
+        }
+
         return deserializeServiceState(serviceStateDescriptionOrBuilder.getServiceState(), serviceStateDescriptionOrBuilder.getServiceStateClassName());
     }
 

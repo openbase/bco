@@ -643,6 +643,11 @@ public class RemoteAction implements Action {
      */
     @Override
     public boolean isDone() {
+
+        if (futureObservationTask != null && !futureObservationTask.isDone()) {
+            return false;
+        }
+
         try {
             if (getActionDescription().getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {

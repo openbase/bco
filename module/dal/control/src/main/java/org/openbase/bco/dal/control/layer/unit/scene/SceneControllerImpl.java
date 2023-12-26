@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit.scene;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -55,6 +55,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.TimeoutSplitter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -72,6 +73,7 @@ import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CancellationException;
@@ -195,7 +197,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             final ActionParameter actionParameterPrototype = ActionParameter.newBuilder()
                     .setInterruptible(true)
                     .setSchedulable(true)
-                    .setExecutionTimePeriod(Long.MAX_VALUE).build();
+                    .setPriority(Priority.HIGH)
+                    .setExecutionTimePeriod(Duration.ofMinutes(30).toMillis()).build();
             requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             return config;
@@ -272,7 +275,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
 
             // shutdown all existing action observer to not let old observation interfere with new activations.
-            if(actionObserver != null) {
+            if (actionObserver != null) {
                 actionObserver.shutdown();
             }
 
@@ -436,7 +439,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         private void verifyAllStates() {
             try {
-                logger.trace(() -> "verify "+unitAndRequiredServiceStateMap.entrySet().size()+ " states of "+ getLabel("?"));
+                logger.trace(() -> "verify " + unitAndRequiredServiceStateMap.entrySet().size() + " states of " + getLabel("?"));
                 for (Entry<UnitRemote<? extends Message>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                     try {
                         // skip unit in case its offline, since then the verification is automatically
@@ -457,7 +460,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         private void verifyState(final ServiceProvider<? extends Message> unit, final Message serviceState) throws VerificationFailedException {
 
             // skip verification on destroyed required action observer!
-            if(destroy) {
+            if (destroy) {
                 return;
             }
 
@@ -466,13 +469,13 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             }
 
             // skip in case no service state was delivered
-            if(serviceState.toString().isBlank()) {
+            if (serviceState.toString().isBlank()) {
                 return;
             }
 
             if (!Services.equalServiceStates(unitAndRequiredServiceStateMap.get(unit).getServiceState(), serviceState)) {
                 logger.trace(() -> unitAndRequiredServiceStateMap.get(unit).getServiceState() + " is not equals " + serviceState.toString().substring(0, 20) + " and will cancel: " + SceneControllerImpl.this.getLabel("?"));
-                if(Actions.validateInitialAction(serviceState)) {
+                if (Actions.validateInitialAction(serviceState)) {
                     throw new VerificationFailedException("State of " + unit + "not meet!");
                 }
             }

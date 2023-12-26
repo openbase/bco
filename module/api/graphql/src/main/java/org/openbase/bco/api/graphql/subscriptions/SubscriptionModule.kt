@@ -8,6 +8,7 @@ import org.openbase.bco.api.graphql.error.GenericError
 import org.openbase.bco.api.graphql.error.ServerError
 import org.openbase.bco.api.graphql.schema.RegistrySchemaModule
 import org.openbase.bco.dal.lib.layer.unit.Unit
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.jul.exception.CouldNotPerformException
@@ -20,7 +21,6 @@ import org.openbase.type.domotic.unit.UnitDataType
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
-import java.util.function.Consumer
 
 /*-
  * #%L
@@ -51,15 +51,15 @@ import java.util.function.Consumer
     @Throws(BCOGraphQLError::class)
     fun subscribeUnits(unitFilter: UnitFilter): Publisher<UnitDataType.UnitData> {
         return try {
-            val subscriptionUnitPool = CustomUnitPool()
+            val subscriptionUnitPool = CustomUnitPool<Message, UnitRemote<Message>>()
             subscriptionUnitPool.init(unitFilter)
             AbstractObserverMapper.createObservable(
-                Consumer { observer: Observer<Unit<Message>, Message> ->
+                { observer: Observer<Unit<Message>, Message> ->
                     subscriptionUnitPool.addDataObserver(
                         observer
                     )
                 },
-                Consumer { observer: Observer<Unit<Message>, Message> ->
+                { observer: Observer<Unit<Message>, Message> ->
                     subscriptionUnitPool.removeDataObserver(observer)
                 },
                 object : AbstractObserverMapper<Unit<Message>, Message, UnitDataType.UnitData>() {
@@ -100,12 +100,12 @@ import java.util.function.Consumer
                 ServerError.BCO_TIMEOUT_TIME_UNIT
             )
             AbstractObserverMapper.createObservable(
-                Consumer { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
+                { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
                     unitRegistry.addDataObserver(
                         observer
                     )
                 },
-                Consumer { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
+                { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
                     unitRegistry.removeDataObserver(observer)
                 },
                 observer

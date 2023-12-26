@@ -10,6 +10,9 @@ import org.openbase.bco.api.graphql.error.GenericError
 import org.openbase.bco.api.graphql.error.ServerError
 import org.openbase.bco.authentication.lib.SessionManager
 import org.openbase.bco.authentication.lib.iface.BCOSession
+import org.openbase.bco.registry.message.remote.registerUserMessageAuthenticated
+import org.openbase.bco.registry.message.remote.removeUserMessageAuthenticated
+import org.openbase.bco.registry.message.remote.updateUserMessageAuthenticated
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.bco.registry.remote.session.BCOSessionImpl
 import org.openbase.bco.registry.unit.remote.registerUnitConfigAuthenticated
@@ -407,7 +410,7 @@ class RegistrySchemaModule : SchemaModule() {
                 break
             }
         }
-        if (!entry.value.isEmpty()) {
+        if (entry.value.isNotEmpty()) {
             metaConfigBuilder.addEntry(entry)
         }
 
@@ -422,6 +425,92 @@ class RegistrySchemaModule : SchemaModule() {
     } catch (ex: InterruptedException) {
         throw GenericError(ex)
     } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    }
+
+    @Mutation("updateUserMessage")
+    @Throws(BCOGraphQLError::class)
+    fun updateUserMessage(
+        @Arg("userMessage") userMessage: UserMessage,
+        env: DataFetchingEnvironment,
+    ): UserMessage = try {
+        val userMessageBuilder = Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        )
+            .getUserMessageById(userMessage.id)
+            .toBuilder()
+        userMessageBuilder.mergeFromWithoutRepeatedFields(userMessage)
+        Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).updateUserMessageAuthenticated(
+            userMessageBuilder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
+    }
+
+    @Mutation("removeUserMessage")
+    @Throws(BCOGraphQLError::class)
+    fun removeUserMessage(
+        @Arg("unitId") unitId: String?,
+        env: DataFetchingEnvironment,
+    ): UserMessage = try {
+        val userMessage = Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUserMessageById(unitId)
+        Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).removeUserMessageAuthenticated(
+            userMessage,
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
+    }
+
+    @Mutation("registerUserMessage")
+    @Throws(BCOGraphQLError::class)
+    fun registerUserMessage(
+        @Arg("userMessage") userMessage: UserMessage?,
+        env: DataFetchingEnvironment,
+    ): UserMessage = try {
+        Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).registerUserMessageAuthenticated(
+            userMessage,
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
         throw GenericError(ex)
     }
 

@@ -45,12 +45,12 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
  * #L%
  */
 
-class CustomUnitPool : Manageable<Collection<Filter<UnitConfigType.UnitConfig>>> {
+class CustomUnitPool<M : Message, U : UnitRemote<M>> : Manageable<Collection<Filter<UnitConfigType.UnitConfig>>> {
     private val UNIT_REMOTE_REGISTRY_LOCK = ReentrantReadWriteLock()
     private var unitRegistryDataObserver: Observer<DataProvider<UnitRegistryDataType.UnitRegistryData>, UnitRegistryDataType.UnitRegistryData>
-    private var unitDataObserver: Observer<DataProvider<Message>, Message>
+    private var unitDataObserver: Observer<DataProvider<M>, M>
     private var serviceStateObserver: Observer<ServiceStateProvider<*>, out Message>
-    private var unitRemoteRegistry: RemoteControllerRegistry<String, UnitRemote<Message>>
+    private var unitRemoteRegistry: RemoteControllerRegistry<String, U>
     private var unitConfigDiff: ProtobufListDiff<String, UnitConfigType.UnitConfig, UnitConfigType.UnitConfig.Builder>
     private var filterSet: MutableSet<Filter<UnitConfigType.UnitConfig>>
     private var unitDataObservable: ObservableImpl<Unit<Message>, Message>
@@ -184,7 +184,7 @@ class CustomUnitPool : Manageable<Collection<Filter<UnitConfigType.UnitConfig>>>
                 FatalImplementationErrorException("unid remote registered but pool was never activated!", this)
             }
             val unitRemote: UnitRemote<Message> = Units.getUnit(unitId, false)
-            unitRemoteRegistry.register(unitRemote)
+            unitRemoteRegistry.register(unitRemote as U)
             for (serviceType in unitRemote.availableServiceTypes) {
                 unitRemote.addServiceStateObserver(serviceType, serviceStateObserver)
             }
@@ -298,7 +298,7 @@ class CustomUnitPool : Manageable<Collection<Filter<UnitConfigType.UnitConfig>>>
 
     override fun isActive(): Boolean = active
 
-    val internalUnitList: List<UnitRemote<out Message>>
+    val internalUnitList: List<U>
         get() = unitRemoteRegistry.entries
 
     companion object {
