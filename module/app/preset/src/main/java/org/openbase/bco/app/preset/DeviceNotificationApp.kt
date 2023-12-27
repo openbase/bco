@@ -67,7 +67,6 @@ class DeviceNotificationApp : AbstractAppController() {
 
     fun checkDevices() {
         try {
-            logger.error("#@# check device states")
             batteryPool.internalUnitList
                 .onEach { remote -> remote.waitForData() }
                 .filter { remote ->

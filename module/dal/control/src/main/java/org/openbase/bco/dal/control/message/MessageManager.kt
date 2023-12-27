@@ -29,10 +29,6 @@ class MessageManager : Launchable<Void>, VoidInitializable {
 
     private var active = false
 
-    init {
-        logger.error("#@# start message manager")
-    }
-
     private val removeOutdatedMessagesTask: RecurrenceEventFilter<Boolean> =
         object : RecurrenceEventFilter<Boolean>(maxUpdateInterval.toMillis()) {
             override fun relay() {
@@ -41,7 +37,7 @@ class MessageManager : Launchable<Void>, VoidInitializable {
         }
 
     fun removeOutdatedMessages() {
-        logger.error("#@# removeOutdatedMessages")
+        logger.trace("removeOutdatedMessages")
         Registries.getMessageRegistry().userMessages
             .filterNot { message ->
                 message.conditionList.any { condition ->
@@ -88,7 +84,6 @@ class MessageManager : Launchable<Void>, VoidInitializable {
     }
 
     override fun activate() {
-        logger.error("#@# activate message manager")
         active = true
         Registries.getMessageRegistry().addDataObserver(messageRegistryChangeObserver)
     }
