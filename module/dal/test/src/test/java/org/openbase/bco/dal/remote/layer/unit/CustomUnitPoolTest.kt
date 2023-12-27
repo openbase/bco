@@ -3,6 +3,7 @@ package org.openbase.bco.dal.remote.layer.unit
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote
 import org.openbase.bco.dal.test.AbstractBCODeviceManagerTest
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.jul.pattern.Filter
@@ -41,12 +42,12 @@ class CustomUnitPoolTest : AbstractBCODeviceManagerTest() {
     @Timeout(10)
     @Throws(Exception::class)
     fun testUnitPool() {
-        val customUnitPool: CustomUnitPool<*, *> = CustomUnitPool<Any, Any>()
+        val customUnitPool: CustomUnitPool<*, *> = CustomUnitPool<UnitConfig, UnitRemote<UnitConfig>>()
         Assertions.assertEquals(false, customUnitPool.isActive(), "pool is active while never activated")
         customUnitPool.activate()
         customUnitPool.init(
-            Filter<UnitConfig> { unitConfig: Any -> unitConfig.hasId() },
-            Filter<UnitConfig> { unitConfig: Any -> unitConfig.getUnitType() === UnitTemplateType.UnitTemplate.UnitType.BUTTON })
+            Filter<UnitConfig> { unitConfig: UnitConfig -> unitConfig.hasId() },
+            Filter<UnitConfig> { unitConfig: UnitConfig -> unitConfig.unitType === UnitTemplateType.UnitTemplate.UnitType.BUTTON })
         customUnitPool.activate()
         for (unitRemote in customUnitPool.internalUnitList) {
             Assertions.assertEquals(
