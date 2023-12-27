@@ -492,6 +492,10 @@ public class MockRegistry {
     }
 
     protected void shutdown() {
+        if (messageRegistryLauncher != null) {
+            messageRegistryLauncher.shutdown();
+        }
+
         if (unitRegistryLauncher != null) {
             unitRegistryLauncher.shutdown();
         }
