@@ -134,9 +134,9 @@ object AuthorizationWithTokenHelper {
     ): AuthPair {
         try {
             // validate sender
-            canDo(
+            return canDo(
                 authenticationBaseData,
-                unitRegistry.getUnitConfigById(userMessage.getSenderId()),
+                unitRegistry.getUnitConfigById(userMessage.senderId),
                 permissionType,
                 unitRegistry,
                 null,
@@ -150,7 +150,7 @@ object AuthorizationWithTokenHelper {
             try {
                 canDo(
                     authenticationBaseData,
-                    unitRegistry.getUnitConfigById(userMessage.getRecipientId()),
+                    unitRegistry.getUnitConfigById(userMessage.recipientId),
                     permissionType,
                     unitRegistry,
                     null,
@@ -171,7 +171,7 @@ object AuthorizationWithTokenHelper {
                         )
                     } catch (exxx: CouldNotPerformException) {
                         exceptionStack =
-                            MultiException.push(AuthorizationWithTokenHelper::class.java, exx, exceptionStack)
+                            MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
                     }
                 }
 

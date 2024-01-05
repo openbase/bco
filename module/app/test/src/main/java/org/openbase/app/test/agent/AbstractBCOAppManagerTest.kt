@@ -14,6 +14,8 @@ import org.openbase.jul.extension.type.processing.LabelProcessor.addLabel
 import org.openbase.type.domotic.state.ActivationStateType
 import org.openbase.type.domotic.state.ConnectionStateType
 import org.openbase.type.domotic.unit.UnitConfigType
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
+import org.openbase.type.domotic.unit.UnitFilterType
 import org.openbase.type.domotic.unit.UnitTemplateType
 import org.openbase.type.domotic.unit.app.AppClassType
 import org.openbase.type.domotic.unit.app.AppDataType
@@ -44,7 +46,7 @@ import java.util.concurrent.TimeUnit
 */
 abstract class AbstractBCOAppManagerTest<APP_CLASS : AbstractAppController?> : BCOAppTest() {
     protected var appClass: AppClassType.AppClass? = null
-    protected var appConfig: UnitConfigType.UnitConfig? = null
+    protected var appConfig: UnitConfig? = null
     protected var appRemote: AppRemote? = null
     protected var appController: APP_CLASS? = null
 
@@ -61,29 +63,38 @@ abstract class AbstractBCOAppManagerTest<APP_CLASS : AbstractAppController?> : B
                 getAppClass().getSimpleName().replace("App", "")
             )
             val appClass = Registries.getClassRegistry().registerAppClass(appClassBuilder.build())[5, TimeUnit.SECONDS]
-            val appConfigBuilder = getAppConfig()
-            appConfigBuilder.getAppConfigBuilder().setAppClassId(appClass.getId())
-            appConfigBuilder.setUnitType(UnitTemplateType.UnitTemplate.UnitType.APP)
-            // register app
-            val appConfig = Registries.getUnitRegistry()
-                .registerUnitConfig(appConfigBuilder.build())[5, TimeUnit.SECONDS]
+            var appConfig = getAppConfig().apply {
+                this.appConfigBuilder.setAppClassId(appClass.getId())
+                this.setUnitType(UnitTemplateType.UnitTemplate.UnitType.APP)
+                this.appConfigBuilder.setAutostart(true)
+            }.build()
 
+            // cleanup old app instances
+            appConfig.aliasList
+                .flatMap { alias ->
+                    Registries.getUnitRegistry().getUnitConfigs(
+                        UnitFilterType.UnitFilter.newBuilder()
+                            .setProperties(UnitConfig.newBuilder().addAlias(alias).build()).build()
+                    )
+                }
+                .distinctBy { config -> config.id }
+                .forEach { config ->
+                    Registries.getUnitRegistry().removeUnitConfig(config).get(
+                        5,
+                        TimeUnit.SECONDS
+                    )
+                }
+
+            // register app
+            appConfig = Registries.getUnitRegistry().registerUnitConfig(appConfig)[5, TimeUnit.SECONDS]
             Registries.waitUntilReady()
 
             // retrieve remote and activate app
             val appRemote = Units.getUnit(appConfig, true, Units.APP)
-            if (!appConfig.appConfig.autostart) {
-                // activate app if not in auto start
-                waitForExecution(
-                    appRemote.setActivationState(
-                        ActivationStateType.ActivationState.newBuilder().setValue(
-                            ActivationStateType.ActivationState.State.ACTIVE
-                        ).build()
-                    )
-                )
-            } else {
-                // wait until active
-                UnitStateAwaiter(appRemote).waitForState { data: AppDataType.AppData -> data.activationState.getValue() == ActivationStateType.ActivationState.State.ACTIVE }
+
+            // wait until active
+            UnitStateAwaiter(appRemote).waitForState { data: AppDataType.AppData ->
+                data.activationState.value == ActivationStateType.ActivationState.State.ACTIVE
             }
 
             this.appClass = appClass
@@ -91,6 +102,9 @@ abstract class AbstractBCOAppManagerTest<APP_CLASS : AbstractAppController?> : B
             this.appRemote = appRemote
             this.appController =
                 appManagerLauncher.launchable!!.appControllerRegistry.get(appConfig?.getId()) as APP_CLASS
+
+            // final sync
+            Registries.requestData()[5, TimeUnit.SECONDS]
         } catch (ex: Exception) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER)
         }

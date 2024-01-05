@@ -218,7 +218,13 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UserMessage.class, this,
                 (userMessage, authenticationBaseData) -> {
                     // verify write permissions for the user message to remove
-                    final UserMessage old = userMessageRegistry.getMessage(userMessage.getId());
+                    UserMessage old = null;
+                    try {
+                        old = userMessageRegistry.getMessage(userMessage.getId());
+                    } catch (NotAvailableException ex) {
+                        // skip removal if message is not present.
+                        return userMessage;
+                    }
                     AuthorizationWithTokenHelper.canDo(authenticationBaseData, old, PermissionType.WRITE, CachedUnitRegistryRemote.getRegistry());
                     return userMessageRegistry.remove(userMessage);
                 }

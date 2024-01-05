@@ -106,6 +106,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get()).build();
         } catch (CouldNotPerformException | ExecutionException ex) {
+            logger.error("Could not create authentication token for " + this + " " + unitConfig.getId());
             throw new CouldNotPerformException("Could not create authentication token for " + this + " " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()), ex);
         }
     }
