@@ -93,7 +93,7 @@ class DeviceNotificationApp : AbstractAppController() {
                     MultiLanguageTextProcessor.addMultiLanguageText(
                         textBuilder,
                         Locale.GERMAN,
-                        "Batteriezustand von ${
+                        "Batterieladung von ${
                             LabelProcessor.getBestMatch(
                                 Locale.GERMAN,
                                 remote.config.label

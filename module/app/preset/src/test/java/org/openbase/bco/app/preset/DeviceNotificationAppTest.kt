@@ -135,7 +135,7 @@ class DeviceNotificationAppTest : AbstractBCOAppManagerTest<DeviceNotificationAp
                 MultiLanguageTextProcessor.getBestMatch(
                     Locale.GERMAN,
                     text
-                ) shouldBeEqual "Batteriezustand von F Motion Sensor Device Stairway ist CRITICAL"
+                ) shouldBeEqual "Batterieladung von F Motion Sensor Device Stairway ist CRITICAL"
                 MultiLanguageTextProcessor.getBestMatch(
                     Locale.ENGLISH,
                     text
