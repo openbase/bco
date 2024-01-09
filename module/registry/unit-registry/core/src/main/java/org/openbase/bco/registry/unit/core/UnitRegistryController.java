@@ -183,7 +183,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         // post init loads registries
         super.postInit();
 
-        // initially fill the alias to id map afterward
+        // initially fill the alias to id map afterwards
         // the {@code AliasMapUpdatePlugin} will manage changes on registering, removing or updating of units
         synchronized (aliasIdMapLock) {
             try {

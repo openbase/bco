@@ -131,10 +131,9 @@ object AuthorizationWithTokenHelper {
         userMessage: UserMessageType.UserMessage,
         permissionType: AuthorizationHelper.PermissionType,
         unitRegistry: UnitRegistry,
-    ): AuthPair {
-        try {
+    ): AuthPair  = try {
             // validate sender
-            return canDo(
+            canDo(
                 authenticationBaseData,
                 unitRegistry.getUnitConfigById(userMessage.senderId),
                 permissionType,
@@ -159,9 +158,9 @@ object AuthorizationWithTokenHelper {
             } catch (exx: CouldNotPerformException) {
                 exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, exx, exceptionStack)
 
-                userMessage.conditionList.forEach { condition ->
+                userMessage.conditionList.firstNotNullOfOrNull { condition ->
                     try {
-                        return canDo(
+                        canDo(
                             authenticationBaseData,
                             unitRegistry.getUnitConfigById(condition.unitId),
                             permissionType,
@@ -172,13 +171,13 @@ object AuthorizationWithTokenHelper {
                     } catch (exxx: CouldNotPerformException) {
                         exceptionStack =
                             MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
+                        null
                     }
                 }
-
                 MultiException.checkAndThrow({ "Permission denied!" }, exceptionStack)
+                null
             }
-        }
-        throw FatalImplementationErrorException(
+        } ?: throw FatalImplementationErrorException(
             "ExceptionStack empty in error case.",
             AuthorizationWithTokenHelper::class.java
         )

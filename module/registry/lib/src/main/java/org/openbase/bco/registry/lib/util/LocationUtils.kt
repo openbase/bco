@@ -151,7 +151,7 @@ object LocationUtils {
                 return Optional.empty<UnitConfigType.UnitConfig>().get()
             }
 
-            throw InvalidStateException("To many potential root locations detected!")
+            throw InvalidStateException("Too many potential root locations detected!")
         } catch (ex: CouldNotPerformException) {
             throw CouldNotPerformException("Could not compute root location!", ex)
         }
