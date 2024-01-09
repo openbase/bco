@@ -131,57 +131,56 @@ object AuthorizationWithTokenHelper {
         userMessage: UserMessageType.UserMessage,
         permissionType: AuthorizationHelper.PermissionType,
         unitRegistry: UnitRegistry,
-    ): AuthPair  = try {
-            // validate sender
+    ): AuthPair = try {
+        // validate sender
+        canDo(
+            authenticationBaseData,
+            unitRegistry.getUnitConfigById(userMessage.senderId),
+            permissionType,
+            unitRegistry,
+            null,
+            null
+        )
+    } catch (ex: CouldNotPerformException) {
+        var exceptionStack: ExceptionStack? = null
+        exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, ex, exceptionStack)
+
+        // validate receiver if sender validation failed.
+        try {
             canDo(
                 authenticationBaseData,
-                unitRegistry.getUnitConfigById(userMessage.senderId),
+                unitRegistry.getUnitConfigById(userMessage.recipientId),
                 permissionType,
                 unitRegistry,
                 null,
                 null
             )
-        } catch (ex: CouldNotPerformException) {
-            var exceptionStack: ExceptionStack? = null
-            exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, ex, exceptionStack)
+        } catch (exx: CouldNotPerformException) {
+            exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, exx, exceptionStack)
 
-            // validate receiver if sender validation failed.
-            try {
-                canDo(
-                    authenticationBaseData,
-                    unitRegistry.getUnitConfigById(userMessage.recipientId),
-                    permissionType,
-                    unitRegistry,
-                    null,
-                    null
-                )
-            } catch (exx: CouldNotPerformException) {
-                exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, exx, exceptionStack)
-
-                userMessage.conditionList.firstNotNullOfOrNull { condition ->
-                    try {
-                        canDo(
-                            authenticationBaseData,
-                            unitRegistry.getUnitConfigById(condition.unitId),
-                            permissionType,
-                            unitRegistry,
-                            null,
-                            null
-                        )
-                    } catch (exxx: CouldNotPerformException) {
-                        exceptionStack =
-                            MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
+            userMessage.conditionList.firstNotNullOfOrNull { condition ->
+                try {
+                    canDo(
+                        authenticationBaseData,
+                        unitRegistry.getUnitConfigById(condition.unitId),
+                        permissionType,
+                        unitRegistry,
+                        null,
                         null
-                    }
+                    )
+                } catch (exxx: CouldNotPerformException) {
+                    exceptionStack =
+                        MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
+                    null
                 }
-                MultiException.checkAndThrow({ "Permission denied!" }, exceptionStack)
-                null
             }
-        } ?: throw FatalImplementationErrorException(
-            "ExceptionStack empty in error case.",
-            AuthorizationWithTokenHelper::class.java
-        )
-    }
+            MultiException.checkAndThrow({ "Permission denied!" }, exceptionStack)
+            null
+        }
+    } ?: throw FatalImplementationErrorException(
+        "ExceptionStack empty in error case.",
+        AuthorizationWithTokenHelper::class.java
+    )
 
     /**
      * Perform a permission check for authentication data including tokens.
