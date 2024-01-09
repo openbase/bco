@@ -1,6 +1,7 @@
 package org.openbase.bco.registry.unit.core.consistency.connectionconfig
 
 import org.openbase.jul.exception.CouldNotPerformException
+import org.openbase.jul.exception.NotAvailableException
 import org.openbase.jul.extension.protobuf.IdentifiableMessage
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler
@@ -30,7 +31,13 @@ class ConnectionTilesConsistencyHandler(private val locationRegistry: ProtoBufFi
         // remove duplicated entries and location ids that are not tiles
         entry.message.connectionConfig.tileIdList
             .distinct()
-            .filter { tileId -> locationRegistry[tileId].message?.locationConfig?.locationType == LocationType.TILE }
+            .filter { tileId ->
+                try {
+                    locationRegistry[tileId].message?.locationConfig?.locationType == LocationType.TILE
+                } catch (ex: NotAvailableException) {
+                    false
+                }
+            }
             .let { tileIds ->
                 if (connectionConfig.tileIdList.toList().sorted() != tileIds.sorted()) {
                     connectionConfig.clearTileId()

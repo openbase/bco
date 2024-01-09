@@ -1,6 +1,7 @@
 package org.openbase.bco.registry.unit.core.consistency.connectionconfig
 
 import org.openbase.jul.exception.CouldNotPerformException
+import org.openbase.jul.exception.NotAvailableException
 import org.openbase.jul.exception.printer.ExceptionPrinter
 import org.openbase.jul.extension.protobuf.IdentifiableMessage
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap
@@ -61,18 +62,23 @@ class ConnectionLocationConsistencyHandler(
             val pathsFromRootMap: MutableList<List<UnitConfig>> = ArrayList()
 
             // fill the list according to the description above
-            locationIds.forEach { id ->
-                var locationUnitConfig = locationUnitConfigRegistry.getMessage(id)
-                val pathFromRootList: MutableList<UnitConfig> = ArrayList()
-                pathFromRootList.add(locationUnitConfig)
-                while (!locationUnitConfig.locationConfig.root) {
-                    locationUnitConfig =
-                        locationUnitConfigRegistry.getMessage(locationUnitConfig.placementConfig.locationId)
-                    // when adding a location at the front of the list, every entry is moved an index further
-                    pathFromRootList.add(0, locationUnitConfig)
+            locationIds
+                .filter { locationUnitConfigRegistry.contains(it) }
+                .forEach { id ->
+                    var locationUnitConfig = locationUnitConfigRegistry.getMessage(id)
+                    val pathFromRootList: MutableList<UnitConfig> = ArrayList()
+                    pathFromRootList.add(locationUnitConfig)
+                    while (!locationUnitConfig.locationConfig.root) {
+                        locationUnitConfig = try {
+                            locationUnitConfigRegistry.getMessage(locationUnitConfig.placementConfig.locationId)
+                        } catch (ex: NotAvailableException) {
+                            continue
+                        }
+                        // when adding a location at the front of the list, every entry is moved an index further
+                        pathFromRootList.add(0, locationUnitConfig)
+                    }
+                    pathsFromRootMap.add(pathFromRootList)
                 }
-                pathsFromRootMap.add(pathFromRootList)
-            }
 
             // sort the list after their sizes:
             //      home, apartment, outdoor

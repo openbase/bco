@@ -110,6 +110,7 @@ object LocationUtils {
         }
     }
 
+    @JvmStatic
     @Throws(CouldNotPerformException::class)
     fun computeNewRootLocation(
         currentLocationConfig: UnitConfigType.UnitConfig,
@@ -171,7 +172,7 @@ object LocationUtils {
     @Throws(CouldNotPerformException::class)
     fun detectLocationType(
         locationUnit: UnitConfigType.UnitConfig,
-        locationRegistry: ProtoBufRegistry<String?, UnitConfigType.UnitConfig, UnitConfigType.UnitConfig.Builder?>,
+        locationRegistry: ProtoBufRegistry<String, UnitConfigType.UnitConfig, UnitConfigType.UnitConfig.Builder>,
     ): LocationType {
         try {
             if (!locationUnit.hasPlacementConfig()) {
@@ -187,10 +188,11 @@ object LocationUtils {
 
             val parentLocationType =
                 locationRegistry[locationUnit.placementConfig.locationId].message.locationConfig.locationType
-            val childLocationTypes: MutableSet<LocationType> = HashSet()
-            for (childId in locationUnit.locationConfig.childIdList) {
-                childLocationTypes.add(locationRegistry[childId].message.locationConfig.locationType)
-            }
+
+            val childLocationTypes: List<LocationType> = locationUnit.locationConfig.childIdList
+                .map { childId -> locationRegistry[childId].message.locationConfig.locationType }
+                .distinct()
+                .filter { it != LocationType.UNKNOWN }
 
             return detectLocationType(parentLocationType, childLocationTypes)
         } catch (ex: CouldNotPerformException) {
@@ -201,7 +203,7 @@ object LocationUtils {
     /**
      * Detect the type of a location.
      * Since a location, except the root location, always has a parent the only ambiguous case
-     * is when the parent is a zone but no children are defined. Than the location can either be
+     * is when the parent is a zone but no children are defined. Then the location can either be
      * a zone or a tile. In this case an exception is thrown.
      *
      * @param parentLocationType the type of the parent location of the location whose type is detected
@@ -209,10 +211,11 @@ object LocationUtils {
      * @return the type locationUnit should have
      * @throws CouldNotPerformException if the type is ambiguous
      */
+    @JvmStatic
     @Throws(CouldNotPerformException::class)
     private fun detectLocationType(
         parentLocationType: LocationType,
-        childLocationTypes: Set<LocationType>,
+        childLocationTypes: List<LocationType>,
     ): LocationType {
 
         when (parentLocationType) {
