@@ -34,7 +34,7 @@ abstract class AbstractBCOGraphQLContext(
     abstract val languageCode: String?
 
     val auth: AuthTokenType.AuthToken?
-        get() = AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(token).build()
+        get() = token?.let { AuthTokenType.AuthToken.newBuilder().setAuthenticationToken(it).build() }
 
     companion object {
         const val DATA_LOADER_UNITS = "units"

@@ -10,12 +10,12 @@ package org.openbase.bco.registry.remote;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -30,6 +30,9 @@ import org.openbase.bco.registry.activity.remote.CachedActivityRegistryRemote;
 import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
+import org.openbase.bco.registry.message.lib.MessageRegistry;
+import org.openbase.bco.registry.message.remote.CachedMessageRegistryRemote;
+import org.openbase.bco.registry.message.remote.MessageRegistryRemote;
 import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.template.remote.TemplateRegistryRemote;
@@ -93,8 +96,8 @@ public class Registries {
      * @throws CouldNotPerformException is throw if at least one registry is not available.
      * @throws InterruptedException     is thrown if thread is externally interrupted.
      */
-    public static List<RegistryRemote> getRegistries(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
-        final List<RegistryRemote> registryList = new ArrayList<>();
+    public static List<RegistryRemote<?>> getRegistries(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        final List<RegistryRemote<?>> registryList = new ArrayList<>();
         registryList.add(getTemplateRegistry(waitForData));
         registryList.add(getClassRegistry(waitForData));
         registryList.add(getActivityRegistry(waitForData));
@@ -109,7 +112,7 @@ public class Registries {
      *
      * @throws CouldNotPerformException is throw if at least one registry is not available.
      */
-    public static List<RegistryRemote> getRegistries() throws CouldNotPerformException {
+    public static List<RegistryRemote<?>> getRegistries() throws CouldNotPerformException {
         try {
             return getRegistries(false);
         } catch (InterruptedException ex) {
@@ -184,6 +187,19 @@ public class Registries {
         return registry;
     }
 
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @return the remote registry instance.
+     *
+     * @throws NotAvailableException
+     */
+    public static MessageRegistryRemote getMessageRegistry(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        final MessageRegistryRemote registry = CachedMessageRegistryRemote.getRegistry();
+        registry.waitForData(timeout, timeUnit);
+        return registry;
+    }
+
 
     /**
      * Returns an initialized and activated remote registry.
@@ -216,6 +232,17 @@ public class Registries {
      */
     public static TemplateRegistryRemote getTemplateRegistry() throws NotAvailableException {
         return CachedTemplateRegistryRemote.getRegistry();
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @return the remote registry instance.
+     *
+     * @throws NotAvailableException
+     */
+    public static MessageRegistryRemote getMessageRegistry() throws NotAvailableException {
+        return CachedMessageRegistryRemote.getRegistry();
     }
 
     /**
@@ -303,6 +330,27 @@ public class Registries {
     }
 
     /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     *
+     * @return the remote registry instance.
+     *
+     * @throws NotAvailableException
+     * @throws InterruptedException  is thrown if thread is externally interrupted.
+     */
+    public static MessageRegistryRemote getMessageRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        try {
+            if (waitForData) {
+                CachedMessageRegistryRemote.getRegistry().waitForData();
+            }
+            return CachedMessageRegistryRemote.getRegistry();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(MessageRegistry.class, ex);
+        }
+    }
+
+    /**
      * Method shutdown all registry instances.
      * <p>
      * Please use method with care!
@@ -315,6 +363,7 @@ public class Registries {
         CachedActivityRegistryRemote.shutdown();
         CachedClassRegistryRemote.shutdown();
         CachedTemplateRegistryRemote.shutdown();
+        CachedMessageRegistryRemote.shutdown();
     }
 
     public static void prepare() throws CouldNotPerformException {
@@ -322,15 +371,17 @@ public class Registries {
         CachedActivityRegistryRemote.prepare();
         CachedClassRegistryRemote.prepare();
         CachedTemplateRegistryRemote.prepare();
+        CachedMessageRegistryRemote.prepare();
     }
 
     public static Future<Void> requestData() {
         try {
             return FutureProcessor.allOf(
-                CachedUnitRegistryRemote.getRegistry().requestData(),
-                CachedActivityRegistryRemote.getRegistry().requestData(),
-                CachedClassRegistryRemote.getRegistry().requestData(),
-                CachedTemplateRegistryRemote.getRegistry().requestData()
+                    CachedUnitRegistryRemote.getRegistry().requestData(),
+                    CachedActivityRegistryRemote.getRegistry().requestData(),
+                    CachedClassRegistryRemote.getRegistry().requestData(),
+                    CachedTemplateRegistryRemote.getRegistry().requestData(),
+                    CachedMessageRegistryRemote.getRegistry().requestData()
             );
         } catch (NotAvailableException ex) {
             return FutureProcessor.canceledFuture(ex);
@@ -348,6 +399,7 @@ public class Registries {
         CachedClassRegistryRemote.waitForData();
         CachedActivityRegistryRemote.waitForData();
         CachedUnitRegistryRemote.waitForData();
+        CachedMessageRegistryRemote.waitForData();
     }
 
     /**
@@ -361,6 +413,7 @@ public class Registries {
         CachedClassRegistryRemote.waitForData(timeout, timeUnit);
         CachedActivityRegistryRemote.waitForData(timeout, timeUnit);
         CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
+        CachedMessageRegistryRemote.waitForData(timeout, timeUnit);
     }
 
     public static boolean isDataAvailable() {
@@ -368,7 +421,8 @@ public class Registries {
             return CachedUnitRegistryRemote.getRegistry().isDataAvailable()
                     && CachedTemplateRegistryRemote.getRegistry().isDataAvailable()
                     && CachedClassRegistryRemote.getRegistry().isDataAvailable()
-                    && CachedActivityRegistryRemote.getRegistry().isDataAvailable();
+                    && CachedActivityRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedMessageRegistryRemote.getRegistry().isDataAvailable();
         } catch (NotAvailableException ex) {
             // at least one remote is not available.
         }
@@ -386,6 +440,7 @@ public class Registries {
         CachedClassRegistryRemote.reinitialize();
         CachedActivityRegistryRemote.reinitialize();
         CachedUnitRegistryRemote.reinitialize();
+        CachedMessageRegistryRemote.reinitialize();
     }
 
     /**
@@ -401,6 +456,7 @@ public class Registries {
         CachedClassRegistryRemote.waitUntilReady();
         CachedActivityRegistryRemote.waitUntilReady();
         CachedUnitRegistryRemote.waitUntilReady();
+        CachedMessageRegistryRemote.waitUntilReady();
     }
 
     /**
@@ -619,7 +675,8 @@ public class Registries {
             final AbstractRemoteClient remote = getRegistryRemoteByType(messageOrBuilder);
             Method method = remote.getClass().getMethod(methodName, classes);
             return method.invoke(remote, parameters);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException |
+                 InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not invoke method[" + methodName + "] for type[" + messageOrBuilder.getDescriptorForType().getName() + "]", ex);
         }
     }
@@ -632,25 +689,16 @@ public class Registries {
         return messageOrBuilder.getDescriptorForType().getName();
     }
 
-    private static AbstractRemoteClient getRegistryRemoteByType(final MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
-        switch (messageOrBuilder.getDescriptorForType().getName()) {
-            case "UnitConfig":
-                return getUnitRegistry();
-            case "DeviceClass":
-            case "AgentClass":
-            case "AppClass":
-            case "GatewayClass":
-                return getClassRegistry();
-            case "UnitTemplate":
-            case "ServiceTemplate":
-            case "ActivityTemplate":
-                return getTemplateRegistry();
-            case "ActivityConfig":
-                return getActivityRegistry();
-            default:
-                throw new NotAvailableException("Registry remote for type [" + messageOrBuilder.getDescriptorForType().getName() + "]");
-
-        }
+    private static AbstractRemoteClient<?> getRegistryRemoteByType(final MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
+        return switch (messageOrBuilder.getDescriptorForType().getName()) {
+            case "UnitConfig" -> getUnitRegistry();
+            case "DeviceClass", "AgentClass", "AppClass", "GatewayClass" -> getClassRegistry();
+            case "UnitTemplate", "ServiceTemplate", "ActivityTemplate" -> getTemplateRegistry();
+            case "ActivityConfig" -> getActivityRegistry();
+            case "UserMessage" -> getMessageRegistry();
+            default ->
+                    throw new NotAvailableException("Registry remote for type [" + messageOrBuilder.getDescriptorForType().getName() + "]");
+        };
     }
 
     /**
@@ -664,7 +712,7 @@ public class Registries {
      *
      * @throws InstantiationException is thrown if the registry is not available.
      */
-    public static UnitRegistryRemote getUnitRegistry(final Class clazz) throws InstantiationException {
+    public static UnitRegistryRemote getUnitRegistry(final Class<?> clazz) throws InstantiationException {
         try {
             return Registries.getUnitRegistry();
         } catch (NotAvailableException ex) {

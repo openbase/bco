@@ -74,8 +74,8 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
     private final Observer<DataProvider<LocationData>, LocationData> locationDataObserver;
     private Location location;
     private final ObservableImpl<DataProvider<PresenceState>, PresenceState> presenceStateObservable;
-    private final CustomUnitPool buttonUnitPool;
-    private final CustomUnitPool connectionUnitPool;
+    private final CustomUnitPool<?, ?> buttonUnitPool;
+    private final CustomUnitPool<?, ?> connectionUnitPool;
 
     private boolean active;
     private boolean shutdownInitiated = false;

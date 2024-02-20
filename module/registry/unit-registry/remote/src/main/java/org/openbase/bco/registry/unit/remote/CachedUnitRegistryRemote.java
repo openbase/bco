@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -27,7 +27,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.iface.Shutdownable.ShutdownDaemon;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +44,7 @@ public class CachedUnitRegistryRemote {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedUnitRegistryRemote.class);
 
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedUnitRegistryRemoteLock");
-    private static final SyncObject REGISTY_LOCK = new SyncObject("RegistyLock");
+    private static final SyncObject REGISTRY_LOCK = new SyncObject("RegistryLock");
 
     private static UnitRegistryRemote registryRemote;
     private static volatile boolean shutdown = false;
@@ -76,7 +75,7 @@ public class CachedUnitRegistryRemote {
         try {
             // only call re-init if the registry was activated and initialized in the first place
             if (registryRemote != null) {
-                synchronized (REGISTY_LOCK) {
+                synchronized (REGISTRY_LOCK) {
                     getRegistry().reinit(REMOTE_LOCK);
                 }
             }
@@ -120,7 +119,7 @@ public class CachedUnitRegistryRemote {
                 return registryRemote;
             }
 
-            synchronized (REGISTY_LOCK) {
+            synchronized (REGISTRY_LOCK) {
                 if (registryRemote == null) {
                     try {
                         registryRemote = new UnitRegistryRemote();

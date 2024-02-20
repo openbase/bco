@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -36,10 +36,10 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
-import org.openbase.type.language.LabelType.Label;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
+import org.openbase.type.language.LabelType.Label;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -125,19 +125,5 @@ public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyH
 
         // make sure that label exists and are unique per location per unit type
         super.processData(id, entry, entryMap, registry);
-    }
-
-    /**
-     * Make sure that the label is unique per unit type and per location.
-     *
-     * @param label       the label for which the key is generated
-     * @param languageKey the language key of the label.
-     * @param unitConfig  the unit having the label
-     *
-     * @return a key unique per unit type per location
-     */
-    @Override
-    protected String generateKey(final String label, final String languageKey, final UnitConfig unitConfig) {
-        return label + "_" + languageKey + "_" + unitConfig.getUnitType().name() + "_" + unitConfig.getPlacementConfig().getLocationId();
     }
 }

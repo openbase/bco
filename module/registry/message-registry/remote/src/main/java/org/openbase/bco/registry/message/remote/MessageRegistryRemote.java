@@ -10,12 +10,12 @@ package org.openbase.bco.registry.message.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -36,13 +36,17 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.jul.extension.type.util.TransactionSynchronizationFuture;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.communication.UserMessageType.UserMessage;
 import org.openbase.type.domotic.registry.MessageRegistryDataType.MessageRegistryData;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Future;
 
 /**
@@ -88,6 +92,7 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
         }
         return userMessageRemoteRegistry;
     }
+
     /**
      * {@inheritDoc}
      *
@@ -124,6 +129,27 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
         }
     }
 
+    public List<UserMessage> getUserMessagesByText(final String text, final Locale locale) {
+        try {
+            validateData();
+            return userMessageRemoteRegistry
+                    .getMessages().stream()
+                    .filter(userMessage -> {
+                        try {
+                            return MultiLanguageTextProcessor
+                                    .getBestMatch(locale, userMessage.getText())
+                                    .equals(text);
+                        } catch (NotAvailableException ex) {
+                            return false;
+                        }
+                    })
+                    .toList();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new NotAvailableException("UserMessages", ex), logger);
+            return Collections.emptyList();
+        }
+    }
+
     @Override
     public List<UserMessage> getUserMessages() throws CouldNotPerformException {
         try {
@@ -156,7 +182,7 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
 
     @Override
     public Future<UserMessage> updateUserMessage(final UserMessage userMessage) {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(userMessage, UserMessage.class, SessionManager.getInstance(), authenticatedValue -> updateUserMessageAuthenticated(authenticatedValue));
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(userMessage, UserMessage.class, SessionManager.getInstance(), this::updateUserMessageAuthenticated);
     }
 
     @Override
@@ -166,7 +192,7 @@ public class MessageRegistryRemote extends AbstractRegistryRemote<MessageRegistr
 
     @Override
     public Future<UserMessage> removeUserMessage(final UserMessage userMessage) {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(userMessage, UserMessage.class, SessionManager.getInstance(), authenticatedValue -> removeUserMessageAuthenticated(authenticatedValue));
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(userMessage, UserMessage.class, SessionManager.getInstance(), this::removeUserMessageAuthenticated);
     }
 
     @Override

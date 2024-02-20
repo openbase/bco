@@ -1,26 +1,26 @@
 package org.openbase.bco.api.graphql.subscriptions
 
-import com.google.common.collect.ImmutableList
 import com.google.protobuf.Message
 import io.reactivex.BackpressureStrategy
 import org.openbase.bco.api.graphql.error.BCOGraphQLError
 import org.openbase.bco.api.graphql.error.GenericError
 import org.openbase.bco.api.graphql.error.ServerError
-import org.openbase.bco.api.graphql.schema.RegistrySchemaModule
 import org.openbase.bco.dal.lib.layer.unit.Unit
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.extension.protobuf.ProtoBufBuilderProcessor.merge
 import org.openbase.jul.pattern.Observer
 import org.openbase.jul.pattern.provider.DataProvider
+import org.openbase.type.domotic.communication.UserMessageType.UserMessage
+import org.openbase.type.domotic.registry.MessageRegistryDataType.MessageRegistryData
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.unit.UnitDataType
 import org.openbase.type.domotic.unit.UnitFilterType.UnitFilter
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
-import java.util.function.Consumer
 
 /*-
  * #%L
@@ -42,7 +42,8 @@ import java.util.function.Consumer
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */   object SubscriptionModule {
+ */
+object SubscriptionModule {
     private val log = LoggerFactory.getLogger(SubscriptionModule::class.java)
 
     //TODO: what is a good strategy here
@@ -51,15 +52,15 @@ import java.util.function.Consumer
     @Throws(BCOGraphQLError::class)
     fun subscribeUnits(unitFilter: UnitFilter): Publisher<UnitDataType.UnitData> {
         return try {
-            val subscriptionUnitPool = CustomUnitPool()
+            val subscriptionUnitPool = CustomUnitPool<Message, UnitRemote<Message>>()
             subscriptionUnitPool.init(unitFilter)
             AbstractObserverMapper.createObservable(
-                Consumer { observer: Observer<Unit<Message>, Message> ->
+                { observer: Observer<Unit<Message>, Message> ->
                     subscriptionUnitPool.addDataObserver(
                         observer
                     )
                 },
-                Consumer { observer: Observer<Unit<Message>, Message> ->
+                { observer: Observer<Unit<Message>, Message> ->
                     subscriptionUnitPool.removeDataObserver(observer)
                 },
                 object : AbstractObserverMapper<Unit<Message>, Message, UnitDataType.UnitData>() {
@@ -94,18 +95,18 @@ import java.util.function.Consumer
         includeDisabledUnits: Boolean,
     ): Publisher<List<UnitConfig>> {
         return try {
-            val observer = RegistrySubscriptionObserver(unitFilter, includeDisabledUnits)
+            val observer = UnitRegistrySubscriptionObserver(unitFilter, includeDisabledUnits)
             val unitRegistry = Registries.getUnitRegistry(
                 ServerError.BCO_TIMEOUT_SHORT,
                 ServerError.BCO_TIMEOUT_TIME_UNIT
             )
             AbstractObserverMapper.createObservable(
-                Consumer { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
+                { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
                     unitRegistry.addDataObserver(
                         observer
                     )
                 },
-                Consumer { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
+                { observer: Observer<DataProvider<UnitRegistryData>, UnitRegistryData> ->
                     unitRegistry.removeDataObserver(observer)
                 },
                 observer
@@ -119,50 +120,31 @@ import java.util.function.Consumer
         }
     }
 
-    class RegistrySubscriptionObserver(
-        private val unitFilter: UnitFilter,
-        private val includeDisabledUnits: Boolean,
-    ) : AbstractObserverMapper<DataProvider<UnitRegistryData>, UnitRegistryData, List<UnitConfig>>() {
-        private val unitConfigs: MutableList<UnitConfig>
-
-        init {
-            Registries.getUnitRegistry(
+    @Throws(BCOGraphQLError::class)
+    fun subscribeUserMessages(): Publisher<List<UserMessage>> {
+        return try {
+            val observer = MessageRegistrySubscriptionObserver()
+            val messageRegistry = Registries.getMessageRegistry(
                 ServerError.BCO_TIMEOUT_SHORT,
                 ServerError.BCO_TIMEOUT_TIME_UNIT
             )
-            unitConfigs = ArrayList(
-                RegistrySchemaModule.getUnitConfigs(
-                    unitFilter, includeDisabledUnits
-                )
-            )
-        }
-
-        @Throws(Exception::class)
-        override fun update(
-            source: DataProvider<UnitRegistryData>,
-            target: UnitRegistryData,
-        ) {
-            val newUnitConfigs: ImmutableList<UnitConfig> =
-                RegistrySchemaModule.getUnitConfigs(
-                    unitFilter, includeDisabledUnits
-                )
-            if (newUnitConfigs == unitConfigs) {
-                // nothing has changed
-                return
-            }
-
-            // store update
-            unitConfigs.clear()
-            unitConfigs.addAll(newUnitConfigs)
-            super.update(source, target)
-        }
-
-        @Throws(Exception::class)
-        override fun mapData(
-            source: DataProvider<UnitRegistryData>,
-            data: UnitRegistryData,
-        ): List<UnitConfig> {
-            return unitConfigs
+            AbstractObserverMapper.createObservable(
+                { observer: Observer<DataProvider<MessageRegistryData>, MessageRegistryData> ->
+                    messageRegistry.addDataObserver(
+                        observer
+                    )
+                },
+                { observer: Observer<DataProvider<MessageRegistryData>, MessageRegistryData> ->
+                    messageRegistry.removeDataObserver(observer)
+                },
+                observer
+            ).toFlowable(BACKPRESSURE_STRATEGY)
+        } catch (ex: RuntimeException) {
+            throw GenericError(ex)
+        } catch (ex: CouldNotPerformException) {
+            throw GenericError(ex)
+        } catch (ex: InterruptedException) {
+            throw GenericError(ex)
         }
     }
 }

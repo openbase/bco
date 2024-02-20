@@ -10,6 +10,9 @@ import org.openbase.bco.api.graphql.error.GenericError
 import org.openbase.bco.api.graphql.error.ServerError
 import org.openbase.bco.authentication.lib.SessionManager
 import org.openbase.bco.authentication.lib.iface.BCOSession
+import org.openbase.bco.registry.message.remote.registerUserMessageAuthenticated
+import org.openbase.bco.registry.message.remote.removeUserMessageAuthenticated
+import org.openbase.bco.registry.message.remote.updateUserMessageAuthenticated
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.bco.registry.remote.session.BCOSessionImpl
 import org.openbase.bco.registry.unit.remote.registerUnitConfigAuthenticated
@@ -21,6 +24,7 @@ import org.openbase.jul.extension.type.processing.LabelProcessor.getBestMatch
 import org.openbase.jul.extension.type.processing.LabelProcessor.replace
 import org.openbase.type.configuration.EntryType
 import org.openbase.type.configuration.MetaConfigType
+import org.openbase.type.domotic.communication.UserMessageType.UserMessage
 import org.openbase.type.domotic.service.ServiceTemplateType
 import org.openbase.type.domotic.unit.UnitConfigType
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
@@ -56,7 +60,8 @@ import java.util.concurrent.*
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */   class RegistrySchemaModule : SchemaModule() {
+ */
+class RegistrySchemaModule : SchemaModule() {
     /**
      * Check if an authentication token retrieved by the login method is still valid.
      *
@@ -156,6 +161,10 @@ import java.util.concurrent.*
         @Arg("filter") unitFilter: UnitFilterType.UnitFilter?,
         @Arg("includeDisabledUnits") includeDisabledUnits: Boolean?,
     ): ImmutableList<UnitConfigType.UnitConfig> = getUnitConfigs(unitFilter, includeDisabledUnits)
+
+    @Query("userMessages")
+    @Throws(BCOGraphQLError::class)
+    fun userMessages(): ImmutableList<UserMessage> = getUserMessages()
 
     @Query("gatewayClasses")
     @Throws(CouldNotPerformException::class, InterruptedException::class)
@@ -401,7 +410,7 @@ import java.util.concurrent.*
                 break
             }
         }
-        if (!entry.value.isEmpty()) {
+        if (entry.value.isNotEmpty()) {
             metaConfigBuilder.addEntry(entry)
         }
 
@@ -419,6 +428,92 @@ import java.util.concurrent.*
         throw GenericError(ex)
     }
 
+    @Mutation("updateUserMessage")
+    @Throws(BCOGraphQLError::class)
+    fun updateUserMessage(
+        @Arg("userMessage") userMessage: UserMessage,
+        env: DataFetchingEnvironment,
+    ): UserMessage = try {
+        val userMessageBuilder = Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        )
+            .getUserMessageById(userMessage.id)
+            .toBuilder()
+        userMessageBuilder.mergeFromWithoutRepeatedFields(userMessage)
+        Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).updateUserMessageAuthenticated(
+            userMessageBuilder.build(),
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
+    }
+
+    @Mutation("removeUserMessage")
+    @Throws(BCOGraphQLError::class)
+    fun removeUserMessage(
+        @Arg("unitId") unitId: String?,
+        env: DataFetchingEnvironment,
+    ): UserMessage = try {
+        val userMessage = Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).getUserMessageById(unitId)
+        Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).removeUserMessageAuthenticated(
+            userMessage,
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
+    }
+
+    @Mutation("registerUserMessage")
+    @Throws(BCOGraphQLError::class)
+    fun registerUserMessage(
+        @Arg("userMessage") userMessage: UserMessage?,
+        env: DataFetchingEnvironment,
+    ): UserMessage = try {
+        Registries.getMessageRegistry(
+            ServerError.BCO_TIMEOUT_SHORT,
+            ServerError.BCO_TIMEOUT_TIME_UNIT
+        ).registerUserMessageAuthenticated(
+            userMessage,
+            env.context.auth
+        )[ServerError.BCO_TIMEOUT_SHORT, ServerError.BCO_TIMEOUT_TIME_UNIT]
+    } catch (ex: RuntimeException) {
+        throw GenericError(ex)
+    } catch (ex: CouldNotPerformException) {
+        throw GenericError(ex)
+    } catch (ex: InterruptedException) {
+        throw GenericError(ex)
+    } catch (ex: ExecutionException) {
+        throw GenericError(ex)
+    } catch (ex: TimeoutException) {
+        throw GenericError(ex)
+    }
+
     companion object {
         @Throws(BCOGraphQLError::class)
         fun getUnitConfigs(
@@ -430,6 +525,23 @@ import java.util.concurrent.*
                     ServerError.BCO_TIMEOUT_SHORT,
                     ServerError.BCO_TIMEOUT_TIME_UNIT
                 ).getUnitConfigs(includeDisabledUnits ?: true, unitFilter)
+            )
+        } catch (ex: RuntimeException) {
+            throw GenericError(ex)
+        } catch (ex: CouldNotPerformException) {
+            throw GenericError(ex)
+        } catch (ex: InterruptedException) {
+            throw GenericError(ex)
+        }
+
+        @Throws(BCOGraphQLError::class)
+        fun getUserMessages(
+        ): ImmutableList<UserMessage> = try {
+            ImmutableList.copyOf(
+                Registries.getMessageRegistry(
+                    ServerError.BCO_TIMEOUT_SHORT,
+                    ServerError.BCO_TIMEOUT_TIME_UNIT
+                ).userMessages
             )
         } catch (ex: RuntimeException) {
             throw GenericError(ex)
