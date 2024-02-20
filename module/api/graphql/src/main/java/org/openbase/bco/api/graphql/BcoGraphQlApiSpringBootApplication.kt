@@ -122,6 +122,11 @@ open class BcoGraphQlApiSpringBootApplication {
                     }
                     SubscriptionModule.subscribeUnitConfigs(unitFilter, includeDisabledUnits)
                 })
+            .dataFetcher(
+                FieldCoordinates.coordinates("Subscription", "userMessages"),
+                DataFetcher {
+                    SubscriptionModule.subscribeUserMessages()
+                })
             .build()
         return GraphQLSchema.newSchema(schema)
             .subscription(builder.build())
