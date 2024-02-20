@@ -169,13 +169,13 @@ object AuthorizationWithTokenHelper {
                         null
                     )
                 } catch (exxx: CouldNotPerformException) {
-                    exceptionStack =
-                        MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
+                    exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
+                    null
+                } ?: let {
+                    MultiException.checkAndThrow({ "Permission denied!" }, exceptionStack)
                     null
                 }
             }
-            MultiException.checkAndThrow({ "Permission denied!" }, exceptionStack)
-            null
         }
     } ?: throw FatalImplementationErrorException(
         "ExceptionStack empty in error case.",
