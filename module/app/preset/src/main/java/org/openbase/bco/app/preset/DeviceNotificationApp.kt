@@ -141,8 +141,8 @@ class DeviceNotificationApp : AbstractAppController() {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(TemplateApp::class.java)
-
-        private val VALIDATION_PERIOD: Duration = Duration.ofMinutes(1)
-        private val INITIAL_VALIDATION_DELAY: Duration = Duration.ofMinutes(1)
+        
+        private val VALIDATION_PERIOD: Duration = Duration.ofHours(24)
+        private val INITIAL_VALIDATION_DELAY: Duration = Duration.ofHours(1)
     }
 }
