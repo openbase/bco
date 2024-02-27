@@ -131,56 +131,60 @@ object AuthorizationWithTokenHelper {
         userMessage: UserMessageType.UserMessage,
         permissionType: AuthorizationHelper.PermissionType,
         unitRegistry: UnitRegistry,
-    ): AuthPair = try {
-        // validate sender
-        canDo(
-            authenticationBaseData,
-            unitRegistry.getUnitConfigById(userMessage.senderId),
-            permissionType,
-            unitRegistry,
-            null,
-            null
-        )
-    } catch (ex: CouldNotPerformException) {
+    ): AuthPair {
         var exceptionStack: ExceptionStack? = null
-        exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, ex, exceptionStack)
-
-        // validate receiver if sender validation failed.
-        try {
+        return try {
+            // validate sender
             canDo(
                 authenticationBaseData,
-                unitRegistry.getUnitConfigById(userMessage.recipientId),
+                tryOrNull { unitRegistry.getUnitConfigById(userMessage.senderId) },
                 permissionType,
                 unitRegistry,
                 null,
                 null
             )
-        } catch (exx: CouldNotPerformException) {
-            exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, exx, exceptionStack)
+        } catch (ex: CouldNotPerformException) {
+            exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, ex, exceptionStack)
 
-            userMessage.conditionList.firstNotNullOfOrNull { condition ->
-                try {
-                    canDo(
-                        authenticationBaseData,
-                        unitRegistry.getUnitConfigById(condition.unitId),
-                        permissionType,
-                        unitRegistry,
-                        null,
+            // validate receiver if sender validation failed.
+            try {
+                canDo(
+                    authenticationBaseData,
+                    tryOrNull { unitRegistry.getUnitConfigById(userMessage.recipientId) },
+                    permissionType,
+                    unitRegistry,
+                    null,
+                    null
+                )
+            } catch (exx: CouldNotPerformException) {
+                exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, exx, exceptionStack)
+
+                userMessage.conditionList.firstNotNullOfOrNull { condition ->
+                    try {
+                        canDo(
+                            authenticationBaseData,
+                            unitRegistry.getUnitConfigById(condition.unitId),
+                            permissionType,
+                            unitRegistry,
+                            null,
+                            null
+                        )
+                    } catch (exxx: CouldNotPerformException) {
+                        exceptionStack =
+                            MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
                         null
-                    )
-                } catch (exxx: CouldNotPerformException) {
-                    exceptionStack = MultiException.push(AuthorizationWithTokenHelper::class.java, exxx, exceptionStack)
-                    null
-                } ?: let {
-                    MultiException.checkAndThrow({ "Permission denied!" }, exceptionStack)
-                    null
+                    }
                 }
             }
+        } ?: run {
+
+            MultiException.checkAndThrow({ "Permission denied!" }, exceptionStack)
+
+            throw FatalImplementationErrorException(
+                "ExceptionStack empty in error case.", AuthorizationWithTokenHelper::class.java
+            )
         }
-    } ?: throw FatalImplementationErrorException(
-        "ExceptionStack empty in error case.",
-        AuthorizationWithTokenHelper::class.java
-    )
+    }
 
     /**
      * Perform a permission check for authentication data including tokens.
@@ -204,7 +208,7 @@ object AuthorizationWithTokenHelper {
     @Throws(CouldNotPerformException::class)
     fun canDo(
         authenticationBaseData: AuthenticationBaseData?,
-        unitConfig: UnitConfigType.UnitConfig,
+        unitConfig: UnitConfigType.UnitConfig?,
         permissionType: AuthorizationHelper.PermissionType,
         unitRegistry: UnitRegistry,
         unitType: UnitTemplateType.UnitTemplate.UnitType? = null,
@@ -227,27 +231,6 @@ object AuthorizationWithTokenHelper {
                 }
             }
 
-            // check if authenticated user has needed permissions
-            if (AuthorizationHelper.canDo(
-                    unitConfig,
-                    userClientPair.getUserId(),
-                    unitRegistry.getAuthorizationGroupMap(),
-                    unitRegistry.getLocationMap(),
-                    permissionType
-                )
-            ) {
-                return AuthPair(userClientPair, userClientPair.getUserId())
-            }
-            if (AuthorizationHelper.canDo(
-                    unitConfig,
-                    userClientPair.getClientId(),
-                    unitRegistry.getAuthorizationGroupMap(),
-                    unitRegistry.getLocationMap(),
-                    permissionType
-                )
-            ) {
-                return AuthPair(userClientPair, userClientPair.getClientId())
-            }
             try {
                 // test if user is part of the admin group
                 val memberIdList =
@@ -262,25 +245,53 @@ object AuthorizationWithTokenHelper {
                 // continue with the checks, admin group is not available
             }
 
-            // authenticated user does not have permissions so check if the authorization token grants them
-            if (authenticationBaseData != null && authenticationBaseData.authorizationToken != null) {
-                val authorizationToken = authenticationBaseData.authorizationToken
-                // verify that the authorization token is valid
-                verifyAuthorizationToken(authorizationToken, unitRegistry)
+            if (unitConfig != null) {
 
-                // verify if the token grants the necessary permissions
-                return authorizedByToken(
-                    authorizationToken,
-                    userClientPair,
-                    unitConfig,
-                    permissionType,
-                    unitRegistry,
-                    unitType,
-                    serviceType
-                )
+                // check if authenticated user has needed permissions
+                if (AuthorizationHelper.canDo(
+                        unitConfig,
+                        userClientPair.getUserId(),
+                        unitRegistry.getAuthorizationGroupMap(),
+                        unitRegistry.getLocationMap(),
+                        permissionType
+                    )
+                ) {
+                    return AuthPair(userClientPair, userClientPair.getUserId())
+                }
+
+                if (AuthorizationHelper.canDo(
+                        unitConfig,
+                        userClientPair.getClientId(),
+                        unitRegistry.getAuthorizationGroupMap(),
+                        unitRegistry.getLocationMap(),
+                        permissionType
+                    )
+                ) {
+                    return AuthPair(userClientPair, userClientPair.getClientId())
+                }
+
+                // authenticated user does not have permissions so check if the authorization token grants them
+                if (authenticationBaseData != null
+                    && authenticationBaseData.authorizationToken != null
+                ) {
+                    val authorizationToken = authenticationBaseData.authorizationToken
+                    // verify that the authorization token is valid
+                    verifyAuthorizationToken(authorizationToken, unitRegistry)
+
+                    // verify if the token grants the necessary permissions
+                    return authorizedByToken(
+                        authorizationToken,
+                        userClientPair,
+                        unitConfig,
+                        permissionType,
+                        unitRegistry,
+                        unitType,
+                        serviceType
+                    )
+                }
             }
             var userRepresentation = userClientPair.getUserId()
-            if (!userRepresentation.isEmpty()) {
+            if (userRepresentation.isNotEmpty()) {
                 userRepresentation += "@"
             }
             userRepresentation += userClientPair.getClientId()

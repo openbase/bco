@@ -50,6 +50,7 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.type.domotic.activity.ActivityConfigType.ActivityConfig;
 import org.openbase.type.domotic.activity.ActivityTemplateType.ActivityTemplate;
+import org.openbase.type.domotic.communication.UserMessageType.UserMessage;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -83,7 +84,8 @@ public class Registries {
             UnitTemplate.getDefaultInstance(),
             ServiceTemplate.getDefaultInstance(),
             ActivityTemplate.getDefaultInstance(),
-            ActivityConfig.getDefaultInstance()
+            ActivityConfig.getDefaultInstance(),
+            UserMessage.getDefaultInstance()
     };
 
     /**
@@ -102,6 +104,7 @@ public class Registries {
         registryList.add(getClassRegistry(waitForData));
         registryList.add(getActivityRegistry(waitForData));
         registryList.add(getUnitRegistry(waitForData));
+        registryList.add(getMessageRegistry(waitForData));
         return registryList;
     }
 
