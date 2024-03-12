@@ -1,3 +1,7 @@
+---
+sidebar_position: 4
+---
+
 # Initial openHAB Setup
 
 ## OpenHAB 3.x.x

@@ -1,5 +1,7 @@
 ---
+sidebar_position: 1
 ---
+
 # How to setup BCO on Raspberry PI via Docker
 
 ## Hardware Requirements

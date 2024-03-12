@@ -1,5 +1,7 @@
 ---
+sidebar_position: 2
 ---
+
 # How to setup BCO via Docker
 
 Follow the instructions step by step in order to setup your own home cube.

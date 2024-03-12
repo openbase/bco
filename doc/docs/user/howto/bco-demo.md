@@ -1,3 +1,7 @@
+---
+sidebar_position: 3
+---
+
 ## Demo Server Setup
 
 In case you just want to play around with BCO without actual smart home devices being involved, you can setup a demo server.
