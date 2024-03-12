@@ -57,7 +57,8 @@ import org.springframework.context.annotation.Bean
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */@SpringBootApplication
+ */
+@SpringBootApplication
 open class BcoGraphQlApiSpringBootApplication {
     private var injector: Injector? = null
 
@@ -84,6 +85,8 @@ open class BcoGraphQlApiSpringBootApplication {
         )
         val unitDataOutputType = schema.getType("openbase_type_domotic_unit_UnitData") as GraphQLOutputType?
         val unitConfigOutputType = schema.getType("openbase_type_domotic_unit_UnitConfig") as GraphQLOutputType?
+        val userMessageOutputType =
+            schema.getType("openbase_type_domotic_communication_UserMessage") as GraphQLOutputType?
         val unitFilterInputType = schema.getType("Input_openbase_type_domotic_unit_UnitFilter") as GraphQLInputType?
         val unitFilterInputConverter =
             GqlInputConverter.newBuilder().add(UnitFilterType.UnitFilter.getDescriptor().file).build()
@@ -97,6 +100,11 @@ open class BcoGraphQlApiSpringBootApplication {
             GraphQLFieldDefinition.newFieldDefinition().name("unitConfigs").type(GraphQLList.list(unitConfigOutputType))
                 .argument(GraphQLArgument.newArgument().name("filter").type(unitFilterInputType))
                 .argument(GraphQLArgument.newArgument().name("includeDisabledUnits").type(Scalars.GraphQLBoolean))
+                .build()
+        )
+        builder.field(
+            GraphQLFieldDefinition.newFieldDefinition().name("userMessages")
+                .type(GraphQLList.list(userMessageOutputType))
                 .build()
         )
         val codeRegistry = GraphQLCodeRegistry.newCodeRegistry(schema.codeRegistry)
@@ -121,6 +129,11 @@ open class BcoGraphQlApiSpringBootApplication {
                         includeDisabledUnits = dataFetchingEnvironment.getArgument("includeDisabledUnits")
                     }
                     SubscriptionModule.subscribeUnitConfigs(unitFilter, includeDisabledUnits)
+                })
+            .dataFetcher(
+                FieldCoordinates.coordinates("Subscription", "userMessages"),
+                DataFetcher {
+                    SubscriptionModule.subscribeUserMessages()
                 })
             .build()
         return GraphQLSchema.newSchema(schema)

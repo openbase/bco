@@ -183,8 +183,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         // post init loads registries
         super.postInit();
 
-        // initially fill the alias to id map
-        // afterwards the {@code AliasMapUpdatePlugin} will manage changes on registering, removing or updating of units
+        // initially fill the alias to id map afterwards
+        // the {@code AliasMapUpdatePlugin} will manage changes on registering, removing or updating of units
         synchronized (aliasIdMapLock) {
             try {
                 for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
@@ -432,6 +432,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         connectionUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
+        agentUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
         agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
         agentUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAgentClassRemoteRegistry(false));
 
@@ -439,6 +440,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         appUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getAppClassRemoteRegistry(false));
         appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        appUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
     }
 
     @Override

@@ -106,6 +106,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get()).build();
         } catch (CouldNotPerformException | ExecutionException ex) {
+            logger.error("Could not create authentication token for " + this + " " + unitConfig.getId());
             throw new CouldNotPerformException("Could not create authentication token for " + this + " " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()), ex);
         }
     }
@@ -169,7 +170,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         // register new action
         observedTaskList.add(remoteAction);
 
-        // validate and initiate forced stop if instance generates to many messages.
+        // validate and initiate forced stop if instance generates too many messages.
         validateUnitOverload();
 
         return remoteAction;
@@ -199,7 +200,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         }
 
         if (eventsPerHour > MAX_ACTIN_SUBMITTION_PER_MINUTE * 60) {
-            logger.error(this + " generates to many actions and will be terminated!");
+            logger.error(this + " generates too many actions and will be terminated!");
             try {
                 applyServiceState(ActivationState.newBuilder().setValue(State.INACTIVE), ServiceType.ACTIVATION_STATE_SERVICE);
             } catch (CouldNotPerformException ex) {

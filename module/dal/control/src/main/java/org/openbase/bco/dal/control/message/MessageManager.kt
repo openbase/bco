@@ -4,6 +4,7 @@ import com.google.protobuf.Message
 import org.openbase.bco.dal.lib.layer.service.Services
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote
 import org.openbase.bco.dal.remote.layer.unit.Units
+import org.openbase.bco.registry.message.remote.removeUserMessageAuthenticated
 import org.openbase.bco.registry.remote.Registries
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.exception.InitializationException
@@ -12,6 +13,7 @@ import org.openbase.jul.iface.VoidInitializable
 import org.openbase.jul.pattern.Observer
 import org.openbase.jul.pattern.provider.DataProvider
 import org.openbase.jul.schedule.RecurrenceEventFilter
+import org.openbase.type.domotic.authentication.AuthTokenType.AuthToken
 import org.openbase.type.domotic.registry.MessageRegistryDataType.MessageRegistryData
 import org.slf4j.LoggerFactory
 import java.time.Duration
@@ -25,7 +27,7 @@ class MessageManager : Launchable<Void>, VoidInitializable {
 
     private val unitsOfConditionsLock = ReentrantReadWriteLock()
 
-    private val maxUpdateInterval: Duration = Duration.ofSeconds(1)
+    private val maxUpdateInterval: Duration = Duration.ofSeconds(30)
 
     private var active = false
 
@@ -36,7 +38,7 @@ class MessageManager : Launchable<Void>, VoidInitializable {
             }
         }
 
-    fun removeOutdatedMessages() {
+    fun removeOutdatedMessages(auth: AuthToken? = null) {
         logger.trace("removeOutdatedMessages")
         Registries.getMessageRegistry().userMessages
             .filterNot { message ->
@@ -49,7 +51,13 @@ class MessageManager : Launchable<Void>, VoidInitializable {
                     }
                 }
             }
-            .forEach { Registries.getMessageRegistry().removeUserMessage(it).get(5, TimeUnit.SECONDS) }
+            .forEach {
+                if (auth != null) {
+                    Registries.getMessageRegistry().removeUserMessageAuthenticated(it, auth).get(5, TimeUnit.SECONDS)
+                } else {
+                    Registries.getMessageRegistry().removeUserMessage(it).get(5, TimeUnit.SECONDS)
+                }
+            }
     }
 
     private var unitsOfConditions: List<UnitRemote<Message>>? = null

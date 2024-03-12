@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -69,6 +69,7 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -112,7 +113,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                     }
                 } catch (NotAvailableException ex) {
                     // unit config has been removed, probably because of deletion, Units will shutdown this remote
-                    logger.debug("Could not update unit remote", ex);
+                    logger.trace("Skip remote config update since unit is not yet or not anymore included in the registry.");
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
@@ -719,11 +720,13 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
 
     /**
      * {@inheritDoc}
+     *
      * @param actionId {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws NotAvailableException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException  {@inheritDoc}
      */
     @Override
     public ActionDescription resolveRelatedActionDescription(String actionId) throws NotAvailableException, InterruptedException {
@@ -746,7 +749,7 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
                 for (final ActionReference actionReference : actionDescription.getActionImpactList()) {
 
                     // once the action is only precomputed we need to lookup it from its related unit.
-                    if(actionReference.getActionId().equals(Action.PRECOMPUTED_ACTION_ID)) {
+                    if (actionReference.getActionId().equals(Action.PRECOMPUTED_ACTION_ID)) {
                         try {
                             return Units.getUnit(actionReference.getServiceStateDescription().getUnitId(), true).resolveRelatedActionDescription(actionId);
                         } catch (NotAvailableException ex) {
@@ -763,6 +766,6 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
             throw new NotAvailableException("RelatedAction", ex);
         }
         // no relation found.
-        throw new NotAvailableException("RelatedAction of ["+actionId+"]");
+        throw new NotAvailableException("RelatedAction of [" + actionId + "]");
     }
 }

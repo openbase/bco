@@ -93,7 +93,7 @@ class DeviceNotificationApp : AbstractAppController() {
                     MultiLanguageTextProcessor.addMultiLanguageText(
                         textBuilder,
                         Locale.GERMAN,
-                        "Batteriezustand von ${
+                        "Batterieladung von ${
                             LabelProcessor.getBestMatch(
                                 Locale.GERMAN,
                                 remote.config.label
@@ -141,7 +141,7 @@ class DeviceNotificationApp : AbstractAppController() {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(TemplateApp::class.java)
-
+        
         private val VALIDATION_PERIOD: Duration = Duration.ofHours(24)
         private val INITIAL_VALIDATION_DELAY: Duration = Duration.ofHours(1)
     }

@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.plugin;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -58,6 +58,16 @@ public class PublishUnitTransformationRegistryPlugin extends AbstractUnitTransfo
         try {
             UnitConfig unitConfig = entry.getMessage();
 
+
+            // skip not compatible units
+            switch (unitConfig.getUnitType()) {
+                case APP:
+                case AGENT:
+                case AUTHORIZATION_GROUP:
+                case USER:
+                    return;
+            }
+
             if (!unitConfig.hasPlacementConfig()) {
                 throw new NotAvailableException("unitconfig.placementconfig");
             }
@@ -82,7 +92,7 @@ public class PublishUnitTransformationRegistryPlugin extends AbstractUnitTransfo
                     parentLocationTransformationFrameId,
                     unitConfig.getPlacementConfig().getTransformationFrameId(),
                     getRegistry().getName()
-                );
+            );
 
             // publish the transform object
             transformPublisher.sendTransform(transformation, TransformType.STATIC);

@@ -10,24 +10,21 @@ package org.openbase.bco.app.preset.agent;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
-import org.junit.jupiter.api.Test;
 import org.openbase.bco.dal.control.layer.unit.LightSensorController;
 import org.openbase.bco.dal.control.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.lib.state.States;
@@ -39,29 +36,26 @@ import org.openbase.bco.dal.remote.layer.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
 import org.openbase.bco.dal.remote.layer.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.layer.unit.util.UnitStateAwaiter;
-import org.openbase.bco.dal.visual.action.BCOActionInspector;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPDebugMode;
-import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
-import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
-import org.openbase.type.domotic.state.MotionStateType.MotionState.State;
-import org.openbase.type.domotic.unit.dal.LightSensorDataType.LightSensorData;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
+import org.openbase.type.domotic.state.MotionStateType.MotionState.State;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import org.openbase.type.domotic.unit.dal.LightSensorDataType.LightSensorData;
 import org.openbase.type.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
@@ -88,12 +82,12 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
     //@BeforeAll //uncomment to enable debug mode
     public static void showActionInspector() throws Throwable {
 
-        JPService.registerProperty(JPDebugMode.class, true);
-        JPService.registerProperty(JPVerbose.class, true);
+        // JPService.registerProperty(JPDebugMode.class, true);
+        // JPService.registerProperty(JPVerbose.class, true);
 
         // uncomment to visualize action inspector during tests
-        String[] args = {};
-        new Thread(() -> BCOActionInspector.main(args)).start();
+        // String[] args = {};
+        // new Thread(() -> BCOActionInspector.main(args)).start();
     }
 
     @Override
@@ -220,7 +214,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         for (ActionDescription actionDescription : colorableLightRemote.requestData().get().getActionList()) {
 
             // ignore termination action because its always on the stack
-            if(actionDescription.getPriority() == Priority.TERMINATION) {
+            if (actionDescription.getPriority() == Priority.TERMINATION) {
                 continue;
             }
 

@@ -210,19 +210,9 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         // create a connection with only one tile id
         UnitConfig.Builder failingConnectionConfig = getConnectionUnitBuilder("Failing connection");
         failingConnectionConfig.getConnectionConfigBuilder().setConnectionType(ConnectionType.DOOR).addTileId(tile1.getId());
-        try {
-            // set exception printer to quit because an exception is expected
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            // try to register the connection which should fail
-            Registries.getUnitRegistry().registerUnitConfig(failingConnectionConfig.build()).get();
-            // fail of no exception has been thrown
-            fail("Registered connection with less than one tile");
-        } catch (ExecutionException ex) {
-            // if an execution exception is thrown the connection could not be registered
-        } finally {
-            // reset quit flag from exception printer
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
+        // register the connection which should lead to a single tile of the connection
+        var result = Registries.getUnitRegistry().registerUnitConfig(failingConnectionConfig.build()).get();
+        assertEquals(result.getConnectionConfig().getTileIdCount(), 1);
 
         // create a new connection with duplicated and fake tile ids
         UnitConfig.Builder connection = getConnectionUnitBuilder("Test Connection");
@@ -264,7 +254,10 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         assertEquals(LocationType.ZONE, root.getLocationConfig().getLocationType(), "Location type zone has not been recovered for root location");
 
         // register a tile
-        UnitConfig.Builder tile = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.TILE, "Tile", root.getId()).build()).get().toBuilder();
+        UnitConfig.Builder tile = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.UNKNOWN, "Tile", root.getId()).build()).get().toBuilder();
+
+        // make sure that the location has been identified as tile
+        assertEquals(LocationType.TILE, tile.getLocationConfig().getLocationType(), "Type has not been detected for tile");
 
         // register a location under a tile, therefore it should be inferred to be a region
         UnitConfig.Builder region = getLocationUnitBuilder("Region");
@@ -274,8 +267,9 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
 
         // now the tile has a zone as its parent and a region as its child, therefore the consistency handler should be
         // able to recover its type
-        tile.getLocationConfigBuilder().setLocationType(LocationType.ZONE);
+        tile.getLocationConfigBuilder().setLocationType(LocationType.UNKNOWN);
         tile = Registries.getUnitRegistry().updateUnitConfig(tile.build()).get().toBuilder();
+        assertFalse(tile.getLocationConfig().getRoot(), "Should not be the new root location");
         assertEquals(LocationType.TILE, tile.getLocationConfig().getLocationType(), "Type of tile has not been recovered");
     }
 
