@@ -40,23 +40,56 @@ import java.util.function.Consumer
 abstract class OpenHABRestConnection : Shutdownable {
     private val topicObservableMapLock = SyncObject("topicObservableMapLock")
     private val connectionStateSyncLock = SyncObject("connectionStateSyncLock")
-    private var topicObservableMap: MutableMap<String, ObservableImpl<Any?, JsonObject?>>? = null
+    private var topicObservableMap: MutableMap<String, ObservableImpl<Any, JsonObject>>
 
-    private var restClient: Client? = null
-    private var restTarget: WebTarget? = null
+    private var restClient: Client
+    private var restTarget: WebTarget?
     private var sseSource: SseEventSource? = null
 
     var isShutdownInitiated: Boolean = false
         private set
 
     @JvmField
-    protected var gson: Gson? = null
+    protected var gson: Gson
 
     private var connectionTask: ScheduledFuture<*>? = null
 
     var openhabConnectionState: ConnectionStateType.ConnectionState.State =
         ConnectionStateType.ConnectionState.State.DISCONNECTED
         protected set
+
+    init {
+        try {
+            this.topicObservableMap = HashMap()
+            this.gson = GsonBuilder().setExclusionStrategies(object : ExclusionStrategy {
+                override fun shouldSkipField(fieldAttributes: FieldAttributes): Boolean {
+                    return false
+                }
+
+                override fun shouldSkipClass(aClass: Class<*>): Boolean {
+                    // ignore Command Description because its an interface and can not be serialized without any instance creator.
+                    if (aClass == CommandDescription::class.java) {
+                        return true
+                    }
+                    return false
+                }
+            }).create()
+
+            this.restClient = ClientBuilder.newClient()
+            try {
+                restClient.register(OAuth2ClientSupport.feature(token))
+            } catch (ex: NotAvailableException) {
+                LOGGER.warn("Could not retrieve OpenHAB token from gateway config!", ex)
+            }
+            this.restTarget =
+                restClient.target(JPService.getProperty(JPOpenHABURI::class.java).value.resolve(SEPARATOR + REST_TARGET))
+            this.setConnectState(ConnectionStateType.ConnectionState.State.CONNECTING)
+        } catch (ex: JPNotAvailableException) {
+            throw InstantiationException(this, ex)
+        } catch (ex: CouldNotPerformException) {
+            throw InstantiationException(this, ex)
+        }
+    }
 
     private val isTargetReachable: Boolean
         get() {
@@ -110,14 +143,14 @@ abstract class OpenHABRestConnection : Shutdownable {
                 ConnectionStateType.ConnectionState.State.CONNECTING -> {
                     LOGGER.info("Wait for openHAB...")
                     try {
-                        connectionTask!!.cancel(true)
+                        connectionTask?.cancel(true)
                         connectionTask = GlobalScheduledExecutorService.scheduleWithFixedDelay({
                             if (isTargetReachable) {
                                 // set connected
                                 setConnectState(ConnectionStateType.ConnectionState.State.CONNECTED)
 
                                 // cleanup own task
-                                connectionTask!!.cancel(false)
+                                connectionTask?.cancel(false)
                             }
                         }, 0, 15, TimeUnit.SECONDS)
                     } catch (ex: NotAvailableException) {
@@ -172,15 +205,17 @@ abstract class OpenHABRestConnection : Shutdownable {
             .build()
             .also { it.open() }
 
+
         val evenConsumer = Consumer { inboundSseEvent: InboundSseEvent ->
             // dispatch event
             try {
                 val payload = JsonParser.parseString(inboundSseEvent.readData()).asJsonObject
-                for ((key, value) in topicObservableMap!!) {
+                for ((key, value) in topicObservableMap) {
                     try {
-                        if (payload[TOPIC_KEY].asString.matches(key.toRegex())) {
-                            value.notifyObservers(payload)
-                        }
+                        payload[TOPIC_KEY]
+                            ?.asString
+                            ?.takeIf { it.matches(key.toRegex()) }
+                            ?.run { value.notifyObservers(payload) }
                     } catch (ex: Exception) {
                         ExceptionPrinter.printHistory(
                             CouldNotPerformException(
@@ -207,7 +242,7 @@ abstract class OpenHABRestConnection : Shutdownable {
         sseSource?.register(evenConsumer, errorHandler, reconnectHandler)
     }
 
-    fun checkConnectionState() {
+    private fun checkConnectionState() {
         synchronized(connectionStateSyncLock) {
             // only validate if connected
             if (!isConnected) {
@@ -225,23 +260,23 @@ abstract class OpenHABRestConnection : Shutdownable {
         get() = openhabConnectionState == ConnectionStateType.ConnectionState.State.CONNECTED
 
     @JvmOverloads
-    fun addSSEObserver(observer: Observer<Any?, JsonObject?>?, topicRegex: String = "") {
+    fun addSSEObserver(observer: Observer<Any, JsonObject>, topicRegex: String = "") {
         synchronized(topicObservableMapLock) {
-            if (topicObservableMap!!.containsKey(topicRegex)) {
-                topicObservableMap!![topicRegex]!!.addObserver(observer)
+            if (topicObservableMap.containsKey(topicRegex)) {
+                topicObservableMap[topicRegex]!!.addObserver(observer)
                 return
             }
-            val observable = ObservableImpl<Any?, JsonObject?>(this)
+            val observable = ObservableImpl<Any, JsonObject>(this)
             observable.addObserver(observer)
-            topicObservableMap!!.put(topicRegex, observable)
+            topicObservableMap.put(topicRegex, observable)
         }
     }
 
     @JvmOverloads
-    fun removeSSEObserver(observer: Observer<Any?, JsonObject?>?, topicFilter: String = "") {
+    fun removeSSEObserver(observer: Observer<Any, JsonObject>, topicFilter: String = "") {
         synchronized(topicObservableMapLock) {
-            if (topicObservableMap!!.containsKey(topicFilter)) {
-                topicObservableMap!![topicFilter]!!.removeObserver(observer)
+            if (topicObservableMap.containsKey(topicFilter)) {
+                topicObservableMap[topicFilter]!!.removeObserver(observer)
             }
         }
     }
@@ -337,7 +372,7 @@ abstract class OpenHABRestConnection : Shutdownable {
 
     @Throws(CouldNotPerformException::class)
     protected fun putJson(target: String, value: Any?): String {
-        return put(target, gson!!.toJson(value), MediaType.APPLICATION_JSON_TYPE)
+        return put(target, gson.toJson(value), MediaType.APPLICATION_JSON_TYPE)
     }
 
     @Throws(CouldNotPerformException::class)
@@ -363,7 +398,7 @@ abstract class OpenHABRestConnection : Shutdownable {
 
     @Throws(CouldNotPerformException::class)
     protected fun postJson(target: String, value: Any?): String {
-        return post(target, gson!!.toJson(value), MediaType.APPLICATION_JSON_TYPE)
+        return post(target, gson.toJson(value), MediaType.APPLICATION_JSON_TYPE)
     }
 
     @Throws(CouldNotPerformException::class)
@@ -400,52 +435,15 @@ abstract class OpenHABRestConnection : Shutdownable {
         setConnectState(ConnectionStateType.ConnectionState.State.DISCONNECTED)
 
         // stop rest service
-        restClient!!.close()
+        restClient.close()
 
         // stop sse service
         synchronized(topicObservableMapLock) {
-            for (jsonObjectObservable in topicObservableMap!!.values) {
+            for (jsonObjectObservable in topicObservableMap.values) {
                 jsonObjectObservable.shutdown()
             }
-            topicObservableMap!!.clear()
+            topicObservableMap.clear()
             resetConnection()
-        }
-    }
-
-
-    private val OPENHAB_GATEWAY_CLASS_LABEL = "OpenHAB"
-    private val META_CONFIG_TOKEN_KEY = "TOKEN"
-
-    init {
-        try {
-            this.topicObservableMap = HashMap()
-            this.gson = GsonBuilder().setExclusionStrategies(object : ExclusionStrategy {
-                override fun shouldSkipField(fieldAttributes: FieldAttributes): Boolean {
-                    return false
-                }
-
-                override fun shouldSkipClass(aClass: Class<*>): Boolean {
-                    // ignore Command Description because its an interface and can not be serialized without any instance creator.
-                    if (aClass == CommandDescription::class.java) {
-                        return true
-                    }
-                    return false
-                }
-            }).create()
-
-            this.restClient = ClientBuilder.newClient()
-            try {
-                restClient?.register(OAuth2ClientSupport.feature(token))
-            } catch (ex: NotAvailableException) {
-                LOGGER.warn("Could not retrieve OpenHAB token from gateway config!", ex)
-            }
-            this.restTarget =
-                restClient?.target(JPService.getProperty(JPOpenHABURI::class.java).value.resolve(SEPARATOR + REST_TARGET))
-            this.setConnectState(ConnectionStateType.ConnectionState.State.CONNECTING)
-        } catch (ex: JPNotAvailableException) {
-            throw InstantiationException(this, ex)
-        } catch (ex: CouldNotPerformException) {
-            throw InstantiationException(this, ex)
         }
     }
 
@@ -474,7 +472,12 @@ abstract class OpenHABRestConnection : Shutdownable {
             throw NotAvailableException("token")
         }
 
+
     companion object {
+
+        private const val OPENHAB_GATEWAY_CLASS_LABEL = "OpenHAB"
+        private const val META_CONFIG_TOKEN_KEY = "TOKEN"
+
         const val SEPARATOR: String = "/"
         const val REST_TARGET: String = "rest"
 
