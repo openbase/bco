@@ -10,12 +10,12 @@ package org.openbase.bco.dal.example;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -48,10 +48,9 @@ import java.util.concurrent.CancellationException;
 
 
 /**
- *
  * This howto demonstrates how all rooms of your smart environment can be observed regarding their current motion state.
  * BCO offers two different approaches that are both addressed within this howto by EXAMPLE 1 and EXAMPLE 2
- *
+ * <p>
  * Note: You can use the PRESENCE_STATE service as well to rely not only on motion but also on other sensor events to detect a human presence at locations.
  * Note: This howto requires a running bco platform provided by your network.
  *
@@ -70,17 +69,17 @@ public class HowToObserveMotionStatesOfAllRooms {
             LOGGER.info("authenticate current session...");
             BCOLogin.getSession().loginUserViaUsername("admin", "admin", false);
 
-        // EXAMPLE 1: observe the movement in all rooms via a custom unit pool.
+            // EXAMPLE 1: observe the movement in all rooms via a custom unit pool.
 
             // create a new unit pool which is mainly a collection of unit remotes
-            final CustomUnitPool locationPool = new CustomUnitPool();
+            final CustomUnitPool<?, ?> locationPool = new CustomUnitPool<Message, UnitRemote<Message>>();
 
             // make sure the pool only contains tile locations (rooms are represented as tiles in bco).
             // so we want to filter all non locations and non tiles.
             locationPool.init(
                     unitConfig -> unitConfig.getUnitType() == UnitType.LOCATION,
                     unitConfig -> unitConfig.getLocationConfig().getLocationType() == LocationType.TILE
-                    );
+            );
 
             // activate the pool so units get synchronized...
             locationPool.activate();
@@ -89,7 +88,7 @@ public class HowToObserveMotionStatesOfAllRooms {
             locationPool.addServiceStateObserver((source, data) -> {
 
                 // filter non motion state events
-                if(source.getServiceType() != ServiceType.MOTION_STATE_SERVICE) {
+                if (source.getServiceType() != ServiceType.MOTION_STATE_SERVICE) {
                     return;
                 }
 
@@ -98,7 +97,7 @@ public class HowToObserveMotionStatesOfAllRooms {
                 final LocationRemote locationRemote = (LocationRemote) source.getServiceProvider();
 
                 // inform about the update. The location unit is delivered via the service provider method.
-                LOGGER.info("EXAMPLE 1: "+LabelProcessor.getBestMatch(locationRemote.getConfig().getLabel(), "?") + " has changed its motion state to " + motionState.getValue().name());
+                LOGGER.info("EXAMPLE 1: " + LabelProcessor.getBestMatch(locationRemote.getConfig().getLabel(), "?") + " has changed its motion state to " + motionState.getValue().name());
             });
 
             // print a summary about the current movement state
@@ -108,10 +107,10 @@ public class HowToObserveMotionStatesOfAllRooms {
 
                 // we need to wait for the remote synchronisation when accessing any unit state at the first time
                 location.waitForData();
-                LOGGER.info("EXAMPLE 1: "+location.getLabel("?") + " has currently "+ location.getMotionState().getValue().name());
+                LOGGER.info("EXAMPLE 1: " + location.getLabel("?") + " has currently " + location.getMotionState().getValue().name());
             }
 
-        // EXAMPLE 2: observe the movement in all rooms via location remotes
+            // EXAMPLE 2: observe the movement in all rooms via location remotes
 
             // query all tiles via the registry (rooms are represented as tiles in bco).
             final List<UnitConfig> locationConfigs = Registries.getUnitRegistry().getLocationUnitConfigsByLocationType(LocationType.TILE);
@@ -127,7 +126,7 @@ public class HowToObserveMotionStatesOfAllRooms {
                 location.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.MOTION_STATE_SERVICE, (source, data) -> {
                     // we know its a motion state
                     final MotionState motionState = (MotionState) data;
-                    LOGGER.info("EXAMPLE 2: "+location.getLabel("?") + " has changed its motion state to " + motionState.getValue().name());
+                    LOGGER.info("EXAMPLE 2: " + location.getLabel("?") + " has changed its motion state to " + motionState.getValue().name());
                 });
             }
 
@@ -135,7 +134,7 @@ public class HowToObserveMotionStatesOfAllRooms {
             for (LocationRemote location : locations) {
                 // we need to wait for the remote synchronisation when accessing any unit state at the first time
                 location.waitForData();
-                LOGGER.info("EXAMPLE 2: "+location.getLabel("?") + " has currently "+ location.getMotionState().getValue().name());
+                LOGGER.info("EXAMPLE 2: " + location.getLabel("?") + " has currently " + location.getMotionState().getValue().name());
             }
 
             LOGGER.info("Observe changes for 2 minutes");

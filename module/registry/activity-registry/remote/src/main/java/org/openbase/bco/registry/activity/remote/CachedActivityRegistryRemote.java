@@ -10,12 +10,12 @@ package org.openbase.bco.registry.activity.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -44,7 +44,7 @@ public class CachedActivityRegistryRemote {
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedActivityRegistryRemote.class);
 
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedActivityRegistryRemoteLock");
-    private static final SyncObject REGISTY_LOCK = new SyncObject("RegistyLock");
+    private static final SyncObject REGISTRY_LOCK = new SyncObject("RegistryLock");
 
     private static ActivityRegistryRemote registryRemote;
     private static volatile boolean shutdown = false;
@@ -75,7 +75,7 @@ public class CachedActivityRegistryRemote {
         try {
             // only call re-init if the registry was activated and initialized in the first place
             if (registryRemote != null) {
-                synchronized (REGISTY_LOCK) {
+                synchronized (REGISTRY_LOCK) {
                     getRegistry().reinit(REMOTE_LOCK);
                 }
             }
@@ -119,7 +119,7 @@ public class CachedActivityRegistryRemote {
                 return registryRemote;
             }
 
-            synchronized (REGISTY_LOCK) {
+            synchronized (REGISTRY_LOCK) {
                 if (registryRemote == null) {
                     try {
                         registryRemote = new ActivityRegistryRemote();

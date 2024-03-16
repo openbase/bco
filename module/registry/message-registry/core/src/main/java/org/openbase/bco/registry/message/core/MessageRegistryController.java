@@ -10,24 +10,21 @@ package org.openbase.bco.registry.message.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.PermissionType;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
-import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.bco.registry.message.lib.MessageRegistry;
 import org.openbase.bco.registry.message.lib.generator.UserMessageIdGenerator;
 import org.openbase.bco.registry.message.lib.jp.JPMessageRegistryScope;
@@ -40,16 +37,13 @@ import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.pattern.ListFilter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.communication.UserMessageType.UserMessage;
 import org.openbase.type.domotic.registry.MessageRegistryDataType.MessageRegistryData;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -131,10 +125,7 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
 
     @Override
     public Future<UserMessage> registerUserMessage(final UserMessage userMessage) {
-        return GlobalCachedExecutorService.submit(() -> {
-            UserMessage result = userMessageRegistry.register(userMessage);
-            return result;
-        });
+        return GlobalCachedExecutorService.submit(() -> userMessageRegistry.register(userMessage));
     }
 
     @Override
@@ -226,8 +217,14 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
     public Future<AuthenticatedValue> removeUserMessageAuthenticated(final AuthenticatedValue authenticatedValue) {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, UserMessage.class, this,
                 (userMessage, authenticationBaseData) -> {
-                    // verify write permissions for the old user message
-                    final UserMessage old = userMessageRegistry.getMessage(userMessage.getId());
+                    // verify write permissions for the user message to remove
+                    UserMessage old = null;
+                    try {
+                        old = userMessageRegistry.getMessage(userMessage.getId());
+                    } catch (NotAvailableException ex) {
+                        // skip removal if message is not present.
+                        return userMessage;
+                    }
                     AuthorizationWithTokenHelper.canDo(authenticationBaseData, old, PermissionType.WRITE, CachedUnitRegistryRemote.getRegistry());
                     return userMessageRegistry.remove(userMessage);
                 }
@@ -252,35 +249,35 @@ public class MessageRegistryController extends AbstractRegistryController<Messag
     protected void registerRemoteRegistries() {
     }
 
-    @Override
-    protected MessageRegistryData filterDataForUser(final MessageRegistryData.Builder dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException {
-        // Create a filter which removes all user messages from a list without read permissions to its location by the user
-        final ListFilter<UserMessage> readFilter = userMessage -> {
-            try {
-                boolean senderPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getSenderId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap());
-                boolean receiverPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getRecipientId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap());
-                return !(senderPermission || receiverPermission);
-            } catch (CouldNotPerformException e) {
-                // if id could not resolved, than we filter the element.
-                return true;
-            }
-        };
-        // iterate over all fields of unit registry data
-        for (FieldDescriptor fieldDescriptor : dataBuilder.getAllFields().keySet()) {
-            // only filter repeated fields
-            if (!fieldDescriptor.isRepeated()) {
-                continue;
-            }
-
-            // only filter fields of type UserMessage
-            if (!fieldDescriptor.getMessageType().getName().equals(UserMessage.getDescriptor().getName())) {
-                continue;
-            }
-
-            // copy list, filter it and set as new list for the field
-            dataBuilder.setField(fieldDescriptor, readFilter.filter(new ArrayList<>((List<UserMessage>) dataBuilder.getField(fieldDescriptor))));
-        }
-
-        return dataBuilder.build();
-    }
+//    @Override
+//    protected MessageRegistryData filterDataForUser(final MessageRegistryData.Builder dataBuilder, final UserClientPair userClientPair) throws CouldNotPerformException {
+//        // Create a filter which removes all user messages from a list without read permissions to its location by the user
+//        final ListFilter<UserMessage> readFilter = userMessage -> {
+//            try {
+//                boolean senderPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getSenderId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap());
+//                boolean receiverPermission = AuthorizationHelper.canRead(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(userMessage.getRecipientId()), userClientPair, CachedUnitRegistryRemote.getRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(true).getEntryMap(), CachedUnitRegistryRemote.getRegistry().getLocationUnitConfigRemoteRegistry(true).getEntryMap());
+//                return !(senderPermission || receiverPermission);
+//            } catch (CouldNotPerformException e) {
+//                // if id could not resolved, than we filter the element.
+//                return true;
+//            }
+//        };
+//        // iterate over all fields of unit registry data
+//        for (FieldDescriptor fieldDescriptor : dataBuilder.getAllFields().keySet()) {
+//            // only filter repeated fields
+//            if (!fieldDescriptor.isRepeated()) {
+//                continue;
+//            }
+//
+//            // only filter fields of type UserMessage
+//            if (!fieldDescriptor.getMessageType().getName().equals(UserMessage.getDescriptor().getName())) {
+//                continue;
+//            }
+//
+//            // copy list, filter it and set as new list for the field
+//            dataBuilder.setField(fieldDescriptor, readFilter.filter(new ArrayList<>((List<UserMessage>) dataBuilder.getField(fieldDescriptor))));
+//        }
+//
+//        return dataBuilder.build();
+//    }
 }

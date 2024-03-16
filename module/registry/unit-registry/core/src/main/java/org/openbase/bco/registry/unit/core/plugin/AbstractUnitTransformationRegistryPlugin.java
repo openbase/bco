@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.plugin;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,18 +25,13 @@ package org.openbase.bco.registry.unit.core.plugin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.iface.Transformer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.openbase.rct.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig.Builder;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
@@ -70,7 +65,7 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
         // wait until transformation was published
         try {
             int maxChecks = 10;
-            Exception exception = new CouldNotPerformException("This should not happen");
+            Exception exception = new CouldNotPerformException("Update not advertised.");
             for (int i = 0; i < maxChecks; i++) {
                 try {
                     // check if transformation was published

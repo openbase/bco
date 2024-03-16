@@ -1,7 +1,6 @@
 package org.openbase.bco.dal.test.layer.unit.connection
 
 import io.kotest.matchers.comparables.shouldBeEqualComparingTo
-import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.openbase.bco.dal.lib.state.States
@@ -53,7 +52,7 @@ class ConnectionRemoteTest : AbstractBCOLocationManagerTest() {
             .getUnitConfigByAlias(MockRegistry.ALIAS_REED_SWITCH_HEAVEN_STAIRWAY_GATE)
 
         val reedContactController = reedContactConfig
-            .let { deviceManagerLauncher.launchable.unitControllerRegistry[it.id] }
+            .let { deviceManagerLauncher.launchable!!.unitControllerRegistry[it.id] }
 
         val reedContact = reedContactConfig
             .let { Units.getUnit(it, true, Units.REED_CONTACT) }

@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -73,7 +74,7 @@ public class RemoteAction implements Action {
     private final ActionParameter actionParameter;
     private final ObservableImpl<RemoteAction, ActionDescription> actionDescriptionObservable;
     private final AuthToken authToken;
-    private final List<RemoteAction> impactedRemoteActions = new ArrayList<>();
+    private final List<RemoteAction> impactedRemoteActions = Collections.synchronizedList(new ArrayList<>());
     private final Observer impactActionObserver = new Observer<RemoteAction, ActionDescription>() {
         @Override
         public void update(RemoteAction source, ActionDescription observable) throws Exception {
@@ -642,6 +643,11 @@ public class RemoteAction implements Action {
      */
     @Override
     public boolean isDone() {
+
+        if (futureObservationTask != null && !futureObservationTask.isDone()) {
+            return false;
+        }
+
         try {
             if (getActionDescription().getIntermediary()) {
                 for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {

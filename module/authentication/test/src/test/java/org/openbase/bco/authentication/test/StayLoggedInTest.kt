@@ -13,7 +13,7 @@ import org.openbase.bco.authentication.mock.MockClientStore
 import org.openbase.bco.authentication.mock.MockCredentialStore
 import org.openbase.jps.core.JPService
 import org.openbase.jul.communication.mqtt.test.MqttIntegrationTest
-import org.openbase.jul.exception.initialCauseMessage
+import org.openbase.jul.exception.initialCause
 import org.openbase.jul.exception.printer.ExceptionPrinter
 import java.util.concurrent.ExecutionException
 
@@ -93,7 +93,7 @@ class StayLoggedInTest : MqttIntegrationTest() {
             CachedAuthenticationRemote.getRemote().validateClientServerTicket(wrapper).get()
             Assertions.fail<Any>("No exception thrown even though the session should have timed out")
         } catch (ex: ExecutionException) {
-            ex.initialCauseMessage shouldContain "SessionExpired"
+            ex.initialCause.javaClass.simpleName shouldContain "SessionExpired"
         } finally {
             ExceptionPrinter.setBeQuit(false)
         }

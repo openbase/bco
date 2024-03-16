@@ -1,18 +1,14 @@
 package org.openbase.bco.api.graphql.discovery
 
 import org.openbase.jps.core.JPService
-import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.exception.InstantiationException
 import org.openbase.jul.iface.Shutdownable
 import org.slf4j.LoggerFactory
-import java.io.IOException
 import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.*
-import javax.jmdns.JmDNS
-import javax.jmdns.ServiceInfo
 
 
 /*-
@@ -36,10 +32,10 @@ import javax.jmdns.ServiceInfo
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */   class ServiceAdvertiser private constructor() : Shutdownable {
-    private val domainNameServices: List<JmDNS>
+//    private val domainNameServices: List<JmDNS>
 
     init {
-        domainNameServices = ArrayList()
+//        domainNameServices = ArrayList()
 
         // skip advertising in debug mode
         if (!JPService.debugMode()) {
@@ -69,40 +65,40 @@ import javax.jmdns.ServiceInfo
         }
     }
 
-    @Throws(CouldNotPerformException::class)
-    fun register(
-        qualifiedNameMap: HashMap<ServiceInfo.Fields, String>?,
-        port: Int,
-        weight: Int,
-        priority: Int,
-        persistent: Boolean,
-        props: Map<String, *>?,
-    ): List<ServiceInfo> {
-        return try {
-            val serviceInfoList: MutableList<ServiceInfo> = ArrayList()
-            for (domainNameService in domainNameServices) {
+//    @Throws(CouldNotPerformException::class)
+//    fun register(
+//        qualifiedNameMap: HashMap<ServiceInfo.Fields, String>?,
+//        port: Int,
+//        weight: Int,
+//        priority: Int,
+//        persistent: Boolean,
+//        props: Map<String, *>?,
+//    ): List<ServiceInfo> {
+//        return try {
+//            val serviceInfoList: MutableList<ServiceInfo> = ArrayList()
+//            for (domainNameService in domainNameServices) {
+//
+//                // Register the service
+//                val serviceInfo = ServiceInfo.create(qualifiedNameMap, port, weight, priority, false, props)
+//                domainNameService.registerService(serviceInfo)
+//                serviceInfoList.add(serviceInfo)
+//            }
+//            serviceInfoList
+//        } catch (ex: IOException) {
+//            throw CouldNotPerformException("Could not register service!", ex)
+//        }
+//    }
 
-                // Register the service
-                val serviceInfo = ServiceInfo.create(qualifiedNameMap, port, weight, priority, false, props)
-                domainNameService.registerService(serviceInfo)
-                serviceInfoList.add(serviceInfo)
-            }
-            serviceInfoList
-        } catch (ex: IOException) {
-            throw CouldNotPerformException("Could not register service!", ex)
-        }
-    }
-
-    fun deregisterService(serviceInfo: ServiceInfo?) {
-        for (domainNameService in domainNameServices) {
-            domainNameService.unregisterService(serviceInfo)
-        }
-    }
+//    fun deregisterService(serviceInfo: ServiceInfo?) {
+//        for (domainNameService in domainNameServices) {
+//            domainNameService.unregisterService(serviceInfo)
+//        }
+//    }
 
     override fun shutdown() {
-        for (domainNameService in domainNameServices) {
-            domainNameService.unregisterAllServices()
-        }
+//        for (domainNameService in domainNameServices) {
+//            domainNameService.unregisterAllServices()
+//        }
     }
 
     companion object {

@@ -91,8 +91,8 @@ public class BCORegistryValidator extends BCOSystemValidator {
         System.out.println("=== " + AnsiColor.colorize("Check registries" + (JPService.getValue(JPWaitForData.class, false) ? " and wait for data." : ""), AnsiColor.ANSI_BLUE) + " ===\n");
 
         // check
-        final List<RegistryRemote> registries = Registries.getRegistries(JPService.getValue(JPWaitForData.class, false));
-        for (final RegistryRemote registry : registries) {
+        final List<RegistryRemote<?>> registries = Registries.getRegistries(JPService.getValue(JPWaitForData.class, false));
+        for (final RegistryRemote<?> registry : registries) {
             if (!check(registry, TimeUnit.SECONDS.toMillis(2))) {
 
                 // in case we should wait

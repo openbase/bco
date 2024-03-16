@@ -1,10 +1,10 @@
 package org.openbase.bco.api.graphql.context
 
 import graphql.kickstart.execution.context.GraphQLKickstartContext
+import jakarta.websocket.Session
+import jakarta.websocket.server.HandshakeRequest
 import org.dataloader.DataLoaderRegistry
 import java.util.*
-import javax.websocket.Session
-import javax.websocket.server.HandshakeRequest
 
 /*-
  * #%L

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.state;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,8 +23,7 @@ package org.openbase.bco.dal.lib.state;
  */
 
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.type.domotic.state.ActivationStateType.ActivationState.State;
-import org.openbase.type.domotic.state.BlindStateType;
+import org.openbase.type.domotic.state.BatteryStateType.BatteryState;
 import org.openbase.type.domotic.state.BlindStateType.BlindState;
 import org.openbase.type.domotic.state.BrightnessStateType.BrightnessState;
 import org.openbase.type.domotic.state.ColorStateType.ColorState;
@@ -33,7 +32,6 @@ import org.openbase.type.domotic.state.IlluminanceStateType.IlluminanceState;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.PowerStateType.PowerState;
 import org.openbase.type.vision.ColorType;
-import org.openbase.type.vision.ColorType.Color;
 import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 
@@ -124,5 +122,15 @@ public class States {
     public static class Contact {
         public static final ContactState OPEN = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
         public static final ContactState CLOSED = ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
+    }
+
+    /**
+     * Battery State Prototypes
+     */
+    public static class Battery {
+        public static final BatteryState OK = BatteryState.newBuilder().setValue(BatteryState.State.OK).build();
+        public static final BatteryState LOW = BatteryState.newBuilder().setValue(BatteryState.State.LOW).build();
+        public static final BatteryState CRITICAL = BatteryState.newBuilder().setValue(BatteryState.State.CRITICAL).build();
+        public static final BatteryState INSUFFICIENT = BatteryState.newBuilder().setValue(BatteryState.State.INSUFFICIENT).build();
     }
 }

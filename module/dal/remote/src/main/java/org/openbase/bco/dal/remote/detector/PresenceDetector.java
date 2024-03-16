@@ -10,26 +10,23 @@ package org.openbase.bco.dal.remote.detector;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.layer.unit.CustomUnitPool;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
@@ -42,19 +39,22 @@ import org.openbase.jul.schedule.Timeout;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonState;
 import org.openbase.type.domotic.state.ButtonStateType.ButtonStateOrBuilder;
 import org.openbase.type.domotic.state.DoorStateType.DoorState;
-import org.openbase.type.domotic.state.WindowStateType.WindowState;
-import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
-import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
-import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig.TileType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.MotionStateType.MotionState;
 import org.openbase.type.domotic.state.MotionStateType.MotionStateOrBuilder;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState.State;
 import org.openbase.type.domotic.state.PresenceStateType.PresenceStateOrBuilder;
+import org.openbase.type.domotic.state.WindowStateType.WindowState;
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
+import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData;
+import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig.TileType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -74,77 +74,72 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
     private final Observer<DataProvider<LocationData>, LocationData> locationDataObserver;
     private Location location;
     private final ObservableImpl<DataProvider<PresenceState>, PresenceState> presenceStateObservable;
-    private final CustomUnitPool buttonUnitPool;
-    private final CustomUnitPool connectionUnitPool;
+    private final CustomUnitPool<?, ?> buttonUnitPool;
+    private final CustomUnitPool<?, ?> connectionUnitPool;
 
     private boolean active;
     private boolean shutdownInitiated = false;
 
     public PresenceDetector() throws InstantiationException {
-        try {
-            this.presenceStateBuilder = PresenceState.newBuilder();
-            this.active = false;
-            this.presenceStateObservable = new ObservableImpl<>(this);
-            this.presenceTimeout = new Timeout(PRESENCE_TIMEOUT) {
+        this.presenceStateBuilder = PresenceState.newBuilder();
+        this.active = false;
+        this.presenceStateObservable = new ObservableImpl<>(this);
+        this.presenceTimeout = new Timeout(PRESENCE_TIMEOUT) {
 
-                @Override
-                public void expired() {
-                    try {
-                        // if motion is still detected just restart the timeout.
-                        if (location.getData().getMotionState().getValue() == MotionState.State.MOTION) {
-                            GlobalCachedExecutorService.submit(() -> {
-                                try {
-                                    presenceTimeout.restart();
-                                } catch (final CouldNotPerformException ex) {
-                                    ExceptionPrinter.printHistory("Could not setup presence timeout!", ex, logger);
-                                }
-                            });
-                            return;
-                        }
-                        updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.ABSENT));
-                    } catch (ShutdownInProgressException ex) {
-                        // skip update on shutdown
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify absent by timer!", ex), logger);
-                    }
-                }
-            };
-
-            locationDataObserver = (DataProvider<LocationData> source, LocationData data) -> {
-                updateMotionState(data.getMotionState());
-            };
-
-            this.buttonUnitPool = new CustomUnitPool();
-            this.connectionUnitPool = new CustomUnitPool();
-
-            this.buttonUnitPool.addServiceStateObserver((source, data) -> {
+            @Override
+            public void expired() {
                 try {
-                    PresenceDetector.this.updateButtonState((ButtonState) data);
-                } catch (ClassCastException ex) {
-                    ExceptionPrinter.printHistory("ButtonPool entail incompatible units!", ex, logger);
+                    // if motion is still detected just restart the timeout.
+                    if (location.getData().getMotionState().getValue() == MotionState.State.MOTION) {
+                        GlobalCachedExecutorService.submit(() -> {
+                            try {
+                                presenceTimeout.restart();
+                            } catch (final CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory("Could not setup presence timeout!", ex, logger);
+                            }
+                        });
+                        return;
+                    }
+                    updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.ABSENT));
+                } catch (ShutdownInProgressException ex) {
+                    // skip update on shutdown
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify absent by timer!", ex), logger);
                 }
-            });
+            }
+        };
 
-            this.connectionUnitPool.addServiceStateObserver((source, data) -> {
-                switch (source.getServiceType()) {
-                    case WINDOW_STATE_SERVICE:
-                        updateWindowState((WindowState) data);
-                        break;
-                    case DOOR_STATE_SERVICE:
-                        updateDoorState((DoorState) data);
-                        break;
-                    case PASSAGE_STATE_SERVICE:
-                        // just ignore passage states.
-                        break;
+        locationDataObserver = (DataProvider<LocationData> source, LocationData data) -> {
+            updateMotionState(data.getMotionState());
+        };
 
-                    default:
-                        logger.warn("Invalid connection service update received: " + source.getServiceType().name() + " from " + source + " pool:" + connectionUnitPool.isActive());
-                }
-            });
+        this.buttonUnitPool = new CustomUnitPool();
+        this.connectionUnitPool = new CustomUnitPool();
 
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        this.buttonUnitPool.addServiceStateObserver((source, data) -> {
+            try {
+                PresenceDetector.this.updateButtonState((ButtonState) data);
+            } catch (ClassCastException ex) {
+                ExceptionPrinter.printHistory("ButtonPool entail incompatible units!", ex, logger);
+            }
+        });
+
+        this.connectionUnitPool.addServiceStateObserver((source, data) -> {
+            switch (source.getServiceType()) {
+                case WINDOW_STATE_SERVICE:
+                    updateWindowState((WindowState) data);
+                    break;
+                case DOOR_STATE_SERVICE:
+                    updateDoorState((DoorState) data);
+                    break;
+                case PASSAGE_STATE_SERVICE:
+                    // just ignore passage states.
+                    break;
+
+                default:
+                    logger.warn("Invalid connection service update received: " + source.getServiceType().name() + " from " + source + " pool:" + connectionUnitPool.isActive());
+            }
+        });
     }
 
     @Override
@@ -165,23 +160,23 @@ public class PresenceDetector implements Manageable<Location>, DataProvider<Pres
 
             if ((location.getConfig().getLocationConfig().getLocationType() == LocationType.TILE)) {
                 connectionUnitPool.init(
-                    unitConfig -> unitConfig.getUnitType() == UnitType.CONNECTION,
-                    unitConfig -> {
-                        try {
-                            return unitConfig.getConnectionConfig().getTileIdList().contains(location.getId());
-                        } catch (NotAvailableException ex) {
-                            ExceptionPrinter.printHistory("Could not resolve location id within connection filter operation.", ex, logger);
-                            return false;
-                        }
-                    },
-                    unitConfig -> {
-                        try {
-                            return location.getConfig().getLocationConfig().getTileConfig().getTileType() != TileType.OUTDOOR || unitConfig.getConnectionConfig().getConnectionType() != ConnectionType.WINDOW;
-                        } catch (NotAvailableException ex) {
-                            ExceptionPrinter.printHistory("Could not resolve location id within connection filter operation.", ex, logger);
-                            return false;
-                        }
-                    });
+                        unitConfig -> unitConfig.getUnitType() == UnitType.CONNECTION,
+                        unitConfig -> {
+                            try {
+                                return unitConfig.getConnectionConfig().getTileIdList().contains(location.getId());
+                            } catch (NotAvailableException ex) {
+                                ExceptionPrinter.printHistory("Could not resolve location id within connection filter operation.", ex, logger);
+                                return false;
+                            }
+                        },
+                        unitConfig -> {
+                            try {
+                                return location.getConfig().getLocationConfig().getTileConfig().getTileType() != TileType.OUTDOOR || unitConfig.getConnectionConfig().getConnectionType() != ConnectionType.WINDOW;
+                            } catch (NotAvailableException ex) {
+                                ExceptionPrinter.printHistory("Could not resolve location id within connection filter operation.", ex, logger);
+                                return false;
+                            }
+                        });
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

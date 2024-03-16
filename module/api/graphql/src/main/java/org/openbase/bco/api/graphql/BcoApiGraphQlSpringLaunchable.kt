@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.context.ConfigurableApplicationContext
 import java.util.*
-import javax.jmdns.ServiceInfo
 
 /*-
  * #%L
@@ -55,19 +54,19 @@ import javax.jmdns.ServiceInfo
         LOGGER.info("Start webserver...")
         context = SpringApplication.run(BcoGraphQlApiSpringBootApplication::class.java, *JPService.getArgs())
         LOGGER.info("Advertise graphql service...")
-        val qualifiedNameMap = HashMap<ServiceInfo.Fields, String>()
-        qualifiedNameMap[ServiceInfo.Fields.Application] = "http"
-        qualifiedNameMap[ServiceInfo.Fields.Instance] = "graphql-bco-openbase"
-        qualifiedNameMap[ServiceInfo.Fields.Subtype] = "graphql"
+//        val qualifiedNameMap = HashMap<ServiceInfo.Fields, String>()
+//        qualifiedNameMap[ServiceInfo.Fields.Application] = "http"
+//        qualifiedNameMap[ServiceInfo.Fields.Instance] = "graphql-bco-openbase"
+//        qualifiedNameMap[ServiceInfo.Fields.Subtype] = "graphql"
         val propertyMap = HashMap<String, String>()
         propertyMap["bco-uuid"] = UUID.randomUUID().toString()
         propertyMap["path"] = "graphql"
 
         // lookup port
-        context?.getEnvironment()?.getProperty("server.port")?.toInt()?.let { port ->
-            // register service advertising
-            serviceAdvertiser!!.register(qualifiedNameMap, port, 0, 0, false, propertyMap)
-        }
+//        context?.getEnvironment()?.getProperty("server.port")?.toInt()?.let { port ->
+//            // register service advertising
+//            serviceAdvertiser!!.register(qualifiedNameMap, port, 0, 0, false, propertyMap)
+//        }
     }
 
     override fun deactivate() {
