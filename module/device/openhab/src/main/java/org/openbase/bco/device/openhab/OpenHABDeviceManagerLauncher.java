@@ -27,6 +27,7 @@ import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.device.openhab.jp.JPOpenHABURI;
 import org.openbase.bco.device.openhab.manager.OpenHABDeviceManager;
 import org.openbase.bco.device.openhab.registry.OpenHABConfigSynchronizerLauncher;
+import org.openbase.bco.device.openhab.sitemap.OpenHABSitemapSynchronizerLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.communication.jp.JPComHost;
@@ -35,7 +36,7 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDeviceManager> {
 
-    public OpenHABDeviceManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
+    public OpenHABDeviceManagerLauncher() {
         super(OpenHABDeviceManagerLauncher.class, OpenHABDeviceManager.class);
     }
 
@@ -44,9 +45,13 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(BCO.class, OpenHABDeviceManagerLauncher.class, args, OpenHABDeviceManagerLauncher.class,
-                OpenHABConfigSynchronizerLauncher.class
-//                OpenHABSitemapSynchronizerLauncher.class
+        AbstractLauncher.main(
+                BCO.class,
+                OpenHABDeviceManagerLauncher.class,
+                args,
+                OpenHABDeviceManagerLauncher.class,
+                OpenHABConfigSynchronizerLauncher.class,
+                OpenHABSitemapSynchronizerLauncher.class,
         );
     }
 

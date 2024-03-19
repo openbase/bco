@@ -125,7 +125,7 @@ abstract class OpenHABRestConnection : Shutdownable {
             if (connectState == this.openhabConnectionState) {
                 return
             }
-            LOGGER.trace("Openhab Connection State changed to: $connectState")
+            LOGGER.trace("Openhab Connection State changed to: {}", connectState)
 
             // update state
             this.openhabConnectionState = connectState
