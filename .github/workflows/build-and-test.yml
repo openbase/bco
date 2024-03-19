@@ -48,6 +48,8 @@ jobs:
             echo "worth_testing=false" >> "$GITHUB_OUTPUT"
           fi
 
+          echo "worth_testing=${{steps.check.outputs.worth_testing}}"
+
   build:
     name: "Build"
     timeout-minutes: 10
