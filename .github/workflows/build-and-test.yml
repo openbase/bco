@@ -68,7 +68,8 @@ jobs:
     needs: testing
     if: |
       (github.event.pull_request.draft == false)
-      && (${{ needs.check.outputs.worth_testing }} == "true")
+      && (${{ needs.check.outputs.worth_testing }} == '25')
+      #(needs.check_labels.outputs.docs == 'success')
     
     runs-on: ubuntu-latest
 
