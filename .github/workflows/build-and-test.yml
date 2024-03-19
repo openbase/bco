@@ -30,14 +30,35 @@ jobs:
 
       - name: "Check for changes worth testing"
         id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           changed_files=$(gh pr diff --name-only ${{ github.event.pull_request.number }})
-
-          if [[ -n $(echo $changed_files | grep 'buildSrc/') || -n $(echo $changed_files | grep 'docker/') || -n $(echo $changed_files | grep 'gradle/') || -n $(echo $changed_files | grep 'lib/') || -n $(echo $changed_files | grep 'module/') ]]; then
-            echo "worth_testing=true" >> $GITHUB_OUTPUT
+          
+          test=false
+          for ( file in $changed_files ); do
+            if [[ $file == ".github/"* || $file == "doc/*" ]]; then
+              echo "file: $file"
+            else
+              test=true
+              break
+            fi
+          done
+          if [[ $test == true ]]; then
+            echo "worth_testing=true" >> "$GITHUB_OUTPUT"
           else
-            echo "worth_testing=false" >> $GITHUB_OUTPUT
+            echo "worth_testing=false" >> "$GITHUB_OUTPUT"
           fi
+
+
+          outputs:
+            output1: ${{ steps.step1.outputs.test }}
+            output2: ${{ steps.step2.outputs.test }}
+          steps:
+            - id: step1
+              run: echo "test=hello" >> "$GITHUB_OUTPUT"
+            - id: step2
+              run: echo "test=world" >> "$GITHUB_OUTPUT"
 
 
 
