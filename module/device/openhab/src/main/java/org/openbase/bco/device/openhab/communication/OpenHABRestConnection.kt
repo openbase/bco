@@ -25,7 +25,6 @@ import org.openbase.jul.iface.Shutdownable
 import org.openbase.jul.pattern.ObservableImpl
 import org.openbase.jul.pattern.Observer
 import org.openbase.jul.schedule.GlobalScheduledExecutorService
-import org.openbase.jul.schedule.SyncObject
 import org.openbase.type.domotic.state.ConnectionStateType
 import org.openbase.type.domotic.unit.UnitTemplateType
 import org.openbase.type.domotic.unit.gateway.GatewayClassType
@@ -35,11 +34,14 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
 import java.util.function.Consumer
+import kotlin.concurrent.withLock
 
 abstract class OpenHABRestConnection : Shutdownable {
-    private val topicObservableMapLock = SyncObject("topicObservableMapLock")
-    private val connectionStateSyncLock = SyncObject("connectionStateSyncLock")
+    private val topicObservableMapLock = ReentrantLock()
+    private val connectionStateLock = ReentrantLock()
+    private val connectionStateCondition = connectionStateLock.newCondition()
     private var topicObservableMap: MutableMap<String, ObservableImpl<Any, JsonObject>>
 
     private var restClient: Client
@@ -112,24 +114,24 @@ abstract class OpenHABRestConnection : Shutdownable {
         timeout: Long,
         timeUnit: TimeUnit,
     ) {
-        synchronized(connectionStateSyncLock) {
+        connectionStateLock.withLock {
             while (openhabConnectionState != connectionState) {
-                (connectionStateSyncLock as Object).wait(timeUnit.toMillis(timeout))
+                connectionStateCondition.await(timeout, timeUnit)
             }
         }
     }
 
     @Throws(InterruptedException::class)
     fun waitForConnectionState(connectionState: ConnectionStateType.ConnectionState.State) {
-        synchronized(connectionStateSyncLock) {
+        connectionStateLock.withLock {
             while (openhabConnectionState != connectionState) {
-                (connectionStateSyncLock as Object).wait()
+                connectionStateCondition.await()
             }
         }
     }
 
     private fun setConnectState(connectState: ConnectionStateType.ConnectionState.State) {
-        synchronized(connectionStateSyncLock) {
+        connectionStateLock.withLock {
             // filter non changing states
             if (connectState == this.openhabConnectionState) {
                 return
@@ -184,7 +186,7 @@ abstract class OpenHABRestConnection : Shutdownable {
                 }
             }
             // notify state change
-            (connectionStateSyncLock as Object).notifyAll()
+            connectionStateCondition.signalAll()
             if (connectState == ConnectionStateType.ConnectionState.State.RECONNECTING) {
                 setConnectState(ConnectionStateType.ConnectionState.State.CONNECTING)
             }
@@ -243,7 +245,7 @@ abstract class OpenHABRestConnection : Shutdownable {
     }
 
     private fun checkConnectionState() {
-        synchronized(connectionStateSyncLock) {
+        connectionStateLock.withLock {
             // only validate if connected
             if (!isConnected) {
                 return
@@ -261,7 +263,7 @@ abstract class OpenHABRestConnection : Shutdownable {
 
     @JvmOverloads
     fun addSSEObserver(observer: Observer<Any, JsonObject>, topicRegex: String = "") {
-        synchronized(topicObservableMapLock) {
+        topicObservableMapLock.withLock {
             if (topicObservableMap.containsKey(topicRegex)) {
                 topicObservableMap[topicRegex]!!.addObserver(observer)
                 return
@@ -274,7 +276,7 @@ abstract class OpenHABRestConnection : Shutdownable {
 
     @JvmOverloads
     fun removeSSEObserver(observer: Observer<Any, JsonObject>, topicFilter: String = "") {
-        synchronized(topicObservableMapLock) {
+        topicObservableMapLock.withLock {
             if (topicObservableMap.containsKey(topicFilter)) {
                 topicObservableMap[topicFilter]!!.removeObserver(observer)
             }
@@ -438,7 +440,7 @@ abstract class OpenHABRestConnection : Shutdownable {
         restClient.close()
 
         // stop sse service
-        synchronized(topicObservableMapLock) {
+        topicObservableMapLock.withLock {
             for (jsonObjectObservable in topicObservableMap.values) {
                 jsonObjectObservable.shutdown()
             }
