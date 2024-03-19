@@ -11,9 +11,6 @@ on:
       - "epic/**"
     types: [opened, synchronize, reopened, ready_for_review]
 
-
-# Why is this here?
-
 jobs:
   check:
     name: "Check"
@@ -36,7 +33,7 @@ jobs:
           changed_files=$(gh pr diff --name-only ${{ github.event.pull_request.number }})
           
           test=false
-          for ( file in $changed_files ); do
+          for file in $changed_files; do
             if [[ $file == ".github/"* || $file == "doc/*" ]]; then
               echo "file: $file"
             else
@@ -50,18 +47,6 @@ jobs:
             echo "worth_testing=false" >> "$GITHUB_OUTPUT"
           fi
 
-
-          outputs:
-            output1: ${{ steps.step1.outputs.test }}
-            output2: ${{ steps.step2.outputs.test }}
-          steps:
-            - id: step1
-              run: echo "test=hello" >> "$GITHUB_OUTPUT"
-            - id: step2
-              run: echo "test=world" >> "$GITHUB_OUTPUT"
-
-
-
   build:
     name: "Build"
     timeout-minutes: 10
@@ -70,6 +55,8 @@ jobs:
       (github.event.pull_request.draft == false)
       && ${{ needs.check.outputs.worth_testing }} == true
 
+    needs: check
+    
     runs-on: ubuntu-latest
 
     steps:
