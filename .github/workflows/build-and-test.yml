@@ -49,23 +49,10 @@ jobs:
           fi
 
 
-  testing:
-    name: "Testing"
-
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout Branch"
-        uses: actions/checkout@v3
-
-      - name: "Check for changes worth testing"
-        run: |
-          echo "worth_testing=${{needs.check.outputs.worth_testing}}"
-
   build:
     name: "Build"
     timeout-minutes: 10
-    needs: testing
+    needs: check
     if: |
       (github.event.pull_request.draft == false)
       && (needs.check.outputs.worth_testing == true)
