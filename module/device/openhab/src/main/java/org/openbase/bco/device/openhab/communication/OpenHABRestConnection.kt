@@ -26,11 +26,12 @@ import org.openbase.jul.pattern.ObservableImpl
 import org.openbase.jul.pattern.Observer
 import org.openbase.jul.schedule.GlobalScheduledExecutorService
 import org.openbase.type.domotic.state.ConnectionStateType
-import org.openbase.type.domotic.unit.UnitTemplateType
+import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType
 import org.openbase.type.domotic.unit.gateway.GatewayClassType
 import org.openhab.core.types.CommandDescription
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.net.ConnectException
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
@@ -45,7 +46,7 @@ abstract class OpenHABRestConnection : Shutdownable {
     private var topicObservableMap: MutableMap<String, ObservableImpl<Any, JsonObject>>
 
     private var restClient: Client
-    private var restTarget: WebTarget?
+    private var restTarget: WebTarget
     private var sseSource: SseEventSource? = null
 
     var isShutdownInitiated: Boolean = false
@@ -70,10 +71,7 @@ abstract class OpenHABRestConnection : Shutdownable {
 
                 override fun shouldSkipClass(aClass: Class<*>): Boolean {
                     // ignore Command Description because its an interface and can not be serialized without any instance creator.
-                    if (aClass == CommandDescription::class.java) {
-                        return true
-                    }
-                    return false
+                    return aClass == CommandDescription::class.java
                 }
             }).create()
 
@@ -94,16 +92,7 @@ abstract class OpenHABRestConnection : Shutdownable {
     }
 
     private val isTargetReachable: Boolean
-        get() {
-            try {
-                testConnection()
-            } catch (e: CouldNotPerformException) {
-                if (e.cause is ProcessingException) {
-                    return false
-                }
-            }
-            return true
-        }
+        get() = runCatching { testConnection() }.isSuccess
 
     @Throws(CouldNotPerformException::class)
     protected abstract fun testConnection()
@@ -200,9 +189,8 @@ abstract class OpenHABRestConnection : Shutdownable {
             return
         }
 
-        val webTarget = restTarget!!.path(EVENTS_TARGET)
         sseSource = SseEventSource
-            .target(webTarget)
+            .target(restTarget.path(EVENTS_TARGET))
             .reconnectingEvery(15, TimeUnit.SECONDS)
             .build()
             .also { it.open() }
@@ -264,36 +252,29 @@ abstract class OpenHABRestConnection : Shutdownable {
     @JvmOverloads
     fun addSSEObserver(observer: Observer<Any, JsonObject>, topicRegex: String = "") {
         topicObservableMapLock.withLock {
-            if (topicObservableMap.containsKey(topicRegex)) {
-                topicObservableMap[topicRegex]!!.addObserver(observer)
-                return
-            }
-            val observable = ObservableImpl<Any, JsonObject>(this)
-            observable.addObserver(observer)
-            topicObservableMap.put(topicRegex, observable)
+            topicObservableMap
+                .getOrPut(topicRegex) { ObservableImpl<Any, JsonObject>(this) }
+                .addObserver(observer)
         }
     }
 
     @JvmOverloads
     fun removeSSEObserver(observer: Observer<Any, JsonObject>, topicFilter: String = "") {
         topicObservableMapLock.withLock {
-            if (topicObservableMap.containsKey(topicFilter)) {
-                topicObservableMap[topicFilter]!!.removeObserver(observer)
-            }
+            topicObservableMap[topicFilter]?.removeObserver(observer)
         }
     }
 
     private fun resetConnection() {
         // cancel ongoing connection task
-        if (!connectionTask!!.isDone) {
-            connectionTask!!.cancel(false)
-        }
+        connectionTask
+            ?.takeIf { !it.isDone }
+            ?.cancel(false)
 
         // close sse
-        if (sseSource != null) {
-            sseSource!!.close()
-            sseSource = null
-        }
+        sseSource
+            ?.close()
+            ?.also { sseSource = null }
     }
 
     @Throws(CouldNotPerformException::class)
@@ -304,26 +285,33 @@ abstract class OpenHABRestConnection : Shutdownable {
     }
 
     @Throws(CouldNotPerformException::class, ProcessingException::class)
-    private fun validateResponse(response: Response, skipConnectionValidation: Boolean = false): String {
-        val result = response.readEntity(String::class.java)
+    private fun validateResponse(response: Response, skipConnectionValidation: Boolean = false): String =
+        response.readEntity(String::class.java).let { result ->
+            when (response.status) {
+                200, 201, 202 -> {
+                    result
+                }
 
-        if (response.status == 200 || response.status == 201 || response.status == 202) {
-            return result
-        } else if (response.status == 404) {
-            if (!skipConnectionValidation) {
-                checkConnectionState()
+                404 -> {
+                    if (!skipConnectionValidation) {
+                        checkConnectionState()
+                    }
+                    throw NotAvailableException("URL")
+                }
+
+                503 -> {
+                    if (!skipConnectionValidation) {
+                        checkConnectionState()
+                    }
+                    // throw a processing exception to indicate that openHAB is still not fully started, this is used to wait for openHAB
+                    throw ProcessingException("OpenHAB server not ready")
+                }
+
+                else -> {
+                    throw CouldNotPerformException("Response returned with ErrorCode[" + response.status + "], Result[" + result + "] and ErrorMessage[" + response.statusInfo.reasonPhrase + "]")
+                }
             }
-            throw NotAvailableException("URL")
-        } else if (response.status == 503) {
-            if (!skipConnectionValidation) {
-                checkConnectionState()
-            }
-            // throw a processing exception to indicate that openHAB is still not fully started, this is used to wait for openHAB
-            throw ProcessingException("OpenHAB server not ready")
-        } else {
-            throw CouldNotPerformException("Response returned with ErrorCode[" + response.status + "], Result[" + result + "] and ErrorMessage[" + response.statusInfo.reasonPhrase + "]")
         }
-    }
 
     @Throws(CouldNotPerformException::class)
     protected fun get(target: String, skipValidation: Boolean = false): String {
@@ -334,7 +322,7 @@ abstract class OpenHABRestConnection : Shutdownable {
                 validateConnection()
             }
 
-            val webTarget = restTarget!!.path(target)
+            val webTarget = restTarget.path(target)
             val response = webTarget.request().get()
 
             return validateResponse(response, skipValidation)
@@ -355,7 +343,7 @@ abstract class OpenHABRestConnection : Shutdownable {
     protected fun delete(target: String): String {
         try {
             validateConnection()
-            val webTarget = restTarget!!.path(target)
+            val webTarget = restTarget.path(target)
             val response = webTarget.request().delete()
 
             return validateResponse(response)
@@ -381,7 +369,7 @@ abstract class OpenHABRestConnection : Shutdownable {
     protected fun put(target: String, value: String, mediaType: MediaType?): String {
         try {
             validateConnection()
-            val webTarget = restTarget!!.path(target)
+            val webTarget = restTarget.path(target)
             val response = webTarget.request().put(Entity.entity(value, mediaType))
 
             return validateResponse(response)
@@ -391,6 +379,11 @@ abstract class OpenHABRestConnection : Shutdownable {
             }
             throw CouldNotPerformException("Could not put value[$value] on sub-URL[$target]", ex)
         } catch (ex: ProcessingException) {
+            if (isShutdownInitiated) {
+                setInitialCause(ex, ShutdownInProgressException(this))
+            }
+            throw CouldNotPerformException("Could not put value[$value] on sub-URL[$target]", ex)
+        } catch (ex: ConnectException) {
             if (isShutdownInitiated) {
                 setInitialCause(ex, ShutdownInProgressException(this))
             }
@@ -407,7 +400,7 @@ abstract class OpenHABRestConnection : Shutdownable {
     protected fun post(target: String, value: String, mediaType: MediaType): String {
         try {
             validateConnection()
-            val webTarget = restTarget!!.path(target)
+            val webTarget = restTarget.path(target)
             val response = webTarget.request().post(Entity.entity(value, mediaType))
 
             return validateResponse(response)
@@ -441,7 +434,7 @@ abstract class OpenHABRestConnection : Shutdownable {
 
         // stop sse service
         topicObservableMapLock.withLock {
-            for (jsonObjectObservable in topicObservableMap.values) {
+            topicObservableMap.values.forEach { jsonObjectObservable ->
                 jsonObjectObservable.shutdown()
             }
             topicObservableMap.clear()
@@ -450,30 +443,16 @@ abstract class OpenHABRestConnection : Shutdownable {
     }
 
     @Throws(CouldNotPerformException::class)
-    private fun findOpenHABGatewayClass(): GatewayClassType.GatewayClass {
-        for (gatewayClass in Registries.getClassRegistry().gatewayClasses) {
-            if (contains(gatewayClass.label, OPENHAB_GATEWAY_CLASS_LABEL)) {
-                return gatewayClass
-            }
+    private fun findOpenHABGatewayClass(): GatewayClassType.GatewayClass? =
+        Registries.getClassRegistry().gatewayClasses.find { contains(it.label, OPENHAB_GATEWAY_CLASS_LABEL) }
+
+    private val token: String?
+        get() = findOpenHABGatewayClass()?.let { openHABGatewayClass ->
+            Registries.getUnitRegistry()
+                .getUnitConfigsByUnitType(UnitType.GATEWAY)
+                .find { it.gatewayConfig.gatewayClassId == openHABGatewayClass.id }
+                ?.let { MetaConfigProcessor.getValue(it.metaConfig, META_CONFIG_TOKEN_KEY) }
         }
-
-        throw NotAvailableException("OpenHAB Gateway Class")
-    }
-
-    @get:Throws(CouldNotPerformException::class)
-    private val token: String
-        get() {
-            val openHABGatewayClass = findOpenHABGatewayClass()
-
-            for (unitConfig in Registries.getUnitRegistry()
-                .getUnitConfigsByUnitType(UnitTemplateType.UnitTemplate.UnitType.GATEWAY)) {
-                if (unitConfig.gatewayConfig.gatewayClassId == openHABGatewayClass.id) {
-                    return MetaConfigProcessor.getValue(unitConfig.metaConfig, META_CONFIG_TOKEN_KEY)
-                }
-            }
-            throw NotAvailableException("token")
-        }
-
 
     companion object {
 

@@ -94,9 +94,7 @@ class OpenHABRestCommunicator private constructor() : OpenHABRestConnection() {
     }
 
     @Throws(CouldNotPerformException::class)
-    fun deleteItem(itemDTO: ItemDTO): ItemDTO {
-        return deleteItem(itemDTO.name)
-    }
+    fun deleteItem(itemDTO: ItemDTO): ItemDTO = deleteItem(itemDTO.name)
 
     @Throws(CouldNotPerformException::class)
     fun deleteItem(itemName: String): ItemDTO {
@@ -109,16 +107,15 @@ class OpenHABRestCommunicator private constructor() : OpenHABRestConnection() {
         get() = jsonElementToTypedList(JsonParser.parseString(get(ITEMS_TARGET)), EnrichedItemDTO::class.java)
 
     @Throws(NotAvailableException::class)
-    fun getItem(itemName: String): EnrichedItemDTO {
+    fun getItem(itemName: String): EnrichedItemDTO =
         try {
-            return jsonToClass(
+            jsonToClass(
                 JsonParser.parseString(get(ITEMS_TARGET + SEPARATOR + itemName)),
                 EnrichedItemDTO::class.java
             )
         } catch (ex: CouldNotPerformException) {
             throw NotAvailableException("Item with name[$itemName]")
         }
-    }
 
     fun hasItem(itemName: String): Boolean {
         try {
