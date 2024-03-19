@@ -71,6 +71,16 @@ const config: Config = {
         },
       ],
     },
+    hero: {
+      image: 'img/bco/bco_logo.svg',
+
+      title: 'Base Cube One',
+      tagline: 'Smart Environment Automation Framework',
+      // Replace with your site's URL
+      // url: 'https://basecubeone.org/',
+      // Replace with your project's GitHub URL
+      // githubUrl: '
+    },
     footer: {
       style: 'dark',
       links: [
