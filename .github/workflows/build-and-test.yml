@@ -48,8 +48,6 @@ jobs:
             echo "worth_testing=false" >> "$GITHUB_OUTPUT"
           fi
 
-          echo "worth_testing=${{steps.check.outputs.worth_testing}}"
-
 
   testing:
     name: "Testing"
@@ -70,7 +68,7 @@ jobs:
     needs: testing
     if: |
       (github.event.pull_request.draft == false)
-      && ${{ needs.check.outputs.worth_testing }} == true
+      && (${{ needs.check.outputs.worth_testing }} == true)
     
     runs-on: ubuntu-latest
 
