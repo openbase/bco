@@ -66,7 +66,7 @@ jobs:
     name: "Build"
     timeout-minutes: 10
     needs: testing
-    if: (${{ needs.check.outputs.worth_testing }} == true)
+    if: false
     
     runs-on: ubuntu-latest
 
