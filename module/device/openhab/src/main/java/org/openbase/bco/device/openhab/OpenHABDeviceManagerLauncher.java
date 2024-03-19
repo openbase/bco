@@ -51,7 +51,7 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
                 args,
                 OpenHABDeviceManagerLauncher.class,
                 OpenHABConfigSynchronizerLauncher.class,
-                OpenHABSitemapSynchronizerLauncher.class,
+                OpenHABSitemapSynchronizerLauncher.class
         );
     }
 
