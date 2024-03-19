@@ -35,9 +35,10 @@ jobs:
           test=false
           for file in $changed_files; do
             if [[ $file == ".github/"* || $file == "doc/*" ]]; then
-              echo "file: $file"
+              echo "$test file: $file"
             else
               test=true
+              echo "$test file: $file"
               break
             fi
           done
