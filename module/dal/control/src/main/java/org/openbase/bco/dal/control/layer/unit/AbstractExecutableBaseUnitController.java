@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -29,11 +29,13 @@ import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperation
 import org.openbase.bco.dal.lib.layer.service.provider.ActivationStateProviderService;
 import org.openbase.bco.dal.lib.state.States;
 import org.openbase.bco.dal.remote.action.RemoteAction;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.TimedProcessable;
+import org.openbase.jul.schedule.CloseableWriteLockWrapper;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionInitiatorType.ActionInitiator.InitiatorType;
@@ -41,10 +43,11 @@ import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
 import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
+
 import java.io.Serializable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
@@ -69,20 +72,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         super.activate();
-        try {
-            // setup autostart
-            if (detectAutostart()) {
-                final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(States.Activation.ACTIVE, ServiceType.ACTIVATION_STATE_SERVICE, this);
-                actionParameter.setInterruptible(true);
-                actionParameter.setSchedulable(true);
-                actionParameter.setPriority(Priority.NO);
-                actionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
-                actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(TimedProcessable.INFINITY_TIMEOUT));
-                new RemoteAction(applyAction(actionParameter), this::isActive);
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not autostart " + this, ex);
-        }
+        handleAutostart();
     }
 
     @Override
@@ -91,12 +81,40 @@ public abstract class AbstractExecutableBaseUnitController<D extends AbstractMes
         super.deactivate();
     }
 
+    @Override
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
+            var updatedConfig = super.applyConfigUpdate(config);
+            handleAutostart();
+            return updatedConfig;
+        }
+    }
+
     private boolean detectAutostart() {
         try {
             return isAutostartEnabled();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new NotSupportedException("autostart", this, ex), logger, LogLevel.WARN);
             return false;
+        }
+    }
+
+    private void handleAutostart() {
+
+        if (!detectAutostart()) {
+            return;
+        }
+
+        try {
+            final ActionParameter.Builder actionParameter = ActionDescriptionProcessor.generateDefaultActionParameter(States.Activation.ACTIVE, ServiceType.ACTIVATION_STATE_SERVICE, this);
+            actionParameter.setInterruptible(true);
+            actionParameter.setSchedulable(true);
+            actionParameter.setPriority(Priority.NO);
+            actionParameter.getActionInitiatorBuilder().setInitiatorType(InitiatorType.SYSTEM);
+            actionParameter.setExecutionTimePeriod(TimeUnit.MILLISECONDS.toMicros(TimedProcessable.INFINITY_TIMEOUT));
+            new RemoteAction(applyAction(actionParameter), this::isActive);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not autostart " + this, ex, logger, LogLevel.ERROR);
         }
     }
 
