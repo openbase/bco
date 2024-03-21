@@ -21,7 +21,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Complete Action Transparency',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
         You system does stupid things and you have no clue whats going on? We guarantee the introspection of decisions your system takes and present them in a human intuitive way. 

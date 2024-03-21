@@ -28,15 +28,15 @@ const sidebars: SidebarsConfig = {
    */
 };
 
-// export default sidebars;
+export default sidebars;
 
-export default {
-  docs: [
-    {
-      type: 'category',
-      label: 'Guides',
-      link: {type: 'doc', id: 'Guides/index'}, //this should be something like README so the readme will be displayed
-      items: [],
-    },
-  ],
-};
+// export default {
+//   docs: [
+//     {
+//       type: 'category',
+//       label: 'Guides',
+//       link: {type: 'doc', id: 'user/README'}, //this should be something like README so the readme will be displayed
+//       items: [],
+//     },
+//   ],
+// };

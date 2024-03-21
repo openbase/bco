@@ -6,9 +6,9 @@ sidebar_position: 1
 
 ## Recommended Setup Guides
 
-* [Setup BCO on a PI](/user/howto/setup-pi-docker.md)
-* [Setup BCO via plain Docker](/user/howto/setup-docker.md)
+* [Setup BCO on a PI](howto/setup-pi-docker.md)
+* [Setup BCO via plain Docker](howto/setup-docker.md)
 
 ## Development Setup Guides
 
-* [Setup Toolchain](/developer/installation.md).
+* [Setup Toolchain](../developer/installation.md).

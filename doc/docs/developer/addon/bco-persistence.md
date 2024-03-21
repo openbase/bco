@@ -156,7 +156,7 @@ The full example how to query an aggregated service state is available over here
 You can also send raw queries to the database via the units with the ```queryRecord``` function.
 This function needs also a [QueryType](https://github.com/openbase/type/blob/master/src/main/proto/openbase/type/domotic/database/Query.proto) as a parameter. However, the only attribute that must be filled is the raw_query.
 The method returns an [RecordCollection](https://github.com/openbase/type/blob/master/src/main/proto/openbase/type/domotic/database/RecordCollection.proto)  which consists of [Records](https://github.com/openbase/type/blob/master/src/main/proto/openbase/type/domotic/database/Record.proto).
-In the [Chronograf](#how-to-create-a-chronograf-widget) and the [Query-Section](#how-to-query-influx-db) it is explained how a raw query looks like and how it can be built.
+In the [Chronograf](#how-to-query-influx-db) and the [Query-Section](#how-to-query-influx-db) it is explained how a raw query looks like and how it can be built.
 
 An example request looks like:
 

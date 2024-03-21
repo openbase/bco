@@ -1,8 +1,7 @@
 {
   "label": "Authentication",
   "position": 5,
-  "link": {
-    "type": "generated-index",
-    "description": "Developer Section"
+  "link": { 
+    "type": "doc", "id": "README"
   }
 }

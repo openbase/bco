@@ -78,7 +78,6 @@ git clone -b stable https://github.com/openbase/bco.git
 ```
 :::info INFO
 We recommend to checkout and install the ```dev``` branch in order to start the development of new components.
-Be aware to [setup the snapshot repository](#setup-snapshot-repository) before building the ```dev``` branch.
 :::
 
 ### Download and Prepare BCO Submodules
