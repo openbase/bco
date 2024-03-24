@@ -97,7 +97,7 @@ class MessageManager : Launchable<Void>, VoidInitializable {
     }
 
     override fun deactivate() {
-        Registries.getMessageRegistry().removeDataObserver(messageRegistryChangeObserver)
+        runCatching { Registries.getMessageRegistry() }.getOrNull()?.removeDataObserver(messageRegistryChangeObserver)
         unitsOfConditionsLock.write {
             unitsOfConditions?.forEach { it.removeDataObserver(conditionObserver) }
             unitsOfConditions = null
