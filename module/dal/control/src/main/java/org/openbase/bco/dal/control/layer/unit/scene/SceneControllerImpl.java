@@ -198,7 +198,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                     .setInterruptible(true)
                     .setSchedulable(true)
                     .setPriority(Priority.HIGH)
-                    .setExecutionTimePeriod(Duration.ofMinutes(30).toMillis()).build();
+                    .setExecutionTimePeriod(TimeUnit.MICROSECONDS.convert(Duration.ofMinutes(30))).build();
             requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             return config;
@@ -209,7 +209,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         synchronized (buttonObserverLock) {
-            buttonRemoteSet.stream().forEach((button) -> {
+            buttonRemoteSet.forEach((button) -> {
                 button.addDataObserver(buttonObserver);
             });
         }
@@ -221,7 +221,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         synchronized (buttonObserverLock) {
-            buttonRemoteSet.stream().forEach((button) -> {
+            buttonRemoteSet.forEach((button) -> {
                 button.removeDataObserver(buttonObserver);
             });
         }
