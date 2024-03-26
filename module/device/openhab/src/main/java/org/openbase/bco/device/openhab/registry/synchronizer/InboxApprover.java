@@ -84,7 +84,7 @@ public class InboxApprover implements Activatable {
                 // ignore not supported things
             } catch (NotAvailableException ex) {
                 // no matching gateway or device class found so ignore it for now
-                ExceptionPrinter.printHistory("Ignore discovered thing[" + discoveryResultDTO.thingUID + "].", ex, LOGGER, LogLevel.WARN);
+                ExceptionPrinter.printHistory("Ignore discovered thing[" + discoveryResultDTO.thingUID + "].", ex, LOGGER, LogLevel.INFO);
             }
         };
     }
