@@ -38,11 +38,11 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openhab.core.io.rest.core.thing.EnrichedThingDTO;
 import org.openhab.core.items.dto.ItemDTO;
 import org.openhab.core.thing.dto.ChannelDTO;
-import org.openhab.core.thing.dto.ThingDTO;
 import org.openhab.core.thing.link.dto.ItemChannelLinkDTO;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -63,7 +63,7 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        Objects.requireNonNull(OpenHABRestCommunicator.getInstance()).waitForConnectionState(ConnectionState.State.CONNECTED);
         super.activate();
     }
 
