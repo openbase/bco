@@ -103,7 +103,7 @@ class DeviceNotificationApp : AbstractAppController() {
 
                     messageBuilder.id = UUID.randomUUID().toString()
                     messageBuilder.messageType = UserMessage.MessageType.WARNING
-                    messageBuilder.timestamp = TimestampProcessor.getCurrentTimestamp()
+                    messageBuilder.timestamp = TimestampProcessor.currentTimestamp
                     messageBuilder.text = textBuilder.build()
                     messageBuilder.senderId = userConfig.id
                     messageBuilder.addCondition(
@@ -141,7 +141,7 @@ class DeviceNotificationApp : AbstractAppController() {
 
     companion object {
         private val LOGGER = LoggerFactory.getLogger(TemplateApp::class.java)
-        
+
         private val VALIDATION_PERIOD: Duration = Duration.ofHours(24)
         private val INITIAL_VALIDATION_DELAY: Duration = Duration.ofHours(1)
     }

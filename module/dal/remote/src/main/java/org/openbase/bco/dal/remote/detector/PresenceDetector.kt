@@ -19,17 +19,21 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService
 import org.openbase.jul.schedule.Timeout
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType
 import org.openbase.type.domotic.state.*
+import org.openbase.type.domotic.state.MotionStateType.MotionState
+import org.openbase.type.domotic.state.MotionStateType.MotionStateOrBuilder
 import org.openbase.type.domotic.state.PresenceStateType.PresenceState
 import org.openbase.type.domotic.state.PresenceStateType.PresenceStateOrBuilder
 import org.openbase.type.domotic.state.WindowStateType.WindowState
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType
-import org.openbase.type.domotic.unit.connection.ConnectionConfigType
+import org.openbase.type.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType
 import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig.LocationType
 import org.openbase.type.domotic.unit.location.LocationDataType.LocationData
-import org.openbase.type.domotic.unit.location.TileConfigType
+import org.openbase.type.domotic.unit.location.TileConfigType.TileConfig.TileType
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
@@ -62,7 +66,9 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
 
                 try {
                     // if motion is still detected just restart the timeout.
-                    if (location!!.data.motionState.value == MotionStateType.MotionState.State.MOTION) {
+                    if (location!!.data.motionState.value == MotionState.State.MOTION &&
+                        durationSinceLastPresence < PRESENCE_INVALIDATION_TIMEOUT
+                    ) {
                         GlobalCachedExecutorService.submit {
                             try {
                                 presenceTimeout?.restart()
@@ -72,6 +78,7 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                         }
                         return
                     }
+
                     updatePresenceState(
                         PresenceState.newBuilder()
                             .setValue(PresenceState.State.ABSENT)
@@ -107,7 +114,10 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                 ServiceType.WINDOW_STATE_SERVICE -> updateWindowState(data as WindowState)
                 ServiceType.DOOR_STATE_SERVICE -> updateDoorState(data as DoorStateType.DoorState)
                 ServiceType.PASSAGE_STATE_SERVICE -> {}
-                else -> logger.warn("Invalid connection service update received: " + source.serviceType.name + " from " + source + " pool:" + connectionUnitPool.isActive())
+                else -> logger.warn(
+                    "Invalid connection service update received: "
+                            + source.serviceType.name + " from " + source + " pool:" + connectionUnitPool.isActive()
+                )
             }
         }
     }
@@ -129,13 +139,13 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                         )
                         true
                     }
-                })
-
+                }
+            )
 
             if ((location.config.locationConfig.locationType == LocationType.TILE)) {
                 connectionUnitPool.init(
-                    Filter<UnitConfig> { unitConfig: UnitConfig -> unitConfig.unitType == UnitType.CONNECTION },
-                    Filter<UnitConfig> { unitConfig: UnitConfig ->
+                    Filter<UnitConfig> { unitConfig -> unitConfig.unitType == UnitType.CONNECTION },
+                    Filter<UnitConfig> { unitConfig ->
                         try {
                             unitConfig.connectionConfig.tileIdList.contains(location.id)
                         } catch (ex: NotAvailableException) {
@@ -147,9 +157,10 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                             false
                         }
                     },
-                    Filter<UnitConfig> { unitConfig: UnitConfig ->
+                    Filter<UnitConfig> { unitConfig ->
                         try {
-                            location.config.locationConfig.tileConfig.tileType != TileConfigType.TileConfig.TileType.OUTDOOR || unitConfig.connectionConfig.connectionType != ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW
+                            location.config.locationConfig.tileConfig.tileType != TileType.OUTDOOR
+                                    || unitConfig.connectionConfig.connectionType != ConnectionType.WINDOW
                         } catch (ex: NotAvailableException) {
                             ExceptionPrinter.printHistory(
                                 "Could not resolve location id within connection filter operation.",
@@ -174,7 +185,7 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
     @Throws(CouldNotPerformException::class, InterruptedException::class)
     override fun activate() {
         active = true
-        location!!.addDataObserver(locationDataObserver)
+        location?.addDataObserver(locationDataObserver)
 
         buttonUnitPool.activate()
 
@@ -192,12 +203,9 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
     override fun deactivate() {
         active = false
         presenceTimeout?.cancel()
-        if (location != null) {
-            // can be null if never initialized or initialization failed
-            location!!.removeDataObserver(locationDataObserver)
-        }
+        location?.removeDataObserver(locationDataObserver)
         buttonUnitPool.deactivate()
-        if ((location!!.config.locationConfig.locationType == LocationType.TILE)) {
+        if ((location?.config?.locationConfig?.locationType == LocationType.TILE)) {
             connectionUnitPool.deactivate()
         }
     }
@@ -234,16 +242,16 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
     @Throws(CouldNotPerformException::class)
     private fun updatePresenceState(presenceState: PresenceStateOrBuilder) {
         // update timestamp and reset timer
-
-        if (presenceState.value == PresenceState.State.PRESENT && presenceStateBuilder.timestamp.time != presenceState.timestamp.time) {
+        if (presenceState.value == PresenceState.State.PRESENT
+            && presenceStateBuilder.timestamp.time != presenceState.timestamp.time
+        ) {
             presenceTimeout?.restart()
             presenceStateBuilder.timestampBuilder.setTime(
-                max(presenceStateBuilder.timestamp.time.toDouble(), presenceState.timestamp.time.toDouble())
-                    .toLong()
+                max(presenceStateBuilder.timestamp.time, presenceState.timestamp.time)
             )
         }
 
-        // filter non state changes
+        // filter non-state changes
         if (presenceStateBuilder.value == presenceState.value) {
             return
         }
@@ -265,19 +273,20 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
     }
 
     @Throws(CouldNotPerformException::class)
-    private fun updateMotionState(motionState: MotionStateType.MotionStateOrBuilder) {
-        // Filter rush motion predictions.
+    private fun updateMotionState(motionState: MotionStateOrBuilder) {
 
-        if (motionState.value == MotionStateType.MotionState.State.NO_MOTION) {
+        if (motionState.value == MotionState.State.NO_MOTION) {
             return
         }
 
-        if (motionState.value == MotionStateType.MotionState.State.MOTION) {
+        if (motionState.value == MotionState.State.MOTION) {
             updatePresenceState(
                 TimestampProcessor.updateTimestampWithCurrentTime(
-                    PresenceState.newBuilder().setValue(
-                        PresenceState.State.PRESENT
-                    ).setResponsibleAction(motionState.responsibleAction).build()
+                    PresenceState
+                        .newBuilder()
+                        .setValue(PresenceState.State.PRESENT)
+                        .setResponsibleAction(motionState.responsibleAction)
+                        .build()
                 )
             )
         }
@@ -286,11 +295,15 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
     @Throws(CouldNotPerformException::class)
     private fun updateButtonState(buttonState: ButtonStateType.ButtonStateOrBuilder) {
         when (buttonState.value) {
-            ButtonStateType.ButtonState.State.PRESSED, ButtonStateType.ButtonState.State.RELEASED, ButtonStateType.ButtonState.State.DOUBLE_PRESSED, ButtonStateType.ButtonState.State.UNKNOWN ->                 // ignore non presence prove
-                return
+            ButtonStateType.ButtonState.State.PRESSED,
+            ButtonStateType.ButtonState.State.RELEASED,
+            ButtonStateType.ButtonState.State.DOUBLE_PRESSED,
+            -> {
+                // this causes a lot of trouble, thus its currently disabled until we have a proper solution.
+                // since triggering an "all off" scene via a button could cause lights to be switched on again.
+            }
 
-            else ->
-                return
+            else -> {}
         }
     }
 
@@ -305,15 +318,9 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                         ).setResponsibleAction(doorState.responsibleAction).build()
                     )
                 )
-                // ignore non presence prove
-                return
             }
 
-            DoorStateType.DoorState.State.CLOSED, DoorStateType.DoorState.State.UNKNOWN ->
-                return
-
-            else ->
-                return
+            else -> {}
         }
     }
 
@@ -328,15 +335,9 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                         ).setResponsibleAction(windowState.responsibleAction).build()
                     )
                 )
-                // ignore non presence prove
-                return
             }
 
-            WindowState.State.UNKNOWN ->
-                return
-
-            else ->
-                return
+            else -> {}
         }
     }
 
@@ -375,11 +376,16 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
         presenceStateObservable.waitForValue(timeout, timeUnit)
     }
 
+    val durationSinceLastPresence: Duration
+        get() =
+            Duration.between(Instant.ofEpochMilli(presenceStateBuilder.timestamp.time), Instant.now())
+
     companion object {
         /**
          * Default 3 minute window of no movement unit the state switches to
          * NO_MOTION.
          */
         val PRESENCE_TIMEOUT: Long = (if (JPService.testMode()) 50 else 60000).toLong()
+        val PRESENCE_INVALIDATION_TIMEOUT: Duration = Duration.ofMinutes(60)
     }
 }
