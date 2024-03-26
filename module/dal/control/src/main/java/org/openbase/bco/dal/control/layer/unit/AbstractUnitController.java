@@ -1935,7 +1935,7 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
      *
      * @throws CouldNotPerformException is thrown if the type of the service is already registered.
      */
-    protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
+    final protected void registerOperationService(final ServiceType serviceType, final OperationService operationService) throws CouldNotPerformException {
 
         if (operationServiceMap.containsKey(serviceType)) {
             throw new VerificationFailedException("OperationService for Type[" + serviceType.name() + "] already registered!");
