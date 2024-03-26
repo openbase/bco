@@ -12,12 +12,52 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  build:
-    name: "Build"
-    timeout-minutes: 10
+  check:
+    name: "Check"
 
     if: github.event.pull_request.draft == false
 
+    runs-on: ubuntu-latest
+    outputs:
+      worth_testing: ${{ steps.check.outputs.worth_testing }}
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v3
+
+      - name: "Check for changes worth testing"
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          changed_files=$(gh pr diff --name-only ${{ github.event.pull_request.number }})
+          
+          test=false
+          for file in $changed_files; do
+            if [[ $file == ".github/"* || $file == "doc/"* ]]; then
+              echo "$test file: $file"
+            else
+              test=true
+              echo "$test file: $file"
+              break
+            fi
+          done
+          if [[ $test == true ]]; then
+            echo "worth_testing=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "worth_testing=false" >> "$GITHUB_OUTPUT"
+          fi
+
+
+  build:
+    name: "Build"
+    timeout-minutes: 10
+    needs: check
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.worth_testing == true)
+
+    
     runs-on: ubuntu-latest
 
     steps:
@@ -54,7 +94,10 @@ jobs:
     name: "Test"
     timeout-minutes: 120
 
-    if: github.event.pull_request.draft == false
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.worth_testing == true)
+
     needs: build
 
     runs-on: ubuntu-latest
@@ -88,3 +131,4 @@ jobs:
         with:
           name: Test Reports
           path: "**/build/reports"
+
