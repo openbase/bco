@@ -28,6 +28,7 @@ const config: Config = {
     defaultLocale: 'en',
     locales: ['en'],
   },
+  
 
   presets: [
     [
@@ -54,7 +55,14 @@ const config: Config = {
       title: 'Base Cube One',
       logo: {
         alt: 'Base Cube One Logo',
-        src: 'img/logo.svg',
+        src: '/img/bco/bco_logo_simple_small.png',
+        srcDark: '/img/bco/bco_logo_simple_white.png',
+        // href: 'https://docusaurus.io/',
+        target: '_self',
+        width: 32,
+        height: 32,
+        className: 'custom-navbar-logo-class',
+        // style: {border: 'solid red'},
       },
       items: [
         {
@@ -71,10 +79,9 @@ const config: Config = {
       ],
     },
     hero: {
-      image: 'img/bco/bco_logo.svg',
-
       title: 'Base Cube One',
       tagline: 'Smart Environment Automation Framework',
+      image: '/img/bco/bco_logo_simple.png',
       // Replace with your site's URL
       // url: 'https://basecubeone.org/',
       // Replace with your project's GitHub URL
@@ -105,11 +112,11 @@ const config: Config = {
             },
             {
               label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
+              href: 'https://discordapp.com/invite/openbase',
             },
             {
               label: 'Twitter',
-              href: 'https://twitter.com/docusaurus',
+              href: 'https://twitter.com/',
             },
           ],
         },
@@ -123,8 +130,16 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} openbase.org <br>
-                    Privacy policy | ImprintCopyright`,
+      logo: {
+        alt: 'Meta Open Source Logo',
+        src: '/img/github-mark-white.png',
+        href: 'https://github.com/openbase',
+        width: 50,
+        height: 50,
+      },
+      copyright:
+        `Copyright © ${new Date().getFullYear()} openbase.org <br>
+        <a href="/docs/privacypolice.html">Privacy policy</a> | <a href="/docs/imprint.html">ImprintCopyright</a>`,
     },
     prism: {
       theme: prismThemes.github,
