@@ -10,12 +10,12 @@ package org.openbase.bco.registry.lib.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -30,17 +30,19 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.processing.StringProcessor;
-import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.state.EnablingStateType;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -295,6 +297,11 @@ public class UnitConfigProcessor {
      * @return the default alias as string.
      */
     public static String getDefaultAlias(final UnitConfigOrBuilder unitConfig, final String alternative) {
+
+        if (unitConfig == null) {
+            return alternative;
+        }
+
         try {
             return getDefaultAlias(unitConfig);
         } catch (NotAvailableException e) {
