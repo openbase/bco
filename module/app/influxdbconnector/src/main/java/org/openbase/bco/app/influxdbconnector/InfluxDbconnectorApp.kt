@@ -32,7 +32,7 @@ import org.openbase.type.domotic.service.ServiceTemplateType
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern
 import org.openbase.type.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus
 import org.openbase.type.domotic.state.ActivationStateType
-import org.openbase.type.domotic.unit.UnitConfigType
+import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.TimeoutException
@@ -45,15 +45,14 @@ class InfluxDbconnectorApp : AbstractAppController() {
     private var token: CharArray? = null
     private var task: Future<*>? = null
     private var heartbeat: Future<*>? = null
-    private var databaseUrl: String? = null
-    private var bucketName: String? = null
+    private var databaseUrl: String? = InfluxDbProcessor.INFLUXDB_URL_DEFAULT
+    private var bucketName: String = InfluxDbProcessor.INFLUXDB_BUCKET_DEFAULT
     private var influxDBClient: InfluxDBClient? = null
-    private var batchTime: Int? = null
-    private var batchLimit: Int? = null
+    private var batchTime: Int = InfluxDbProcessor.INFLUXDB_BATCH_TIME_DEFAULT
+    private var batchLimit: Int = InfluxDbProcessor.INFLUXDB_BATCH_LIMIT_DEFAULT
     private val customUnitPool: CustomUnitPool<*, *> = CustomUnitPool<Message, UnitRemote<Message>>()
     private val unitStateObserver: Observer<ServiceStateProvider<Message>, Message>
-    private var org: String? = null
-
+    private var org: String = InfluxDbProcessor.INFLUXDB_ORG_DEFAULT
 
     init {
         this.unitStateObserver =
@@ -67,28 +66,31 @@ class InfluxDbconnectorApp : AbstractAppController() {
     }
 
     @Throws(CouldNotPerformException::class, InterruptedException::class)
-    override fun applyConfigUpdate(config: UnitConfigType.UnitConfig): UnitConfigType.UnitConfig {
-        var config: UnitConfigType.UnitConfig? = config
-        getManageWriteLockInterruptible(this).use { ignored ->
-            config = super.applyConfigUpdate(config!!)
-            bucketName = generateVariablePool().getValue(
-                InfluxDbProcessor.INFLUXDB_BUCKET,
-                InfluxDbProcessor.INFLUXDB_BUCKET_DEFAULT
-            )
-            batchTime = generateVariablePool().getValue(
-                InfluxDbProcessor.INFLUXDB_BATCH_TIME,
-                InfluxDbProcessor.INFLUXDB_BATCH_TIME_DEFAULT
-            ).toInt()
-            batchLimit = generateVariablePool().getValue(
-                InfluxDbProcessor.INFLUXDB_BATCH_LIMIT,
-                InfluxDbProcessor.INFLUXDB_BATCH_LIMIT_DEFAULT
-            ).toInt()
-            databaseUrl =
-                generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_URL, InfluxDbProcessor.INFLUXDB_URL_DEFAULT)
-            token = generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_TOKEN).toCharArray()
-            org =
-                generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_ORG, InfluxDbProcessor.INFLUXDB_ORG_DEFAULT)
-            return config!!
+    override fun applyConfigUpdate(config: UnitConfig): UnitConfig {
+        getManageWriteLockInterruptible(this).use { _ ->
+            return super.applyConfigUpdate(config).also {
+                bucketName = tryOrNull {
+                    generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_BUCKET)
+                } ?: bucketName
+
+                batchTime = tryOrNull {
+                    generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_BATCH_TIME).toInt()
+                } ?: batchTime
+
+                batchLimit = tryOrNull {
+                    generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_BATCH_LIMIT).toInt()
+                } ?: batchLimit
+
+                databaseUrl = tryOrNull {
+                    generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_URL)
+                } ?: databaseUrl
+
+                org = tryOrNull {
+                    generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_ORG)
+                } ?: org
+
+                token = generateVariablePool().getValue(InfluxDbProcessor.INFLUXDB_TOKEN).toCharArray()
+            }
         }
     }
 
@@ -111,7 +113,9 @@ class InfluxDbconnectorApp : AbstractAppController() {
                             LogLevel.WARN
                         )
                         Thread.sleep(databaseTimeout.toLong())
-                        if (databaseTimeout < InfluxDbProcessor.MAX_TIMEOUT) databaseTimeout += InfluxDbProcessor.ADDITIONAL_TIMEOUT
+                        if (databaseTimeout < InfluxDbProcessor.MAX_TIMEOUT) {
+                            databaseTimeout += InfluxDbProcessor.ADDITIONAL_TIMEOUT
+                        }
                     }
                 }
 
@@ -137,18 +141,20 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 }
             } catch (ex: InterruptedException) {
                 // finish task because its canceled.
+                Thread.currentThread().interrupt()
+                return@submit
             }
             if (!task!!.isCancelled && isConnected) {
                 try {
                     // write initial heartbeat
                     logger.debug("initial heartbeat")
                     writeApi!!.writePoint(
-                        bucketName!!, org!!, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
+                        bucketName, org, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
                             .addField(InfluxDbProcessor.HEARTBEAT_FIELD, InfluxDbProcessor.HEARTBEAT_OFFLINE_VALUE)
                             .time(System.currentTimeMillis() - 1, WritePrecision.MS)
                     )
-                    writeApi!!.writePoint(
-                        bucketName!!, org!!, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
+                    writeApi?.writePoint(
+                        bucketName, org, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
                             .addField(InfluxDbProcessor.HEARTBEAT_FIELD, InfluxDbProcessor.HEARTBEAT_ONLINE_VALUE)
                             .time(System.currentTimeMillis(), WritePrecision.MS)
                     )
@@ -156,8 +162,8 @@ class InfluxDbconnectorApp : AbstractAppController() {
                     heartbeat = GlobalScheduledExecutorService.scheduleAtFixedRate(
                         {
                             logger.debug("write heartbeat")
-                            writeApi!!.writePoint(
-                                bucketName!!, org!!, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
+                            writeApi?.writePoint(
+                                bucketName, org, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
                                     .addField(
                                         InfluxDbProcessor.HEARTBEAT_FIELD,
                                         InfluxDbProcessor.HEARTBEAT_ONLINE_VALUE
@@ -170,7 +176,7 @@ class InfluxDbconnectorApp : AbstractAppController() {
                         TimeUnit.MILLISECONDS
                     )
                 } catch (ex: NotAvailableException) {
-                    ExceptionPrinter.printHistory<NotAvailableException>(
+                    ExceptionPrinter.printHistory(
                         "Could not write heartbeat!",
                         ex,
                         logger,
@@ -201,9 +207,9 @@ class InfluxDbconnectorApp : AbstractAppController() {
 
         logger.debug("finish heartbeat")
         if (heartbeat != null && !heartbeat!!.isDone) {
-            heartbeat!!.cancel(true)
+            heartbeat?.cancel(true)
             try {
-                task!![5, TimeUnit.SECONDS]
+                heartbeat!![5, TimeUnit.SECONDS]
             } catch (ex: CancellationException) {
                 // that's what we are waiting for.
             } catch (ex: Exception) {
@@ -212,18 +218,18 @@ class InfluxDbconnectorApp : AbstractAppController() {
         }
 
         if (isConnected) {
-            // write final heartbeat if connection is established.
-            writeApi!!.writePoint(
-                bucketName!!, org!!, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
+            // write final heartbeat if connection is still established.
+            writeApi?.writePoint(
+                bucketName, org, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
                     .addField(InfluxDbProcessor.HEARTBEAT_FIELD, InfluxDbProcessor.HEARTBEAT_ONLINE_VALUE)
                     .time(System.currentTimeMillis() - 1, WritePrecision.MS)
             )
-            writeApi!!.writePoint(
-                bucketName!!, org!!, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
+            writeApi?.writePoint(
+                bucketName, org, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
                     .addField(InfluxDbProcessor.HEARTBEAT_FIELD, InfluxDbProcessor.HEARTBEAT_OFFLINE_VALUE)
                     .time(System.currentTimeMillis(), WritePrecision.MS)
             )
-            writeApi!!.flush()
+            writeApi?.flush()
         }
 
         // deregister
@@ -337,7 +343,7 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 return
             }
 
-            ExceptionPrinter.printHistory<CouldNotPerformException>(
+            ExceptionPrinter.printHistory(
                 "Could not store service state change into db! " +
                         "UnitType[" + unit.unitType + "] " +
                         "ServiceType[" + serviceType + "] " +
@@ -352,19 +358,14 @@ class InfluxDbconnectorApp : AbstractAppController() {
     private fun storeServiceState(
         unit: org.openbase.bco.dal.lib.layer.unit.Unit<*>,
         serviceType: ServiceTemplateType.ServiceTemplate.ServiceType,
-        serviceState: Message?,
+        serviceState: Message,
     ) {
         val timestamp = TimestampProcessor.getTimestamp(serviceState, TimeUnit.MILLISECONDS)
         try {
-            var initiator = try {
-                Services.getResponsibleAction(serviceState).getActionInitiator()
-                    .getInitiatorType().name.lowercase(
-                        Locale.getDefault()
-                    )
-            } catch (ex: NotAvailableException) {
-                // in this case we use the system as initiator because responsible actions are not available for pure provider services and those are always system generated.
-                "system"
-            }
+            val initiator = runCatching {
+                Services.getResponsibleAction(serviceState).actionInitiator.initiatorType.name.lowercase()
+            }.getOrElse { "system" }
+
             val stateValuesMap = resolveStateValueToMap(serviceState)
             val point = Point.measurement(serviceType.name.lowercase(Locale.getDefault()))
                 .addTag("alias", unit.config.getAlias(0))
@@ -386,14 +387,9 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 }
             }
 
-            val entryList = unit.config.label.entryList
-            for (entry in entryList) {
-                // skip entries that offer a language key but do not provide any label.
-                if (entry.valueList.isEmpty()) {
-                    continue
-                }
-                point.addTag("label_" + entry.key, entry.getValue(0))
-            }
+            unit.config.label.entryList
+                .filter { it.valueList.isNotEmpty() }
+                .forEach { point.addTag("label_" + it.key, it.getValue(0)) }
 
             if (values > 0) {
                 writeApi!!.writePoint(bucketName!!, org!!, point)
@@ -409,11 +405,11 @@ class InfluxDbconnectorApp : AbstractAppController() {
 
 
     @Throws(CouldNotPerformException::class)
-    fun resolveStateValueToMap(serviceState: Message?): Map<String, String> {
+    fun resolveStateValueToMap(serviceState: Message): Map<String, String> {
         val stateValues: MutableMap<String, String> = HashMap()
-        for (fieldDescriptor in serviceState!!.descriptorForType.fields) {
+        for (fieldDescriptor in serviceState.descriptorForType.fields) {
             val stateName = fieldDescriptor.name
-            var stateType = fieldDescriptor.type.toString().lowercase(Locale.getDefault())
+            var stateType = fieldDescriptor.type.toString().lowercase()
 
             // filter invalid states
             if (stateName == null) {
@@ -424,11 +420,16 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 "aggregated_value_coverage", "last_value_occurrence", "timestamp", "responsible_action", "type", "rgb_color", "frame_id" -> continue
             }
             // filter data units
-            if (stateName!!.endsWith("data_unit")) {
+            if (stateName.endsWith("data_unit")) {
                 continue
             }
 
             var stateValue = serviceState.getField(fieldDescriptor).toString()
+
+            when (stateValue) {
+                "", "NaN" -> continue
+                else -> {}
+            }
 
             try {
                 if (fieldDescriptor.type == Descriptors.FieldDescriptor.Type.MESSAGE) {
@@ -458,10 +459,6 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 continue
             }
 
-            when (stateValue) {
-                "", "NaN" -> continue
-                else -> {}
-            }
             if (fieldDescriptor.javaType == Descriptors.FieldDescriptor.JavaType.ENUM) {
                 val finalStateValue = stateValue
                 stateValue = fieldDescriptor.enumType.values.stream()
@@ -469,7 +466,7 @@ class InfluxDbconnectorApp : AbstractAppController() {
                     .findFirst().get().number.toString()
             }
 
-            stateValues[fieldDescriptor.name] = stateValue.lowercase(Locale.getDefault())
+            stateValues[fieldDescriptor.name] = stateValue.lowercase()
         }
         return stateValues
     }
@@ -500,17 +497,17 @@ class InfluxDbconnectorApp : AbstractAppController() {
             throw VerificationFailedException("Influx db connection has never been initiated.")
         }
 
-        if (influxDBClient!!.health().status.value !== "pass") {
+        if (influxDBClient?.ping() != true) {
             throw VerificationFailedException("Could not connect to database server at $databaseUrl!")
         }
 
         // initiate WriteApi
-        val writeoptions = WriteOptions.builder().batchSize(batchLimit!!).flushInterval(batchTime!!).build()
-        writeApi = influxDBClient!!.getWriteApi(writeoptions)
-        writeApi!!.listenEvents(WriteSuccessEvent::class.java) { event: WriteSuccessEvent? ->
+        val writeoptions = WriteOptions.builder().batchSize(batchLimit).flushInterval(batchTime).build()
+        writeApi = influxDBClient?.makeWriteApi(writeoptions)
+        writeApi?.listenEvents(WriteSuccessEvent::class.java) {
             logger.debug("Successfully wrote data into db")
         }
-        writeApi!!.listenEvents(WriteErrorEvent::class.java) { event: WriteErrorEvent ->
+        writeApi?.listenEvents(WriteErrorEvent::class.java) { event: WriteErrorEvent ->
             val exception = event.throwable
             logger.warn(exception.message)
         }
@@ -525,7 +522,6 @@ class InfluxDbconnectorApp : AbstractAppController() {
         }
         logger.debug(" Try to connect to influxDB at $databaseUrl")
 
-
         token?.let {
             influxDBClient = InfluxDBClientFactory.create(
                 databaseUrl + "?readTimeout=" + InfluxDbProcessor.READ_TIMEOUT + "&connectTimeout=" + InfluxDbProcessor.CONNECT_TIMOUT + "&writeTimeout=" + InfluxDbProcessor.WRITE_TIMEOUT + "&logLevel=BASIC",
@@ -536,13 +532,9 @@ class InfluxDbconnectorApp : AbstractAppController() {
 
     private fun disconnectDatabase() {
         try {
-            if (influxDBClient != null) {
-                if (writeApi != null) {
-                    writeApi!!.flush()
-                }
-                influxDBClient!!.close()
-                writeApi = null
-            }
+            writeApi?.flush()
+            influxDBClient?.close()
+            writeApi = null
         } catch (ex: Exception) {
             ExceptionPrinter.printHistory("Could not shutdown database connection!", ex, logger)
         }
@@ -552,7 +544,7 @@ class InfluxDbconnectorApp : AbstractAppController() {
     private val databaseBucket: Unit
         get() {
             logger.debug("Get bucket $bucketName")
-            bucket = influxDBClient!!.bucketsApi.findBucketByName(bucketName!!)
+            bucket = influxDBClient?.bucketsApi?.findBucketByName(bucketName)
             if (bucket == null) {
                 throw NotAvailableException("bucket", bucketName)
             }
