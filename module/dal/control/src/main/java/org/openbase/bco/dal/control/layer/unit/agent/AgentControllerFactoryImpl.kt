@@ -123,6 +123,7 @@ class AgentControllerFactoryImpl private constructor() : AgentControllerFactory 
 
     companion object {
         @get:Synchronized
+        @JvmStatic
         var instance: AgentControllerFactoryImpl = AgentControllerFactoryImpl()
             private set
 
