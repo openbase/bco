@@ -10,6 +10,7 @@ import org.openbase.jul.exception.*
 import org.openbase.jul.exception.printer.ExceptionPrinter
 import org.openbase.jul.exception.printer.LogLevel
 import org.openbase.jul.extension.type.processing.TimestampProcessor
+import org.openbase.jul.extension.type.processing.instant
 import org.openbase.jul.iface.Manageable
 import org.openbase.jul.pattern.Filter
 import org.openbase.jul.pattern.ObservableImpl
@@ -377,8 +378,7 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
     }
 
     val durationSinceLastPresence: Duration
-        get() =
-            Duration.between(Instant.ofEpochMilli(presenceStateBuilder.timestamp.time), Instant.now())
+        get() = Duration.between(presenceStateBuilder.timestamp.instant, Instant.now())
 
     companion object {
         /**
