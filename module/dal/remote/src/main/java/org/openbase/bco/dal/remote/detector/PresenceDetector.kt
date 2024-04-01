@@ -1,6 +1,7 @@
 package org.openbase.bco.dal.remote.detector
 
 import com.google.protobuf.Message
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProvider
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote
 import org.openbase.bco.dal.lib.layer.unit.location.Location
@@ -58,9 +59,8 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
         private set
 
     init {
-        this.presenceTimeout = object : Timeout(PRESENCE_TIMEOUT) {
+        object : Timeout(PRESENCE_TIMEOUT) {
             override fun expired() {
-
                 if (location == null) {
                     return
                 }
@@ -68,7 +68,7 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                 try {
                     // if motion is still detected just restart the timeout.
                     if (location!!.data.motionState.value == MotionState.State.MOTION &&
-                        durationSinceLastPresence < PRESENCE_INVALIDATION_TIMEOUT
+                        durationSinceLastMotion < MOTION_TIMEOUT
                     ) {
                         GlobalCachedExecutorService.submit {
                             try {
@@ -93,7 +93,7 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
                     )
                 }
             }
-        }
+        }.also { this.presenceTimeout = it }
 
         locationDataObserver = Observer { _: DataProvider<LocationData>, data: LocationData ->
             updateMotionState(data.motionState)
@@ -275,12 +275,13 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
 
     @Throws(CouldNotPerformException::class)
     private fun updateMotionState(motionState: MotionStateOrBuilder) {
-
         if (motionState.value == MotionState.State.NO_MOTION) {
             return
         }
 
-        if (motionState.value == MotionState.State.MOTION) {
+        if (motionState.value == MotionState.State.MOTION &&
+            durationSinceLastMotion(motionState) < MOTION_TIMEOUT
+        ) {
             updatePresenceState(
                 TimestampProcessor.updateTimestampWithCurrentTime(
                     PresenceState
@@ -314,9 +315,10 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
             DoorStateType.DoorState.State.OPEN -> {
                 updatePresenceState(
                     TimestampProcessor.updateTimestampWithCurrentTime(
-                        PresenceState.newBuilder().setValue(
-                            PresenceState.State.PRESENT
-                        ).setResponsibleAction(doorState.responsibleAction).build()
+                        PresenceState.newBuilder()
+                            .setValue(PresenceState.State.PRESENT)
+                            .setResponsibleAction(doorState.responsibleAction)
+                            .build()
                     )
                 )
             }
@@ -331,9 +333,10 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
             WindowState.State.OPEN, WindowState.State.TILTED, WindowState.State.CLOSED -> {
                 updatePresenceState(
                     TimestampProcessor.updateTimestampWithCurrentTime(
-                        PresenceState.newBuilder().setValue(
-                            PresenceState.State.PRESENT
-                        ).setResponsibleAction(windowState.responsibleAction).build()
+                        PresenceState.newBuilder()
+                            .setValue(PresenceState.State.PRESENT)
+                            .setResponsibleAction(windowState.responsibleAction)
+                            .build()
                     )
                 )
             }
@@ -377,15 +380,26 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
         presenceStateObservable.waitForValue(timeout, timeUnit)
     }
 
-    val durationSinceLastPresence: Duration
-        get() = Duration.between(presenceStateBuilder.timestamp.instant, Instant.now())
+    val durationSinceLastMotion: Duration
+        get() = location?.data?.motionState?.let { motion ->
+            tryOrNull {
+                ServiceStateProcessor.getLatestValueOccurrence(MotionState.State.MOTION, motion)?.instant
+                    ?.let { lastEvent -> Duration.between(lastEvent, Instant.now()) }
+            }
+        } ?: MOTION_TIMEOUT
+
+    fun durationSinceLastMotion(motionState: MotionStateOrBuilder? = location?.data?.motionState): Duration =
+        motionState?.let { motion ->
+            tryOrNull {
+                ServiceStateProcessor.getLatestValueOccurrence(MotionState.State.MOTION, motion)?.instant
+                    ?.let { lastEvent -> Duration.between(lastEvent, Instant.now()) }
+            }
+        } ?: MOTION_TIMEOUT
 
     companion object {
-        /**
-         * Default 3 minute window of no movement unit the state switches to
-         * NO_MOTION.
-         */
-        val PRESENCE_TIMEOUT: Long = (if (JPService.testMode()) 50 else 60000).toLong()
-        val PRESENCE_INVALIDATION_TIMEOUT: Duration = Duration.ofMinutes(60)
+        val PRESENCE_TIMEOUT: Duration =
+            Duration.ofSeconds(10).takeIf { JPService.testMode().not() }
+                ?: Duration.ofMillis(50)
+        val MOTION_TIMEOUT: Duration = Duration.ofSeconds(10)
     }
 }
