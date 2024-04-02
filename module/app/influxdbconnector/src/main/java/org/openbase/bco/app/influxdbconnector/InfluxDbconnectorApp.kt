@@ -101,7 +101,7 @@ class InfluxDbconnectorApp : AbstractAppController() {
 
                 // connect to db
                 connectToDatabase()
-                while (!task!!.isCancelled) {
+                while (task?.isCancelled == false) {
                     try {
                         verifyConnection()
                         break
@@ -120,7 +120,7 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 }
 
                 // lookup bucked
-                while (!task!!.isCancelled) {
+                while (task?.isCancelled == false) {
                     try {
                         // check if bucked found
                         databaseBucket
@@ -144,11 +144,11 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 Thread.currentThread().interrupt()
                 return@submit
             }
-            if (!task!!.isCancelled && isConnected) {
+            if (task?.isCancelled == false && isConnected) {
                 try {
                     // write initial heartbeat
                     logger.debug("initial heartbeat")
-                    writeApi!!.writePoint(
+                    writeApi?.writePoint(
                         bucketName, org, Point.measurement(InfluxDbProcessor.HEARTBEAT_MEASUREMENT)
                             .addField(InfluxDbProcessor.HEARTBEAT_FIELD, InfluxDbProcessor.HEARTBEAT_OFFLINE_VALUE)
                             .time(System.currentTimeMillis() - 1, WritePrecision.MS)
@@ -194,10 +194,10 @@ class InfluxDbconnectorApp : AbstractAppController() {
         // finish task
 
         logger.debug("finish task")
-        if (task != null && !task!!.isDone) {
-            task!!.cancel(true)
+        task?.takeIf { !it.isDone }?.let { task ->
+            task.cancel(true)
             try {
-                task!![5, TimeUnit.SECONDS]
+                task[5, TimeUnit.SECONDS]
             } catch (ex: CancellationException) {
                 // that's what we are waiting for.
             } catch (ex: Exception) {
@@ -206,10 +206,11 @@ class InfluxDbconnectorApp : AbstractAppController() {
         }
 
         logger.debug("finish heartbeat")
-        if (heartbeat != null && !heartbeat!!.isDone) {
-            heartbeat?.cancel(true)
+
+        heartbeat?.takeIf { !it.isDone }?.let { heartbeat ->
+            heartbeat.cancel(true)
             try {
-                heartbeat!![5, TimeUnit.SECONDS]
+                heartbeat[5, TimeUnit.SECONDS]
             } catch (ex: CancellationException) {
                 // that's what we are waiting for.
             } catch (ex: Exception) {
@@ -392,7 +393,9 @@ class InfluxDbconnectorApp : AbstractAppController() {
                 .forEach { point.addTag("label_" + it.key, it.getValue(0)) }
 
             if (values > 0) {
-                writeApi!!.writePoint(bucketName!!, org!!, point)
+                org.let { org ->
+                    writeApi?.writePoint(bucketName, org, point)
+                }
             }
         } catch (ex: CouldNotPerformException) {
             ExceptionPrinter.printHistory(

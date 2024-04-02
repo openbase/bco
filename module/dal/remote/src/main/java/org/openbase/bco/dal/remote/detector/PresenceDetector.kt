@@ -67,7 +67,7 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
 
                 try {
                     // if motion is still detected just restart the timeout.
-                    if (location!!.data.motionState.value == MotionState.State.MOTION &&
+                    if (location?.data?.motionState?.value == MotionState.State.MOTION &&
                         durationSinceLastMotion < MOTION_TIMEOUT
                     ) {
                         GlobalCachedExecutorService.submit {
@@ -190,13 +190,13 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
 
         buttonUnitPool.activate()
 
-        if ((location!!.config.locationConfig.locationType == LocationType.TILE)) {
+        if (location?.config?.locationConfig?.locationType == LocationType.TILE) {
             connectionUnitPool.activate()
         }
 
         // start initial timeout
         presenceTimeout?.start()
-        updateMotionState(location!!.data.motionState)
+        location?.data?.motionState?.let { updateMotionState(it) }
     }
 
 
@@ -398,10 +398,11 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
 
     companion object {
         @JvmField
+        val PRESENCE_TEST_TIMEOUT: Duration = Duration.ofMillis(50)
         val PRESENCE_TIMEOUT: Duration =
-            Duration.ofSeconds(60).takeIf { JPService.testMode().not() }
-                ?: Duration.ofMillis(50)
+            Duration.ofMinutes(1).takeIf { JPService.testMode().not() }
+                ?: PRESENCE_TEST_TIMEOUT
         @JvmField
-        val MOTION_TIMEOUT: Duration = Duration.ofMinutes(60)
+        val MOTION_TIMEOUT: Duration = Duration.ofHours(1)
     }
 }
