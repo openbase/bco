@@ -36,7 +36,7 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDeviceManager> {
 
-    public OpenHABDeviceManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
+    public OpenHABDeviceManagerLauncher() {
         super(OpenHABDeviceManagerLauncher.class, OpenHABDeviceManager.class);
     }
 
@@ -45,9 +45,14 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
      */
     public static void main(final String[] args) {
         BCO.printLogo();
-        AbstractLauncher.main(BCO.class, OpenHABDeviceManagerLauncher.class, args, OpenHABDeviceManagerLauncher.class,
+        AbstractLauncher.main(
+                BCO.class,
+                OpenHABDeviceManagerLauncher.class,
+                args,
+                OpenHABDeviceManagerLauncher.class,
                 OpenHABConfigSynchronizerLauncher.class,
-                OpenHABSitemapSynchronizerLauncher.class);
+                OpenHABSitemapSynchronizerLauncher.class
+        );
     }
 
     @Override

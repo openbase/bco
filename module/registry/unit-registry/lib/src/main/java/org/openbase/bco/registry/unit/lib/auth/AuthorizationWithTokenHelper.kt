@@ -250,24 +250,24 @@ object AuthorizationWithTokenHelper {
                 // check if authenticated user has needed permissions
                 if (AuthorizationHelper.canDo(
                         unitConfig,
-                        userClientPair.getUserId(),
+                        userClientPair.userId,
                         unitRegistry.getAuthorizationGroupMap(),
                         unitRegistry.getLocationMap(),
                         permissionType
                     )
                 ) {
-                    return AuthPair(userClientPair, userClientPair.getUserId())
+                    return AuthPair(userClientPair, userClientPair.userId)
                 }
 
                 if (AuthorizationHelper.canDo(
                         unitConfig,
-                        userClientPair.getClientId(),
+                        userClientPair.clientId,
                         unitRegistry.getAuthorizationGroupMap(),
                         unitRegistry.getLocationMap(),
                         permissionType
                     )
                 ) {
-                    return AuthPair(userClientPair, userClientPair.getClientId())
+                    return AuthPair(userClientPair, userClientPair.clientId)
                 }
 
                 // authenticated user does not have permissions so check if the authorization token grants them
@@ -290,11 +290,11 @@ object AuthorizationWithTokenHelper {
                     )
                 }
             }
-            var userRepresentation = userClientPair.getUserId()
+            var userRepresentation = userClientPair.userId
             if (userRepresentation.isNotEmpty()) {
                 userRepresentation += "@"
             }
-            userRepresentation += userClientPair.getClientId()
+            userRepresentation += userClientPair.clientId
             if (userRepresentation.isEmpty()) {
                 userRepresentation = "Other"
             }

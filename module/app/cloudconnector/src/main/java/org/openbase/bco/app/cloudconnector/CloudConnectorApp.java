@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloudconnector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -34,7 +34,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.communication.iface.RPCServer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
@@ -65,14 +64,12 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnectorApp.class);
 
     private final CloudConnectorTokenStore tokenStore;
-    private final JsonParser jsonParser;
     private final Map<String, SocketWrapper> userIdSocketMap;
 
-    public CloudConnectorApp() throws InstantiationException {
+    public CloudConnectorApp() {
         super();
         this.userIdSocketMap = new HashMap<>();
         this.tokenStore = new CloudConnectorTokenStore();
-        this.jsonParser = new JsonParser();
     }
 
     @Override
@@ -235,7 +232,8 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
                                 socketWrapper.activate();
                                 socketWrapper.getLoginFuture().get(10, TimeUnit.SECONDS);
                             }
-                        } catch (CouldNotPerformException | ExecutionException | InterruptedException | TimeoutException ex) {
+                        } catch (CouldNotPerformException | ExecutionException | InterruptedException |
+                                 TimeoutException ex) {
                             if (ex instanceof InterruptedException) {
                                 Thread.currentThread().interrupt();
                             }
@@ -278,7 +276,7 @@ public class CloudConnectorApp extends AbstractAppController implements CloudCon
 
                     try {
                         // parse string as json
-                        final JsonObject params = jsonParser.parse(jsonString).getAsJsonObject();
+                        final JsonObject params = JsonParser.parseString(jsonString).getAsJsonObject();
 
                         // validate that password hash is available
                         if (!params.has(PASSWORD_HASH_KEY)) {

@@ -1,6 +1,18 @@
 plugins {
     id("org.openbase.bco")
+    id("org.openjfx.javafxplugin") version "0.1.0"
     application
+}
+
+javafx {
+    version = "21.0.1"
+    modules = listOf(
+        "javafx.base",
+        "javafx.graphics",
+        "javafx.media",
+        "javafx.controls",
+        "javafx.fxml"
+    )
 }
 
 repositories {
