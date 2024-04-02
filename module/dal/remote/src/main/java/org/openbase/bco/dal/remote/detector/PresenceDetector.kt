@@ -397,9 +397,11 @@ class PresenceDetector : Manageable<Location>, DataProvider<PresenceState> {
         } ?: MOTION_TIMEOUT
 
     companion object {
+        @JvmField
         val PRESENCE_TIMEOUT: Duration =
             Duration.ofSeconds(60).takeIf { JPService.testMode().not() }
                 ?: Duration.ofMillis(50)
+        @JvmField
         val MOTION_TIMEOUT: Duration = Duration.ofMinutes(60)
     }
 }
