@@ -375,7 +375,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
 
             motionDetectorController.applyServiceState(Motion.NO_MOTION, ServiceType.MOTION_STATE_SERVICE);
 
-            Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
+            Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT.toMillis());
             while (rootLocationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
                 Thread.sleep(10);
