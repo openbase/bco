@@ -74,9 +74,9 @@ public class InfluxDbProcessor {
     public static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
     public static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
     public static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
-    public static final String INFLUXDB_BATCH_TIME_DEFAULT = "1000";
+    public static final Integer INFLUXDB_BATCH_TIME_DEFAULT = 1000;
     public static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
-    public static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
+    public static final Integer INFLUXDB_BATCH_LIMIT_DEFAULT = 100;
     public static final String INFLUXDB_URL = "INFLUXDB_URL";
     public static final String INFLUXDB_URL_DEFAULT = "http://influxdb:8086";
     public static final String INFLUXDB_ORG = "INFLUXDB_ORG";
@@ -125,8 +125,8 @@ public class InfluxDbProcessor {
             influxDbBucket = metaConfigPool.getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
             influxDbUrl = metaConfigPool.getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
             influxDbOrg = metaConfigPool.getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
-            influxDbBatchTime = metaConfigPool.getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT);
-            influxDbBatchLimit = metaConfigPool.getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT);
+            influxDbBatchTime = metaConfigPool.getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT.toString());
+            influxDbBatchLimit = metaConfigPool.getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT.toString());
 
             try {
                 influxDbToken = metaConfigPool.getValue(INFLUXDB_TOKEN).toCharArray();
