@@ -12,7 +12,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: 'Goal-Driven Automation',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    Svg: require('@site/static/img/goal-driven_automation.svg').default,
     description: (
       <>
         Your automation rules are getting too complex and you lost the global overview about your setup? Why not just express your goals and let your smart environment do the rest. 
@@ -21,7 +21,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Complete Action Transparency',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    Svg: require('@site/static/img/morning_routine.svg').default,
     description: (
       <>
         You system does stupid things and you have no clue whats going on? We guarantee the introspection of decisions your system takes and present them in a human intuitive way. 
@@ -30,7 +30,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Smart Resource Allocation',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    Svg: require('@site/static/img/morning_routine.svg').default,
     description: (
       <>
         Too many smart things are fighting in your home? BCO solves such interference depending on the current situation. In addition, human actions are always prioritized to ensure a pleasant smart home experience.
