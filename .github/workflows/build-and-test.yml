@@ -27,7 +27,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          changed_files=$(gh pr diff --name-only ${{ github.event.pull_request.number }}) #todo: Maybe change to git diff to avoid 300 diff limit?
+          changed_files=$(gh pr diff --name-only ${{ github.event.pull_request.number }})
           
           test=false
           for file in $changed_files; do
