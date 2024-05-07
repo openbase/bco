@@ -9,12 +9,54 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  build:
-    name: "Build"
-    timeout-minutes: 10
+  check:
+    name: "Check"
 
     if: github.event.pull_request.draft == false
 
+    runs-on: ubuntu-latest
+    outputs:
+      testing_needed: ${{ steps.check.outputs.testing_needed }}
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v3
+
+      ### Checks if there are any file changes that are not in the .github/ or doc/ directories
+      - name: "Check for changes outside CI and docs"
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          changed_files=$(gh pr diff --name-only ${{ github.event.pull_request.number }})
+          
+          changesOutsideDocsCI=false
+          for file in $changed_files; do
+            if [[ $file -ne ".github/"* && $file -ne "doc/"* ]]; then
+              echo "file: $file is not part of CI or docs"
+              echo "Start testing pipeline."
+              changesOutsideDocsCI=true
+              break
+            else
+              echo "file: $file is part of CI or docs"
+            fi
+          done
+          if [[ $changesOutsideDocsCI == true ]]; then
+            echo "testing_needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "testing_needed=false" >> "$GITHUB_OUTPUT"
+            echo "No need for the build and test pipeline to run. Exiting."
+          fi
+
+
+  build:
+    name: "Build"
+    timeout-minutes: 10
+    needs: check
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.worth_testing == true)
+   
     runs-on: ubuntu-latest
 
     steps:
@@ -50,9 +92,10 @@ jobs:
   test:
     name: "Test"
     timeout-minutes: 120
-
-    if: github.event.pull_request.draft == false
     needs: build
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == true)
 
     runs-on: ubuntu-latest
 
@@ -85,3 +128,4 @@ jobs:
         with:
           name: Test Reports
           path: "**/build/reports"
+
