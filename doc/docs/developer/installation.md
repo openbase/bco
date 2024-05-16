@@ -14,16 +14,9 @@ sidebar_position: 1
 
 ## Requirements
 
-* Java JDK 11 (AZUL Zulu JDK recommended)
-    * Download: [https://www.azul.com/downloads/zulu](https://www.azul.com/downloads/zulu)
-    * Ubuntu Install Example
-      * Add Key: ```sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 0xB1998361219BD9C9```
-      * Add Repo: ```sudo apt-add-repository 'deb http://repos.azulsystems.com/ubuntu stable main'```
-      * Update Index: ```sudo apt-get update```
-      * Install: ```sudo apt-get install zulu-11```
-      * Make Default: ```echo 'export JAVA_HOME="/usr/lib/jvm/zulu-11-amd64/"' >> ~/.bashrc && . ~/.bashrc```
+* Java JDK 17
 * Git
-    * ```sudo apt-get install git```
+* Docker
 
 ##  Toolchain Setup
 
@@ -48,6 +41,29 @@ Make sure you have right permissions to ```$BCO_DIST```
 sudo chown -R $USER $BCO_DIST
 chmod -R 750 $BCO_DIST
 ```
+
+## Setup Middleware
+### Setup Network
+Setup a dedicated bco network for security reasons.
+```bash
+docker network create bco-net
+```
+
+### MQTT Broker Setup
+
+```bash
+echo -e "allow_anonymous true\nlistener 1883" > $HOME/.mosquitto.conf && \
+docker run \
+    --name mqtt-broker \
+    --network=bco-net \
+    --publish 1883:1883 \
+    --volume $HOME/.mosquitto.conf:/mosquitto/config/mosquitto.conf \
+    --restart=always \
+    --log-driver=local \
+    --detach \
+    eclipse-mosquitto
+```
+
 
 ## BCO Installation
 
@@ -74,11 +90,8 @@ cd developer.tools
 Download the bco main repository into your development workspace.
 ```
 cd ~/workspace/openbase
-git clone -b stable https://github.com/openbase/bco.git
+git clone https://github.com/openbase/bco.git
 ```
-:::info INFO
-We recommend to checkout and install the ```dev``` branch in order to start the development of new components.
-:::
 
 ### Download and Prepare BCO Submodules
 
@@ -95,9 +108,6 @@ If the workspace is prepared, we can build bco by using the ```install``` script
 cd ~/workspace/openbase/bco
 ./install.sh
 ```
-:::info INFO
-The initial installation can take a while, so grab a coffee and relax while the scripts do the work.
-:::
 
 Now everything should be ready to start the development of new bco components and apps. We recommend to use IntelliJ as IDE for BCO.
 Open ```~/workspace/openbase/bco``` in the IDE or just execute ```idea ~/workspace/openbase/bco``` in case IntelliJ is provided by your shell.
