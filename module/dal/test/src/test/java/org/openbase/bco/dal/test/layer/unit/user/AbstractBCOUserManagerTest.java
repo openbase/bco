@@ -10,12 +10,12 @@ package org.openbase.bco.dal.test.layer.unit.user;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -24,6 +24,7 @@ package org.openbase.bco.dal.test.layer.unit.user;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.registry.remote.Registries;
@@ -32,7 +33,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public class AbstractBCOUserManagerTest extends AbstractBCOTest {
@@ -42,6 +42,7 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
+    @Timeout(30)
     public static void setupUserManager() throws Throwable {
         try {
             userManagerLauncher = new UserManagerLauncher();
@@ -54,6 +55,7 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownUserManager() throws Throwable {
         try {
             if (userManagerLauncher != null) {

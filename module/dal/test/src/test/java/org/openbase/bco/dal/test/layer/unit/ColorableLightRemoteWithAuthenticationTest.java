@@ -10,18 +10,18 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import static org.junit.jupiter.api.Assertions.*;
+
 import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -31,7 +31,6 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.state.States.Power;
-import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.layer.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.layer.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.layer.unit.Units;
@@ -72,6 +71,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
@@ -89,11 +90,13 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void registerProperties() throws Throwable {
         JPService.registerProperty(JPAuthentication.class, true);
     }
 
     @BeforeEach
+    @Timeout(30)
     public void prepareTest() throws CouldNotPerformException, InterruptedException, ExecutionException {
 
         adminSessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
@@ -107,6 +110,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @AfterEach
+    @Timeout(30)
     public void tearDownTest() throws CouldNotPerformException, ExecutionException, InterruptedException {
         adminSessionManager.logout();
         colorableLightRemote.setSessionManager(SessionManager.getInstance());
@@ -345,7 +349,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         System.out.println("end largo control");
 
         // make sure sync is done
-        powerStateServiceRemote.requestData().get(5 , TimeUnit.SECONDS);
+        powerStateServiceRemote.requestData().get(5, TimeUnit.SECONDS);
 
         // validate state
         assertEquals(State.ON, powerStateServiceRemote.getPowerState().getValue());
@@ -353,26 +357,26 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         // validate authority
         assertEquals(largoUserUnitConfig.getId(), powerStateServiceRemote.getPowerState().getResponsibleAction().getActionInitiator().getInitiatorId());
 
-        powerStateServiceRemote.cancelAction(future.get(), largosAuthToken).get(5 , TimeUnit.SECONDS);
+        powerStateServiceRemote.cancelAction(future.get(), largosAuthToken).get(5, TimeUnit.SECONDS);
 
         future = powerStateServiceRemote.setPowerState(Power.OFF, largosDefaultParameter);
         waitForExecution(future, largosAuthToken);
 
         // make sure sync is done
-        powerStateServiceRemote.requestData().get(5 , TimeUnit.SECONDS);
+        powerStateServiceRemote.requestData().get(5, TimeUnit.SECONDS);
 
         assertEquals(State.OFF, powerStateServiceRemote.getPowerState().getValue());
         assertEquals(largoUserUnitConfig.getId(), powerStateServiceRemote.getPowerState().getResponsibleAction().getActionInitiator().getInitiatorId());
 
         try {
-            powerStateServiceRemote.cancelAction(future.get(5 , TimeUnit.SECONDS), largosAuthToken).get(5 , TimeUnit.SECONDS);
+            powerStateServiceRemote.cancelAction(future.get(5, TimeUnit.SECONDS), largosAuthToken).get(5, TimeUnit.SECONDS);
         } catch (ExecutionException ex) {
             LOGGER.error("Could not cancel action!", ex);
             throw ex;
         }
 
         // make sure sync is done
-        powerStateServiceRemote.requestData().get(5 , TimeUnit.SECONDS);
+        powerStateServiceRemote.requestData().get(5, TimeUnit.SECONDS);
 
         // make sure largo is not responsible any more for the current state.
         assertNotEquals(largoUserUnitConfig.getId(), powerStateServiceRemote.getPowerState().getResponsibleAction().getActionInitiator().getInitiatorId());

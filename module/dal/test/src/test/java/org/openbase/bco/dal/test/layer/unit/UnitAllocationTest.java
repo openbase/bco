@@ -10,19 +10,18 @@ package org.openbase.bco.dal.test.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
@@ -66,17 +65,16 @@ import java.util.HashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitAllocationTest.class);
-
-    private static ColorableLightRemote colorableLightRemote;
-
     private static final long VALID_EXECUTION_VARIATION = 100;
-
+    private static ColorableLightRemote colorableLightRemote;
     private final SessionManager sessionManager;
     private AuthToken adminToken = null;
 
@@ -85,6 +83,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
+    @Timeout(30)
     public static void setUpClass() throws Throwable {
 
         // uncomment to enable debug mode
@@ -100,6 +99,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeEach
+    @Timeout(30)
     public void loginUser() throws Exception {
         sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
@@ -109,6 +109,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @AfterEach
+    @Timeout(30)
     public void logoutUser() {
         sessionManager.logout();
     }
@@ -169,70 +170,6 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
 
         // remove the action state observer
         colorableLightRemote.removeDataObserver(actionStateObserver);
-    }
-
-    /**
-     * Observer which makes sure that all of a set of action states were notified in their specified order.
-     */
-    private static class ActionStateObserver implements Observer<DataProvider<ColorableLightData>, ColorableLightData> {
-
-        private final ActionState.State[] actionStates;
-
-
-        private final SyncObject actionIdStateMapLock = new SyncObject("ActionIdStateMapLock");
-        private final HashMap<String, ArrayList<ActionState.State>> actionIdStateMap;
-
-        ActionStateObserver(final ActionState.State[] actionStates) {
-            this.actionStates = actionStates;
-            this.actionIdStateMap = new HashMap<>();
-        }
-
-        @Override
-        public void update(final DataProvider<ColorableLightData> source, final ColorableLightData data) {
-
-            System.out.println("ActionStateObserver: data update received");
-
-            // do nothing if the there is no action
-            if (data.getActionCount() == 0) {
-                return;
-            }
-
-            synchronized (actionIdStateMapLock) {
-                for (ActionDescription actionDescription : data.getActionList()) {
-
-                    // filter non observed states
-                    if (Arrays.stream(actionStates).noneMatch(actionDescription.getActionState().getValue()::equals)) {
-                        continue;
-                    }
-
-                    // create missing units
-                    if (!actionIdStateMap.containsKey(actionDescription.getActionId())) {
-                        actionIdStateMap.put(actionDescription.getActionId(), new ArrayList<>());
-                    }
-
-                    final ArrayList<ActionState.State> stateList = actionIdStateMap.get(actionDescription.getActionId());
-
-                    // do nothing if the action state has not been updated
-                    if (!stateList.isEmpty() && stateList.get(stateList.size() - 1) == actionDescription.getActionState().getValue()) {
-                        continue;
-                    }
-
-                    stateList.add(actionDescription.getActionState().getValue());
-                }
-            }
-        }
-
-        public int getReceivedActionStateCounter(final String actionId) {
-            synchronized (actionIdStateMapLock) {
-                return actionIdStateMap.get(actionId).size();
-            }
-        }
-
-        void validateActionStates(final String actionId) {
-            synchronized (actionIdStateMapLock) {
-                assertEquals(StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionIdStateMap.get(actionId), ", "), "Unexpected action state order.");
-            }
-        }
     }
 
     /**
@@ -507,5 +444,69 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
         // cancel remaining action for the next test
         actionToExtend.cancel().get();
         actionToExtend.waitForActionState(ActionState.State.CANCELED);
+    }
+
+    /**
+     * Observer which makes sure that all of a set of action states were notified in their specified order.
+     */
+    private static class ActionStateObserver implements Observer<DataProvider<ColorableLightData>, ColorableLightData> {
+
+        private final ActionState.State[] actionStates;
+
+
+        private final SyncObject actionIdStateMapLock = new SyncObject("ActionIdStateMapLock");
+        private final HashMap<String, ArrayList<ActionState.State>> actionIdStateMap;
+
+        ActionStateObserver(final ActionState.State[] actionStates) {
+            this.actionStates = actionStates;
+            this.actionIdStateMap = new HashMap<>();
+        }
+
+        @Override
+        public void update(final DataProvider<ColorableLightData> source, final ColorableLightData data) {
+
+            System.out.println("ActionStateObserver: data update received");
+
+            // do nothing if the there is no action
+            if (data.getActionCount() == 0) {
+                return;
+            }
+
+            synchronized (actionIdStateMapLock) {
+                for (ActionDescription actionDescription : data.getActionList()) {
+
+                    // filter non observed states
+                    if (Arrays.stream(actionStates).noneMatch(actionDescription.getActionState().getValue()::equals)) {
+                        continue;
+                    }
+
+                    // create missing units
+                    if (!actionIdStateMap.containsKey(actionDescription.getActionId())) {
+                        actionIdStateMap.put(actionDescription.getActionId(), new ArrayList<>());
+                    }
+
+                    final ArrayList<ActionState.State> stateList = actionIdStateMap.get(actionDescription.getActionId());
+
+                    // do nothing if the action state has not been updated
+                    if (!stateList.isEmpty() && stateList.get(stateList.size() - 1) == actionDescription.getActionState().getValue()) {
+                        continue;
+                    }
+
+                    stateList.add(actionDescription.getActionState().getValue());
+                }
+            }
+        }
+
+        public int getReceivedActionStateCounter(final String actionId) {
+            synchronized (actionIdStateMapLock) {
+                return actionIdStateMap.get(actionId).size();
+            }
+        }
+
+        void validateActionStates(final String actionId) {
+            synchronized (actionIdStateMapLock) {
+                assertEquals(StringProcessor.transformCollectionToString(Arrays.asList(actionStates), ", "), StringProcessor.transformCollectionToString(actionIdStateMap.get(actionId), ", "), "Unexpected action state order.");
+            }
+        }
     }
 }

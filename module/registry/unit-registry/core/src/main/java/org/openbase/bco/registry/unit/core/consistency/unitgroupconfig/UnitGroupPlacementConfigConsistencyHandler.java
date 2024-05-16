@@ -230,7 +230,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
      * Returns the points that need to be checked for minima and maxima to
      * create the unit group bounding box for a certain member.
      *
-     * @param targetFrameId The frame id of the target location.
+     * @param targetFrameId The node ID of the target location.
      * @param unitConfig    Config of the member unit.
      *
      * @return Corner points of the member's bounding box in root coordinates.
@@ -248,7 +248,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
             try {
                 unitTransformation = getUnitToTargetTransform3D(targetFrameId, unitConfig);
             } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not get the unit to target transformation for unit " + unitConfig.getId() + " and target frame id " + targetFrameId, ex);
+                throw new CouldNotPerformException("Could not get the unit to target transformation for unit " + unitConfig.getId() + " and target node ID " + targetFrameId, ex);
             }
 
             try {
@@ -309,9 +309,9 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
 
     /**
      * Returns the Transformation from unit to target location coordinates for
-     * the given target frame id and unit config.
+     * the given target node ID and unit config.
      *
-     * @param targetFrameId the frame id of the target location.
+     * @param targetFrameId the node ID of the target location.
      * @param unitConfig    UnitConfig of the unit to transform from.
      *
      * @return The Transformation from unit to root coordinates.

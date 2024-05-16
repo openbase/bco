@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.consistency;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -34,9 +34,7 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Default label consistency handler for units. This consistency handler makes sure that a unit has at least one label
@@ -45,12 +43,6 @@ import java.util.Map;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
-    private final Map<String, UnitConfig> unitMap;
-
-    public DefaultUnitLabelConsistencyHandler() {
-        this.unitMap = new HashMap<>();
-    }
 
     @Override
     public void processData(final String id,
@@ -89,27 +81,5 @@ public class DefaultUnitLabelConsistencyHandler extends AbstractProtoBufRegistry
             throw new InvalidStateException("Alias not provided by Unit[" + unitConfig.getId() + "]!");
         }
         return UnitConfigProcessor.getDefaultAlias(unitConfig, "?");
-    }
-
-    /**
-     * Generate a key for a label of a unit.
-     * This key can only exists once.
-     * Here the location id of the placement of the unit is added to the label to guarantee that this label
-     * exists only once per location.
-     * This method can be overwritten by sub classes to guarantee other things.
-     *
-     * @param label       the label for which the key is generated
-     * @param languageKey the language key of the label.
-     * @param unitConfig  the unit having the label
-     *
-     * @return a key for this label and unit
-     */
-    protected String generateKey(final String label, final String languageKey, final UnitConfig unitConfig) {
-        return label + "_" + languageKey + "_" + unitConfig.getPlacementConfig().getLocationId();
-    }
-
-    @Override
-    public void reset() {
-        unitMap.clear();
     }
 }

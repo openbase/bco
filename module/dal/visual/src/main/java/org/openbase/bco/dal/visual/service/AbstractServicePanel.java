@@ -10,12 +10,12 @@ package org.openbase.bco.dal.visual.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,26 +27,28 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.visual.util.StatusPanel;
-import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.*;
+import org.openbase.jul.extension.type.processing.ScopeProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.controller.Remote;
-import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.type.domotic.service.ServiceDescriptionType;
+import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.state.ConnectionStateType.ConnectionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.openbase.type.domotic.service.ServiceTemplateType;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.Future;
-import org.openbase.type.domotic.service.ServiceDescriptionType;
 
 /**
  * @param <PS>
  * @param <CS>
  * @param <OS>
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractServicePanel<PS extends ProviderService, CS extends ConsumerService, OS extends OperationService> extends javax.swing.JPanel implements Shutdownable {
@@ -150,7 +152,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
         }
         return "---";
     }
-    
+
     protected UnitRemote getUnitRemote() {
         return this.unitRemote;
     }
@@ -231,6 +233,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
      * Initializes this service panel with the given unit remote.
      *
      * @param unitRemote
+     *
      * @throws CouldNotPerformException
      * @throws InterruptedException
      */
@@ -254,6 +257,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
      * Make sure the remote unit was initialized before and the service description is compatible with this unit.
      *
      * @param serviceDescription the new service description to bind to this unit remote.
+     *
      * @throws CouldNotPerformException is thrown if any error occurs during the binding process.
      * @throws InterruptedException
      */
@@ -264,7 +268,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
             }
             setServiceConfig(serviceDescription);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceDescription.getServiceType() + "] on UnitRemote[" + unitRemote.getScope() + "]!", ex);
+            throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceDescription.getServiceType() + "] on UnitRemote[" + ScopeProcessor.generateStringRep(unitRemote.getScope()) + "]!", ex);
         }
     }
 

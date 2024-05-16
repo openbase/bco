@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -74,11 +74,11 @@ public class InfluxDbProcessor {
     public static final String INFLUXDB_BUCKET = "INFLUXDB_BUCKET";
     public static final String INFLUXDB_BUCKET_DEFAULT = "bco-persistence";
     public static final String INFLUXDB_BATCH_TIME = "INFLUXDB_BATCH_TIME";
-    public static final String INFLUXDB_BATCH_TIME_DEFAULT = "1000";
+    public static final Integer INFLUXDB_BATCH_TIME_DEFAULT = 1000;
     public static final String INFLUXDB_BATCH_LIMIT = "INFLUXDB_BATCH_LIMIT";
-    public static final String INFLUXDB_BATCH_LIMIT_DEFAULT = "100";
+    public static final Integer INFLUXDB_BATCH_LIMIT_DEFAULT = 100;
     public static final String INFLUXDB_URL = "INFLUXDB_URL";
-    public static final String INFLUXDB_URL_DEFAULT = "http://localhost:8086";
+    public static final String INFLUXDB_URL_DEFAULT = "http://influxdb:8086";
     public static final String INFLUXDB_ORG = "INFLUXDB_ORG";
     public static final String INFLUXDB_ORG_DEFAULT = "openbase";
     public static final String INFLUXDB_TOKEN = "INFLUXDB_TOKEN";
@@ -125,8 +125,8 @@ public class InfluxDbProcessor {
             influxDbBucket = metaConfigPool.getValue(INFLUXDB_BUCKET, INFLUXDB_BUCKET_DEFAULT);
             influxDbUrl = metaConfigPool.getValue(INFLUXDB_URL, INFLUXDB_URL_DEFAULT);
             influxDbOrg = metaConfigPool.getValue(INFLUXDB_ORG, INFLUXDB_ORG_DEFAULT);
-            influxDbBatchTime = metaConfigPool.getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT);
-            influxDbBatchLimit = metaConfigPool.getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT);
+            influxDbBatchTime = metaConfigPool.getValue(INFLUXDB_BATCH_TIME, INFLUXDB_BATCH_TIME_DEFAULT.toString());
+            influxDbBatchLimit = metaConfigPool.getValue(INFLUXDB_BATCH_LIMIT, INFLUXDB_BATCH_LIMIT_DEFAULT.toString());
 
             try {
                 influxDbToken = metaConfigPool.getValue(INFLUXDB_TOKEN).toCharArray();
@@ -458,7 +458,7 @@ public class InfluxDbProcessor {
 
             return FutureProcessor.completedFuture(newAggregatedServiceState);
         } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(AggregatedServiceState.class,new CouldNotPerformException("Could not query aggregated service state", ex));
+            return FutureProcessor.canceledFuture(AggregatedServiceState.class, new CouldNotPerformException("Could not query aggregated service state", ex));
         }
     }
 }

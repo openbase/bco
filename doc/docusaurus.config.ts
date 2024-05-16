@@ -1,0 +1,160 @@
+import {themes as prismThemes} from 'prism-react-renderer';
+import type {Config} from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+
+const config: Config = {
+  title: 'Base Cube One',
+  tagline: 'Smart Environment Automation Framework',
+  favicon: 'img/favicon.ico',
+
+  // Set the production url of your site here
+  url: 'https://basecubeone.org/',
+  // Set the /<baseUrl>/ pathname under which your site is served
+  // For GitHub pages deployment, it is often '/<projectName>/'
+  baseUrl: '/',
+
+  // GitHub pages deployment config.
+  // If you aren't using GitHub pages, you don't need these.
+  organizationName: 'openbase', // Usually your GitHub org/user name.
+  projectName: 'bco', // Usually your repo name.
+
+  onBrokenLinks: 'throw',
+  onBrokenMarkdownLinks: 'warn',
+
+  // Even if you don't use internationalization, you can use this field to set
+  // useful metadata like html lang. For example, if your site is Chinese, you
+  // may want to replace "en" with "zh-Hans".
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+  
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          sidebarPath: './sidebars.ts',
+          // Please change this to your repo.
+          // Remove this to remove the "edit this page" links.
+          editUrl:
+            'https://github.com/openbase/bco/tree/dev/doc',
+        },
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themes: [
+    // ... Your other themes.
+    [
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
+      ({
+        // ... Your options.
+        // `hashed` is recommended as long-term-cache of index file is possible.
+        hashed: true,
+        // For Docs using Chinese, The `language` is recommended to set to:
+        // ```
+        // language: ["en", "zh"],
+        // ```
+      }),
+    ],
+  ],
+
+  themeConfig: {
+    // Replace with your project's social card
+    image: 'img/docusaurus-social-card.jpg',
+    navbar: {
+      title: 'Base Cube One',
+      logo: {
+        alt: 'Base Cube One Logo',
+        src: '/img/bco/bco_logo_simple_small.png',
+        srcDark: '/img/bco/bco_logo_simple_white.png',
+        // href: 'https://docusaurus.io/',
+        target: '_self',
+        width: 32,
+        height: 32,
+        className: 'custom-navbar-logo-class',
+        // style: {border: 'solid red'},
+      },
+      items: [
+        {
+          type: 'docSidebar',
+          sidebarId: 'tutorialSidebar',
+          position: 'left',
+          label: 'Documentation',
+        },
+        {
+          href: 'https://github.com/openbase/bco',
+          label: 'GitHub',
+          position: 'right',
+        },
+      ],
+    },
+    hero: {
+      title: 'Base Cube One',
+      tagline: 'Smart Environment Automation Framework',
+      image: '/img/bco/bco_logo_simple.png',
+      // Replace with your site's URL
+      // url: 'https://basecubeone.org/',
+      // Replace with your project's GitHub URL
+      // githubUrl: '
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {
+              label: 'User Installation Guide',
+              to: '/docs/user/installation',
+            },
+            {
+              label: 'Developer Installation Guide',
+              to: '/docs/developer/installation',
+            },
+          ],
+        },
+        {
+          title: 'Community',
+          items: [
+            {
+              label: 'Discord',
+              href: 'https://discordapp.com/invite/openbase',
+            },
+          ],
+        },
+        {
+          title: 'More',
+          items: [
+            {
+              label: 'GitHub',
+              href: 'https://github.com/openbase/bco',
+            },
+          ],
+        },
+      ],
+      logo: {
+        alt: 'Meta Open Source Logo',
+        src: '/img/github-mark-white.png',
+        href: 'https://github.com/openbase',
+        width: 50,
+        height: 50,
+      },
+      copyright:
+        `Copyright © ${new Date().getFullYear()} openbase.org <br>
+        <a href="/docs/privacypolice.html">Privacy policy</a> | <a href="/docs/imprint.html">ImprintCopyright</a>`,
+    },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
+  } satisfies Preset.ThemeConfig,
+};
+
+export default config;

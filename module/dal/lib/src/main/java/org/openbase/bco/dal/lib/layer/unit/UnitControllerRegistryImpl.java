@@ -54,12 +54,11 @@ public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?, ?>>
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitControllerRegistryImpl.class);
 
-    private final Map<String, CONTROLLER> scopeControllerMap;
+    private final Map<String, CONTROLLER> aliasControllers = new HashMap<>();
     private final UnitSimulationManager<CONTROLLER> unitSimulationManager;
     private boolean active;
 
     public UnitControllerRegistryImpl() throws InstantiationException {
-        this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
 
         // handle simulation mode
@@ -68,7 +67,6 @@ public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?, ?>>
 
     public UnitControllerRegistryImpl(final HashMap<String, CONTROLLER> entryMap) throws InstantiationException {
         super(entryMap);
-        this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
 
         // handle simulation mode
@@ -103,10 +101,10 @@ public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?, ?>>
      * @throws NotAvailableException {@inheritDoc}
      */
     @Override
-    public CONTROLLER getUnitByScope(final String scope) throws NotAvailableException {
-        final CONTROLLER controller = scopeControllerMap.get(scope);
+    public CONTROLLER getUnitByAlias(final String alias) throws NotAvailableException {
+        final CONTROLLER controller = aliasControllers.get(alias);
         if (controller == null) {
-            throw new NotAvailableException("UnitController", new InvalidStateException("No unit controller for given scope registered!"));
+            throw new NotAvailableException("UnitController", new InvalidStateException("No unit controller for given alias registered!"));
         }
         return controller;
     }
@@ -148,15 +146,20 @@ public class UnitControllerRegistryImpl<CONTROLLER extends UnitController<?, ?>>
             final Collection<CONTROLLER> unitControllerCollection = new ArrayList<>(data.values());
             // add new entries to the scope controller map
             for (final CONTROLLER controller : unitControllerCollection) {
-                scopeControllerMap.put(ScopeProcessor.generateStringRep(controller.getScope()), controller);
+                for (String alias : controller.getAliases()) {
+                    aliasControllers.put(alias, controller);
+                }
             }
 
             // remove controller which are no longer provided by the registry
-            for (final CONTROLLER controller : new ArrayList<>(scopeControllerMap.values())) {
+            for (final CONTROLLER controller : new ArrayList<>(aliasControllers.values())) {
                 if (unitControllerCollection.contains(controller)) {
                     continue;
                 }
-                scopeControllerMap.remove(ScopeProcessor.generateStringRep(controller.getScope()));
+
+                for (String alias : controller.getAliases()) {
+                    aliasControllers.remove(alias);
+                }
             }
         }
     }

@@ -176,26 +176,34 @@ public class RemoteActionPool {
 
 
     public void waitUntilDone() throws CouldNotPerformException, InterruptedException {
-        for (final RemoteAction action : remoteActionList) {
-            action.waitUntilDone();
+        synchronized (actionListSync) {
+            for (final RemoteAction action : remoteActionList) {
+                action.waitUntilDone();
+            }
         }
     }
 
     public void waitForRegistration() throws CouldNotPerformException, InterruptedException {
-        for (final RemoteAction action : remoteActionList) {
-            action.waitForRegistration();
+        synchronized (actionListSync) {
+            for (final RemoteAction action : remoteActionList) {
+                action.waitForRegistration();
+            }
         }
     }
 
     public void addActionDescriptionObserver(final Observer<RemoteAction, ActionDescription> observer) {
-        for (final RemoteAction action : remoteActionList) {
-            action.addActionDescriptionObserver(observer);
+        synchronized (actionListSync) {
+            for (final RemoteAction action : remoteActionList) {
+                action.addActionDescriptionObserver(observer);
+            }
         }
     }
 
     public void removeActionDescriptionObserver(final Observer<RemoteAction, ActionDescription> observer) {
-        for (final RemoteAction action : remoteActionList) {
-            action.removeActionDescriptionObserver(observer);
+        synchronized (actionListSync) {
+            for (final RemoteAction action : remoteActionList) {
+                action.removeActionDescriptionObserver(observer);
+            }
         }
     }
 

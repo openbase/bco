@@ -38,11 +38,11 @@ import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig;
 import org.openhab.core.io.rest.core.thing.EnrichedThingDTO;
 import org.openhab.core.items.dto.ItemDTO;
 import org.openhab.core.thing.dto.ChannelDTO;
-import org.openhab.core.thing.dto.ThingDTO;
 import org.openhab.core.thing.link.dto.ItemChannelLinkDTO;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -63,7 +63,7 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        Objects.requireNonNull(OpenHABRestCommunicator.getInstance()).waitForConnectionState(ConnectionState.State.CONNECTED);
         super.activate();
     }
 
@@ -120,12 +120,12 @@ public class ThingUnitSynchronization extends AbstractSynchronizer<String, Ident
         return identifiableEnrichedThingDTO.getId().startsWith(BCO_BINDING_ID);
     }
 
-    private String getUnitId(ThingDTO thingDTO) {
+    private String getUnitId(EnrichedThingDTO thingDTO) {
         String[] split = thingDTO.UID.split(":");
         return split[split.length - 1];
     }
 
-    private void registerAndValidateItems(final ThingDTO thingDTO) throws CouldNotPerformException {
+    private void registerAndValidateItems(final EnrichedThingDTO thingDTO) throws CouldNotPerformException {
         // save current item channel links to compute if some already exist
         final List<ItemChannelLinkDTO> itemChannelLinks = OpenHABRestCommunicator.getInstance().getItemChannelLinks();
         // retrieve the unit belonging to the thing

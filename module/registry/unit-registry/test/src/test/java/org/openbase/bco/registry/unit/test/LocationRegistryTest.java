@@ -10,19 +10,18 @@ package org.openbase.bco.registry.unit.test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.registry.remote.Registries;
@@ -38,6 +37,9 @@ import org.openbase.type.domotic.unit.location.LocationConfigType.LocationConfig
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
@@ -208,19 +210,9 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         // create a connection with only one tile id
         UnitConfig.Builder failingConnectionConfig = getConnectionUnitBuilder("Failing connection");
         failingConnectionConfig.getConnectionConfigBuilder().setConnectionType(ConnectionType.DOOR).addTileId(tile1.getId());
-        try {
-            // set exception printer to quit because an exception is expected
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            // try to register the connection which should fail
-            Registries.getUnitRegistry().registerUnitConfig(failingConnectionConfig.build()).get();
-            // fail of no exception has been thrown
-            fail("Registered connection with less than one tile");
-        } catch (ExecutionException ex) {
-            // if an execution exception is thrown the connection could not be registered
-        } finally {
-            // reset quit flag from exception printer
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
+        // register the connection which should lead to a single tile of the connection
+        var result = Registries.getUnitRegistry().registerUnitConfig(failingConnectionConfig.build()).get();
+        assertEquals(result.getConnectionConfig().getTileIdCount(), 1);
 
         // create a new connection with duplicated and fake tile ids
         UnitConfig.Builder connection = getConnectionUnitBuilder("Test Connection");
@@ -262,7 +254,10 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         assertEquals(LocationType.ZONE, root.getLocationConfig().getLocationType(), "Location type zone has not been recovered for root location");
 
         // register a tile
-        UnitConfig.Builder tile = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.TILE, "Tile", root.getId()).build()).get().toBuilder();
+        UnitConfig.Builder tile = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.UNKNOWN, "Tile", root.getId()).build()).get().toBuilder();
+
+        // make sure that the location has been identified as tile
+        assertEquals(LocationType.TILE, tile.getLocationConfig().getLocationType(), "Type has not been detected for tile");
 
         // register a location under a tile, therefore it should be inferred to be a region
         UnitConfig.Builder region = getLocationUnitBuilder("Region");
@@ -272,8 +267,9 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
 
         // now the tile has a zone as its parent and a region as its child, therefore the consistency handler should be
         // able to recover its type
-        tile.getLocationConfigBuilder().setLocationType(LocationType.ZONE);
+        tile.getLocationConfigBuilder().setLocationType(LocationType.UNKNOWN);
         tile = Registries.getUnitRegistry().updateUnitConfig(tile.build()).get().toBuilder();
+        assertFalse(tile.getLocationConfig().getRoot(), "Should not be the new root location");
         assertEquals(LocationType.TILE, tile.getLocationConfig().getLocationType(), "Type of tile has not been recovered");
     }
 
@@ -289,5 +285,19 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
 
         final UnitConfig rootLocation = Registries.getUnitRegistry().getRootLocationConfig();
         assertEquals(rootLocation, Registries.getUnitRegistry().getUnitConfigByScope(rootLocation.getScope()), "Could not resolve locationUnitConfig by its scope");
+    }
+
+    /**
+     * We had an issue that the root location contained itself as a unit id, which could cause
+     * recursive calls (https://github.com/openbase/bco/issues/65).
+     * This test makes sure that this does not happen.
+     *
+     * @throws Exception if an error occurs
+     */
+    @Test
+    @Timeout(5)
+    public void testRootLocationUnitIds() throws Exception {
+        final UnitConfig rootLocation = Registries.getUnitRegistry().getRootLocationConfig();
+        assertFalse(rootLocation.getLocationConfig().getUnitIdList().contains(rootLocation.getId()), "The root location contains itself in its unit id list!");
     }
 }

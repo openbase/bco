@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -26,7 +26,6 @@ import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
@@ -53,7 +52,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOperationService, ColorState> implements ColorStateOperationServiceCollection {
@@ -67,6 +65,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
      * Computes the average RGB color.
      *
      * @return {@inheritDoc}
+     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -93,7 +92,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             long timestamp = 0;
             ActionDescription latestAction = null;
             final Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
-            int amount = colorStateOperationServiceCollection.size();
+            int number = colorStateOperationServiceCollection.size();
 
             // iterate over all services and collect available states
             for (ColorStateOperationService service : colorStateOperationServiceCollection) {
@@ -105,7 +104,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                         || !state.getColor().getHsbColor().hasHue()
                         || !state.getColor().getHsbColor().hasSaturation()
                         || !state.getColor().getHsbColor().hasBrightness()) {
-                    amount--;
+                    number--;
                     continue;
                 }
 
@@ -119,14 +118,14 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                 latestAction = selectLatestAction(state, latestAction);
             }
 
-            if (amount == 0) {
+            if (number == 0) {
                 throw new NotAvailableException("ColorState");
             }
 
             // finally compute color average in rgb space
-            averageRed = averageRed / amount;
-            averageGreen = averageGreen / amount;
-            averageBlue = averageBlue / amount;
+            averageRed = averageRed / number;
+            averageGreen = averageGreen / number;
+            averageBlue = averageBlue / number;
 
             Builder serviceStateBuilder = ColorState.newBuilder();
 
@@ -156,7 +155,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     @Override
     public Future<ActionDescription> setNeutralWhite() {
         List<Future<?>> futureList = new ArrayList<>();
-        for(ColorStateOperationService colorStateOperationService : getServices()) {
+        for (ColorStateOperationService colorStateOperationService : getServices()) {
             futureList.add(colorStateOperationService.setNeutralWhite());
         }
         return FutureProcessor.allOf(ActionDescription.getDefaultInstance(), futureList);
@@ -165,7 +164,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     @Override
     public Future<ActionDescription> setNeutralWhite(final ActionParameter actionParameter) {
         List<Future<?>> futureList = new ArrayList<>();
-        for(ColorStateOperationService colorStateOperationService : getServices()) {
+        for (ColorStateOperationService colorStateOperationService : getServices()) {
             futureList.add(colorStateOperationService.setNeutralWhite(actionParameter));
         }
         return FutureProcessor.allOf(ActionDescription.getDefaultInstance(), futureList);

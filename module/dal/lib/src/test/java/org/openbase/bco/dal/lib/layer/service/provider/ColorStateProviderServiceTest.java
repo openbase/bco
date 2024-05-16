@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -34,6 +35,7 @@ import org.openbase.type.domotic.state.ColorStateType.ColorState.Builder;
 public class ColorStateProviderServiceTest {
 
     @Test
+    @Timeout(10)
     public void verifyColorState() throws VerificationFailedException, JPServiceException {
 
         JPService.setupJUnitTestMode();

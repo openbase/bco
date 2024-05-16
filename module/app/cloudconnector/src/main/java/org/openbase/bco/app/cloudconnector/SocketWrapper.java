@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloudconnector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,7 +25,6 @@ package org.openbase.bco.app.cloudconnector;
 import com.google.gson.*;
 import io.socket.client.Ack;
 import io.socket.client.IO;
-import io.socket.client.IO.Options;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
@@ -165,14 +164,15 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                     }
                 });
             });
+
             // add listener to socket events
             socket.on(Socket.EVENT_CONNECT, objects -> {
                 // when socket is connected
                 LOGGER.info("Socket of user[" + userId + "] connected");
                 login();
-            }).on(Socket.EVENT_MESSAGE, objects -> {
-                // handle request
-                handleRequest(objects[0], (Ack) objects[objects.length - 1]);
+//            }).on(Socket.EVENT_MESSAGE, objects -> { // todo this seems to be not supported anymore
+//                // handle request
+//                handleRequest(objects[0], (Ack) objects[objects.length - 1]);
             }).on(Socket.EVENT_DISCONNECT, objects -> {
                 // reconnection is automatically done by the socket API, just print that disconnected
                 LOGGER.info("Socket of user[" + userId + "] disconnected");
@@ -188,16 +188,8 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
                 handleRelocating(objects[0], (Ack) objects[objects.length - 1]);
             }).on(INTENT_RENAMING, objects -> {
                 handleRenaming(objects[0], (Ack) objects[objects.length - 1]);
-            }).on(Socket.EVENT_RECONNECT_ATTEMPT, objects -> {
-                LOGGER.debug("Attempt to reconnect socket of user {}", userId);
-            }).on(Socket.EVENT_RECONNECT_ERROR, objects -> {
-                LOGGER.debug("Reconnection error for socket of user {} because {}", userId, objects.length > 0 ? objects[0] : 1);
-            }).on(Socket.EVENT_RECONNECT_FAILED, objects -> {
-                LOGGER.debug("Reconnection failed for socket of user {} because {}", userId, objects.length > 0 ? objects[0] : 1);
-            }).on(Socket.EVENT_RECONNECTING, objects -> {
-                LOGGER.info("Reconnection event for user {}", userId);
-            }).on(Socket.EVENT_RECONNECT, objects -> {
-                LOGGER.info("Socket of user {} reconnected!", userId);
+            }).on(Socket.EVENT_CONNECT_ERROR, objects -> {
+                LOGGER.debug("Connection error for socket of user {} because {}", userId, objects.length > 0 ? objects[0] : 1);
             });
 
             // add observer to registry that triggers sync requests on changes
@@ -921,7 +913,7 @@ public class SocketWrapper implements Launchable<Void>, VoidInitializable {
 
         // make sure socket.connect is never called twice since there is still an open issue which can cause a broken connection.
         // https://github.com/socketio/socket.io-client-java/issues/576
-        if(active) {
+        if (active) {
             return;
         }
 

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit.scene;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -33,6 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperation
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.scene.SceneController;
 import org.openbase.bco.dal.lib.state.States.Activation;
+import org.openbase.bco.dal.remote.action.Actions;
 import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.action.RemoteActionPool;
 import org.openbase.bco.dal.remote.layer.unit.ButtonRemote;
@@ -54,6 +55,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.TimeoutSplitter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
+import org.openbase.type.domotic.action.ActionPriorityType.ActionPriority.Priority;
 import org.openbase.type.domotic.action.ActionReferenceType.ActionReference;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -71,6 +73,7 @@ import org.openbase.type.domotic.unit.scene.SceneDataType.SceneData.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.CancellationException;
@@ -194,7 +197,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             final ActionParameter actionParameterPrototype = ActionParameter.newBuilder()
                     .setInterruptible(true)
                     .setSchedulable(true)
-                    .setExecutionTimePeriod(Long.MAX_VALUE).build();
+                    .setPriority(Priority.HIGH)
+                    .setExecutionTimePeriod(TimeUnit.MICROSECONDS.convert(Duration.ofMinutes(30))).build();
             requiredActionPool.initViaServiceStateDescription(config.getSceneConfig().getRequiredServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             optionalActionPool.initViaServiceStateDescription(config.getSceneConfig().getOptionalServiceStateDescriptionList(), actionParameterPrototype, () -> getActivationState().getValue() == ActivationState.State.ACTIVE);
             return config;
@@ -205,7 +209,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         synchronized (buttonObserverLock) {
-            buttonRemoteSet.stream().forEach((button) -> {
+            buttonRemoteSet.forEach((button) -> {
                 button.addDataObserver(buttonObserver);
             });
         }
@@ -217,7 +221,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         synchronized (buttonObserverLock) {
-            buttonRemoteSet.stream().forEach((button) -> {
+            buttonRemoteSet.forEach((button) -> {
                 button.removeDataObserver(buttonObserver);
             });
         }
@@ -256,6 +260,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
     public class ActivationStateOperationServiceImpl implements ActivationStateOperationService {
 
+        private RequiredActionObserver actionObserver = null;
+
         /**
          * Sets the activation state of the scene
          *
@@ -267,6 +273,11 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         public synchronized Future<ActionDescription> setActivationState(final ActivationState activationState) {
             final ActionDescription.Builder responsibleActionBuilder = activationState.getResponsibleAction().toBuilder();
 
+
+            // shutdown all existing action observer to not let old observation interfere with new activations.
+            if (actionObserver != null) {
+                actionObserver.shutdown();
+            }
 
             // mark scene action as not replaceable since scene takes care of managing this actions.
             responsibleActionBuilder.setReplaceable(false);
@@ -305,10 +316,10 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                 requiredActionImpactList.addAll(requiredAction.getActionImpact(true));
 
                             } catch (org.openbase.jul.exception.TimeoutException ex) {
-                                // if the timeout is exhausted than just continue since we want to keep on trying as long as the scene is active.
+                                // if the timeout is exhausted then just continue since we want to keep on trying as long as the scene is active.
                                 continue;
                             } catch (CancellationException | CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory("Optional " + requiredAction + " of " + this + " could not executed!", ex, logger, LogLevel.WARN);
+                                ExceptionPrinter.printHistory("Required " + requiredAction + " of " + getLabel("?") + " could not be executed!", ex, logger, LogLevel.DEBUG);
                                 return FutureProcessor.canceledFuture(ActionDescription.class, new RejectedException("Required action " + requiredAction + " could not be executed", ex));
                             }
                         }
@@ -321,14 +332,13 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                                 // if the timeout is exhausted than just continue since we want to keep on trying as long as the scene is active.
                                 continue;
                             } catch (CancellationException | CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory("Optional " + optionalAction + " of " + this + " could not executed!", ex, logger, LogLevel.WARN);
+                                ExceptionPrinter.printHistory("Optional " + optionalAction + " of " + getLabel("?") + " could not be executed!", ex, logger, LogLevel.TRACE);
                             }
                         }
 
                         // register an observer which will deactivate the scene if one required action is now longer running
-                        // observer will cleanup itself after the action is no longer valid so no need to care fore it.
                         try {
-                            new RequiredActionObserver(requiredActionImpactList, getActionById(responsibleActionBuilder.getActionId(), "SceneController"));
+                            actionObserver = new RequiredActionObserver(requiredActionImpactList, getActionById(responsibleActionBuilder.getActionId(), "SceneController"));
                         } catch (NotAvailableException ex) {
                             new FatalImplementationErrorException("Action is not available even when just created!", this, ex);
                         }
@@ -370,7 +380,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
         }
     }
 
-    public static class RequiredActionObserver implements Observer<ServiceStateProvider<Message>, Message>, Shutdownable {
+    class RequiredActionObserver implements Observer<ServiceStateProvider<Message>, Message>, Shutdownable {
 
         private final Logger LOGGER = LoggerFactory.getLogger(RequiredActionObserver.class);
 
@@ -378,6 +388,8 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         private final HashMap<UnitRemote<?>, RequiredServiceDescription> unitAndRequiredServiceStateMap;
         private final Action responsibleAction;
+
+        private boolean destroy = false;
 
         private RequiredActionObserver(final List<ActionReference> requiredActionImpact, final Action responsibleAction) {
             this.responsibleAction = responsibleAction;
@@ -403,6 +415,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             for (Entry<UnitRemote<?>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                 try {
                     unitActionReferenceEntry.getKey().addServiceStateObserver(ServiceTempus.CURRENT, unitActionReferenceEntry.getValue().getServiceType(), this);
+                    unitActionReferenceEntry.getKey().addServiceStateObserver(ServiceTempus.REQUESTED, unitActionReferenceEntry.getValue().getServiceType(), this);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not observe service state of action impact!", ex, LOGGER, LogLevel.WARN);
                 }
@@ -416,7 +429,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
                 } catch (CouldNotPerformException e) {
                     // ignore if this action can not be checks since the validation will at least check its state.
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
             }
 
@@ -426,9 +439,10 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         private void verifyAllStates() {
             try {
+                logger.trace(() -> "verify " + unitAndRequiredServiceStateMap.entrySet().size() + " states of " + getLabel("?"));
                 for (Entry<UnitRemote<? extends Message>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                     try {
-                        // skip unit in case its offline, since than the verification is automatically
+                        // skip unit in case its offline, since then the verification is automatically
                         // performed when its back online but those unnecessary timeouts are avoided.
                         if (unitActionReferenceEntry.getKey().isConnected()) {
                             continue;
@@ -445,12 +459,25 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         private void verifyState(final ServiceProvider<? extends Message> unit, final Message serviceState) throws VerificationFailedException {
 
+            // skip verification on destroyed required action observer!
+            if (destroy) {
+                return;
+            }
+
             if (!responsibleAction.isValid()) {
-                throw new VerificationFailedException("Action not valid anymore!");
+                throw new VerificationFailedException("The activation of " + getLabel("?") + " is not valid anymore.");
+            }
+
+            // skip in case no service state was delivered
+            if (serviceState.toString().isBlank()) {
+                return;
             }
 
             if (!Services.equalServiceStates(unitAndRequiredServiceStateMap.get(unit).getServiceState(), serviceState)) {
-                throw new VerificationFailedException("State of " + unit + "not meet!");
+                logger.trace(() -> unitAndRequiredServiceStateMap.get(unit).getServiceState() + " is not equals " + serviceState.toString().substring(0, 20) + " and will cancel: " + SceneControllerImpl.this.getLabel("?"));
+                if (Actions.validateInitialAction(serviceState)) {
+                    throw new VerificationFailedException("State of " + unit + "not meet!");
+                }
             }
         }
 
@@ -476,9 +503,11 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         @Override
         public void shutdown() {
+            destroy = true;
             // deregister observation
             for (Entry<UnitRemote<?>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                 unitActionReferenceEntry.getKey().removeServiceStateObserver(ServiceTempus.CURRENT, unitActionReferenceEntry.getValue().getServiceType(), this);
+                unitActionReferenceEntry.getKey().removeServiceStateObserver(ServiceTempus.REQUESTED, unitActionReferenceEntry.getValue().getServiceType(), this);
             }
         }
     }

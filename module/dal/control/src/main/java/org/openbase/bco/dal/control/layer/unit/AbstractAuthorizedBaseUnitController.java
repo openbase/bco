@@ -10,12 +10,12 @@ package org.openbase.bco.dal.control.layer.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -63,7 +63,9 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
     private ActionParameter defaultActionParameter;
     private AuthToken authToken = null;
 
-    private ArrayList<RemoteAction> observedTaskList;
+    protected UnitConfig userConfig = null;
+
+    private final ArrayList<RemoteAction> observedTaskList;
 
     private final static ProtoBufJSonProcessor protoBufJSonProcessor = new ProtoBufJSonProcessor();
 
@@ -93,10 +95,10 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
 
     private AuthToken requestAuthToken(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         try {
-            final UnitConfig userUnitConfig = UnitUserCreationPlugin.findUser(unitConfig.getId(), Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.USER));
-            final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(userUnitConfig.getId()).build();
+            userConfig = UnitUserCreationPlugin.findUser(unitConfig.getId(), Registries.getUnitRegistry(true).getUnitConfigsByUnitType(UnitType.USER));
+            final AuthenticationToken authenticationToken = AuthenticationToken.newBuilder().setUserId(userConfig.getId()).build();
             final SessionManager sessionManager = new SessionManager();
-            sessionManager.loginUser(userUnitConfig.getId(), true);
+            sessionManager.loginUser(userConfig.getId(), true);
             final AuthenticatedValue authenticatedValue = sessionManager.initializeRequest(authenticationToken, null);
             return AuthToken.newBuilder().setAuthenticationToken(new AuthenticatedValueFuture<>(
                     Registries.getUnitRegistry().requestAuthenticationTokenAuthenticated(authenticatedValue),
@@ -104,6 +106,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
                     authenticatedValue.getTicketAuthenticatorWrapper(),
                     sessionManager).get()).build();
         } catch (CouldNotPerformException | ExecutionException ex) {
+            logger.error("Could not create authentication token for " + this + " " + unitConfig.getId());
             throw new CouldNotPerformException("Could not create authentication token for " + this + " " + UnitConfigProcessor.getDefaultAlias(unitConfig, unitConfig.getId()), ex);
         }
     }
@@ -149,6 +152,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
      * Additionally, the auth token of this controller is passed to the remote action and the action auto extension routine is enabled.
      *
      * @param futureAction used to identify the action to observe.
+     *
      * @return a ready to use action remote instance.
      */
     protected RemoteAction observe(final Future<ActionDescription> futureAction) {
@@ -166,7 +170,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         // register new action
         observedTaskList.add(remoteAction);
 
-        // validate and initiate forced stop if instance generates to many messages.
+        // validate and initiate forced stop if instance generates too many messages.
         validateUnitOverload();
 
         return remoteAction;
@@ -196,7 +200,7 @@ public abstract class AbstractAuthorizedBaseUnitController<D extends AbstractMes
         }
 
         if (eventsPerHour > MAX_ACTIN_SUBMITTION_PER_MINUTE * 60) {
-            logger.error(this + " generates to many actions and will be terminated!");
+            logger.error(this + " generates too many actions and will be terminated!");
             try {
                 applyServiceState(ActivationState.newBuilder().setValue(State.INACTIVE), ServiceType.ACTIVATION_STATE_SERVICE);
             } catch (CouldNotPerformException ex) {

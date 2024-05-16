@@ -59,7 +59,8 @@ public class ServiceTypeCommandMappingTest {
      *
      * @throws CouldNotPerformException if the template registry is not available
      */
-//    @Test
+    @Test
+    @Disabled
     public void testTransformerAvailability() throws CouldNotPerformException {
         LOGGER.info("testTransformerAvailability");
 

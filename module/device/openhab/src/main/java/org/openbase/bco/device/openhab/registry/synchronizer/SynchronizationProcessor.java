@@ -49,6 +49,7 @@ import org.openhab.core.config.discovery.dto.DiscoveryResultDTO;
 import org.openhab.core.io.rest.core.thing.EnrichedThingDTO;
 import org.openhab.core.items.dto.ItemDTO;
 import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.dto.AbstractThingDTO;
 import org.openhab.core.thing.dto.ChannelDTO;
 import org.openhab.core.thing.dto.ThingDTO;
 import org.openhab.core.thing.link.dto.ItemChannelLinkDTO;
@@ -84,7 +85,7 @@ public class SynchronizationProcessor {
      * @return a device unit config for the thing as described above
      * @throws NotAvailableException if no device could be found
      */
-    public static UnitConfig getDeviceForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+    public static UnitConfig getDeviceForThing(final AbstractThingDTO thingDTO) throws CouldNotPerformException {
         // iterate over all devices
         for (final UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigsByUnitTypeFiltered(UnitType.DEVICE, false)) {
             // get the most global meta config
@@ -135,7 +136,7 @@ public class SynchronizationProcessor {
         return uniquePrefix.toString();
     }
 
-    public static UnitConfig getLocationForThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
+    public static UnitConfig getLocationForThing(final AbstractThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         if (thingDTO.location != null) {
             List<UnitConfig> locationConfigs = Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(thingDTO.location, UnitType.LOCATION);
 
@@ -178,7 +179,7 @@ public class SynchronizationProcessor {
         return resolveDeviceClass(discoveryResult.label, discoveryResult.thingTypeUID, properties);
     }
 
-    public static DeviceClass getDeviceClassForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+    public static DeviceClass getDeviceClassForThing(final AbstractThingDTO thingDTO) throws CouldNotPerformException {
         return resolveDeviceClass(thingDTO.label, thingDTO.thingTypeUID, thingDTO.properties);
     }
 
@@ -193,7 +194,7 @@ public class SynchronizationProcessor {
         return resolveGatewayClass(discoveryResult.label, discoveryResult.thingTypeUID, properties);
     }
 
-    public static GatewayClass getGatewayClassForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+    public static GatewayClass getGatewayClassForThing(final AbstractThingDTO thingDTO) throws CouldNotPerformException {
         return resolveGatewayClass(thingDTO.label, thingDTO.thingTypeUID, thingDTO.properties);
     }
 
@@ -368,7 +369,7 @@ public class SynchronizationProcessor {
         return serviceTypePatternMap;
     }
 
-    private static String getChannelUID(final UnitConfig unitConfig, final ServiceType serviceType, final ServicePattern servicePattern, final ThingDTO thingDTO) throws CouldNotPerformException {
+    private static String getChannelUID(final UnitConfig unitConfig, final ServiceType serviceType, final ServicePattern servicePattern, final EnrichedThingDTO thingDTO) throws CouldNotPerformException {
         String channelUID = "";
         // todo: validate that unit host is available by using UnitConfigProcessor.isHostUnitAvailable(unitConfig) and make sure apps are handled as well.
         final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
@@ -410,7 +411,7 @@ public class SynchronizationProcessor {
         return channelUID;
     }
 
-    public static void registerAndValidateItems(final UnitConfig unitConfig, final ThingDTO thingDTO) throws CouldNotPerformException {
+    public static void registerAndValidateItems(final UnitConfig unitConfig, final EnrichedThingDTO thingDTO) throws CouldNotPerformException {
         final List<ItemChannelLinkDTO> itemChannelLinks = OpenHABRestCommunicator.getInstance().getItemChannelLinks();
         for (final Entry<ServiceType, ServicePattern> entry : generateServiceMap(unitConfig).entrySet()) {
             final ServiceType serviceType = entry.getKey();
@@ -581,7 +582,7 @@ public class SynchronizationProcessor {
      * @param thingDTO the thing to be removed.
      * @throws CouldNotPerformException if removing the thing fails.
      */
-    public static void deleteThing(final ThingDTO thingDTO) throws CouldNotPerformException {
+    public static void deleteThing(final EnrichedThingDTO thingDTO) throws CouldNotPerformException {
         final List<ItemChannelLinkDTO> itemChannelLinks = OpenHABRestCommunicator.getInstance().getItemChannelLinks();
         for (final ChannelDTO channel : thingDTO.channels) {
             for (final ItemChannelLinkDTO itemChannelLink : itemChannelLinks) {

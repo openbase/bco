@@ -21,8 +21,7 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeAll;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -45,6 +44,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class AuthenticatedCommunicationTest extends AuthenticationTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedCommunicationTest.class);
@@ -54,12 +56,6 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     private static final String USER_ID = "authenticated";
     private static final String USER_PASSWORD = "communication";
 
-    @BeforeEach
-    public void setupUser() throws Throwable {
-        // register a user from which a ticket can be validated
-        registerUser();
-    }
-
     private static void registerUser() throws Exception {
         LoginCredentialsType.LoginCredentials.Builder loginCredentials = LoginCredentialsType.LoginCredentials.newBuilder();
         loginCredentials.setId(USER_ID);
@@ -67,6 +63,13 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
         loginCredentials.setCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(USER_PASSWORD), EncryptionHelper.hash(AuthenticationController.getInitialPassword())));
         AuthenticatedValue authenticatedValue = AuthenticatedValue.newBuilder().setValue(loginCredentials.build().toByteString()).build();
         CachedAuthenticationRemote.getRemote().register(authenticatedValue).get();
+    }
+
+    @BeforeEach
+    @Timeout(30)
+    public void setupUser() throws Throwable {
+        // register a user from which a ticket can be validated
+        registerUser();
     }
 
     /**

@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.action;
  */
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.jul.extension.type.processing.TimestampProcessor;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
@@ -46,6 +47,7 @@ public class ActionComparatorTest {
      * Test the action ranking by creating a number of actions, adding them to a list and validating the order after sorting.
      */
     @Test
+    @Timeout(10)
     public void testActionComparison() {
         final EmphasisState emphasisState = EmphasisState.newBuilder().setEconomy(0.6).setComfort(0.3).setSecurity(0.1).build();
         final ActionComparator actionComparator = new ActionComparator(() -> emphasisState);

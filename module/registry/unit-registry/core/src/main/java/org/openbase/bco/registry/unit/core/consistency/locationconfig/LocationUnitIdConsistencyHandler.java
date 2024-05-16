@@ -96,6 +96,11 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
                         continue;
                     }
 
+                    // filter root location that would otherwise add itself to the unit config list.
+                    if(unitConfig.getId().equals(unitConfig.getPlacementConfig().getLocationId())) {
+                        continue;
+                    }
+
                     // add direct assigned units
                     if (unitConfig.getPlacementConfig().getLocationId().equals(locationUnitConfig.getId())) {
                         unitIdSet.add(unitConfig.getId());

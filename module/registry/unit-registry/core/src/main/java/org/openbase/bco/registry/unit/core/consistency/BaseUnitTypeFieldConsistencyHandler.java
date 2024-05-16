@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.consistency;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -43,7 +43,7 @@ public class BaseUnitTypeFieldConsistencyHandler extends AbstractProtoBufRegistr
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
 
         // filter dal units
-        if(UnitConfigProcessor.isDalUnit(entry.getMessage().getUnitType())) {
+        if (UnitConfigProcessor.isDalUnit(entry.getMessage().getUnitType())) {
             return;
         }
 
@@ -51,7 +51,7 @@ public class BaseUnitTypeFieldConsistencyHandler extends AbstractProtoBufRegistr
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
         final FieldDescriptor fieldDescriptor = UnitConfigProcessor.getUnitTypeFieldDescriptor(unitConfig);
 
-        // if type field is not available, than recover.
+        // if type field is not available, then recover.
         if (!unitConfig.hasField(fieldDescriptor)) {
             throw new EntryModification(entry.setMessage(unitConfig.setField(fieldDescriptor, unitConfig.getField(fieldDescriptor)), this), this);
         }

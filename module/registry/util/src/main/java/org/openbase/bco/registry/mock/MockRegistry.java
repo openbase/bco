@@ -10,18 +10,19 @@ package org.openbase.bco.registry.mock;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
+import org.apache.commons.io.FileUtils;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
@@ -29,11 +30,14 @@ import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
+import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
+import org.openbase.bco.registry.message.core.MessageRegistryLauncher;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jps.preset.JPTmpDirectory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InstantiationException;
@@ -83,6 +87,9 @@ import org.openbase.type.spatial.PlacementConfigType.PlacementConfig;
 import org.openbase.type.spatial.ShapeType.Shape;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -110,6 +117,10 @@ public class MockRegistry {
     public static final String ALIAS_DEVICE_MOTION_SENSOR_HEAVEN = "F_MotionSensor_Device_Heaven";
     public static final String ALIAS_DEVICE_MOTION_SENSOR_HELL = "F_MotionSensor_Device_Hell";
     public static final String ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY = "F_MotionSensor_Device_Stairway";
+    public static final String ALIAS_MOTION_SENSOR = "F_MotionSensor";
+    public static final String ALIAS_MOTION_SENSOR_HEAVEN = "F_MotionSensor_Heaven";
+    public static final String ALIAS_MOTION_SENSOR_HELL = "F_MotionSensor_Hell";
+    public static final String ALIAS_MOTION_SENSOR_STAIRWAY = "F_MotionSensor_Stairway";
     public static final String ALIAS_DEVICE_POWER_PLUG = "PW_PowerPlug_Device";
     public static final String ALIAS_DEVICE_REED_SWITCH_HEAVEN_STAIRS_DOOR = "Reed_Heaven_Stairs";
     public static final String ALIAS_DEVICE_REED_SWITCH_HELL_STAIRS_DOOR = "Reed_Hell_Stairs";
@@ -162,6 +173,7 @@ public class MockRegistry {
     public static final String USER_NAME = "uSeRnAmE";
     public static final String USER_FIRST_NAME = "Max";
     public static final String USER_LAST_NAME = "Mustermann";
+    public static final Map<String, String> APP_CLASS_LABEL_ID_MAP = new HashMap<>();
     public static final Map<String, String> AGENT_CLASS_LABEL_ID_MAP = new HashMap<>();
     public static final AxisAlignedBoundingBox3DFloat DEFAULT_BOUNDING_BOX = AxisAlignedBoundingBox3DFloat.newBuilder()
             .setHeight(10)
@@ -179,10 +191,23 @@ public class MockRegistry {
     private static ClassRegistryLauncher classRegistryLauncher;
     private static TemplateRegistryLauncher templateRegistryLauncher;
     private static UnitRegistryLauncher unitRegistryLauncher;
+    private static MessageRegistryLauncher messageRegistryLauncher;
 
     protected MockRegistry() throws InstantiationException {
         try {
             JPService.setupJUnitTestMode();
+            var cacheDir = new File(JPService.getValue(JPTmpDirectory.class), "MockRegistryCache");
+            var loadTestData = !cacheDir.exists();
+
+            // restore db from cache
+            if (cacheDir.exists()) {
+                try {
+                    FileUtils.copyDirectory(cacheDir, JPService.getValue(JPBCODatabaseDirectory.class), null, true, StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    throw new CouldNotPerformException("Could not restore cache!", e);
+                }
+            }
+
             Registries.prepare();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
@@ -239,6 +264,15 @@ public class MockRegistry {
                 }
                 return null;
             }));
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
+                try {
+                    messageRegistryLauncher = new MessageRegistryLauncher();
+                    messageRegistryLauncher.launch().get();
+                } catch (CouldNotPerformException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+                }
+                return null;
+            }));
             LOGGER.debug("Starting all registries: unit, class, template, activity...");
             for (Future<Void> task : registryStartupTasks) {
                 while (true) {
@@ -258,55 +292,66 @@ public class MockRegistry {
             LOGGER.debug("Reinitialized remotes!");
             Registries.waitForData();
 
-            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
-                LOGGER.debug("Update serviceTemplates...");
-                for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
-                    final ServiceTemplate.Builder originalServiceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).toBuilder();
-                    originalServiceTemplate.mergeFrom(mockServiceTemplate.getServiceTemplate());
-                    Registries.getTemplateRegistry().updateServiceTemplate(originalServiceTemplate.build()).get();
+
+            if (loadTestData) {
+                registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
+                    LOGGER.debug("Update serviceTemplates...");
+                    for (MockServiceTemplate mockServiceTemplate : MockServiceTemplate.values()) {
+                        final ServiceTemplate.Builder originalServiceTemplate = Registries.getTemplateRegistry().getServiceTemplateByType(mockServiceTemplate.getServiceTemplate().getServiceType()).toBuilder();
+                        originalServiceTemplate.mergeFrom(mockServiceTemplate.getServiceTemplate());
+                        Registries.getTemplateRegistry().updateServiceTemplate(originalServiceTemplate.build()).get();
+                    }
+
+                    LOGGER.debug("Update unit templates...");
+                    // load templates
+                    for (MockUnitTemplate template : MockUnitTemplate.values()) {
+                        final UnitTemplate.Builder originalUnitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).toBuilder();
+                        originalUnitTemplate.mergeFrom(template.getUnitTemplate());
+                        Registries.getTemplateRegistry().updateUnitTemplate(originalUnitTemplate.build()).get();
+                    }
+
+                    LOGGER.debug("Register user...");
+                    registerUser();
+
+                    LOGGER.debug("Register agent classes...");
+                    registerAgentClasses();
+
+                    LOGGER.debug("Register locations...");
+                    registerLocations();
+                    LOGGER.debug("Wait until registry is ready...");
+                    Registries.waitUntilReady();
+
+                    LOGGER.debug("Register devices...");
+                    registerDevices();
+                    LOGGER.debug("Wait until registry is ready...");
+                    Registries.waitUntilReady();
+
+                    LOGGER.debug("Register connections...");
+                    registerConnections();
+
+                    LOGGER.debug("Register activities...");
+                    registerActivities();
+
+                    LOGGER.debug("Wait for final consistency...");
+                    Registries.waitUntilReady();
+                    return null;
+                }));
+
+                LOGGER.debug("Wait for unitTemplate updates; device, location and user registration...");
+                for (Future<Void> task : registryStartupTasks) {
+                    task.get();
                 }
+                registryStartupTasks.clear();
+                LOGGER.debug("UnitTemplates updated and devices, locations, users and agentClasses registered!");
 
-                LOGGER.debug("Update unit templates...");
-                // load templates
-                for (MockUnitTemplate template : MockUnitTemplate.values()) {
-                    final UnitTemplate.Builder originalUnitTemplate = Registries.getTemplateRegistry().getUnitTemplateByType(template.getUnitTemplate().getUnitType()).toBuilder();
-                    originalUnitTemplate.mergeFrom(template.getUnitTemplate());
-                    Registries.getTemplateRegistry().updateUnitTemplate(originalUnitTemplate.build()).get();
+                // cache vanilla mock registry.
+                try {
+                    FileUtils.copyDirectory(JPService.getValue(JPBCODatabaseDirectory.class), cacheDir);
+                } catch (IOException e) {
+                    throw new CouldNotPerformException("Could not restore cache!", e);
                 }
-
-                LOGGER.debug("Register user...");
-                registerUser();
-
-                LOGGER.debug("Register agent classes...");
-                registerAgentClasses();
-
-                LOGGER.debug("Register locations...");
-                registerLocations();
-                LOGGER.debug("Wait until registry is ready...");
-                Registries.waitUntilReady();
-
-                LOGGER.debug("Register devices...");
-                registerDevices();
-                LOGGER.debug("Wait until registry is ready...");
-                Registries.waitUntilReady();
-
-                LOGGER.debug("Register connections...");
-                registerConnections();
-
-                LOGGER.debug("Register activities...");
-                registerActivities();
-
-                LOGGER.debug("Wait for final consistency...");
-                Registries.waitUntilReady();
-                return null;
-            }));
-
-            LOGGER.debug("Wait for unitTemplate updates; device, location and user registration...");
-            for (Future<Void> task : registryStartupTasks) {
-                task.get();
             }
-            registryStartupTasks.clear();
-            LOGGER.debug("UnitTemplates updated and devices, locations, users and agentClasses registered!");
+
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             shutdown();
             throw new InstantiationException(this, ex);
@@ -438,7 +483,19 @@ public class MockRegistry {
         return agentUnitConfig;
     }
 
+    public static UnitConfig.Builder generateAppConfig(final String alias, final String locationAlias) throws CouldNotPerformException {
+        final UnitConfig.Builder appUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.APP);
+        appUnitConfig.getPlacementConfigBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigByAlias(locationAlias).getId());
+        LabelProcessor.addLabel(appUnitConfig.getLabelBuilder(), Locale.ENGLISH, alias);
+        appUnitConfig.addAlias(alias);
+        return appUnitConfig;
+    }
+
     protected void shutdown() {
+        if (messageRegistryLauncher != null) {
+            messageRegistryLauncher.shutdown();
+        }
+
         if (unitRegistryLauncher != null) {
             unitRegistryLauncher.shutdown();
         }
@@ -643,10 +700,25 @@ public class MockRegistry {
                     UnitType.TEMPERATURE_SENSOR,
                     UnitType.TAMPER_DETECTOR);
 
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR, serialNumber, motionSensorClass));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY, serialNumber, motionSensorClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HEAVEN, serialNumber, motionSensorClass, ALIAS_LOCATION_HEAVEN));
-            registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HELL, serialNumber, motionSensorClass, ALIAS_LOCATION_HELL));
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR, serialNumber, motionSensorClass)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_STAIRWAY, serialNumber, motionSensorClass, ALIAS_LOCATION_STAIRWAY_TO_HEAVEN)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR_STAIRWAY);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HEAVEN, serialNumber, motionSensorClass, ALIAS_LOCATION_HEAVEN)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR_HEAVEN);
+
+            registerDALUnitAlias(
+                    registerUnitConfig(generateDeviceConfig(ALIAS_DEVICE_MOTION_SENSOR_HELL, serialNumber, motionSensorClass, ALIAS_LOCATION_HELL)),
+                    UnitType.MOTION_DETECTOR,
+                    ALIAS_MOTION_SENSOR_HELL);
 
             // button
             DeviceClass buttonClass = registerDeviceClass(LABEL_DEVICE_CLASS_GIRA_429496730210000, "429496730210000", COMPANY_GIRA,

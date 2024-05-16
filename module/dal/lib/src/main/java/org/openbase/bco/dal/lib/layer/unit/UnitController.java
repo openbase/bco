@@ -148,7 +148,7 @@ public interface UnitController<D extends AbstractMessage, DB extends D.Builder<
      * <p>
      * Method internally generates a responsible action for the service state and submits the update via the controllers {@code applyDataUpdate(...)} method.
      *
-     * @param serviceState      a instance of the service state to set.
+     * @param serviceState      an instance of the service state to set.
      * @param serviceType       the related service state.
      * @param actionInitiatorId the initiator who is responsible for the update. In case of a null value this unit is marked as responsible for this transaction.
      * @param <M>               the message type.

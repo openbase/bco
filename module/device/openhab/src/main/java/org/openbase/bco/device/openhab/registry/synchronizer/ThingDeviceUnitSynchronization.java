@@ -44,6 +44,7 @@ import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.type.domotic.unit.device.DeviceClassType.DeviceClass;
 import org.openbase.type.domotic.unit.gateway.GatewayClassType.GatewayClass;
 import org.openhab.core.io.rest.core.thing.EnrichedThingDTO;
+import org.openhab.core.thing.dto.AbstractThingDTO;
 import org.openhab.core.thing.dto.ThingDTO;
 
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
     @Override
     public void register(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
         logger.debug("Synchronize {} ...", identifiableEnrichedThingDTO.getDTO().UID);
-        final ThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
+        final EnrichedThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
 
         try {
             final UnitConfig deviceUnitConfig = SynchronizationProcessor.getDeviceForThing(thingDTO);
@@ -111,7 +112,7 @@ public class ThingDeviceUnitSynchronization extends AbstractSynchronizer<String,
         }
     }
 
-    private void registerDevice(ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
+    private void registerDevice(EnrichedThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         //TODO: should this entire action be rolled back if one part fails?
         // get device class for thing
         DeviceClass deviceClass;

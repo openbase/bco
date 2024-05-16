@@ -37,9 +37,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
-import org.openbase.type.domotic.binding.openhab.OpenhabCommandType;
 import org.openbase.type.domotic.service.ServiceConfigType.ServiceConfig;
 import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate;
 import org.openhab.core.types.Command;
@@ -54,27 +52,24 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String itemName;
     private final ServiceTemplate.ServiceType serviceType;
-    private final ServiceConfig config;
-    private final Future[] repeatCommandTasks;
-    private final SyncObject repeatLastCommandMonitor = new SyncObject("RepeatLastCommandMonitor");
-    protected OpenhabCommandType.OpenhabCommand.Builder lastCommand;
 
     public OpenHABService(final ST unit) throws InstantiationException {
         try {
             this.unit = unit;
-            this.repeatCommandTasks = new Future[2];
             this.serviceType = detectServiceType();
-            this.config = loadServiceConfig();
+
+            loadServiceConfig();
+
             this.itemName = OpenHABItemProcessor.generateItemName(unit.getConfig(), serviceType);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    private ServiceConfig loadServiceConfig() throws CouldNotPerformException {
+    private void loadServiceConfig() throws CouldNotPerformException {
         for (final ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
             if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
-                return serviceConfig;
+                return;
             }
         }
         throw new CouldNotPerformException("Could not detect service config! Service[" + serviceType.name() + "] is not configured in Unit[" + ((Unit) unit).getId() + "]!");
@@ -120,74 +115,14 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
                 }
             }
 
-            return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, () -> ActionDescription.getDefaultInstance()));
+            return FutureProcessor.completedFuture(ServiceStateProcessor.getResponsibleAction(serviceState, ActionDescription::getDefaultInstance));
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(ActionDescription.class, ex);
         }
     }
 
-//    public Future<ActionDescription> executeCommand(final Command... commands) {
-//        if (itemName == null) {
-//            throw new NotAvailableException("itemID");
-//        }
-//
-//        try {
-//            for (final Command command : commands) {
-//                OpenHABRestCommunicator.getInstance().postCommand(itemName, command.toString());
-//            }
-//        } catch (CouldNotPerformException ex) {
-//            if (ex.getCause() instanceof NotAvailableException) {
-//                throw new CouldNotPerformException("Thing may not be configured or openHAB not reachable", ex);
-//            }
-//            throw ex;
-//        }
-//        return FutureProcessor.completedFuture(null);
-//    }
-
     @Override
     public ServiceProvider getServiceProvider() {
         return unit;
     }
-
-    /**
-     * Method repeats the given command in 5 seconds.
-     * Make sure the last command is always stored into the {@code lastCommand} variable.
-     */
-//        public void repeatLastCommand() {
-//            synchronized (repeatLastCommandMonitor) {
-//
-//                // cancel still running tasks
-//                if (repeatCommandTasks[REPEAT_TASK_1] != null && !repeatCommandTasks[REPEAT_TASK_1].isDone()) {
-//                    // cancel if still scheduled but do to cancel if already executing.
-//                    repeatCommandTasks[REPEAT_TASK_1].cancel(false);
-//                }
-//                if (repeatCommandTasks[REPEAT_TASK_2] != null && !repeatCommandTasks[REPEAT_TASK_2].isDone()) {
-//                    // cancel if still scheduled but do to cancel if already executing.
-//                    repeatCommandTasks[REPEAT_TASK_2].cancel(false);
-//                }
-//
-//                // this is just a bug workaround because the philip hues are sometimes skip events.
-//                // So to make sure they are controlled like expected we repeat the command twice.
-//
-//                // init repeat 1
-//                repeatCommandTasks[REPEAT_TASK_1] = GlobalScheduledExecutorService.schedule(() -> {
-//                    try {
-//                        executeCommand(lastCommand).get(ACTION_EXECUTION_TIMEOUT, TimeUnit.SECONDS);
-//                        logger.info("repeat successfully command[" + lastCommand + "]");
-//                    } catch (Exception ex) {
-//                        ExceptionPrinter.printHistory("Could not repeat openhab command!", ex, logger);
-//                    }
-//                }, ACTION_EXECUTION_REPEAT_DELAY_1, TimeUnit.MILLISECONDS);
-//
-//                // init repeat 2
-//                repeatCommandTasks[REPEAT_TASK_2] = GlobalScheduledExecutorService.schedule(() -> {
-//                    try {
-//                        executeCommand(lastCommand).get(ACTION_EXECUTION_TIMEOUT, TimeUnit.SECONDS);
-//                        logger.info("repeat successfully command[" + lastCommand + "]");
-//                    } catch (Exception ex) {
-//                        ExceptionPrinter.printHistory("Could not repeat openhab command!", ex, logger);
-//                    }
-//                }, ACTION_EXECUTION_REPEAT_DELAY_2, TimeUnit.MILLISECONDS);
-//            }
-//        }
 }

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -144,7 +144,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             try {
                 updateServiceState();
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Initial service state computation failed. This can be the case if any required date is not available yet.", ex, logger, LogLevel.DEBUG);
+                ExceptionPrinter.printHistory("Service state computation failed. This can be the case if any required date is not available yet.", ex, logger, LogLevel.DEBUG);
             }
         };
         this.unitConfigObserver = (source, data) -> {
@@ -198,10 +198,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     @Override
     public ST getData() throws NotAvailableException {
 //        synchronized (syncObject) {
-            if (!serviceStateObservable.isValueAvailable()) {
-                throw new NotAvailableException("Data");
-            }
-            return serviceStateObservable.getValue();
+        if (!serviceStateObservable.isValueAvailable()) {
+            throw new NotAvailableException("Data");
+        }
+        return serviceStateObservable.getValue();
 //        }
     }
 
@@ -487,10 +487,13 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
             remote.addConnectionStateObserver(connectionStateObserver);
         }
 
+        // trigger initial state computation in case data is already available
         try {
-            updateServiceState();
+            if (unitRemoteMap.values().stream().anyMatch(DataProvider::isDataAvailable)) {
+                updateServiceState();
+            }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Initial service state computation failed. This can be the case if any required date is not available yet.", ex, logger, LogLevel.DEBUG);
+            logger.trace("Initial service state computation skipped because no related data available yet!");
         }
     }
 

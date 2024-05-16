@@ -10,20 +10,22 @@ package org.openbase.bco.app.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.dal.control.layer.unit.agent.AgentManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
@@ -38,7 +40,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public class AbstractBCOManagerTest extends AbstractBCOTest {
@@ -53,6 +54,7 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
+    @Timeout(30)
     public static void setupBCOManager() throws Throwable {
         try {
             agentManagerLauncher = new AgentManagerLauncher();
@@ -73,6 +75,7 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
+    @Timeout(30)
     public static void tearDownBCOManager() throws Throwable {
         try {
             if (agentManagerLauncher != null) {
@@ -104,6 +107,7 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
+    @Timeout(30)
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

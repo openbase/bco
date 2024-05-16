@@ -123,7 +123,7 @@ object BCOQueryLabelPrinter {
     fun printUnit(unitConfig: UnitConfig) {
 
         // calculate max unit label length
-        val maxUnitLabelLength = LabelProcessor.getBestMatch(unitConfig.label).length
+        val maxUnitLabelLength = LabelProcessor.getBestMatch(unitConfig.label)?.length?:0
         val maxLocationUnitLabelLength = getLocationLabel(unitConfig).length
 
         // print
@@ -157,13 +157,8 @@ object BCOQueryLabelPrinter {
         )
     }
 
-    private fun getLocationLabel(unitConfig: UnitConfig): String {
-        return try {
-            LabelProcessor.getBestMatch(
-                Registries.getUnitRegistry().getUnitConfigById(unitConfig.placementConfig.locationId).label
-            )
-        } catch (ex: CouldNotPerformException) {
-            "?"
-        }
-    }
+    private fun getLocationLabel(unitConfig: UnitConfig): String =
+        Registries.getUnitRegistry().getUnitConfigById(unitConfig.placementConfig.locationId).label
+            ?.let { LabelProcessor.getBestMatch(it) }
+            ?: "?"
 }

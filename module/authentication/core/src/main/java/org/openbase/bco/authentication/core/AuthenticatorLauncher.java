@@ -18,19 +18,19 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorLauncher extends AbstractLauncher<AuthenticationController> {
@@ -50,7 +50,8 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticationContro
 
     /**
      * @param args the command line arguments
-     * @throws java.lang.InterruptedException is thrown when the thread was externally interrupted.
+     *
+     * @throws java.lang.InterruptedException                      is thrown when the thread was externally interrupted.
      * @throws org.openbase.jul.exception.CouldNotPerformException thrown in case the launcher could not be started.
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {

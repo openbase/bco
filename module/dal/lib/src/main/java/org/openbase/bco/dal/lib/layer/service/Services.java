@@ -530,7 +530,7 @@ public class Services extends ServiceStateProcessor {
                 try {
                     boolean serviceStateAvailable = (boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance);
                     if (!serviceStateAvailable) {
-                        throw new NotAvailableException(serviceType.name(), instance);
+                        throw new NotAvailableException(serviceType.name(), instance.getClass().getSimpleName());
                     }
                 } catch (CouldNotPerformException ex) {
                     // validation just not supported by this instance.
@@ -1259,7 +1259,7 @@ public class Services extends ServiceStateProcessor {
         }
 
         // fail if only one is empty
-        if (serviceState1.equals(serviceState1.getDefaultInstanceForType()) || serviceState2.equals(serviceState2.getDefaultInstanceForType())) {
+        if (serviceState1.equals(serviceState1.getDefaultInstanceForType()) ^ serviceState2.equals(serviceState2.getDefaultInstanceForType())) {
             return false;
         }
 
@@ -1373,5 +1373,3 @@ public class Services extends ServiceStateProcessor {
         return serviceState.getClass().getName();
     }
 }
-
-

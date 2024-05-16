@@ -22,19 +22,19 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Timeout;
 import org.openbase.bco.authentication.core.AuthenticationController;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
-import org.openbase.bco.authentication.mock.MqttIntegrationTest;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.communication.mqtt.test.MqttIntegrationTest;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -45,6 +45,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
     public static byte[] serviceServerSecretKey = EncryptionHelper.generateKey();
 
     @BeforeEach
+    @Timeout(30)
     public void setupAuthentication() throws Throwable {
         JPService.setupJUnitTestMode();
         CachedAuthenticationRemote.prepare();
@@ -56,6 +57,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
     }
 
     @AfterEach
+    @Timeout(30)
     public void tearDownAuthentication() {
         // reset credential store because it could have been changed in a test
         MockCredentialStore.getInstance().reset();

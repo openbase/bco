@@ -10,12 +10,12 @@ package org.openbase.bco.app.util.launch;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -32,6 +32,7 @@ import org.openbase.bco.dal.control.layer.unit.app.AppManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.user.UserManagerLauncher;
+import org.openbase.bco.dal.control.message.MessageManagerLauncher;
 import org.openbase.bco.device.openhab.OpenHABDeviceManagerLauncher;
 import org.openbase.bco.device.openhab.registry.OpenHABConfigSynchronizerLauncher;
 import org.openbase.bco.device.openhab.sitemap.OpenHABSitemapSynchronizerLauncher;
@@ -57,7 +58,7 @@ public class BCOLauncher {
         BCO.printLogo();
 
         // create dynamic launcher container
-        ArrayList<Class<? extends AbstractLauncher>> launcher = new ArrayList<>();
+        ArrayList<Class<? extends AbstractLauncher<?>>> launcher = new ArrayList<>();
 
         /**
          * Configure Authenticator Launcher
@@ -82,6 +83,7 @@ public class BCOLauncher {
         launcher.add(LocationManagerLauncher.class);
         launcher.add(SceneManagerLauncher.class);
         launcher.add(UserManagerLauncher.class);
+        launcher.add(MessageManagerLauncher.class);
 
         /**
          * API Launcher

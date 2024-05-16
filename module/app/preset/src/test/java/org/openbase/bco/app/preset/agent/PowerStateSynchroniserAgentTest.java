@@ -23,6 +23,8 @@ package org.openbase.bco.app.preset.agent;
  */
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.openbase.app.test.agent.AbstractBCOAgentManagerTest;
@@ -62,10 +64,6 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
     private static final String AGENT_ALIAS = "Power_State_Sync_Agent_Unit_Test";
     private static final long STATE_AWAIT_TIMEOUT = 1000;
-
-    public PowerStateSynchroniserAgentTest() {
-    }
-
     private String sourceId;
     private String targetId1;
     private String targetId2;

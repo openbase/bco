@@ -39,6 +39,7 @@ import org.openhab.core.thing.link.dto.ItemChannelLinkDTO;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -51,7 +52,7 @@ public class ItemUnitSynchronization extends AbstractSynchronizer<String, Identi
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        OpenHABRestCommunicator.getInstance().waitForConnectionState(ConnectionState.State.CONNECTED);
+        Objects.requireNonNull(OpenHABRestCommunicator.getInstance()).waitForConnectionState(ConnectionState.State.CONNECTED);
         super.activate();
     }
 

@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -111,69 +111,66 @@ public class AuthenticatedServiceProcessor {
             final Class<RECEIVE> internalClass,
             final TicketValidator ticketValidator,
             final InternalIdentifiedProcessable<RECEIVE, RETURN> executable) throws CouldNotPerformException {
-        try {
-            // start to build the response
-            AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
-            if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
-                try {
-                    if (!JPService.getProperty(JPAuthentication.class).getValue()) {
-                        throw new CouldNotPerformException("Cannot execute authenticated action because authentication is disabled");
-                    }
-                } catch (JPNotAvailableException ex) {
-                    throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
-                }
-                // verify ticket in encrypt tokens if they were send
-                final AuthenticationBaseData authenticationBaseData = ticketValidator.verifyClientServerTicket(authenticatedValue);
 
-                RECEIVE decrypted = null;
-                // decrypt the send type from the AuthenticatedValue
-                if (authenticatedValue.hasValue()) {
-                    decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), authenticationBaseData.getSessionKey(), internalClass);
+        AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
+        if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
+            try {
+                if (!JPService.getProperty(JPAuthentication.class).getValue()) {
+                    throw new CouldNotPerformException("Cannot execute authenticated action because authentication is disabled");
+                }
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+            }
+            // verify ticket in encrypt tokens if they were send
+            final AuthenticationBaseData authenticationBaseData = ticketValidator.verifyClientServerTicket(authenticatedValue);
+
+            RECEIVE decrypted = null;
+            // decrypt the send type from the AuthenticatedValue
+            if (authenticatedValue.hasValue()) {
+                decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), authenticationBaseData.getSessionKey(), internalClass);
+            }
+
+            // execute the action of the server
+            RETURN result = executable.process(decrypted, authenticationBaseData);
+
+            if (result != null) {
+                // encrypt the result and add it to the response
+                response.setValue(EncryptionHelper.encryptSymmetric(result, authenticationBaseData.getSessionKey()));
+            }
+            // add updated ticket to response
+            response.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
+        } else {
+            // ticket no available so request without login
+            try {
+                RECEIVE message = null;
+
+                if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
+                    if (!Message.class.isAssignableFrom(internalClass)) {
+                        throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one!");
+                    }
+                    // when not logged in the received value is not encrypted but just send as a byte string
+                    // so get the received message by calling parseFrom which is supported by every message
+                    Method parseFrom = internalClass.getMethod("parseFrom", ByteString.class);
+                    message = (RECEIVE) parseFrom.invoke(null, authenticatedValue.getValue());
                 }
 
                 // execute the action of the server
-                RETURN result = executable.process(decrypted, authenticationBaseData);
-
+                RETURN result = executable.process(message, null);
                 if (result != null) {
-                    // encrypt the result and add it to the response
-                    response.setValue(EncryptionHelper.encryptSymmetric(result, authenticationBaseData.getSessionKey()));
-                }
-                // add updated ticket to response
-                response.setTicketAuthenticatorWrapper(authenticationBaseData.getTicketAuthenticatorWrapper());
-            } else {
-                // ticket no available so request without login
-                try {
-                    RECEIVE message = null;
-
-                    if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
-                        if (!Message.class.isAssignableFrom(internalClass)) {
-                            throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one!");
-                        }
-                        // when not logged in the received value is not encrypted but just send as a byte string
-                        // so get the received message by calling parseFrom which is supported by every message
-                        Method parseFrom = internalClass.getMethod("parseFrom", ByteString.class);
-                        message = (RECEIVE) parseFrom.invoke(null, authenticatedValue.getValue());
+                    if (!(result instanceof Message)) {
+                        throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported!");
                     }
 
-                    // execute the action of the server
-                    RETURN result = executable.process(message, null);
-                    if (result != null) {
-                        if (!(result instanceof Message)) {
-                            throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported!");
-                        }
-
-                        // add result as a byte string to the response
-                        response.setValue(((Message) result).toByteString());
-                    }
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    throw new CouldNotPerformException("Could not invoke parseFrom method on [" + internalClass.getSimpleName() + "]", ex);
+                    // add result as a byte string to the response
+                    response.setValue(((Message) result).toByteString());
                 }
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException |
+                     InvocationTargetException ex) {
+                throw new CouldNotPerformException("Could not invoke parseFrom method on [" + internalClass.getSimpleName() + "]", ex);
             }
-            // return the response
-            return response.build();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not execute authenticated action!", ex);
         }
+        // return the response
+        return response.build();
     }
 
     /**

@@ -22,7 +22,7 @@ package org.openbase.bco.app.util.launch;
  * #L%
  */
 
-import org.apache.commons.collections.comparators.BooleanComparator;
+import org.apache.commons.collections4.comparators.BooleanComparator;
 import org.openbase.bco.app.util.launch.jp.JPExitOnError;
 import org.openbase.bco.app.util.launch.jp.JPWaitForData;
 import org.openbase.bco.authentication.lib.BCO;

@@ -51,18 +51,17 @@ import java.util.concurrent.TimeoutException
  */
 class MasterSlavePowerCycleAgent : AbstractTriggerableAgent() {
     private var master: PowerConsumptionSensorRemote? = null
-    private var slave: PowerStateServiceRemote? = null
+    private var slave: PowerStateServiceRemote = PowerStateServiceRemote()
+
     @Throws(InitializationException::class, InterruptedException::class)
     override fun init(config: UnitConfig) {
         super.init(config)
         try {
             val variableProvider = MetaConfigVariableProvider("AgentConfig", config.metaConfig)
-            if (master != null) {
-                master!!.shutdown()
-            }
-            if (slave != null) {
-                slave!!.shutdown()
-            }
+
+            master?.shutdown()
+            slave.shutdown()
+
             slave = PowerStateServiceRemote()
 
             // resolve master
@@ -74,23 +73,25 @@ class MasterSlavePowerCycleAgent : AbstractTriggerableAgent() {
 
             // resolve master
             try {
-                slave!!.init(Registries.getUnitRegistry(true).getUnitConfigById(variableProvider.getValue("SLAVE_ID")))
+                slave.init(Registries.getUnitRegistry(true).getUnitConfigById(variableProvider.getValue("SLAVE_ID")))
             } catch (ex: NotAvailableException) {
-                slave!!.init(
+                slave.init(
                     Registries.getUnitRegistry(true).getUnitConfigByAlias(variableProvider.getValue("SLAVE_ALIAS"))
                 )
             }
 
             // activation trigger
-            registerActivationTrigger(
-                GenericBoundedDoubleValueTrigger(
-                    master,
-                    variableProvider.getValue("HIGH_ACTIVE_POWER_THRESHOLD", "1.0").toDouble(),
-                    HIGH_ACTIVE,
-                    POWER_CONSUMPTION_STATE_SERVICE,
-                    "getConsumption"
-                ), OR
-            )
+            master?.let { master ->
+                registerActivationTrigger(
+                    GenericBoundedDoubleValueTrigger(
+                        master,
+                        variableProvider.getValue("HIGH_ACTIVE_POWER_THRESHOLD", "1.0").toDouble(),
+                        HIGH_ACTIVE,
+                        POWER_CONSUMPTION_STATE_SERVICE,
+                        "getConsumption"
+                    ), OR
+                )
+            }
         } catch (ex: CouldNotPerformException) {
             throw InitializationException(this, ex)
         }
@@ -107,7 +108,7 @@ class MasterSlavePowerCycleAgent : AbstractTriggerableAgent() {
         // sync slave
         activationState.value?.let { value ->
             when (value) {
-                ACTIVE -> observe(slave!!.setPowerState(ON, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)))
+                ACTIVE -> observe(slave.setPowerState(ON, getDefaultActionParameter(Timeout.INFINITY_TIMEOUT)))
                 INACTIVE, UNKNOWN -> cancelAllObservedActions()
             }
         }
