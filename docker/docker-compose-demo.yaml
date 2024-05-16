@@ -1,0 +1,44 @@
+networks:
+  bco-net:
+    driver: bridge
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    networks:
+      - bco-net
+    ports:
+      - "1883:1883"
+    volumes:
+      - $HOME/.mosquitto.conf:/mosquitto/config/mosquitto.conf
+    restart: always
+    logging:
+      driver: local
+
+  bco-demo:
+    image: openbaseorg/bco-demo:stable
+    networks:
+      - bco-net
+    ports:
+      - "13781:13781"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      BCO_OPTIONS: '--db /tmp/bco/db --simulate'
+    logging:
+      driver: local
+    tty: true
+
+  bco-webapp:
+    image: opaal/bco-ui-albiorix:latest
+    networks:
+      - bco-net
+    ports:
+      - 80:80
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    restart: always
+    logging:
+      driver: local

@@ -1,35 +1,139 @@
-version: "3.9"
-
-volumes:
-  database_data:
-    driver: local
-  customer_data:
-    driver: local
-
 services:
-  mosquitto:
-    image: mosquitto
+  mqtt-broker:
+    image: eclipse-mosquitto
+    networks:
+      - bco-net
+    volumes:
+      - $HOME/.mosquitto.conf:/mosquitto/config/mosquitto.conf
     ports:
-      - "1883:1883"
-    volumes: $HOME/.mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - 1883:1883
     restart: always
     logging:
       driver: local
-    detach: true  
 
-
-  postgres:
-    build: ./postgres
-    image: "prodaso/postgres"
-    ports:
-      - "5432:5432"
+  openhab:
+    image: openhab/openhab:4.0.4
+    networks:
+      - bco-net
     volumes:
-      - database_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: "prodaso"
-      POSTGRES_PASSWORD: "iMqU8sJk"
-  mailhog:
-    build: "mailhog"
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - openhab_conf:/openhab/conf
+      - openhab_userdata:/openhab/userdata
+      - openhab_addons:/openhab/addons
     ports:
-      - "127.0.0.1:8025:8025"
-      - "127.0.0.1:1025:1025"
+      - 8080:8080
+      - 8443:8443
+    environment:
+      - USER_ID=${USER_ID}
+      - GROUP_ID=${GROUP_ID}
+      - CRYPTO_POLICY=unlimited
+    restart: always
+    logging:
+      driver: local
+
+  bco:
+    image: openbaseorg/bco:stable
+    networks:
+      - bco-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - bco_data:/home/bco/data
+    ports:
+      - 13781:13781
+    environment:
+      - USER_ID=${BCO_USER_ID}
+      - GROUP_ID=${BCO_GROUP_ID}
+      - BCO_OPTIONS='--host mqtt-broker'
+    restart: always
+    logging:
+      driver: local
+    tty: true
+
+  bco-device-manager-openhab:
+    image: openbaseorg/bco-device-manager-openhab:stable
+    networks:
+      - bco-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - bco_data:/home/bco/data
+      - openhab_conf:/etc/openhab2
+    environment:
+      - USER_ID=${BCO_USER_ID}
+      - GROUP_ID=${BCO_GROUP_ID}
+      - OPENHAB_GROUP_ID=${OPENHAB_GROUP_ID}
+      - BCO_OPTIONS='--host mqtt-broker --openhab-url http://openhab:8080'
+    restart: always
+    logging:
+      driver: local
+    tty: true
+
+  bco-webapp:
+    image: opaal/bco-ui-albiorix:latest
+    networks:
+      - bco-net
+    ports:
+      - 80:80
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    restart: always
+    logging:
+      driver: local
+
+  portainer:
+    image: portainer/portainer-ce
+    networks:
+      - bco-net
+    ports:
+      - 8000:8000
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: always
+    logging:
+      driver: local
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    networks:
+      - bco-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_TIMEOUT=60
+    restart: always
+    logging:
+      driver: local
+
+  influxdb:
+    image: influxdb:latest
+    networks:
+      - bco-net
+    ports:
+      - 8086:8086
+    volumes:
+      - influx_data:/var/lib/influxdb2
+      - influx_config:/etc/influxdb2
+    restart: always
+    logging:
+      driver: local
+
+networks:
+  bco-net:
+    driver: bridge
+
+volumes:
+  openhab_conf:
+  openhab_userdata:
+  openhab_addons:
+  bco_data:
+  influx_data:
+  influx_config:
+  portainer_data:

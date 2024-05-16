@@ -1,0 +1,235 @@
+version: '3.8'
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto
+    networks:
+      - bco-net
+    volumes:
+      - $HOME/.mosquitto.conf:/mosquitto/config/mosquitto.conf
+    ports:
+      - 1883:1883
+    restart: always
+    logging:
+      driver: local
+
+    # sudo docker run \
+    # --name mqtt-broker \
+    # --network=bco-net \
+    # --publish 1883:1883 \
+    # --volume $HOME/.mosquitto.conf:/mosquitto/config/mosquitto.conf \
+    # --restart=always \
+    # --log-driver=local \
+    # --detach \
+    # eclipse-mosquitto
+
+  openhab:
+    image: openhab/openhab:4.0.4
+    networks:
+      - bco-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - openhab_conf:/openhab/conf
+      - openhab_userdata:/openhab/userdata
+      - openhab_addons:/openhab/addons
+    ports:
+      - 8080:8080
+      - 8443:8443
+    environment:
+      # - USER_ID=${USER_ID}
+      # - GROUP_ID=${GROUP_ID}
+      - CRYPTO_POLICY=unlimited
+    restart: always
+    logging:
+      driver: local
+
+    # sudo docker run \
+    # --name openhab \
+    # --network=bco-net \
+    # --publish 8080:8080 \
+    # --publish 8443:8443 \
+    # --volume /etc/localtime:/etc/localtime:ro \
+    # --volume /etc/timezone:/etc/timezone:ro \
+    # --volume openhab_conf:/openhab/conf \
+    # --volume openhab_userdata:/openhab/userdata \
+    # --volume openhab_addons:/openhab/addons \
+    # --detach \
+    # --env USER_ID=$(id -u openhab) \
+    # --env GROUP_ID=$(getent group openhab | cut -d: -f3) \
+    # --env CRYPTO_POLICY=unlimited \
+    # --restart=always \
+    # --log-driver=local \
+    # $ZWAVE_STICK \
+    # openhab/openhab:4.0.4
+
+  bco:
+    image: openbaseorg/bco:stable
+    networks:
+      - bco-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - bco_data:/home/bco/data
+    ports:
+      - 13781:13781
+    # environment:
+      # - USER_ID=${BCO_USER_ID}
+      # - GROUP_ID=${BCO_GROUP_ID}
+      # - BCO_OPTIONS='--host mqtt-broker'
+    restart: always
+    logging:
+      driver: local
+    tty: true
+
+  # sudo docker run \
+  #   --name bco \
+  #   --network=bco-net \
+  #   --publish 13781:13781 \
+  #   --volume /etc/localtime:/etc/localtime:ro \
+  #   --volume /etc/timezone:/etc/timezone:ro \
+  #   --volume bco_data:/home/bco/data \
+  #   --detach \
+  #   --env USER_ID=$(id -u bco) \
+  #   --env GROUP_ID=$(getent group bco | cut -d: -f3) \
+  #   --env BCO_OPTIONS='--host mqtt-broker' \
+  #   --restart=always \
+  #   --log-driver=local \
+  #   --tty \
+  #   openbaseorg/bco:stable
+
+
+  bco-device-manager-openhab:
+    image: openbaseorg/bco-device-manager-openhab:stable
+    networks:
+      - bco-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - bco_data:/home/bco/data
+      - openhab_conf:/etc/openhab2
+    # environment:
+      # - USER_ID=${BCO_USER_ID}
+      # - GROUP_ID=${BCO_GROUP_ID}
+      # - OPENHAB_GROUP_ID=${OPENHAB_GROUP_ID}
+      # - BCO_OPTIONS='--host mqtt-broker --openhab-url http://openhab:8080'
+    restart: always
+    logging:
+      driver: local
+    tty: true
+
+  # sudo docker run \
+  #   --name bco-device-manager-openhab \
+  #   --network=bco-net \
+  #   --volume /etc/localtime:/etc/localtime:ro \
+  #   --volume /etc/timezone:/etc/timezone:ro \
+  #   --volume bco_data:/home/bco/data \
+  #   --volume openhab_conf:/etc/openhab2 \
+  #   --detach \
+  #   --env USER_ID=$(id -u bco) \
+  #   --env GROUP_ID=$(getent group bco | cut -d: -f3) \
+  #   --env OPENHAB_GROUP_ID=$(getent group openhab | cut -d: -f3) \
+  #   --env BCO_OPTIONS='--host mqtt-broker --openhab-url http://openhab:8080' \
+  #   --restart=always \
+  #   --log-driver=local \
+  #   --tty \
+  #   openbaseorg/bco-device-manager-openhab:stable
+
+  bco-webapp:
+    image: opaal/bco-ui-albiorix:latest
+    networks:
+      - bco-net
+    ports:
+      - 80:80
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    restart: always
+    logging:
+      driver: local
+
+  # sudo docker run \
+  #   --name bco-webapp \
+  #   --publish 80:80 \
+  #   --volume /etc/localtime:/etc/localtime:ro \
+  #   --volume /etc/timezone:/etc/timezone:ro \
+  #   --detach \
+  #   --restart=always \
+  #   --log-driver=local \
+  #   -tty \
+  #   opaal/bco-ui-albiorix:latest
+
+  portainer:
+    image: portainer/portainer-ce
+    networks:
+      - bco-net
+    ports:
+      - 8000:8000
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: always
+    logging:
+      driver: local
+
+#   sudo docker volume create portainer_data
+# sudo docker run \
+#     --detach \
+#     --publish 8000:8000 \
+#     --publish 9000:9000 \
+#     --name portainer \
+#     --restart=always \
+#     --log-driver=local \
+#     --volume /var/run/docker.sock:/var/run/docker.sock \
+#     --volume portainer_data:/data \
+#     portainer/portainer-ce
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_TIMEOUT=60
+    restart: always
+    logging:
+      driver: local
+
+# sudo docker run -d \
+#     --name watchtower \
+#     -v /var/run/docker.sock:/var/run/docker.sock \
+#     -v /etc/timezone:/etc/timezone:ro \
+#     --restart=always \
+#     --log-driver=local \
+#     --env WATCHTOWER_CLEANUP=true \
+#     --env WATCHTOWER_INCLUDE_STOPPED=true \
+#     --env WATCHTOWER_TIMEOUT=60 \
+#     containrrr/watchtower:latest
+
+  influxdb:
+    image: influxdb:latest
+    networks:
+      - bco-net
+    ports:
+      - 8086:8086
+    volumes:
+      - influx_data:/var/lib/influxdb2
+      - influx_config:/etc/influxdb2
+    restart: always
+    logging:
+      driver: local
+
+networks:
+  bco-net:
+    driver: bridge
+
+volumes:
+  openhab_conf:
+  openhab_userdata:
+  openhab_addons:
+  bco_data:
+  influx_data:
+  influx_config:
+  portainer_data:
