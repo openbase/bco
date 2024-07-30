@@ -32,7 +32,7 @@ jobs:
           
           changesOutsideDocsCI=false
           for file in $changed_files; do
-            if [[ $file -ne ".github/"* && $file -ne "doc/"* ]]; then
+            if [[ $file != .github/* && $file != doc/* ]]; then
               echo "file: $file is not part of CI or docs"
               echo "Start testing pipeline."
               changesOutsideDocsCI=true
