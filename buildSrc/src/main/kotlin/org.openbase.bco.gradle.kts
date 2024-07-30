@@ -24,7 +24,7 @@ group = "org.openbase"
 val releaseVersion = !version.toString().endsWith("-SNAPSHOT")
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = sourceCompatibility
     withSourcesJar()
     withJavadocJar()
@@ -45,7 +45,7 @@ dependencies {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
 
