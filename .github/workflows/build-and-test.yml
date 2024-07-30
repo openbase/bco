@@ -55,7 +55,7 @@ jobs:
     needs: check
     if: |
       (github.event.pull_request.draft == false)
-      && (needs.check.outputs.worth_testing == true)
+      && (needs.check.outputs.testing_needed == true)
    
     runs-on: ubuntu-latest
 
