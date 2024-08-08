@@ -31,9 +31,9 @@ java {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
-    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20")
-    implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.9.20")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0")
+    implementation("org.jetbrains.kotlin:kotlin-script-runtime:2.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:[5.8,5.9-alpha)")
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.8,5.9-alpha)")
     testImplementation(Testing.mockK)

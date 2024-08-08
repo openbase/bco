@@ -14,7 +14,7 @@ sidebar_position: 1
 
 ## Requirements
 
-* Java JDK 17
+* Java JDK 21
 * Git
 * Docker
 
