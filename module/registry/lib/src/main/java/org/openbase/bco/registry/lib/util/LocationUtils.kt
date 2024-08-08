@@ -3,6 +3,7 @@ package org.openbase.bco.registry.lib.util
 import org.openbase.jul.exception.CouldNotPerformException
 import org.openbase.jul.exception.InvalidStateException
 import org.openbase.jul.exception.NotAvailableException
+import org.openbase.jul.extension.protobuf.IdentifiableMessage
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap
 import org.openbase.jul.storage.registry.ConsistencyHandler
 import org.openbase.jul.storage.registry.EntryModification
@@ -28,7 +29,7 @@ object LocationUtils {
             var modified = false
             // detect root location
             val detectedRootLocationConfigEntry = entryMap[newRootLocation.id]
-            val detectedRootLocationConfigBuilder = detectedRootLocationConfigEntry.message.toBuilder()
+            val detectedRootLocationConfigBuilder = detectedRootLocationConfigEntry!!.message!!.toBuilder()
 
             // verify if root flag is set.
             if (!detectedRootLocationConfigBuilder.locationConfig.hasRoot() || !detectedRootLocationConfigBuilder.locationConfig.root) {
