@@ -49,6 +49,20 @@ jobs:
             echo "No need for the build and test pipeline to run. Exiting."
           fi
 
+  test_2:
+    name: "Test 2"
+    timeout-minutes: 120
+    needs: check
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v3
+
+      - name: print testing_needed
+        run: echo ${{ needs.check.outputs.testing_needed }}
+
 
   build:
     name: "Build"
