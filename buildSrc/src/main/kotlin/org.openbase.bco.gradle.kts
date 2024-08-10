@@ -24,16 +24,16 @@ group = "org.openbase"
 val releaseVersion = !version.toString().endsWith("-SNAPSHOT")
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = sourceCompatibility
     withSourcesJar()
     withJavadocJar()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
-    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20")
-    implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.9.20")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0")
+    implementation("org.jetbrains.kotlin:kotlin-script-runtime:2.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:[5.8,5.9-alpha)")
     testImplementation("org.junit.jupiter:junit-jupiter-api:[5.8,5.9-alpha)")
     testImplementation(Testing.mockK)
@@ -45,7 +45,7 @@ dependencies {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
 

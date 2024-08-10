@@ -29,7 +29,7 @@ fun createAdditionalScript(name: String, configureStartScripts: CreateStartScrip
     tasks.register<CreateStartScripts>("startScripts$name") {
         configureStartScripts()
         applicationName = name
-        outputDir = File(project.buildDir, "scripts")
+        outputDir = File(project.layout.buildDirectory.get().asFile, "scripts")
         classpath = tasks.getByName("jar").outputs.files + configurations.runtimeClasspath.get()
     }.also {
         application.applicationDistribution.into("bin") {
@@ -117,7 +117,7 @@ tasks.register("deploy-bco-dist") {
     dependsOn("installDist")
     val bcoDist = System.getenv("BCO_DIST") ?: "${System.getenv("HOME")}/usr"
     val mainDist = distributions.getByName("main").distributionBaseName.get()
-    val fromDir = File(project.buildDir, "install/$mainDist")
+    val fromDir = File(project.layout.buildDirectory.get().asFile, "install/$mainDist")
     doFirst {
         copy {
             from(fromDir)
@@ -148,7 +148,7 @@ tasks.register("testDeploy") {
     //println("Copy to ${System.getenv("HOME")}/local/bco_tmp")
     //println("BCO_DIST: ${BCO_DIST}")
     copy {
-        from(File(project.buildDir, "install/bco-test"))
+        from(File(project.layout.buildDirectory.get().asFile, "install/bco-test"))
         into("${System.getenv("HOME")}/local/bco_tmp")
     }
 }
