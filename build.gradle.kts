@@ -18,6 +18,6 @@ nexusPublishing {
 
 tasks.withType(KotlinCompile::class).all {
     kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
