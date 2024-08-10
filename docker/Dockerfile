@@ -1,5 +1,5 @@
 # Install dependencies
-FROM eclipse-temurin:17-jdk AS builder
+FROM eclipse-temurin:21-jdk AS builder
 
 ENV \
     JAVA_OPTS="" \
@@ -38,7 +38,7 @@ RUN cd lib/jul && \
 RUN ./gradlew :bco.app.util:installDist -x test -x javadoc --no-daemon --stacktrace
 
 # Switch to baseline image
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 
 # # Install app
 COPY --from=builder /workspace/module/app/util/build/install/bco/bin /usr/bin/
