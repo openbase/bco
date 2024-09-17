@@ -1,6 +1,6 @@
 networks:
   bco-net:
-    driver: bridge
+    name: bco-net
 
 services:
   mosquitto:
