@@ -8,7 +8,7 @@ import org.openbase.bco.registry.remote.Registries
 import org.openbase.jps.core.JPService
 import org.openbase.jps.preset.JPDebugMode
 import org.openbase.jps.preset.JPVerbose
-import org.openbase.jul.extension.type.processing.toLabel
+import org.openbase.jul.extension.type.processing.LabelProcessor
 import org.openbase.type.domotic.unit.UnitConfigType.UnitConfig
 import org.openbase.type.domotic.unit.UnitTemplateType.UnitTemplate
 import org.openbase.type.domotic.unit.location.LocationConfigType
@@ -28,7 +28,7 @@ class LocationCrudTest : AbstractBCOLocationManagerTest() {
         val wonderTile = UnitConfig.newBuilder()
             .apply { locationConfigBuilder.setLocationType(LocationConfigType.LocationConfig.LocationType.TILE) }
             .setUnitType(UnitTemplate.UnitType.LOCATION)
-            .setLabel("WonderTile".toLabel())
+            .setLabel(LabelProcessor.buildLabel("WonderTile"))
             .build()
 
 
@@ -50,7 +50,7 @@ class LocationCrudTest : AbstractBCOLocationManagerTest() {
         val wonderZone = UnitConfig.newBuilder()
             .apply { locationConfigBuilder.setLocationType(LocationConfigType.LocationConfig.LocationType.ZONE) }
             .setUnitType(UnitTemplate.UnitType.LOCATION)
-            .setLabel("WonderZone".toLabel())
+            .setLabel(LabelProcessor.buildLabel("WonderZone"))
             .build()
 
         val savedWonderZone = Registries.getUnitRegistry(true).registerUnitConfig(wonderZone).get(5, TimeUnit.SECONDS)
