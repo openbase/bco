@@ -174,7 +174,7 @@ object LocationUtils {
     fun detectLocationType(
         locationUnit: UnitConfigType.UnitConfig,
         locationRegistry: ProtoBufRegistry<String, UnitConfigType.UnitConfig, UnitConfigType.UnitConfig.Builder>,
-    ): LocationType {
+    ): LocationType? {
         try {
             if (!locationUnit.hasPlacementConfig()) {
                 throw NotAvailableException("placementConfig")
@@ -217,35 +217,29 @@ object LocationUtils {
     private fun detectLocationType(
         parentLocationType: LocationType,
         childLocationTypes: List<LocationType>,
-    ): LocationType {
+    ): LocationType? = when (parentLocationType) {
 
-        when (parentLocationType) {
-            // if the parent is a region or tile then the location has to be a region
-            LocationType.REGION, LocationType.TILE -> {
-                return LocationType.REGION
-            }
-
-            LocationType.ZONE -> {
-
-                // if the parent is a zone and has no children then it has to be
-                // a tile since each branch could contain exactly one tile
-                if (childLocationTypes.isEmpty()) {
-                    return LocationType.TILE
-                }
-
-                // if one child is a zone or a tile the location has to be a zone
-                if (childLocationTypes.contains(LocationType.ZONE) || childLocationTypes.contains(LocationType.TILE)) {
-                    return LocationType.ZONE
-                }
-
-                // if the parent is a zone and a child is a region than the location has to be a tile
-                if (childLocationTypes.contains(LocationType.REGION)) {
-                    return LocationType.TILE
-                }
-            }
-
-            LocationType.UNKNOWN -> {} // skip detection
+        // if the parent is a region or tile then the location has to be a region
+        LocationType.REGION, LocationType.TILE -> {
+            LocationType.REGION
         }
-        throw CouldNotPerformException("Could not detect locationType from parentType[${parentLocationType.name}] and childTypes ${childLocationTypes.map { it.name }}")
+
+        LocationType.ZONE -> {
+
+            // if one child is a zone or a tile the location has to be a zone
+            if (childLocationTypes.contains(LocationType.ZONE) || childLocationTypes.contains(LocationType.TILE)) {
+                LocationType.ZONE
+            }
+
+            // if the parent is a zone and a child is a region than the location has to be a tile
+            if (childLocationTypes.contains(LocationType.REGION)) {
+                LocationType.TILE
+            }
+
+            // fallback
+            null
+        }
+
+        LocationType.UNKNOWN -> { null }
     }
 }
