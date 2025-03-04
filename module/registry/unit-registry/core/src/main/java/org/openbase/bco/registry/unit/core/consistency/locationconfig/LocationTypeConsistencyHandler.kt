@@ -28,31 +28,31 @@ class LocationTypeConsistencyHandler :
         val locationUnit = entry.message.toBuilder()
         val locationConfig = locationUnit.locationConfigBuilder
 
-        val detectedType: LocationType = LocationUtils.detectLocationType(entry.message, registry)
-
-        if (!locationConfig.hasLocationType()) {
-            try {
-                locationConfig.setLocationType(detectedType)
-                throw EntryModification(entry.setMessage(locationUnit, this), this)
-            } catch (ex: CouldNotPerformException) {
-                throw CouldNotPerformException(
-                    "The locationType of location[" + locationUnit.label + "] has to be defined manually",
-                    ex
-                )
-            }
-        } else {
-            try {
-                if (detectedType != locationConfig.locationType) {
-                    locationConfig.setLocationType(detectedType)
-                    throw EntryModification(entry.setMessage(locationUnit, this), this)
+        LocationUtils.detectLocationType(entry.message, registry).let { detectedType ->
+            if (locationConfig.hasLocationType() && locationConfig.locationType != LocationType.UNKNOWN) {
+                try {
+                    if (detectedType != null && detectedType != locationConfig.locationType) {
+                        locationConfig.locationType = detectedType
+                        throw EntryModification(entry.setMessage(locationUnit, this), this)
+                    }
+                } catch (ex: CouldNotPerformException) {
+                    ExceptionPrinter.printHistory(
+                        "Could not detect locationType for location[" + locationUnit.label + "] with current type [" + locationConfig.locationType.name + "]",
+                        ex,
+                        logger,
+                        LogLevel.DEBUG
+                    )
                 }
-            } catch (ex: CouldNotPerformException) {
-                ExceptionPrinter.printHistory(
-                    "Could not detect locationType for location[" + locationUnit.label + "] with current type [" + locationConfig.locationType.name + "]",
-                    ex,
-                    logger,
-                    LogLevel.DEBUG
-                )
+            } else {
+                try {
+                    locationConfig.locationType = detectedType ?: LocationType.TILE
+                    throw EntryModification(entry.setMessage(locationUnit, this), this)
+                } catch (ex: CouldNotPerformException) {
+                    throw CouldNotPerformException(
+                        "The locationType of location[" + locationUnit.label + "] has to be defined manually",
+                        ex
+                    )
+                }
             }
         }
     }
