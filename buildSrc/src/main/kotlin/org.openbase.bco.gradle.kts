@@ -11,10 +11,8 @@ plugins {
 
 repositories {
     mavenLocal()
-    mavenCentral()
-    google()
     maven {
-        url = uri("https://oss.sonatype.org/content/groups/public/")
+        url  = uri("https://repo1.maven.org/maven2")
     }
 }
 
