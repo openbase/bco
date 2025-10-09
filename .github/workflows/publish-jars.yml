@@ -1,10 +1,10 @@
 name: Publish
 on:
   release:
-    types: [created]
-  push:
-    branches:
-      - dev
+    types: [published]
+#  push:
+#    branches:
+#      - dev
 jobs:
   publish:
     name: Publish Artifacts
@@ -24,10 +24,9 @@ jobs:
           cache: 'gradle'
 
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
+        uses: gradle/actions/wrapper-validation@v3.5.0
       - name: Publish Packages
-      
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/setup-gradle@v3.5.0
         with:
           arguments: publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
