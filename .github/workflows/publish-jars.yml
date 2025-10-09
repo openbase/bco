@@ -1,10 +1,10 @@
 name: Publish
 on:
   release:
-    types: [created]
-  push:
-    branches:
-      - dev
+    types: [published]
+#  push:
+#    branches:
+#      - dev
 jobs:
   publish:
     name: Publish Artifacts
