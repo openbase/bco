@@ -137,3 +137,13 @@ jobs:
           push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
           tags: ${{ steps.bco-demo-meta.outputs.tags }}
           labels: ${{ steps.bco-demo-meta.outputs.labels }}
+
+  update-addon-version:
+    name: Update Home Assistant Add-on Version
+    needs: docker
+    if: startsWith(github.ref, 'refs/tags/v')
+    uses: ./.github/workflows/update-addon-version.yaml
+    with:
+      version: ${{ github.ref_name }}
+    secrets:
+      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

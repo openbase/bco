@@ -1,0 +1,49 @@
+name: Home Assistant Add-ons Update
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'The version to set for the add-ons'
+        required: true
+        type: string
+    secrets:
+      CI_GITHUB_TOKEN:
+        description: 'CI GitHub token'
+        required: true
+
+jobs:
+  update-addons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout addon repository
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
+          repository: openbase/homeassistant.addons.bco
+          path: addons-repo
+
+      - name: Update add-on versions
+        env:
+          ADDONS_DIR: "bco-core"
+          VERSION: "${{ inputs.version }}"
+          GIT_USERNAME: "The Cat[bot]"
+          GIT_EMAIL: "thecat[bot]@users.noreply.github.com"
+        run: |
+          cd addons-repo/$ADDONS_DIR
+
+          # Update version in config.yaml
+          sed -i "s/^version: .*/version: $VERSION/" config.yaml
+
+          # Commit and push changes
+          git config user.name "$GIT_USERNAME"
+          git config user.email "$GIT_EMAIL"
+          git add config.yaml
+          git commit -m "Update add-on $ADDONS_DIR version to $VERSION" || {
+            echo "No changes to commit"
+            exit 0
+          }
+
+          git push
+
+          echo "✅ Add-on $ADDONS_DIR version updated to $VERSION and changes pushed."
