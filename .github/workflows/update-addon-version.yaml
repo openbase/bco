@@ -27,8 +27,8 @@ jobs:
         env:
           ADDONS_DIR: "bco-core"
           VERSION: "${{ inputs.version }}"
-          GIT_USERNAME: "The Cat[bot]"
-          GIT_EMAIL: "thecat[bot]@users.noreply.github.com"
+          GIT_USERNAME: "Minou [bot]"
+          GIT_EMAIL: "minou[bot]@users.noreply.github.com"
         run: |
           cd addons-repo/$ADDONS_DIR
 
