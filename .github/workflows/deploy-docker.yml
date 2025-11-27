@@ -16,8 +16,10 @@ on:
 
 jobs:
   docker:
-    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
     runs-on: ubuntu-latest
+    outputs:
+      bco-tags: ${{ steps.bco-meta.outputs.tags }}
     steps:
       -
         name: Checkout
@@ -34,7 +36,8 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
-            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+            type=raw,value=preview+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
+            type=raw,value={{branch}}+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=startsWith(github.ref, 'refs/heads/')
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -67,7 +70,7 @@ jobs:
           context: .
           file: docker/Dockerfile 
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
           tags: ${{ steps.bco-meta.outputs.tags }}
           labels: ${{ steps.bco-meta.outputs.labels }}
         env:
@@ -84,7 +87,7 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
-            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+            type=raw,value=preview,enable=${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -103,7 +106,7 @@ jobs:
             BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
           file: ./docker/device-manager/openhab/Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
           tags: ${{ steps.bco-device-meta.outputs.tags }}
           labels: ${{ steps.bco-device-meta.outputs.labels }}
       -
@@ -118,7 +121,7 @@ jobs:
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
-            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+            type=raw,value=review,enable=${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -134,7 +137,7 @@ jobs:
             BCO_BASE_IMAGE_VERSION=sha-${{ steps.short-sha.outputs.sha }}
           file: ./docker/bco-demo/Dockerfile
           platforms: linux/amd64,linux/arm64
-          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'prebuild docker image') }}
+          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
           tags: ${{ steps.bco-demo-meta.outputs.tags }}
           labels: ${{ steps.bco-demo-meta.outputs.labels }}
 
@@ -145,5 +148,30 @@ jobs:
     uses: ./.github/workflows/update-addon-version.yaml
     with:
       version: ${{ github.ref_name }}
+      addons: "bco-core"
+    secrets:
+      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  update-addon-version-dev:
+    name: Update Home Assistant Add-on Version
+    needs: docker
+    if: startsWith(github.ref, 'refs/heads/dev')
+    uses: ./.github/workflows/update-addon-version.yaml
+    with:
+      addons: "bco-core"
+      tags: ${{ needs.docker.outputs.bco-tags }}
+      track: dev
+    secrets:
+      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    update-addon-version-preview:
+    name: Update Home Assistant Add-on Version
+    needs: docker
+    if: contains(github.event.pull_request.labels.*.name, 'preview')
+    uses: ./.github/workflows/update-addon-version.yaml
+    with:
+      addons: "bco-core"
+      tags: ${{ needs.docker.outputs.bco-tags }}
+      track: preview
     secrets:
       CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
