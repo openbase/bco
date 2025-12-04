@@ -148,7 +148,7 @@ jobs:
     uses: ./.github/workflows/update-addon-version.yaml
     with:
       version: ${{ github.ref_name }}
-      addons: "bco-core"
+      addon: "bco-core"
     secrets:
       CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -158,7 +158,7 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/dev')
     uses: ./.github/workflows/update-addon-version.yaml
     with:
-      addons: "bco-core"
+      addon: "bco-core"
       tags: ${{ needs.docker.outputs.bco-tags }}
       track: dev
     secrets:
@@ -170,7 +170,7 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'preview')
     uses: ./.github/workflows/update-addon-version.yaml
     with:
-      addons: "bco-core"
+      addon: "bco-core"
       tags: ${{ needs.docker.outputs.bco-tags }}
       track: preview
     secrets:
