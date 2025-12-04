@@ -164,14 +164,14 @@ jobs:
     secrets:
       CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    update-addon-version-preview:
-      name: Update Home Assistant Add-on Version
-      needs: docker
-      if: contains(github.event.pull_request.labels.*.name, 'preview')
-      uses: ./.github/workflows/update-addon-version.yaml
-      with:
-        addons: "bco-core"
-        tags: ${{ needs.docker.outputs.bco-tags }}
-        track: preview
-      secrets:
-        CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  update-addon-version-preview:
+    name: Update Home Assistant Add-on Version
+    needs: docker
+    if: contains(github.event.pull_request.labels.*.name, 'preview')
+    uses: ./.github/workflows/update-addon-version.yaml
+    with:
+      addons: "bco-core"
+      tags: ${{ needs.docker.outputs.bco-tags }}
+      track: preview
+    secrets:
+      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
