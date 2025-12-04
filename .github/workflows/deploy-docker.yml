@@ -37,7 +37,7 @@ jobs:
           tags: |
             type=schedule
             type=raw,value=preview+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-            type=raw,value={{branch}}+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=startsWith(github.ref, 'refs/heads/')
+            type=raw,value={{branch}}+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=${{ startsWith(github.ref, 'refs/heads/') }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
