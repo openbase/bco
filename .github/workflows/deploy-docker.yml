@@ -16,7 +16,7 @@ on:
 
 jobs:
   docker:
-    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
+    # if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
     runs-on: ubuntu-latest
     outputs:
       bco-tags: ${{ steps.bco-meta.outputs.tags }}
