@@ -8,7 +8,7 @@ set -euo pipefail
 set -- tini -s -- "$@"
 
 # Prepare log directory
-mkdir -p ${BCO_LOGS}
+mkdir -p "${BCO_LOGS}"
 
 # Prepare bco modules if required
 if [ -z ${BCO_MODULE_PREPARE_SCRIPT+x} ]; then
@@ -21,5 +21,5 @@ fi
 # replace the current pid 1 with original entrypoint
 echo "start main application: $@"
 
-set -- "$@" --bco-home ${BCO_HOME} --log-dir ${BCO_LOGS} ${BCO_OPTIONS} -v
+set -- "$@" --bco-home "${BCO_HOME}" --log-dir "${BCO_LOGS}" --host "${MQTT_BROKER}" "${BCO_OPTIONS}"
 exec "$@"

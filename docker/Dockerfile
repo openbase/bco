@@ -69,7 +69,7 @@ ENV \
     BCO_LOGS="/home/bco/data/log" \
     BCO_BINARY="/usr/bin/bco" \
     MQTT_BROKER="mqtt-broker" \
-    BCO_OPTIONS="--host ${MQTT_BROKER}"
+    BCO_OPTIONS=""
 
 # Basic build-time metadata as defined at http://label-schema.org
 LABEL org.label-schema.docker.dockerfile="docker/Dockerfile" \
