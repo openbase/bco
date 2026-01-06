@@ -16,7 +16,7 @@ on:
 
 jobs:
   docker:
-    if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
+    # if: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
     runs-on: ubuntu-latest
     outputs:
       bco-tags: ${{ steps.bco-meta.outputs.tags }}
@@ -37,7 +37,7 @@ jobs:
           tags: |
             type=schedule
             type=raw,value=preview+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-            type=raw,value={{branch}}+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=startsWith(github.ref, 'refs/heads/')
+            type=raw,value={{branch}}+{{commit_date 'YYYYMMDD-HHmmss' tz='UTC'}},enable=${{ startsWith(github.ref, 'refs/heads/') }}
             type=ref,event=branch
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -148,7 +148,7 @@ jobs:
     uses: ./.github/workflows/update-addon-version.yaml
     with:
       version: ${{ github.ref_name }}
-      addons: "bco-core"
+      addon: "bco-core"
     secrets:
       CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -158,19 +158,19 @@ jobs:
     if: startsWith(github.ref, 'refs/heads/dev')
     uses: ./.github/workflows/update-addon-version.yaml
     with:
-      addons: "bco-core"
+      addon: "bco-core"
       tags: ${{ needs.docker.outputs.bco-tags }}
       track: dev
     secrets:
       CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    update-addon-version-preview:
+  update-addon-version-preview:
     name: Update Home Assistant Add-on Version
     needs: docker
     if: contains(github.event.pull_request.labels.*.name, 'preview')
     uses: ./.github/workflows/update-addon-version.yaml
     with:
-      addons: "bco-core"
+      addon: "bco-core"
       tags: ${{ needs.docker.outputs.bco-tags }}
       track: preview
     secrets:
