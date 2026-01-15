@@ -22,8 +22,7 @@ FROM openbaseorg/bco:${BCO_BASE_IMAGE_VERSION}
 # Set variables and locales
 ENV \
     JAVA_OPTS="" \
-    OPENHAB_CONF="/etc/openhab2" \
-    BCO_OPTIONS="--db /tmp/bco/db --host ${MQTT_BROKER}" \
+    BCO_OPTIONS="--db /tmp/bco/db" \
     BCO_MODULE_PREPARE_SCRIPT="bco-module-prepare.sh"
 
 # Basic build-time metadata as defined at http://label-schema.org

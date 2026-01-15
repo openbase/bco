@@ -49,7 +49,7 @@ jobs:
 
           if [ -n "$TRACK" ]; then
             MATCHED_TAG=$(printf "%s\n" "$TAGS" \
-              | sed -n "s/.*:${TRACK}+\([^[:space:]]*\).*/${TRACK}+\\1/p" \
+              | sed -n "s/.*:${TRACK}-\([^[:space:]]*\).*/${TRACK}-\\1/p" \
               | sort -u \
               | head -n1)
             if [ -n "$MATCHED_TAG" ]; then
