@@ -150,7 +150,7 @@ jobs:
       version: ${{ github.ref_name }}
       addon: "bco-core"
     secrets:
-      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CI_GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
   update-addon-version-dev:
     name: Update Home Assistant Add-on Version
@@ -162,7 +162,7 @@ jobs:
       tags: ${{ needs.docker.outputs.bco-tags }}
       track: dev
     secrets:
-      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CI_GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
   update-addon-version-preview:
     name: Update Home Assistant Add-on Version
@@ -174,4 +174,4 @@ jobs:
       tags: ${{ needs.docker.outputs.bco-tags }}
       track: preview
     secrets:
-      CI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CI_GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

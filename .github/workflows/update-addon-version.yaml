@@ -48,7 +48,7 @@ jobs:
           echo "Searching for tag for track: $TRACK"
 
           if [ -n "$TRACK" ]; then
-            MATCHED_TAG=$(printf "%s\n" "$LIST" \
+            MATCHED_TAG=$(printf "%s\n" "$TAGS" \
               | sed -n "s/.*:${TRACK}+\([^[:space:]]*\).*/${TRACK}+\\1/p" \
               | sort -u \
               | head -n1)
@@ -61,7 +61,7 @@ jobs:
             exit 1
           else
             echo "No track specified, skipping tag selection."
-            echo "SELECTED_TAG="" >> $GITHUB_OUTPUT
+            echo 'SELECTED_TAG=""' >> $GITHUB_OUTPUT
           fi
 
       - name: Update add-on versions
