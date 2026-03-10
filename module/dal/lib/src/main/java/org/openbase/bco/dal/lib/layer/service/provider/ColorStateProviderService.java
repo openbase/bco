@@ -167,7 +167,7 @@ public interface ColorStateProviderService extends ProviderService {
     }
 
     static Boolean equalServiceStates(final ColorState colorStateA, final ColorState colorStateB) {
-        
+
         final HSBColor hsbColorA = colorStateA.getColor().getHsbColor();
         final HSBColor hsbColorB = colorStateB.getColor().getHsbColor();
 
