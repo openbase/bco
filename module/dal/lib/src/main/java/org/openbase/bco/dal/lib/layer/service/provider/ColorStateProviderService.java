@@ -22,9 +22,9 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
+import org.jetbrains.annotations.NotNull;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -37,6 +37,9 @@ import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.BiPredicate;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
 
@@ -164,8 +167,7 @@ public interface ColorStateProviderService extends ProviderService {
     }
 
     static Boolean equalServiceStates(final ColorState colorStateA, final ColorState colorStateB) {
-        //TODO: explain this (required because of openhab) and put margins into constants
-
+        
         final HSBColor hsbColorA = colorStateA.getColor().getHsbColor();
         final HSBColor hsbColorB = colorStateB.getColor().getHsbColor();
 
@@ -176,13 +178,13 @@ public interface ColorStateProviderService extends ProviderService {
         final double BRIGHTNESS_MARGIN = 0.01;
 
         // normalize angle to [0,360)
-        java.util.function.DoubleUnaryOperator normalize = (v) -> {
+        DoubleUnaryOperator normalize = (v) -> {
             double r = v % 360.0;
             if (r < 0) r += 360.0;
             return r;
         };
 
-        java.util.function.BiPredicate<Double, Double> hueEqualsWithWrap = (ha, hb) -> {
+        BiPredicate<Double, Double> hueEqualsWithWrap = (ha, hb) -> {
             double aNorm = normalize.applyAsDouble(ha);
             double bNorm = normalize.applyAsDouble(hb);
             double diff = Math.abs(aNorm - bNorm);
