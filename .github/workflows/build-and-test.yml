@@ -122,7 +122,7 @@ jobs:
         run: ./prepare.sh
 
       - name: "test backend"
-        run: ./gradlew --build-cache check
+        run: ./gradlew --build-cache --continue check
 
       - name: Upload test reports
         uses: actions/upload-artifact@v4
@@ -130,4 +130,3 @@ jobs:
         with:
           name: Test Reports
           path: "**/build/reports"
-
