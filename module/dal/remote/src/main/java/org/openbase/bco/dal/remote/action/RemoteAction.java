@@ -1027,7 +1027,9 @@ public class RemoteAction implements Action {
             while (actionDescription == null || (actionDescription.getActionState().getValue() != actionState) && !checkIfStateWasPassed(actionState, timeSplit.getTimestamp(), actionDescription)) {
                 // Waiting makes no sense if the action is done but the state is still not reached.
                 if (actionDescription != null && isDone()) {
-                    throw new CouldNotPerformException(targetUnit.getLabel() + " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
+                    final State currentState = actionDescription.getActionState().getValue();
+                    LOGGER.warn(getTargetUnit().getLabel() + " - Action [" + this + "] reached terminal state [" + currentState.name() + "] instead of target state [" + actionState.name() + "]");
+                    throw new CouldNotPerformException(targetUnit.getLabel() + " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + currentState.name() + "]");
                 }
                 LOGGER.trace(getTargetUnit().getLabel() + " - wait for action [" + this + "] to be in state [" + actionState + "] ");
                 executionSync.wait(timeSplit.getTime());
