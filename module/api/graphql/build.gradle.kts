@@ -20,6 +20,7 @@ dependencies {
 
     api("org.eclipse.jetty:jetty-server:11.0.14")
     api("jakarta.servlet:jakarta.servlet-api:6.0.0")
+    implementation("org.springframework.boot:spring-boot-starter-actuator:_")
 
 
 
