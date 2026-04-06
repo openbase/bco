@@ -99,7 +99,8 @@ ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Configure healthcheck
 # todo: make sure only the registry availability is checks since devices are not maintained by this instance.
-HEALTHCHECK --interval=15m --timeout=2m CMD bco-validate --host ${MQTT_BROKER} > /dev/null || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:13781/actuator/health || exit 1
 
 # Set command
 ## Need to be in array form to not encapsulate command in another shell session because
