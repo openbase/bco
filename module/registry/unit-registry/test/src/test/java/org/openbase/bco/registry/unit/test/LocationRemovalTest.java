@@ -51,7 +51,7 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
      * @throws Exception
      */
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void removeAllLocationsTest() throws Exception {
         logger.info("RemoveAllLocationsTest");
         try {

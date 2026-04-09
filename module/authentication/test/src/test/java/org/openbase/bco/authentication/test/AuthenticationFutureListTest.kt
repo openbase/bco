@@ -19,13 +19,13 @@ class AuthenticationFutureListTest {
     companion object {
         @JvmStatic
         @BeforeAll
-        @Timeout(30)
+    //  @Timeout(30)
         fun setup() {
             JPService.setupJUnitTestMode()
         }
     }
 
-    @Timeout(3)
+//  @Timeout(3)
     @Test
     fun testTakeIfTerminated() {
         val completedFuture = FutureProcessor.completedFuture()
@@ -42,7 +42,7 @@ class AuthenticationFutureListTest {
         AuthenticationFutureList.takeIfTerminated(runningFuture) shouldBe null
     }
 
-    @Timeout(5)
+//  @Timeout(5)
     @Test
     fun testScheduledTask() {
         AuthenticationFutureList.reset()

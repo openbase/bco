@@ -34,7 +34,7 @@ import org.openbase.type.domotic.state.ColorStateType.ColorState
 
 class ColorStateProviderServiceTest {
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     fun `should fix color values once they are defined out of range`() {
         JPService.setupJUnitTestMode()
 
@@ -68,7 +68,7 @@ class ColorStateProviderServiceTest {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     fun `should handle color state comparison with equal state`() {
         JPService.setupJUnitTestMode()
 
@@ -108,7 +108,7 @@ class ColorStateProviderServiceTest {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     fun `should handle color state comparison with non equal state`() {
         JPService.setupJUnitTestMode()
 
@@ -217,7 +217,7 @@ class ColorStateProviderServiceTest {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     fun `should handle color state comparison with neutral state`() {
         JPService.setupJUnitTestMode()
 

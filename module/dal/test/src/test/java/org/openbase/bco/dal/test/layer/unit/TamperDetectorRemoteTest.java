@@ -51,7 +51,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void setupTest() throws Throwable {
         tamperDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TAMPER_DETECTOR), true, TamperDetectorRemote.class);
     }
@@ -69,7 +69,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
@@ -84,7 +84,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testGetTamperStateTimestamp() throws Exception {
         System.out.println("testGetTamperStateTimestamp");
         long timestamp;

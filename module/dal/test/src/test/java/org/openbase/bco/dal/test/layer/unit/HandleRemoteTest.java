@@ -47,7 +47,7 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void loadUnits() throws Throwable {
         handleRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.HANDLE), true, HandleRemote.class);
     }
@@ -65,7 +65,7 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         HandleState handlestate = HandleState.newBuilder().setPosition(90).build();

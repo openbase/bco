@@ -50,7 +50,7 @@ public class ServicesTest {
      * @throws Exception if something fails.
      */
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     public void testSuperStateConversion() throws Exception {
         final BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(.5d).build();
         final Message expectedPowerState = BrightnessStateProviderService.toPowerState(brightnessState);

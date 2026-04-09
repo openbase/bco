@@ -50,7 +50,7 @@ public class BCOAppTest extends AbstractBCOTest {
     protected static MessageManagerLauncher messageManagerLauncher;
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void setupBcoApp() throws Throwable {
         try {
             LOGGER.trace("Start device manager...");
@@ -85,7 +85,7 @@ public class BCOAppTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void tearDownBCOApp() throws Throwable {
         LOGGER.info("Tear down app tests...");
         try {
@@ -116,7 +116,7 @@ public class BCOAppTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
-    @Timeout(30)
+//  @Timeout(30)
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

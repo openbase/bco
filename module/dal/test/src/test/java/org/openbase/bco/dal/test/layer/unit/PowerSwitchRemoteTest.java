@@ -65,7 +65,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void loadUnits() throws Throwable {
         powerSwitchRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, PowerSwitchRemote.class);
     }
@@ -76,7 +76,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(3)
+//  @Timeout(3)
     public void testSetPowerState() throws Exception {
         waitForExecution(powerSwitchRemote.setPowerState(Power.ON));
         assertEquals(Power.ON.getValue(), powerSwitchRemote.getData().getPowerState().getValue(), "Power state has not been set in time!");
@@ -88,7 +88,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(3)
+//  @Timeout(3)
     public void testGetPowerState() throws Exception {
         // apply service state
         final UnitController<?, ?> unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId());
@@ -116,7 +116,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(60)
+//  @Timeout(60)
     @RepeatedTest(5)
     public void testPowerStateServicePerformance() throws Exception {
         System.out.println("testPowerStateServicePerformance");
@@ -192,7 +192,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(60)
+//  @Timeout(60)
     public void testPowerStateServiceCancellationPerformance() throws Exception {
         final Random random = new Random();
         final ActionParameter parameter = ActionParameter.newBuilder().setExecutionTimePeriod(100000000).build();

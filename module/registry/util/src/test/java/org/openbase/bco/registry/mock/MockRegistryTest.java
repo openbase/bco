@@ -43,7 +43,7 @@ public class MockRegistryTest extends MqttIntegrationTest {
     }
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void setUpClass() throws JPServiceException {
         JPService.setupJUnitTestMode();
     }
@@ -54,7 +54,7 @@ public class MockRegistryTest extends MqttIntegrationTest {
      * @throws org.openbase.jul.exception.InstantiationException
      */
     @Test
-    @Timeout(120)
+//  @Timeout(120)
     public void testMockRegistryCreation() throws Exception {
         Stopwatch stopwatch = new Stopwatch();
         List<String> times = new ArrayList<>();

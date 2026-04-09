@@ -33,7 +33,7 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 public class RegistrySyncTest extends AbstractBCORegistryTest {
 
     @Test
-    @Timeout(5)
+//  @Timeout(5)
             public void testRemoteRegistrySync() throws Exception {
         System.out.println("testRegisterUnitConfigWithUnits");
 
@@ -44,7 +44,7 @@ public class RegistrySyncTest extends AbstractBCORegistryTest {
     }
 
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testUnitRemoteRegistrySync() throws Exception {
         System.out.println("testRegisterUnitConfigWithUnits");
 

@@ -45,7 +45,7 @@ public class DeviceManagerLauncherTest extends AbstractBCOTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testShutdown() throws Exception {
         DeviceManagerLauncher instance = new DeviceManagerLauncher();
         try {

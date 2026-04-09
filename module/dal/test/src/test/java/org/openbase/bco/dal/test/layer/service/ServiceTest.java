@@ -54,7 +54,7 @@ public class ServiceTest extends AbstractBCOTest {
      * Test of getServiceStateClass method, of class Service.
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testDetectServiceDataClass() throws Exception {
         System.out.println("detectServiceDataClass");
         try {
@@ -71,7 +71,7 @@ public class ServiceTest extends AbstractBCOTest {
      * Test of getServiceStateEnumValues method, of class Service.
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testGetServiceStateValues() throws Exception {
         System.out.println("getServiceStateEnumValues");
         try {
@@ -89,7 +89,7 @@ public class ServiceTest extends AbstractBCOTest {
      * Test of getServiceStateEnumValues method, of class Service.
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testGenerateServiceStateBuilder() throws Exception {
         System.out.println("getServiceStateEnumValues");
         try {

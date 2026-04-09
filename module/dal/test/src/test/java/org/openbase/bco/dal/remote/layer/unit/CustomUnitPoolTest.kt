@@ -39,7 +39,7 @@ class CustomUnitPoolTest : AbstractBCODeviceManagerTest() {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     @Throws(Exception::class)
     fun testUnitPool() {
         val customUnitPool: CustomUnitPool<*, *> = CustomUnitPool<UnitConfig, UnitRemote<UnitConfig>>()

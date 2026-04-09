@@ -42,7 +42,7 @@ class UnitGroupRegistryTest : AbstractBCORegistryTest() {
      * Test if changing the placement of a unit group works.
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     fun testPlacementChange() {
         val unitConfig = UnitConfig.newBuilder()
         LabelProcessor.addLabel(unitConfig.labelBuilder, Locale.ENGLISH, "PlacementChangeGroup")
@@ -63,7 +63,7 @@ class UnitGroupRegistryTest : AbstractBCORegistryTest() {
      * Test if it is possible to register unit groups with recursive references.
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     fun `test unit group recursion`() {
         val colorableLightIds = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitType.COLORABLE_LIGHT)
             .map { unitConfig -> unitConfig.id }

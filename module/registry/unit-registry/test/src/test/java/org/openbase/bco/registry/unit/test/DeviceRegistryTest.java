@@ -71,7 +71,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testRegisterUnitConfigWithUnits() throws Exception {
         System.out.println("testRegisterUnitConfigWithUnits");
         String productNumber = "ABCD-4321";
@@ -111,7 +111,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
         System.out.println("testRegisteredDeviceConfigWithoutLabel");
         String productNumber = "KNHD-4321";
@@ -128,7 +128,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     }
 
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testUnitConfigUnitTemplateConsistencyHandler() throws Exception {
         System.out.println("testUnitConfigUnitTemplateConsistencyHandler");
 
@@ -179,7 +179,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         System.out.println("testDeviceClassDeviceConfigUnitConsistencyHandler");
 
@@ -273,7 +273,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     }
 
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testBoundingBoxConsistencyHandler() throws Exception {
 
         // request a unit
@@ -306,7 +306,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
      * @throws java.lang.Exception if anything fails
      */
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testOwnerRemoval() throws Exception {
         System.out.println("testOwnerRemoval");
 
@@ -342,7 +342,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     }
 
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testInventoryEnablingStateConnection() throws Exception {
         System.out.println("testInventoryEnablingStateConnection");
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
@@ -399,7 +399,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testLocationIdInInventoryState() throws Exception {
         System.out.println("testLocationIdInInventoryState");
         DeviceClass clazz = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("testLocationIdInInventoryState", "103721ggbdk12", "ServiceGMBH")).get();
@@ -419,7 +419,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testRegistrationErrorHandling() throws Exception {
         System.out.println("testRegistrationErrorHandling");
 

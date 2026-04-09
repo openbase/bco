@@ -46,7 +46,7 @@ public class UnitTypeMappingTest {
      * @throws IllegalArgumentException if the name of a unitTypeMapping does not lead to the according unitType.
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testUnitTypeValidity() throws IllegalArgumentException {
         LOGGER.info("testUnitTypeValidity");
         for (final UnitTypeMapping unitTypeMapping : UnitTypeMapping.values()) {

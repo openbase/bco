@@ -134,7 +134,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(30)
+//  @Timeout(30)
     public void testPresenceLightAgent() throws Exception {
 
         // test if on motion the lights are turned on

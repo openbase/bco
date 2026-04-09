@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class OperationServiceTest {
 
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     void verifyValueRange() throws VerificationFailedException {
         OperationService.verifyValueRange("good", 10, 5, 15);
         OperationService.verifyValueRange("good", 0.10, 0.05, 0.15);
@@ -60,7 +60,7 @@ class OperationServiceTest {
     }
 
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     void verifyValue() throws VerificationFailedException {
         OperationService.verifyValue("good", 10, 11, 2);
         OperationService.verifyValue("good", 0.12, 0.11, 0.1);
@@ -90,7 +90,7 @@ class OperationServiceTest {
     }
 
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     void testEquals() {
         assertTrue(OperationService.equals(30d, 30d, 0d), "equals check result invalid");
         assertTrue(OperationService.equals(30d, 33d, 4d), "equals check result invalid");

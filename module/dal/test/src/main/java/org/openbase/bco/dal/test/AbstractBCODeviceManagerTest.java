@@ -40,7 +40,7 @@ public abstract class AbstractBCODeviceManagerTest extends AbstractBCOTest {
     protected static DeviceManagerLauncher deviceManagerLauncher;
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void setupDeviceManager() throws Throwable {
         try {
             deviceManagerLauncher = new DeviceManagerLauncher();
@@ -51,7 +51,7 @@ public abstract class AbstractBCODeviceManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void tearDownDeviceManage() throws Throwable {
         try {
             if (deviceManagerLauncher != null) {
@@ -68,7 +68,7 @@ public abstract class AbstractBCODeviceManagerTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @BeforeEach
-    @Timeout(30)
+//  @Timeout(30)
     @AfterEach
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");

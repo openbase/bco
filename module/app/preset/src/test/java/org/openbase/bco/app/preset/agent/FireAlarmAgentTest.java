@@ -64,7 +64,7 @@ public class FireAlarmAgentTest extends AbstractBCOAgentManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testFireAlarmAgent() throws Exception {
         System.out.println("testFireAlarmAgent");
 

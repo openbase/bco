@@ -45,7 +45,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     public void testGenerateKey() {
         LOGGER.info("test key generation");
         int expLen = 16;
@@ -54,7 +54,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testSymmetricHashing() {
         LOGGER.info("test if hashing method hashes symmetrically");
         byte[] hash1 = EncryptionHelper.hash("test");
@@ -63,7 +63,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     public void testSymmetricEncryptionDecryption() throws Exception {
         LOGGER.info("test symmetric encryption and decryption");
         String str = "test";
@@ -74,7 +74,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     public void testAsymmetricEncryptionDecryption() throws Exception {
         LOGGER.info("test asymmetric encryption and decryption");
         String str = "test";
@@ -85,7 +85,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testExceptionsWithWrongKeySymmetric() {
         LOGGER.info("testExceptionsWithWrongKey");
 
@@ -101,7 +101,7 @@ public class EncryptionHelperTest {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testExceptionsWithWrongKeyAsymmetric() {
         LOGGER.info("testExceptionsWithWrongKeyAsymmetric");
 

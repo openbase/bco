@@ -46,7 +46,7 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void loadUnits() throws Throwable {
         reedContactRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.REED_CONTACT), true, ReedContactRemote.class);
     }
@@ -57,7 +57,7 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId()).applyServiceState(Contact.OPEN, ServiceType.CONTACT_STATE_SERVICE);

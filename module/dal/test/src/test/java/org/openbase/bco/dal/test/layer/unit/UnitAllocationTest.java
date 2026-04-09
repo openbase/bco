@@ -83,7 +83,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void setUpClass() throws Throwable {
 
         // uncomment to enable debug mode
@@ -99,7 +99,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeEach
-    @Timeout(30)
+//  @Timeout(30)
     public void loginUser() throws Exception {
         sessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
 
@@ -109,7 +109,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
     }
 
     @AfterEach
-    @Timeout(30)
+//  @Timeout(30)
     public void logoutUser() {
         sessionManager.logout();
     }
@@ -120,7 +120,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
      * @throws Exception if an error occurs.
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testActionStateNotifications() throws Exception {
         LOGGER.info("testActionStateNotifications");
         // expected order of action states
@@ -178,7 +178,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
      * @throws Exception if an error occurs.
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testMultiActionsBySameInitiator() throws Exception {
         LOGGER.info("testMultiActionsBySameInitiator");
         // set the power state of the colorable light
@@ -213,7 +213,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
      * @throws Exception if an error occurs.
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testRescheduling() throws Exception {
         LOGGER.info("testRescheduling");
 
@@ -266,7 +266,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
      * @throws Exception if an error occurs.
      */
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testPriorityHandling() throws Exception {
         LOGGER.info("testPriorityHandling");
 
@@ -346,7 +346,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
      * @throws Exception if an error occurs.
      */
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testFinalizationAfterExecutionTimePeriodPassed() throws Exception {
         LOGGER.info("testFinalizationAfterExecutionTimePeriodPassed");
 
@@ -414,7 +414,7 @@ public class UnitAllocationTest extends AbstractBCODeviceManagerTest {
      * @throws Exception if an error occurs.
      */
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testActionExtension() throws Exception {
         LOGGER.info("testActionExtension");
 

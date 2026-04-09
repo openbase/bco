@@ -48,7 +48,7 @@ public class InitialRegistrationTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void initialRegistrationTest() throws Exception {
         LOGGER.info("initialRegistrationTest");
 

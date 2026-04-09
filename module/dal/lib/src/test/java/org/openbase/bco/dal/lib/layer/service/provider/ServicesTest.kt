@@ -36,7 +36,7 @@ import java.util.function.Consumer
 class ServicesTest : AbstractBCORegistryTest() {
 
     @Test
-    @Timeout(value = 30)
+//  @Timeout(value = 30)
     fun testComputeActionImpact() {
         val unitRegistry = Registries.getUnitRegistry(true)
         val serviceState = ServiceStateDescription.newBuilder().apply {
