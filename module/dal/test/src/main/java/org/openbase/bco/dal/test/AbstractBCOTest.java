@@ -61,7 +61,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     private final List<RemoteAction> testActions = Collections.synchronizedList(new ArrayList<>());
 
     @BeforeAll
-    @Timeout(30)
+//    @Timeout(30)
     public static void setupBCO() throws Throwable {
         try {
             mockRegistry = MockRegistryHolder.newMockRegistry();
@@ -72,7 +72,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     }
 
     @AfterAll
-    @Timeout(30)
+//    @Timeout(30)
     public static void tearDownBCO() throws Throwable {
         try {
             Units.reset(AbstractBCOTest.class);

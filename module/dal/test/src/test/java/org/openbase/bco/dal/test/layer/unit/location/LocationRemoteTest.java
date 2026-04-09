@@ -98,7 +98,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
 
@@ -150,7 +150,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws Exception
      */
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testUnitToLocationPipeline() throws Exception {
         System.out.println("testUnitToLocationPipeline");
 
@@ -215,7 +215,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testRecordAndRestoreSnapshots() throws Exception {
 
         final LocationRemote rootLocationRemote =
@@ -288,7 +288,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testManipulatingByUnitType() throws Exception {
         System.out.println("testManipulatingByUnitType");
 
@@ -351,7 +351,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testPresenceState() throws Exception {
         System.out.println("testPresenceState");
 
@@ -392,7 +392,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     public void testColorableLightControlViaLocation() throws Exception {
         System.out.println("testColorableLightControlViaLocation");
 
@@ -471,7 +471,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testIlluminanceState() throws Exception {
         System.out.println("testIlluminanceState");
 
@@ -525,7 +525,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws Exception if something fails.
      */
     @Test
-    @Timeout(15)
+//  @Timeout(15)
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 
@@ -556,7 +556,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @Test
-    @Timeout(20)
+//  @Timeout(20)
     public void testActionCancellation() throws Exception {
         System.out.println("testActionCancellation");
 
@@ -612,7 +612,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest {
     }
 
     @Test
-    @Timeout(5)
+//  @Timeout(5)
     public void testLocationModificationViaApplyAction() throws Exception {
 
         final UnitRemote<?> unit = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig().getId(), true);

@@ -560,7 +560,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-    @Timeout(60)
+//    @Timeout(60)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 

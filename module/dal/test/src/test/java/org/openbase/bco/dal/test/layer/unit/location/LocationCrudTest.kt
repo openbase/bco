@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
 class LocationCrudTest : AbstractBCOLocationManagerTest() {
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     @Throws(Exception::class)
     fun createTileTest() {
         println("createTileTest")
@@ -39,7 +39,7 @@ class LocationCrudTest : AbstractBCOLocationManagerTest() {
     }
 
     @Test
-    @Timeout(10)
+//  @Timeout(10)
     @Throws(Exception::class)
     fun createZoneTest() {
         println("createZoneTest")

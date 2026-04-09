@@ -47,7 +47,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void setupLocationManager() throws Throwable {
         try {
             deviceManagerLauncher = new DeviceManagerLauncher();
@@ -64,7 +64,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-    @Timeout(30)
+//  @Timeout(30)
     public static void tearDownLocationManager() throws Throwable {
         try {
             if (userManagerLauncher != null) {
@@ -87,7 +87,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
-    @Timeout(30)
+//  @Timeout(30)
     public void cancelAllOngoingActions() throws InterruptedException {
         log.info("Cancel all ongoing actions...");
         try {

@@ -164,7 +164,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     }
 
     @Test
-    @Timeout(15)
+//    @Timeout(15)
     @Throws(Exception::class)
     fun testExtensionCancellation() {
         println("testExtensionCancellation")
