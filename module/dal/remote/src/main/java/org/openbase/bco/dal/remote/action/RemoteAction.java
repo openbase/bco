@@ -619,7 +619,7 @@ public class RemoteAction implements Action {
 
             try {
                 if (getActionDescription().getIntermediary()) {
-                    for (final RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+                    for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                         if (impactedRemoteAction.isRunning()) {
                             return true;
                         }
@@ -650,7 +650,7 @@ public class RemoteAction implements Action {
 
         try {
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     if (!impactedRemoteAction.isDone()) {
                         return false;
                     }
@@ -854,7 +854,7 @@ public class RemoteAction implements Action {
 
         // cleanup synchronisation and observation tasks
         actionDescriptionObservable.reset();
-        for (RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+        for (RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
             impactedRemoteAction.removeActionDescriptionObserver(impactActionObserver);
         }
         impactedRemoteActions.clear();
@@ -955,7 +955,7 @@ public class RemoteAction implements Action {
 
         try {
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitUntilDone();
                 }
                 return;
@@ -1006,7 +1006,7 @@ public class RemoteAction implements Action {
 
         try {
             if (actionDescription.getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitForActionState(actionState, timeSplit.getTime(), timeSplit.getTimeUnit());
                 }
                 return;
@@ -1093,7 +1093,7 @@ public class RemoteAction implements Action {
             }
 
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitForRegistration();
                 }
             }
@@ -1132,7 +1132,7 @@ public class RemoteAction implements Action {
             }
 
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitForRegistration(timeSplit.getTime(), timeSplit.getTimeUnit());
                 }
             }
@@ -1149,7 +1149,7 @@ public class RemoteAction implements Action {
             }
 
             if (actionDescription.getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions.stream().toList()) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     if (!impactedRemoteAction.isRegistrationDone()) {
                         return false;
                     }
