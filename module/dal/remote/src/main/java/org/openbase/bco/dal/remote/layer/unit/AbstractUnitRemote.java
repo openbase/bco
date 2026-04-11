@@ -332,8 +332,8 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
         }
 
         // clear caches
-        invalidateIdCache();
-        invalidateLabelCache();
+        cachedId = null;
+        cachedLabel = null;
 
         // update unit templates
         unitTemplate = Registries.getTemplateRegistry(true).getUnitTemplateByType(Units.getUnitTypeByRemoteClass((Class<? extends UnitRemote<D>>) getClass()));
