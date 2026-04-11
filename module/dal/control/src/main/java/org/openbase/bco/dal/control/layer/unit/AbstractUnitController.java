@@ -92,6 +92,8 @@ import org.openbase.type.domotic.action.SnapshotType.Snapshot;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
 import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.QueryType.Query;
+import org.openbase.type.domotic.database.QueryType.Query.AggregateFunction;
 import org.openbase.type.domotic.database.RecordCollectionType.RecordCollection;
 import org.openbase.type.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import org.openbase.type.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -1925,6 +1927,42 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 ExceptionPrinter.printHistory("Could not reschedule termination action!", ex, logger);
             }
         }
+
+        // recover latest state from persistence layer
+        try {
+            recoverLatestState();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not recover latest state!", ex, logger);
+        }
+    }
+
+    public void recoverLatestState() throws CouldNotPerformException {
+
+        if(!getAliases().contains("MotionDetector-7")) {
+            return;
+        }
+
+        getUnitTemplate().getServiceDescriptionList()
+                .stream()
+                .filter(serviceDescription -> serviceDescription.getPattern() == ServicePattern.PROVIDER)
+                .filter(serviceDescription -> !serviceDescription.getAggregated())
+                .forEach(serviceDescription -> {
+            try {
+
+                Message message = InfluxDbProcessor
+                        .queryLatestServiceState(this, serviceDescription.getServiceType())
+                        .get(3, TimeUnit.SECONDS);
+
+                Message.Builder serviceState = Services.generateServiceStateBuilder(serviceDescription.getServiceType());
+
+                if(message != null && message.isInitialized()) {
+                    Services.invokeOperationServiceMethod(serviceDescription.getServiceType(), serviceState, Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), message));
+                    applyServiceState(serviceState, serviceDescription.getServiceType());
+                }
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Could not recover latest state for service[" + serviceDescription.getServiceType() + "]!", ex, logger);
+            }
+        });
     }
 
     /**

@@ -24,11 +24,13 @@ package org.openbase.bco.dal.control.layer.unit;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import com.google.protobuf.ProtocolMessageEnum;
 import com.influxdb.client.InfluxDBClient;
 import com.influxdb.client.InfluxDBClientFactory;
 import com.influxdb.query.FluxRecord;
 import com.influxdb.query.FluxTable;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.ExceptionProcessor;
@@ -38,14 +40,18 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.type.processing.MetaConfigPool;
 import org.openbase.jul.extension.type.processing.MetaConfigVariableProvider;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.type.configuration.EntryType;
 import org.openbase.type.domotic.database.QueryType;
+import org.openbase.type.domotic.database.QueryType.Query;
 import org.openbase.type.domotic.database.RecordCollectionType;
 import org.openbase.type.domotic.database.RecordType;
 import org.openbase.type.domotic.service.ServiceTemplateType;
+import org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import org.openbase.type.domotic.state.AggregatedServiceStateType.AggregatedServiceState;
+import org.openbase.type.domotic.state.MotionStateType;
 import org.openbase.type.domotic.unit.UnitConfigType;
 import org.openbase.type.timing.TimestampType;
 import org.slf4j.Logger;
@@ -203,7 +209,6 @@ public class InfluxDbProcessor {
     }
 
     private static final SyncObject queryLock = new SyncObject("QueryLock");
-    private volatile static boolean queryInProgress = false;
 
     /**
      * Creates a connection to the influxdb and sends a query.
@@ -215,25 +220,17 @@ public class InfluxDbProcessor {
      * @throws CouldNotPerformException
      */
     private static List<FluxTable> sendQuery(final String query) throws CouldNotPerformException {
-        if (queryInProgress) {
-            throw new CouldNotPerformException("No many queries at once, skip to avoid DOS.");
-        }
         synchronized (queryLock) {
-            try {
-                queryInProgress = true;
                 try (InfluxDBClient influxDBClient = InfluxDBClientFactory
                         .create(getInfluxdbUrl() + "?readTimeout=" + READ_TIMEOUT + "&connectTimeout=" + CONNECT_TIMOUT + "&writeTimeout=" + WRITE_TIMEOUT + "&logLevel=BASIC", getInfluxdbToken())) {
 
-                    if (!influxDBClient.health().getStatus().getValue().equals("pass")) {
+                    if (!influxDBClient.ping()) {
                         throw new CouldNotPerformException("Could not connect to database server at " + getInfluxdbUrl() + "!");
                     }
                     return influxDBClient.getQueryApi().query(query, getInfluxdbOrg());
                 } catch (Exception ex) {
                     throw new CouldNotPerformException("Could not send query[" + query + "] to database!", ex);
                 }
-            } finally {
-                queryInProgress = false;
-            }
         }
     }
 
@@ -246,14 +243,15 @@ public class InfluxDbProcessor {
      * @return
      */
     private static String buildGetAggregatedQuery(final QueryType.Query databaseQuery, boolean isEnum) {
-        String measurement = databaseQuery.getMeasurement();
+        String measurement = databaseQuery.hasMeasurement() ? databaseQuery.getMeasurement() : databaseQuery.getServiceType().name().toLowerCase();
         String timeStart = String.valueOf(databaseQuery.getTimeRangeStart().getTime());
         String timeStop = String.valueOf(databaseQuery.getTimeRangeStop().getTime());
         List<EntryType.Entry> filterList = databaseQuery.getFilterList();
 
         String query = "from(bucket: \"" + getInfluxdbBucket() + "\")" +
                 " |> range(start: " + timeStart + ", stop: " + timeStop + ")" +
-                " |> filter(fn: (r) => r._measurement == \"" + measurement + "\")";
+                " |> filter(fn: (r) => r[\"_measurement\"] == \""+measurement+"\")" +
+                " |> filter(fn: (r) => r[\"unit_id\"] == \"" + databaseQuery.getUnitId() + "\")";
 
         for (EntryType.Entry entry : filterList) {
             query = addFilterToQuery(query, entry);
@@ -262,19 +260,27 @@ public class InfluxDbProcessor {
         if (isEnum) {
             query += " |> group(columns: [\"_value\"])" +
                     " |> map(fn: (r) => ({_time: r._time, index: 1}))" +
-                    "|> cumulativeSum(columns: [\"index\"])" +
-                    "|> last()";
+                    " |> cumulativeSum(columns: [\"index\"])" +
+                    " |> last()";
             return query;
         } else {
 
             String window = databaseQuery.getAggregatedWindow();
 
             // add filters
-            query += "|> group(columns: [\"_field\"], mode:\"by\")" +
+            query += " |> group(columns: [\"_field\"], mode:\"by\")" +
                     " |> aggregateWindow(every:" + window + " , fn: mean)" +
                     " |> mean(column: \"_value\")";
             return query;
         }
+    }
+
+    private static String buildLatestServiceStateQuery(final Unit<?> unit, ServiceType serviceType) throws NotAvailableException {
+        return "from(bucket: \"" + getInfluxdbBucket() + "\") \n" +
+                "  |> range(start: 0, stop: now()) \n" +
+                "  |> filter(fn: (r) => r[\"_measurement\"] == \""+serviceType.name().toLowerCase()+"\")\n" +
+                "  |> filter(fn: (r) => r[\"unit_id\"] == \""+unit.getId()+"\")\n" +
+                "  |> last()";
     }
 
     /**
@@ -404,6 +410,34 @@ public class InfluxDbProcessor {
         }
         return aggregatedValues;
     }
+
+    static Future<Message> queryLatestServiceState(final Unit<?> unit, ServiceType serviceType) {
+        try {
+            String rawQuery = buildLatestServiceStateQuery(unit, serviceType);
+
+            List<FluxTable> fluxTableList = sendQuery(rawQuery);
+            RecordCollectionType.RecordCollection recordCollection = convertFluxTablesToRecordCollections(fluxTableList);
+
+            if(recordCollection.getRecordCount() == 0) {
+                return FutureProcessor.completedFuture(null);
+            }
+
+            var result = recordCollection.getRecord(0);
+            var serviceStateValueClass = Services.getServiceStateEnumClass(ServiceType.valueOf(result.getMeasurement().toUpperCase()));
+
+            for (Enum<?> enumValue : serviceStateValueClass.getEnumConstants()) {
+                // Check if the number matches
+                if (enumValue.ordinal() == ((int) result.getValue())) {
+                    return enumValue;
+                }
+            }
+
+
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Message.class, new CouldNotPerformException("Could not query latest service state", ex));
+        }
+    }
+
 
     /**
      * Get the aggregated value coverage of a service state.
