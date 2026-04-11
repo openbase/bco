@@ -201,12 +201,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     @Override
     public ST getData() throws NotAvailableException {
-//        synchronized (syncObject) { ???
         if (!serviceStateObservable.isValueAvailable()) {
             throw new NotAvailableException("Data");
         }
         return serviceStateObservable.getValue();
-//        }
     }
 
     @Override
