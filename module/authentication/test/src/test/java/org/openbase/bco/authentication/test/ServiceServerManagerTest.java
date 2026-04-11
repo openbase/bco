@@ -48,7 +48,7 @@ public class ServiceServerManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testServiceServerManagerValidation() throws Exception {
         System.out.println("testServiceServerManagerValidation");
 

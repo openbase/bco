@@ -44,7 +44,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     private static SmokeDetectorRemote smokeDetectorRemote;
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void setupTest() throws Throwable {
         smokeDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.SMOKE_DETECTOR), true, SmokeDetectorRemote.class);
     }
@@ -55,7 +55,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
@@ -70,7 +70,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(0.13d).build();

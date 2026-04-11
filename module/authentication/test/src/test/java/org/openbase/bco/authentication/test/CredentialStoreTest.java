@@ -50,7 +50,7 @@ public class CredentialStoreTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
         JPService.registerProperty(JPResetCredentials.class);
@@ -61,7 +61,7 @@ public class CredentialStoreTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSavingAndLoading() throws Exception {
         System.out.println("testSavingAndLoading");
 

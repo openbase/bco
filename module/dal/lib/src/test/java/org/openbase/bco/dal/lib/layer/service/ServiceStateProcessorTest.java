@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 public class ServiceStateProcessorTest {
 
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void updateLatestValueOccurrence() throws Exception {
         PresenceState.Builder builder = PresenceState.newBuilder();
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 2000, builder);

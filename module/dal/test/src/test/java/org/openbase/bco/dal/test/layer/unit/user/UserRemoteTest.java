@@ -52,7 +52,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
     private static UserRemote userRemote;
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         try {
             userRemote = Units.getUnit(MockRegistry.testUser, true, UserRemote.class);
@@ -65,7 +65,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      * Test of getUsername method, of class UserRemote.
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetUserName() throws Exception {
         System.out.println("testGetUserName");
         userRemote.requestData().get();
@@ -78,7 +78,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      * @throws Exception if an error occurs
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetPresenceState() throws Exception {
         System.out.println("testSetPresenceState");
 
@@ -98,7 +98,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      * @throws Exception if an error occurs
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetMultiActivityState() throws Exception {
         System.out.println("testSetMultiActivityState");
 
@@ -127,7 +127,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      * @throws Exception if an error occurs
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testUserTransitState() throws Exception {
         System.out.println("testUserTransitState");
 
@@ -149,7 +149,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
      * @throws Exception if an error occurs
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testLocalPositionState() throws Exception {
         System.out.println("testLocalPositionState");
 

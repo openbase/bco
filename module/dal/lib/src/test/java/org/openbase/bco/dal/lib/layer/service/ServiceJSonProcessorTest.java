@@ -44,7 +44,7 @@ public class ServiceJSonProcessorTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void setUpClass() throws JPServiceException {
         JPService.setupJUnitTestMode();
     }
@@ -56,7 +56,7 @@ public class ServiceJSonProcessorTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testGetServiceStateClassName() throws Exception {
         System.out.println("getServiceStateClassName");
         Message serviceState;
@@ -94,7 +94,7 @@ public class ServiceJSonProcessorTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testSerializationPipeline() throws Exception {
         System.out.println("SerializationPipeline");
         Message serviceState;

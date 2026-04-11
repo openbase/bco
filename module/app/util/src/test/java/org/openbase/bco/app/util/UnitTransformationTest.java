@@ -52,7 +52,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
     }
 
     @Test
-//  @Timeout(30)
+    @Timeout(30)
     public void testUnitTransformation() throws Exception {
         System.out.println("testUnitTransformation");
         try {

@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SynchronizationProcessorTest {
 
     @Test
-//  @Timeout(20)
+    @Timeout(20)
     void getUniquePrefix() {
         assertNotEquals(
                 SynchronizationProcessor.getUniquePrefix("00:17:88:01:08:0c:f4:60-02-fc00"),

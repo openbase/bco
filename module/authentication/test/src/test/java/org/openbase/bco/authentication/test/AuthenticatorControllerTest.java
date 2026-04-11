@@ -59,7 +59,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testCommunication() throws Exception {
         System.out.println("testCommunication");
 
@@ -95,7 +95,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testAuthenticationWithNonExistentUser() {
         System.out.println("testAuthenticationWithNonExistentUser");
         Assertions.assertThrows(ExecutionException.class, () -> {
@@ -117,7 +117,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testAuthenticationWithIncorrectPassword() {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
@@ -131,7 +131,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
     }
 
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testChangeCredentials() throws Exception {
         System.out.println("testChangeCredentials");
 
@@ -173,7 +173,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testChangeOthersCredentials() throws Exception {
         System.out.println("testChangeOthersCredentials");
 
@@ -257,7 +257,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testAsyncCommunication() throws Exception {
         System.out.println("testAsyncCommunication");
 
@@ -304,7 +304,7 @@ public class AuthenticatorControllerTest extends AuthenticationTest {
     }
 
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testLoginCombinations() throws Exception {
         final UserClientPair clientSymmetricUserSymmetric = UserClientPair.newBuilder()
                 .setClientId(MockCredentialStore.CLIENT_SYMMETRIC_ID)

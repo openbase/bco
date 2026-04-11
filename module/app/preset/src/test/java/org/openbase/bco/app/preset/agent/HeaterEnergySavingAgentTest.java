@@ -69,7 +69,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testHeaterEnergySavingAgent() throws Exception {
         System.out.println("testHeaterEnergySavingAgent");
 

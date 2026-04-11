@@ -75,7 +75,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      * @throws Exception if any error occurs
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testRootLocationConsistency() throws Exception {
         System.out.println("testChildConsistency");
 
@@ -119,7 +119,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      * @throws Exception if any error occurs
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testParentChildConsistency() throws Exception {
         System.out.println("testParentChildConsistency");
 
@@ -161,7 +161,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      * @throws Exception if any error occurs
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testLoopConsistency() throws Exception {
         System.out.println("testLoopConsistency");
 
@@ -197,7 +197,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      * @throws Exception if any error occurs
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testConnectionTilesConsistency() throws Exception {
         System.out.println("testConnectionTilesConsistency");
 
@@ -243,7 +243,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      * @throws Exception if any error occurs
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testLocationTypeConsistency() throws Exception {
         System.out.println("testLocationTypeConsistency");
 
@@ -279,7 +279,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      * @throws Exception if any error occurs
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testGetLocationUnitConfigByScope() throws Exception {
         System.out.println("testGetLocationUnitConfigByScope");
 
@@ -295,7 +295,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
      * @throws Exception if an error occurs
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testRootLocationUnitIds() throws Exception {
         final UnitConfig rootLocation = Registries.getUnitRegistry().getRootLocationConfig();
         assertFalse(rootLocation.getLocationConfig().getUnitIdList().contains(rootLocation.getId()), "The root location contains itself in its unit id list!");

@@ -19,7 +19,7 @@ class ActionChainTest : AbstractBCOLocationManagerTest() {
     private val log = LoggerFactory.getLogger(javaClass)
 
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     @Throws(Exception::class)
     fun `when a location is turned of its units that support the power service are registered as impact`() {
         val rootLocationRemote =
@@ -46,7 +46,7 @@ class ActionChainTest : AbstractBCOLocationManagerTest() {
     }
 
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     @Throws(Exception::class)
     fun `when a light is switched on the locations the light is a part of are registered as impact`() {
         val rootLocationRemote =

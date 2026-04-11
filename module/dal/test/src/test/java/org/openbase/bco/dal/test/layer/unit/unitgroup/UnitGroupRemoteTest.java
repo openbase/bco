@@ -70,7 +70,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
     private static UnitGroupRemote unitGroupRemote;
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         try {
             UnitConfig unitGroupConfig = registerUnitGroup();
@@ -130,7 +130,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         unitGroupRemote.waitForData();
@@ -154,7 +154,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         unitGroupRemote.waitForData();
@@ -169,7 +169,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws java.lang.Exception if something fails.
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetUnsupportedService() throws Exception {
         System.out.println("testSetUnsupportedService");
 
@@ -193,7 +193,7 @@ public class UnitGroupRemoteTest extends AbstractBCOLocationManagerTest {
      * @throws Exception if something fails.
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testApplyActionAuthenticated() throws Exception {
         System.out.println("testApplyActionAuthenticated");
 

@@ -53,13 +53,13 @@ import static org.junit.jupiter.api.Assertions.*;
 public class RegistryFilteringTest extends AbstractBCORegistryTest {
 
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void tearDown() throws Exception {
         SessionManager.getInstance().completeLogout();
     }
 
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testRegisteringWhileLoggedIn() throws Exception {
         System.out.println("testRegisteringWhileLoggedIn");
 
@@ -86,7 +86,7 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testUnitFiltering() throws Exception {
         System.out.println("testUnitFiltering");
 
@@ -167,7 +167,7 @@ public class RegistryFilteringTest extends AbstractBCORegistryTest {
     }
 
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testRequestingAuthorizationToken() throws Exception {
         final String adminUserId = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId();
         SessionManager.getInstance().loginUser(adminUserId, UserCreationPlugin.ADMIN_PASSWORD, false);

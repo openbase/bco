@@ -150,7 +150,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void setupSceneTest() throws Throwable {
         try {
             //JPService.registerProperty(JPLogLevel.class, LogLevel.DEBUG);
@@ -179,7 +179,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @AfterAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void tearDownSceneTest() throws Throwable {
         try {
             if (sceneManagerLauncher != null) {
@@ -377,7 +377,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {
@@ -395,7 +395,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(30)
+    @Timeout(30)
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
@@ -494,7 +494,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(20)
+    @Timeout(20)
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -560,7 +560,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-////  @Timeout(60)
+//    @Timeout(60)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -631,7 +631,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(20)
+    @Timeout(20)
     public void testIntermediaryActionCancellationOnSceneDeactivation() throws Exception {
         System.out.println("testTestIntermediaryActionCancellationOnSceneDeactivation");
 
@@ -702,7 +702,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
     }
 
     @Test
-//  @Timeout(30)
+    @Timeout(30)
     public void testActionCancellationViaScene() throws Exception {
 
         final LocationRemote rootLocationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, Units.LOCATION);
@@ -796,7 +796,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
 
 
     @Test
-//  @Timeout(20)
+    @Timeout(20)
     public void testThatScenesDoNotInterfereEachOther() throws Exception {
 
         final long AGGREGATION_TIME = 50;

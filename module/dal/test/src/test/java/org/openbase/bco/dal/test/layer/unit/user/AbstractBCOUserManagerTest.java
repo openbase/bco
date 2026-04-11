@@ -42,7 +42,7 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void setupUserManager() throws Throwable {
         try {
             userManagerLauncher = new UserManagerLauncher();
@@ -55,7 +55,7 @@ public class AbstractBCOUserManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void tearDownUserManager() throws Throwable {
         try {
             if (userManagerLauncher != null) {

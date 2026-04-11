@@ -50,7 +50,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceStateTraitMapperFactoryTest.class);
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void setupTest() throws Exception {
         MockRegistryHolder.newMockRegistry();
 
@@ -58,7 +58,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
     }
 
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void tearDownTest() {
         MockRegistryHolder.shutdownMockRegistry();
     }
@@ -67,7 +67,7 @@ public class ServiceStateTraitMapperFactoryTest extends MqttIntegrationTest {
      * Test if for all defined combinations of services and traits a mapper is available.
      */
     @Test
-//  @Timeout(value = 30)
+    @Timeout(value = 30)
     public void testMapperAvailability() {
         LOGGER.info("testMapperAvailability");
 

@@ -44,7 +44,7 @@ class ConnectionRemoteTest : AbstractBCOLocationManagerTest() {
      * @throws Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     fun testDoorStateUpdate() {
         println("testDoorStateUpdate")
 

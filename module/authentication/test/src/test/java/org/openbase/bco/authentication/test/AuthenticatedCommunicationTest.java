@@ -66,7 +66,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
     }
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void setupUser() throws Throwable {
         // register a user from which a ticket can be validated
         registerUser();
@@ -78,7 +78,7 @@ public class AuthenticatedCommunicationTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testCommunication() throws Exception {
         final UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
         otherAgentConfig.setId("OtherAgent");

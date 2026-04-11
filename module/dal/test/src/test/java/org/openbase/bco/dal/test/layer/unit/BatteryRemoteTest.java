@@ -50,7 +50,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         batteryRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BATTERY), true, BatteryRemote.class);
     }
@@ -68,7 +68,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetBatteryLevel() throws Exception {
         try {
             System.out.println("getBatteryLevel");

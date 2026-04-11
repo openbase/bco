@@ -48,7 +48,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         dimmableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.DIMMABLE_LIGHT), true, DimmableLightRemote.class);
     }
@@ -59,7 +59,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetPower() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
@@ -73,7 +73,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyServiceState(Power.ON, ServiceType.POWER_STATE_SERVICE);
@@ -87,7 +87,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetBrightness() throws Exception {
         System.out.println("setBrightness");
         Double brightness = 0.66d;
@@ -102,7 +102,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetBrightness() throws Exception {
         System.out.println("getBrightness");
 

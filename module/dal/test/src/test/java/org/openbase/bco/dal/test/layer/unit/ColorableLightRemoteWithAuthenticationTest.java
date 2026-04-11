@@ -90,13 +90,13 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void registerProperties() throws Throwable {
         JPService.registerProperty(JPAuthentication.class, true);
     }
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void prepareTest() throws CouldNotPerformException, InterruptedException, ExecutionException {
 
         adminSessionManager.loginUser(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD, false);
@@ -110,7 +110,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void tearDownTest() throws CouldNotPerformException, ExecutionException, InterruptedException {
         adminSessionManager.logout();
         colorableLightRemote.setSessionManager(SessionManager.getInstance());
@@ -122,7 +122,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetColorWithAuthentication() throws Exception {
         System.out.println("testSetColorWithAuthentication");
 
@@ -138,7 +138,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetColorWithClientWithoutAuthentication() throws Exception {
         System.out.println("testSetColorWithClientWithoutAuthentication");
 
@@ -196,7 +196,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetColorWithUserWithoutAuthentication() throws Exception {
         System.out.println("testSetColorWithClientWithoutAuthentication");
 
@@ -227,7 +227,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testApplyActionWithToken() throws Exception {
         System.out.println("testApplyActionWithToken");
 
@@ -313,7 +313,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     }
 
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testApplyActionViaServiceRemoteWithToken() throws Exception {
         System.out.println("testApplyActionViaServiceRemoteWithToken");
 

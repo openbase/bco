@@ -46,7 +46,7 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         lightSensorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT_SENSOR), true, LightSensorRemote.class);
     }
@@ -57,7 +57,7 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetIlluminance() throws Exception {
         System.out.println("getIlluminance");
         double illuminance = 0.5;

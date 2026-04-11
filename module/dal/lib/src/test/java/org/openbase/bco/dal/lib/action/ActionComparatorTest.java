@@ -47,7 +47,7 @@ public class ActionComparatorTest {
      * Test the action ranking by creating a number of actions, adding them to a list and validating the order after sorting.
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testActionComparison() {
         final EmphasisState emphasisState = EmphasisState.newBuilder().setEconomy(0.6).setComfort(0.3).setSecurity(0.1).build();
         final ActionComparator actionComparator = new ActionComparator(() -> emphasisState);

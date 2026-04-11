@@ -50,7 +50,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     protected AgentRemote agentRemote = null;
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void createAgent() throws Exception {
         prepareEnvironment();
         try {
@@ -72,7 +72,7 @@ public abstract class AbstractBCOAgentManagerTest extends BCOAppTest {
     }
 
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void removeAgent() throws Exception {
         Registries.getUnitRegistry().removeUnitConfig(agentConfig);
         agentRemote.waitForConnectionState(ConnectionState.State.DISCONNECTED);

@@ -58,7 +58,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     fun setupRemoteActionTest() {
         // create new user token for test
         try {
@@ -96,7 +96,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     }
 
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     @Throws(Exception::class)
     fun testExecutionAndCancellationWithToken() {
         println("testExecutionAndCancellationWithToken")
@@ -164,7 +164,7 @@ class RemoteActionTest : AbstractBCOLocationManagerTest() {
     }
 
     @Test
-////  @Timeout(15)
+//    @Timeout(15)
     @Throws(Exception::class)
     fun testExtensionCancellation() {
         println("testExtensionCancellation")

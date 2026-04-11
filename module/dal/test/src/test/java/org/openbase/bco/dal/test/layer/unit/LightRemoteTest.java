@@ -46,7 +46,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         lightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, LightRemote.class);
     }
@@ -57,7 +57,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         waitForExecution(lightRemote.setPowerState(Power.ON));
@@ -70,7 +70,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
 

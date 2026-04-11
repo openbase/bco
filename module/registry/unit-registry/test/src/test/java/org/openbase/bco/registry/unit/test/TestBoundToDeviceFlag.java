@@ -59,7 +59,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
     private Pose poseLightThree;
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void setupTest() throws Exception {
         try {
             deviceClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("Label", "Product Number", "Company", unitTypes)).get();
@@ -114,7 +114,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testDeviceNotBoundAndUnitsNotBound() throws Exception {
         logger.info("testDeviceNotBoundAndUnitsNotBound");
 
@@ -142,7 +142,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testDeviceBoundAndUnitsNotBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsNotBound");
 
@@ -178,7 +178,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testDeviceNotBoundAndUnitsBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsNotBound");
 
@@ -209,7 +209,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
      * its unit.
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testDeviceBoundAndUnitsBound() throws Exception {
         logger.info("testDeviceBoundAndUnitsBound");
 

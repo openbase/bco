@@ -54,7 +54,7 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
     protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void setupBCOManager() throws Throwable {
         try {
             agentManagerLauncher = new AgentManagerLauncher();
@@ -75,7 +75,7 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
     }
 
     @AfterAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void tearDownBCOManager() throws Throwable {
         try {
             if (agentManagerLauncher != null) {
@@ -107,7 +107,7 @@ public class AbstractBCOManagerTest extends AbstractBCOTest {
      * @throws InterruptedException is thrown if the thread was externally interrupted
      */
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void cancelAllOngoingActions() throws InterruptedException {
         LOGGER.info("Cancel all ongoing actions...");
         try {

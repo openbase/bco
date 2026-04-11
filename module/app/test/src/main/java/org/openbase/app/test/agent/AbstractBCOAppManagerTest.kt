@@ -51,7 +51,7 @@ abstract class AbstractBCOAppManagerTest<APP_CLASS : AbstractAppController?> : B
     protected var appController: APP_CLASS? = null
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     @Throws(Exception::class)
     fun prepareAppManager() {
         try {
@@ -111,7 +111,7 @@ abstract class AbstractBCOAppManagerTest<APP_CLASS : AbstractAppController?> : B
     }
 
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     @Throws(Exception::class)
     fun removeAgent() {
         if (appConfig != null) {

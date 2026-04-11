@@ -50,7 +50,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         buttonRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BUTTON), true, ButtonRemote.class);
     }
@@ -61,7 +61,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetButtonState() throws Exception {
         System.out.println("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
@@ -81,7 +81,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetButtonStateTimestamp() throws Exception {
         System.out.println("testGetButtonStateTimestamp");
         long timestamp;

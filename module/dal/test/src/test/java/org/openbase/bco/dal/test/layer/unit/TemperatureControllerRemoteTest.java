@@ -46,7 +46,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void setupTest() throws Throwable {
         temperatureControllerRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TEMPERATURE_CONTROLLER), true, TemperatureControllerRemote.class);
     }
@@ -57,7 +57,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetTargetTemperature() throws Exception {
         System.out.println("setTargetTemperature");
         double temperature = 42.0F;
@@ -73,7 +73,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetTargetTemperature() throws Exception {
         System.out.println("getTargetTemperature");
 
@@ -90,7 +90,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetTemperature() throws Exception {
         System.out.println("getTemperature");
         double temperature = 37.0F;

@@ -57,7 +57,7 @@ public abstract class AbstractBCORegistryTest extends MqttIntegrationTest {
     final Logger logger = LoggerFactory.getLogger(getClass());
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void setupMockRegistry() throws Exception {
         try {
             MockRegistryHolder.newMockRegistry();
@@ -68,7 +68,7 @@ public abstract class AbstractBCORegistryTest extends MqttIntegrationTest {
     }
 
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void tearDownMockRegistry() throws Exception {
         try {
             MockRegistryHolder.shutdownMockRegistry();

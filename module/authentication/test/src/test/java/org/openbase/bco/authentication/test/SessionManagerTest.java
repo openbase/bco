@@ -59,7 +59,7 @@ public class SessionManagerTest extends AuthenticationTest {
     private int notificationCounter = 0;
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void setupSessionManager() throws Throwable {
         clientStore = new MockClientStore();
 
@@ -82,7 +82,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void registerUser() throws Exception {
         System.out.println("registerUser");
         SessionManager manager = new SessionManager(clientStore);
@@ -102,7 +102,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void loginUser() throws Exception {
         System.out.println("loginUser");
         SessionManager manager = new SessionManager(clientStore);
@@ -115,7 +115,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void loginUserThenOtherUser() throws Exception {
         System.out.println("loginUserThenOtherUser");
         SessionManager manager = new SessionManager(clientStore);
@@ -129,7 +129,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void loginUserAfterSystemLoginFailure() throws Exception {
         System.out.println("loginUserAfterSystemLoginFailure");
         SessionManager manager = new SessionManager(clientStore);
@@ -170,7 +170,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void isLoggedIn() throws Exception {
         System.out.println("isLoggedIn");
         SessionManager manager = new SessionManager(clientStore);
@@ -186,7 +186,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void logout() throws Exception {
         System.out.println("logout");
         SessionManager manager = new SessionManager(clientStore);
@@ -203,7 +203,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void registerClientAndLogin() throws Exception {
         System.out.println("registerClientAndLogin");
         SessionManager manager = new SessionManager(clientStore);
@@ -238,7 +238,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void registerClientAndLoginAndLoginUserAndLogout() throws Exception {
         System.out.println("registerClientAndLoginAndLoginUserAndLogout");
         SessionManager manager = new SessionManager(clientStore);
@@ -281,7 +281,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void removeAdminHimself() {
         System.out.println("removeAdminHimself");
         SessionManager manager = new SessionManager(clientStore);
@@ -308,7 +308,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception if something fails.
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void removeAdminOther() throws Exception {
         System.out.println("removeAdminOther");
 
@@ -330,7 +330,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void registerClientAsNonAdmin() {
         System.out.println("registerClientAsNonAdmin");
         Assertions.assertThrows(ExecutionException.class, () -> {
@@ -355,7 +355,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception if an exception occurs.
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void testChangingPassword() throws Exception {
         System.out.println("testChangingPassword");
 
@@ -392,7 +392,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(15)
+    @Timeout(15)
     public void setAdmin() throws Exception {
         System.out.println("setAdmin");
         SessionManager manager = new SessionManager(clientStore);
@@ -412,7 +412,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void setAdminAsNonAdmin() throws Exception {
         System.out.println("setAdminAsNonAdmin");
         Assertions.assertThrows(ExecutionException.class, () -> {
@@ -437,7 +437,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void isAdmin() throws Exception {
         System.out.println("isAdmin");
         SessionManager manager = new SessionManager(clientStore);
@@ -454,7 +454,7 @@ public class SessionManagerTest extends AuthenticationTest {
      * @throws Exception
      */
     @Test
-//  @Timeout(5)
+    @Timeout(5)
     public void loginObservableTest() throws Exception {
         System.out.println("loginObservableTest");
 

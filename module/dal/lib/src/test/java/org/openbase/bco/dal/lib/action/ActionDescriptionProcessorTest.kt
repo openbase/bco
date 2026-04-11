@@ -34,7 +34,7 @@ import java.util.*
 
 class ActionDescriptionProcessorTest {
 
-//  @Timeout(10)
+    @Timeout(10)
     @Test
     fun unitChainSuffixForNonReplaceableAction() {
         val buttonActionDescription = ActionDescription.newBuilder()

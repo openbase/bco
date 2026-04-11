@@ -48,7 +48,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         rollerShutterRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.ROLLER_SHUTTER), true, RollerShutterRemote.class);
     }
@@ -59,7 +59,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
         BlindState state = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
@@ -73,7 +73,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         final BlindState blindState = BlindState.newBuilder().setValue(State.UP).build();

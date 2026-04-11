@@ -53,7 +53,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         motionDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.MOTION_DETECTOR), true, MotionDetectorRemote.class);
     }
@@ -64,7 +64,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetMotionState() throws Exception {
 
         System.out.println("getMotionState");
@@ -80,7 +80,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetMotionStateTimestamp() throws Exception {
         LOGGER.debug("testGetMotionStateTimestamp");
         long timestamp;

@@ -47,7 +47,7 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
     }
 
     @BeforeAll
-//  @Timeout(30)
+    @Timeout(30)
     public static void loadUnits() throws Throwable {
         powerConsumptionRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_CONSUMPTION_SENSOR), true, PowerConsumptionSensorRemote.class);
     }
@@ -66,7 +66,7 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
      * @throws java.lang.Exception
      */
     @Test
-//  @Timeout(10)
+    @Timeout(10)
     public void testGetPowerConsumption() throws Exception {
         System.out.println("getPowerConsumption");
         double consumption = 200d;

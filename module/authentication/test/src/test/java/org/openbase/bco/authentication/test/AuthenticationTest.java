@@ -45,7 +45,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
     public static byte[] serviceServerSecretKey = EncryptionHelper.generateKey();
 
     @BeforeEach
-//  @Timeout(30)
+    @Timeout(30)
     public void setupAuthentication() throws Throwable {
         JPService.setupJUnitTestMode();
         CachedAuthenticationRemote.prepare();
@@ -57,7 +57,7 @@ public class AuthenticationTest extends MqttIntegrationTest {
     }
 
     @AfterEach
-//  @Timeout(30)
+    @Timeout(30)
     public void tearDownAuthentication() {
         // reset credential store because it could have been changed in a test
         MockCredentialStore.getInstance().reset();
