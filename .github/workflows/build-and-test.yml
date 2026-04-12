@@ -130,3 +130,244 @@ jobs:
         with:
           name: Test Reports
           path: "**/build/reports"
+
+
+  test_api:
+    name: "Test API"
+    timeout-minutes: 120
+    needs: build
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == 'true')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "test API module"
+        run: ./gradlew :module/api:check
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
+        with:
+          name: API Test Reports
+          path: "**/build/reports"
+
+  test_app:
+    name: "Test App"
+    timeout-minutes: 120
+    needs: build
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == 'true')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "test App module"
+        run: ./gradlew :module/app:check
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
+        with:
+          name: App Test Reports
+          path: "**/build/reports"
+
+  test_authentication:
+    name: "Test Authentication"
+    timeout-minutes: 120
+    needs: build
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == 'true')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "test Authentication module"
+        run: ./gradlew :module/authentication:check
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
+        with:
+          name: Authentication Test Reports
+          path: "**/build/reports"
+
+  test_dal:
+    name: "Test DAL"
+    timeout-minutes: 120
+    needs: build
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == 'true')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "test DAL module"
+        run: ./gradlew :module/dal:check
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
+        with:
+          name: DAL Test Reports
+          path: "**/build/reports"
+
+  test_device:
+    name: "Test Device"
+    timeout-minutes: 120
+    needs: build
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == 'true')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "test Device module"
+        run: ./gradlew :module/device:check
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
+        with:
+          name: Device Test Reports
+          path: "**/build/reports"
+
+  test_registry:
+    name: "Test Registry"
+    timeout-minutes: 120
+    needs: build
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == 'true')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "test Registry module"
+        run: ./gradlew :module/registry:check
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
+        with:
+          name: Registry Test Reports
+          path: "**/build/reports"
