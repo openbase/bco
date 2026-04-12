@@ -91,16 +91,10 @@ jobs:
           path: "**/build/reports"
 
 
-  test:
-    name: "Test"
-    timeout-minutes: 15
+  test_registry_unit:
+    name: "Test Registry Unit"
     needs: build
-    if: |
-      (github.event.pull_request.draft == false)
-      && (needs.check.outputs.testing_needed == 'true')
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
         uses: actions/checkout@v4
@@ -118,30 +112,17 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test backend"
-        run: ./gradlew --build-cache --continue check
-
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
-        with:
-          name: Test Reports
-          path: "**/build/reports"
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.registry.unit.test:check
 
 
-  test_api:
-    name: "Test API"
-    timeout-minutes: 15
+  test_registry_message:
+    name: "Test Registry Message"
     needs: build
-    if: |
-      (github.event.pull_request.draft == false)
-      && (needs.check.outputs.testing_needed == 'true')
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
         uses: actions/checkout@v4
@@ -159,29 +140,17 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test API module"
-        run: ./gradlew :module/api:check
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.registry.message.test:check
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
-        with:
-          name: API Test Reports
-          path: "**/build/reports"
 
-  test_app:
-    name: "Test App"
-    timeout-minutes: 15
+  test_registry_class:
+    name: "Test Registry Class"
     needs: build
-    if: |
-      (github.event.pull_request.draft == false)
-      && (needs.check.outputs.testing_needed == 'true')
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
         uses: actions/checkout@v4
@@ -199,29 +168,17 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test App module"
-        run: ./gradlew :module/app:check
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.registry.class.test:check
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
-        with:
-          name: App Test Reports
-          path: "**/build/reports"
 
   test_authentication:
     name: "Test Authentication"
-    timeout-minutes: 15
     needs: build
-    if: |
-      (github.event.pull_request.draft == false)
-      && (needs.check.outputs.testing_needed == 'true')
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
         uses: actions/checkout@v4
@@ -239,29 +196,17 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test Authentication module"
-        run: ./gradlew :module/authentication:check
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.authentication.test:check
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
-        with:
-          name: Authentication Test Reports
-          path: "**/build/reports"
 
   test_dal:
     name: "Test DAL"
-    timeout-minutes: 15
     needs: build
-    if: |
-      (github.event.pull_request.draft == false)
-      && (needs.check.outputs.testing_needed == 'true')
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
         uses: actions/checkout@v4
@@ -279,29 +224,17 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test DAL module"
-        run: ./gradlew :module/dal:check
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.dal.test:check
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
-        with:
-          name: DAL Test Reports
-          path: "**/build/reports"
 
-  test_device:
-    name: "Test Device"
-    timeout-minutes: 15
+  test_app:
+    name: "Test App"
     needs: build
-    if: |
-      (github.event.pull_request.draft == false)
-      && (needs.check.outputs.testing_needed == 'true')
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
         uses: actions/checkout@v4
@@ -319,29 +252,17 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test Device module"
-        run: ./gradlew :module/device:check
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.app.test:check
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
-        with:
-          name: Device Test Reports
-          path: "**/build/reports"
 
-  test_registry:
-    name: "Test Registry"
-    timeout-minutes: 15
+  test_app_preset:
+    name: "Test App Preset"
     needs: build
-    if: |
-      (github.event.pull_request.draft == false)
-      && (needs.check.outputs.testing_needed == 'true')
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
         uses: actions/checkout@v4
@@ -359,15 +280,8 @@ jobs:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test Registry module"
-        run: ./gradlew :module/registry:check
-
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
-        with:
-          name: Registry Test Reports
-          path: "**/build/reports"
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.app.preset:check
