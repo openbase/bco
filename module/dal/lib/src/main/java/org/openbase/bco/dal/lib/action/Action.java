@@ -363,6 +363,14 @@ public interface Action extends Executable<ActionDescription>, Identifiable<Stri
         };
     }
 
+    default boolean isTerminationAction() {
+        try {
+             return getActionDescription().getPriority() == Priority.TERMINATION;
+        } catch (NotAvailableException e) {
+            return false;
+        }
+    }
+
     /**
      * Return the current state of this action.
      *
