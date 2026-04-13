@@ -129,14 +129,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             );
 
             aliasMapUpdateObserver = (source, data) -> {
+                TreeMap<String, String> tempAliasIdMap = new TreeMap<>();
+                for (IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage : data.values()) {
+                    final UnitConfig unitConfig = identifiableMessage.getMessage();
+                    for (String alias : unitConfig.getAliasList()) {
+                        tempAliasIdMap.put(alias.toLowerCase(), unitConfig.getId());
+                    }
+                }
                 synchronized (aliasIdMapLock) {
                     aliasIdMap.clear();
-                    for (IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage : data.values()) {
-                        final UnitConfig unitConfig = identifiableMessage.getMessage();
-                        for (String alias : unitConfig.getAliasList()) {
-                            aliasIdMap.put(alias.toLowerCase(), unitConfig.getId());
-                        }
-                    }
+                    aliasIdMap.putAll(tempAliasIdMap);
                 }
             };
         } catch (CouldNotPerformException ex) {
@@ -388,12 +390,15 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     public UnitConfig getUnitConfigByAlias(final String unitAlias) throws NotAvailableException {
         try {
+            String unitId;
             synchronized (aliasIdMapLock) {
                 if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()));
+                    unitId = aliasIdMap.get(unitAlias.toLowerCase());
+                } else {
+                    throw new NotAvailableException("Alias", unitAlias);
                 }
             }
-            throw new NotAvailableException("Alias", unitAlias);
+            return getUnitConfigById(unitId);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitConfig with Alias", unitAlias, ex);
         }
@@ -412,12 +417,15 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     public UnitConfig getUnitConfigByAliasAndUnitType(String unitAlias, final UnitType unitType) throws NotAvailableException {
         try {
+            String unitId;
             synchronized (aliasIdMapLock) {
                 if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
-                    return getUnitConfigByIdAndUnitType(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
+                    unitId = aliasIdMap.get(unitAlias.toLowerCase());
+                } else {
+                    throw new NotAvailableException("Alias", unitAlias);
                 }
             }
-            throw new NotAvailableException("Alias", unitAlias);
+            return getUnitConfigByIdAndUnitType(unitId, unitType);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitConfig of UnitType[" + unitType.name() + "] with Alias", unitAlias, ex);
         }

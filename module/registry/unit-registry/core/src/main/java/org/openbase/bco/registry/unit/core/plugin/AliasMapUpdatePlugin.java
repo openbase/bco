@@ -95,9 +95,7 @@ public class AliasMapUpdatePlugin extends ProtobufRegistryPluginAdapter<String, 
                     aliasIdMap.remove(alias.toLowerCase());
                 }
             });
+            temporaryAliasList.clear();
         }
-
-        temporaryAliasList.clear();
     }
-
 }
