@@ -82,7 +82,7 @@ public abstract class AbstractAuthenticatedControllerServer<M extends AbstractMe
     @RPCMethod
     @Override
     public M requestStatus() throws CouldNotPerformException {
-        logger.trace("requestStatus of {}", this);
+        logger.debug("requestStatus of {}", this);
         M dataToSend;
         try {
             dataToSend = updateDataToPublish(cloneDataBuilder());

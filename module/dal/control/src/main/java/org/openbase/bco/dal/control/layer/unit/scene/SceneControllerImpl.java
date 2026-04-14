@@ -439,7 +439,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
 
         private void verifyAllStates() {
             try {
-                logger.trace(() -> "verify " + unitAndRequiredServiceStateMap.entrySet().size() + " states of " + getLabel("?"));
+                logger.debug("verify " + unitAndRequiredServiceStateMap.entrySet().size() + " states of " + getLabel("?"));
                 for (Entry<UnitRemote<? extends Message>, RequiredServiceDescription> unitActionReferenceEntry : unitAndRequiredServiceStateMap.entrySet()) {
                     try {
                         // skip unit in case its offline, since then the verification is automatically
@@ -474,7 +474,7 @@ public class SceneControllerImpl extends AbstractBaseUnitController<SceneData, B
             }
 
             if (!Services.equalServiceStates(unitAndRequiredServiceStateMap.get(unit).getServiceState(), serviceState)) {
-                logger.trace(() -> unitAndRequiredServiceStateMap.get(unit).getServiceState() + " is not equals " + serviceState.toString().substring(0, 20) + " and will cancel: " + SceneControllerImpl.this.getLabel("?"));
+                logger.trace(unitAndRequiredServiceStateMap.get(unit).getServiceState() + " is not equals " + serviceState.toString().substring(0, 20) + " and will cancel: " + SceneControllerImpl.this.getLabel("?"));
                 if (Actions.validateInitialAction(serviceState)) {
                     throw new VerificationFailedException("State of " + unit + "not meet!");
                 }
