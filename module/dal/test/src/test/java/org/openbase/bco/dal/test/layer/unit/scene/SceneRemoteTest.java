@@ -419,7 +419,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-    //@Timeout(10)
+    @Timeout(10)
     public void testTriggerSceneWithLocationActionPerRemote() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemote");
 
@@ -444,7 +444,7 @@ public class SceneRemoteTest extends AbstractBCOTest {
      * @throws Exception
      */
     @Test
-    //@Timeout(10)
+    @Timeout(10)
     public void testTriggerUnitGroupByScene() throws Exception {
         System.out.println("testTriggerUnitGroupByScene");
 
