@@ -99,6 +99,8 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
     private boolean initialized = false;
     private SessionManager sessionManager;
     private boolean infrastructure = false;
+    private volatile String cachedId = null;
+    private volatile String cachedLabel = null;
 
     public AbstractUnitRemote(final Class<D> dataClass) {
         super(dataClass, UnitConfig.class);
@@ -329,6 +331,10 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
             logger.trace("Unit config change check failed because config is not available yet.");
         }
 
+        // clear caches
+        cachedId = null;
+        cachedLabel = null;
+
         // update unit templates
         unitTemplate = Registries.getTemplateRegistry(true).getUnitTemplateByType(Units.getUnitTypeByRemoteClass((Class<? extends UnitRemote<D>>) getClass()));
 
@@ -494,17 +500,22 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      */
     @Override
     public String getLabel() throws NotAvailableException {
+        if (cachedLabel != null) {
+            return cachedLabel;
+        }
         try {
             if (getSessionManager().isLoggedIn()) {
                 try {
                     UnitConfig user = Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserClientPair().getUserId());
-                    return LabelProcessor.getLabelByLanguage(user.getUserConfig().getLanguage(), getConfig().getLabel());
+                    this.cachedLabel = LabelProcessor.getLabelByLanguage(user.getUserConfig().getLanguage(), getConfig().getLabel());
+                    return cachedLabel;
                 } catch (CouldNotPerformException ex) {
                     // as a backup use the best match result
                     //TODO: this should parse a value from the root location meta config that defines a default label lang for this smart environment.
                 }
             }
-            return LabelProcessor.getBestMatch(getConfig().getLabel());
+            this.cachedLabel = LabelProcessor.getBestMatch(getConfig().getLabel());
+            return cachedLabel;
         } catch (NullPointerException | NotAvailableException ex) {
             throw new NotAvailableException("unit label", ex);
         }

@@ -22,9 +22,9 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 
+import org.jetbrains.annotations.NotNull;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.annotation.RPCMethod;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -37,6 +37,9 @@ import org.openbase.type.vision.ColorType.Color.Type;
 import org.openbase.type.vision.HSBColorType.HSBColor;
 import org.openbase.type.vision.RGBColorType.RGBColor;
 import org.slf4j.LoggerFactory;
+
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.BiPredicate;
 
 import static org.openbase.type.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
 
@@ -164,26 +167,98 @@ public interface ColorStateProviderService extends ProviderService {
     }
 
     static Boolean equalServiceStates(final ColorState colorStateA, final ColorState colorStateB) {
-        //TODO: explain this (required because of openhab) and put margins into constants
 
         final HSBColor hsbColorA = colorStateA.getColor().getHsbColor();
         final HSBColor hsbColorB = colorStateB.getColor().getHsbColor();
 
+        // Helper: compare hues with wrap-around (0 == 360)
+        // margin in degrees
+        final double HUE_MARGIN = 1.0;
+        final double SATURATION_MARGIN = 0.01;
+        final double BRIGHTNESS_MARGIN = 0.01;
 
-        boolean hueEquals = true;
-        boolean saturationEquals = true;
-        boolean brightnessEquals = true;
+        // normalize angle to [0,360)
+        DoubleUnaryOperator normalize = (v) -> {
+            double r = v % 360.0;
+            if (r < 0) r += 360.0;
+            return r;
+        };
 
-        if(hsbColorA.hasHue() && hsbColorB.hasHue()) {
-            hueEquals =  OperationService.equals(hsbColorA.getHue(), hsbColorB.getHue(), 1.0);
+        BiPredicate<Double, Double> hueEqualsWithWrap = (ha, hb) -> {
+            double aNorm = normalize.applyAsDouble(ha);
+            double bNorm = normalize.applyAsDouble(hb);
+            double diff = Math.abs(aNorm - bNorm);
+            if (diff > 180.0) {
+                diff = 360.0 - diff; // shortest distance on circle
+            }
+            return diff <= HUE_MARGIN;
+        };
+
+        boolean hueEquals;
+        if (hsbColorA.hasHue() && hsbColorB.hasHue()) {
+            hueEquals = hueEqualsWithWrap.test(hsbColorA.getHue(), hsbColorB.getHue());
+        } else if (!hsbColorA.hasHue() && !hsbColorB.hasHue()) {
+            // both undefined -> treat as equal
+            hueEquals = true;
+        } else {
+            // one missing: if the present color is 'neutral' (saturation == 0 or brightness == 0 or both undefined) the hue is irrelevant
+            final HSBColor present = hsbColorA.hasHue() ? hsbColorA : hsbColorB;
+            boolean presentIsNeutral = false;
+            // If both saturation and brightness are missing, treat as neutral (no chroma information)
+            if (!present.hasSaturation() && !present.hasBrightness()) {
+                presentIsNeutral = true;
+            }
+            // If saturation is present and effectively 0 -> neutral
+            if (!presentIsNeutral && present.hasSaturation()) {
+                presentIsNeutral = OperationService.equals(present.getSaturation(), 0d, SATURATION_MARGIN);
+            }
+            // If not neutral yet and brightness is present and effectively 0 -> neutral
+            if (!presentIsNeutral && present.hasBrightness()) {
+                presentIsNeutral = OperationService.equals(present.getBrightness(), 0d, BRIGHTNESS_MARGIN);
+            }
+            hueEquals = presentIsNeutral;
         }
 
-        if(hsbColorA.hasSaturation() && hsbColorB.hasSaturation()) {
-            saturationEquals =  OperationService.equals(hsbColorA.getSaturation(), hsbColorB.getSaturation(), 0.01);
+        boolean saturationEquals;
+        if (hsbColorA.hasSaturation() && hsbColorB.hasSaturation()) {
+            saturationEquals = OperationService.equals(hsbColorA.getSaturation(), hsbColorB.getSaturation(), SATURATION_MARGIN);
+        } else if (!hsbColorA.hasSaturation() && !hsbColorB.hasSaturation()) {
+            saturationEquals = true;
+        } else {
+            // one missing: consider equal if the present saturation is effectively 0 (neutral)
+            // or if the present has no saturation but brightness is present and 0 -> neutral
+            final HSBColor present = hsbColorA.hasSaturation() ? hsbColorA : hsbColorB;
+            boolean presentIsNeutral = false;
+            if (present.hasSaturation()) {
+                presentIsNeutral = OperationService.equals(present.getSaturation(), 0d, SATURATION_MARGIN);
+            } else if (present.hasBrightness()) {
+                presentIsNeutral = OperationService.equals(present.getBrightness(), 0d, BRIGHTNESS_MARGIN);
+            } else {
+                // no saturation and no brightness information -> treat as neutral
+                presentIsNeutral = true;
+            }
+            saturationEquals = presentIsNeutral;
         }
 
-        if(hsbColorA.hasBrightness() && hsbColorB.hasBrightness()) {
-            brightnessEquals =  OperationService.equals(hsbColorA.getBrightness(), hsbColorB.getBrightness(), 0.01);
+        boolean brightnessEquals;
+        if (hsbColorA.hasBrightness() && hsbColorB.hasBrightness()) {
+            brightnessEquals = OperationService.equals(hsbColorA.getBrightness(), hsbColorB.getBrightness(), BRIGHTNESS_MARGIN);
+        } else if (!hsbColorA.hasBrightness() && !hsbColorB.hasBrightness()) {
+            brightnessEquals = true;
+        } else {
+            // one missing: consider equal if the present brightness is effectively 0 (off/neutral)
+            // or if the present has no brightness but saturation is present and 0 -> neutral
+            final HSBColor present = hsbColorA.hasBrightness() ? hsbColorA : hsbColorB;
+            boolean presentIsNeutral = false;
+            if (present.hasBrightness()) {
+                presentIsNeutral = OperationService.equals(present.getBrightness(), 0d, BRIGHTNESS_MARGIN);
+            } else if (present.hasSaturation()) {
+                presentIsNeutral = OperationService.equals(present.getSaturation(), 0d, SATURATION_MARGIN);
+            } else {
+                // no brightness and no saturation information -> treat as neutral
+                presentIsNeutral = true;
+            }
+            brightnessEquals = presentIsNeutral;
         }
 
         return hueEquals && saturationEquals && brightnessEquals;

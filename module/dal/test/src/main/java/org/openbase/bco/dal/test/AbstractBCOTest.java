@@ -32,6 +32,7 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jul.communication.mqtt.test.MqttIntegrationTest;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
@@ -86,6 +87,8 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     @Timeout(30)
     public void notifyAboutTestStart() {
         LOGGER.info("===================================== Start BCO Test =====================================");
+        LOGGER.debug("Test class: " + getClass().getSimpleName());
+        LOGGER.debug("Active test actions before test execution: " + testActions.size());
     }
 
     /**
@@ -97,6 +100,7 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
     public void autoCancelActionsAfterTestRun() {
 
         LOGGER.info("===================================== Finish BCO Test =====================================");
+        LOGGER.debug("Active test actions after test execution: " + testActions.size());
 
         // before canceling pending actions lets just validate that the test did not cause any deadlocks
         assertFalse(StackTracePrinter.detectDeadLocksAndPrintStackTraces(LOGGER), "Deadlocks found!");
@@ -374,9 +378,14 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
 
         // register current action.
         testActions.add(remoteAction);
+        LOGGER.debug("Registered test action. Total active actions: " + testActions.size());
 
         // cleanup finished actions
+        final int beforeCleanup = testActions.size();
         testActions.removeIf(RemoteAction::isDone);
+        if (beforeCleanup > testActions.size()) {
+            LOGGER.debug("Cleaned up " + (beforeCleanup - testActions.size()) + " finished test action(s). Remaining: " + testActions.size());
+        }
 
         return remoteAction;
     }
@@ -392,6 +401,30 @@ public abstract class AbstractBCOTest extends MqttIntegrationTest {
 
         if (testActions.size() > 0) {
             LOGGER.info("Cancel " + testActions.size() + " ongoing test action" + (testActions.size() == 1 ? "" : "s") + " ...");
+            
+            // Log action states for debugging
+            int canceledCount = 0;
+            int rejectedCount = 0;
+            int finishedCount = 0;
+            for (RemoteAction action : testActions) {
+                    final State state = action.getActionState();
+                    switch (state) {
+                        case CANCELED:
+                            canceledCount++;
+                            break;
+                        case REJECTED:
+                            rejectedCount++;
+                            break;
+                        case FINISHED:
+                            finishedCount++;
+                            break;
+                        default:
+                            LOGGER.debug("Action in state: " + state);
+                    }
+            }
+            if (canceledCount > 0 || rejectedCount > 0 || finishedCount > 0) {
+                LOGGER.debug("Action state summary - Canceled: " + canceledCount + ", Rejected: " + rejectedCount + ", Finished: " + finishedCount);
+            }
         }
 
         final List<Future<?>> cancelTasks = new ArrayList<>();

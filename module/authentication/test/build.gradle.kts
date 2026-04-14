@@ -2,10 +2,6 @@ plugins {
     id("org.openbase.bco")
 }
 
-configurations {
-
-}
-
 dependencies {
     api(project(":bco.authentication.core"))
     api(project(":bco.authentication.lib"))

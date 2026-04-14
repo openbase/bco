@@ -157,6 +157,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     private final ArrayList<SchedulableAction> scheduledActionList;
     private final Timeout scheduleTimeout;
     private boolean infrastructure = false;
+    private String cachedId;
+    private String cachedLabel;
 
     public AbstractUnitController(final DB builder) throws InstantiationException {
         super(builder);
@@ -377,6 +379,10 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 logger.trace("Unit config change check failed because config is not available yet.");
             }
 
+            // clear caches
+            cachedId = null;
+            cachedLabel = null;
+
             try {
                 classDescription = getClass().getSimpleName() + "[" + config.getUnitType() + "[" + LabelProcessor.getBestMatch(config.getLabel()) + "]]";
             } catch (NullPointerException | NotAvailableException ex) {
@@ -439,6 +445,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public final String getId() throws NotAvailableException {
+        if (cachedId != null) {
+            return cachedId;
+        }
         try {
             UnitConfig tmpConfig = getConfig();
             if (!tmpConfig.hasId()) {
@@ -449,7 +458,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 throw new InvalidStateException("unitconfig.id is empty");
             }
 
-            return tmpConfig.getId();
+            cachedId = tmpConfig.getId();
+            return cachedId;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "id", ex);
         }
@@ -457,6 +467,9 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
 
     @Override
     public String getLabel() throws NotAvailableException {
+        if (cachedLabel != null) {
+            return cachedLabel;
+        }
         try {
             UnitConfig tmpConfig = getConfig();
             if (!tmpConfig.hasLabel()) {
@@ -466,7 +479,8 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
             if (LabelProcessor.isEmpty(tmpConfig.getLabel())) {
                 throw new InvalidStateException("unitconfig.label is empty");
             }
-            return LabelProcessor.getBestMatch(getConfig().getLabel());
+            cachedLabel = LabelProcessor.getBestMatch(getConfig().getLabel());
+            return cachedLabel;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "label", ex);
         }

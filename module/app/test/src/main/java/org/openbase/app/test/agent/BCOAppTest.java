@@ -101,6 +101,9 @@ public class BCOAppTest extends AbstractBCOTest {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
+            if (messageManagerLauncher != null) {
+                messageManagerLauncher.shutdown();
+            }
             LOGGER.info("App tests finished!");
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);

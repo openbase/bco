@@ -27,6 +27,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.control.layer.unit.device.DeviceManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.location.LocationManagerLauncher;
 import org.openbase.bco.dal.control.layer.unit.scene.SceneManagerLauncher;
+import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
@@ -56,6 +57,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.type.processing.LabelProcessor;
 import org.openbase.jul.extension.type.processing.MultiLanguageTextProcessor;
+import org.slf4j.LoggerFactory;
 import org.openbase.type.domotic.action.ActionDescriptionType;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionParameterType.ActionParameter;
@@ -453,7 +455,22 @@ public class SceneRemoteTest extends AbstractBCOTest {
         for (String memberId : unitGroupRemote.getConfig().getUnitGroupConfig().getMemberIdList()) {
             colorableLightRemotes.add(Units.getUnit(memberId, true, ColorableLightRemote.class));
         }
-        waitForExecution(sceneRemote.setActivationState(State.ACTIVE));
+
+        var actionFuture = sceneRemote.setActivationState(State.ACTIVE);
+
+        // Try to activate scene with error handling for canceled actions
+        try {
+            waitForExecution(actionFuture);
+        } catch (CouldNotPerformException ex) {
+            var action = actionFuture.get();
+
+            // Log action state if available to help with diagnostics
+            final ActionDescription currentAction = sceneRemote.getActionList().getFirst();
+                LoggerFactory.getLogger(SceneRemoteTest.class).error(
+                    "Scene activation was " + action.getActionState().getValue().name() + " (likely due to higher priority actions): " +
+                            currentAction.getDescription(), ex);
+            throw ex;
+        }
 
         for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
             assertEquals(GROUP_COLOR_VALUE, colorableLightRemote.getColorState().getColor().getHsbColor(), "ColorState has not been set for light[" + colorableLightRemote.getLabel() + "]");
