@@ -1,32 +1,70 @@
 name: Publish
+
 on:
   release:
     types: [created]
   push:
     branches:
       - dev
+
 jobs:
-  publish:
-    name: Publish Artifacts
+  publish-snapshot:
+    name: Publish Snapshot
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     steps:
-      - name: "Checkout Branch"
-        uses: actions/checkout@v3
-      - name: "Setup Java"
-        uses: actions/setup-java@v3
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
         with:
+          java-version: '21'
           distribution: 'temurin'
-          java-version: 17
-          cache: 'gradle'
+
       - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
-      - name: Publish Packages
-        uses: gradle/gradle-build-action@v2
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Publish snapshot
+        run: ./gradlew publishToSonatype
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORG_GRADLE_PROJECT_OPENBASE_GPG_PRIVATE_KEY: ${{ secrets.OPENBASE_GPG_PRIVATE_KEY }}
+          ORG_GRADLE_PROJECT_OPENBASE_GPG_PRIVATE_KEY_PASSPHRASE: ""
+          ORG_GRADLE_PROJECT_MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_MAVEN_CENTRAL_TOKEN: ${{ secrets.MAVEN_CENTRAL_TOKEN }}
+
+  publish-release:
+    name: Publish Release
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
         with:
-          arguments: publishToSonatype closeAndReleaseSonatypeStagingRepository
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Publish and release to Maven Central
+        run: ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORG_GRADLE_PROJECT_OPENBASE_GPG_PRIVATE_KEY: ${{ secrets.OPENBASE_GPG_PRIVATE_KEY }}

@@ -4,32 +4,74 @@ on:
   pull_request:
     branches:
       - dev
-      - beta
       - "epic/**"
     types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
-  build:
-    name: "Build"
-    timeout-minutes: 10
+  check:
+    name: "Check"
 
     if: github.event.pull_request.draft == false
 
     runs-on: ubuntu-latest
+    outputs:
+      testing_needed: ${{ steps.check.outputs.testing_needed }}
 
     steps:
       - name: "Checkout Branch"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      ### Checks if there are any file changes that are not in the .github/ or doc/ directories. Only then will the build and test pipeline run.
+      - name: "Check for changes outside CI and docs"
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          changed_files=$(gh pr diff --name-only ${{ github.event.pull_request.number }})
+          
+          changesOutsideDocsCI=false
+          for file in $changed_files; do
+            if [[ $file != .github/* && $file != doc/* ]]; then
+              echo "file: $file is not part of CI or docs"
+              echo "Start testing pipeline."
+              changesOutsideDocsCI=true
+              break
+            else
+              echo "file: $file is part of CI or docs"
+            fi
+          done
+          if [[ $changesOutsideDocsCI == true ]]; then
+            echo "testing_needed=true" >> "$GITHUB_OUTPUT"
+            echo "Changes outside CI and docs detected. Start testing pipeline."
+          else
+            echo "testing_needed=false" >> "$GITHUB_OUTPUT"
+            echo "No need for the build and test pipeline to run. Exiting."
+          fi
+
+
+  build:
+    name: "Build"
+    timeout-minutes: 10
+    needs: check
+    if: |
+      (github.event.pull_request.draft == false)
+      && (needs.check.outputs.testing_needed == 'true')
+   
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
 
       - name: "Setup Java"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: 21
           cache: 'gradle'
 
       - name: Setup Gradle cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
@@ -41,47 +83,204 @@ jobs:
         run: ./gradlew --build-cache build -x test
 
       - name: Upload build reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
         with:
           name: Build Reports
           path: "**/build/reports"
 
-  test:
-    name: "Test"
-    timeout-minutes: 120
 
-    if: github.event.pull_request.draft == false
+  test_registry_unit:
+    name: "Test Registry Unit"
     needs: build
-
     runs-on: ubuntu-latest
-
     steps:
       - name: "Checkout Branch"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "Setup Java"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: 17
+          java-version: 21
           cache: 'gradle'
 
       - name: Setup Gradle cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.gradle
           key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
 
-      - name: "prepare libs for tests"
+      - name: "Prepare libs for tests"
         run: ./prepare.sh
 
-      - name: "test backend"
-        run: ./gradlew --build-cache check
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.registry.unit.test:check
 
-      - name: Upload test reports
-        uses: actions/upload-artifact@v3
-        if: ${{ failure() || contains(github.event.pull_request.labels.*.name, 'force reports') }}
+
+  test_registry_message:
+    name: "Test Registry Message"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
         with:
-          name: Test Reports
-          path: "**/build/reports"
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "Prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.registry.message.test:check
+
+
+  test_registry_class:
+    name: "Test Registry Class"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "Prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.registry.class.test:check
+
+
+  test_authentication:
+    name: "Test Authentication"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "Prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.authentication.test:check
+
+
+  test_dal:
+    name: "Test DAL"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "Prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.dal.test:check
+
+
+  test_app:
+    name: "Test App"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "Prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.app.test:check
+
+
+  test_app_preset:
+    name: "Test App Preset"
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout Branch"
+        uses: actions/checkout@v4
+
+      - name: "Setup Java"
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'gradle'
+
+      - name: Setup Gradle cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('versions.properties') }}-${{ github.sha }}
+
+      - name: "Prepare libs for tests"
+        run: ./prepare.sh
+
+      - name: "Run Tests"
+        run: ./gradlew --build-cache --continue --rerun-tasks :bco.app.preset:check

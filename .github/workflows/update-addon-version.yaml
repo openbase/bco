@@ -1,0 +1,105 @@
+name: Home Assistant Add-ons Update
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'The version to set for the add-ons'
+        required: false
+        type: string
+        default: ""
+      addon:
+        description: 'The add-on to update'
+        required: true
+        type: string
+      tags:
+        description: 'The tags associated with the version'
+        required: false
+        type: string
+        default: ""
+      track:
+        description: 'The track associated with the version'
+        required: false
+        type: string
+        default: ""
+    secrets:
+      CI_GITHUB_TOKEN:
+        description: 'CI GitHub token'
+        required: true
+
+jobs:
+  update-addons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout addon repository
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.CI_GITHUB_TOKEN }}
+          repository: openbase/homeassistant.addons.bco
+          path: addons-repo
+
+      - name: Dig up tag
+        id: dig-up-tag
+        env:
+          TAGS: "${{ inputs.tags }}"
+          TRACK: "${{ inputs.track }}"
+        run: |
+          echo "Received TAGS: $TAGS"
+          echo "Searching for tag for track: $TRACK"
+
+          if [ -n "$TRACK" ]; then
+            MATCHED_TAG=$(printf "%s\n" "$TAGS" \
+              | sed -n "s/.*:${TRACK}-\([^[:space:]]*\).*/${TRACK}-\\1/p" \
+              | sort -u \
+              | head -n1)
+            if [ -n "$MATCHED_TAG" ]; then
+              echo "Found matching tag: $MATCHED_TAG"
+              echo "SELECTED_TAG=$MATCHED_TAG" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            echo "No tag found for track '$TRACK'. Exiting with error."
+            exit 1
+          else
+            echo "No track specified, skipping tag selection."
+            echo 'SELECTED_TAG=""' >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update add-on versions
+        env:
+          ADDON: "${{ inputs.addon }}"
+          TRACK: "${{ inputs.track }}" 
+          GIT_USERNAME: "Minou [bot]"
+          GIT_EMAIL: "minou[bot]@users.noreply.github.com"
+        run: |
+
+          if [ -z $TRACK ]; then
+            echo "No track specified, using default folder."
+            if [ -z "${{ inputs.version }}" ]; then
+              echo "No version specified, exiting with error."
+              exit 1
+            fi
+            VERSION="${{ inputs.version }}"
+            ADDON_DIR="${ADDON}"
+          else
+            echo "Track specified: ${TRACK}, using ${TRACK} folder."
+            VERSION="${{ steps.dig-up-tag.outputs.SELECTED_TAG }}"
+            ADDON_DIR="${ADDON}-${TRACK}"
+          fi
+
+          cd addons-repo/$ADDON_DIR
+
+          # Update version in config.yaml
+          sed -i "s/^version: .*/version: $VERSION/" config.yaml
+
+          # Commit and push changes
+          git config user.name "$GIT_USERNAME"
+          git config user.email "$GIT_EMAIL"
+          git add config.yaml
+          git commit -m "Update add-on $ADDON_DIR version to $VERSION" || {
+            echo "No changes to commit"
+            exit 0
+          }
+
+          git push
+
+          echo "✅ Add-on $ADDON_DIR version updated to $VERSION and changes pushed."

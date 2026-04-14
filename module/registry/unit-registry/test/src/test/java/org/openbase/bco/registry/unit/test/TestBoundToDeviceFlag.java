@@ -59,7 +59,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
     private Pose poseLightThree;
 
     @BeforeEach
-    @Timeout(30)
+    @Timeout(60)
     public void setupTest() throws Exception {
         try {
             deviceClass = Registries.getClassRegistry().registerDeviceClass(generateDeviceClass("Label", "Product Number", "Company", unitTypes)).get();

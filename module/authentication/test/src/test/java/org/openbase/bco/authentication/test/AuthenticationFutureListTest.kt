@@ -45,6 +45,7 @@ class AuthenticationFutureListTest {
     @Timeout(5)
     @Test
     fun testScheduledTask() {
+        AuthenticationFutureList.reset()
         val lock = ReentrantLock()
         val condition: Condition = lock.newCondition()
 

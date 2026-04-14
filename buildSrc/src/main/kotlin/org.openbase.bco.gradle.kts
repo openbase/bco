@@ -1,20 +1,18 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.util.Base64
+import java.util.*
 
 plugins {
     `java-library`
     `maven-publish`
     kotlin("jvm")
     signing
-    id ("com.adarshr.test-logger")
+    id("com.adarshr.test-logger")
 }
 
 repositories {
     mavenLocal()
-    mavenCentral()
-    google()
     maven {
-        url = uri("https://oss.sonatype.org/content/groups/public/")
+        url  = uri("https://repo1.maven.org/maven2")
     }
 }
 
@@ -24,28 +22,28 @@ group = "org.openbase"
 val releaseVersion = !version.toString().endsWith("-SNAPSHOT")
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = sourceCompatibility
     withSourcesJar()
     withJavadocJar()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.0")
-    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.0")
-    implementation("org.jetbrains.kotlin:kotlin-script-runtime:1.5.21")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
+    api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.0.0")
+    implementation("org.jetbrains.kotlin:kotlin-script-runtime:2.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:[5.8,5.9-alpha)")
-    testImplementation ("org.junit.jupiter:junit-jupiter-api:[5.8,5.9-alpha)")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:[5.8,5.9-alpha)")
     testImplementation(Testing.mockK)
     testImplementation("io.quarkus:quarkus-junit4-mock:_")
     testImplementation("io.kotest:kotest-assertions-core-jvm:_")
-    testRuntimeOnly ("org.junit.jupiter:junit-jupiter-engine:[5.8,5.9-alpha)")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:[5.8,5.9-alpha)")
 }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
+        jvmTarget = "21"
     }
 }
 
@@ -55,7 +53,6 @@ tasks.withType<Test> {
     logging.captureStandardOutput(LogLevel.WARN)
     maxHeapSize = "7G"
     failFast = false
-    setForkEvery(1)
 }
 
 publishing {
@@ -123,7 +120,7 @@ signing {
         ?.let { it as String? }
         ?.let { Base64.getDecoder().decode(it) }
         ?.let { String(it) }
-        ?:run {
+        ?: run {
             // Signing skipped because of missing private key.
             return@signing
         }

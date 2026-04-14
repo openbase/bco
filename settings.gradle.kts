@@ -10,11 +10,6 @@ plugins {
     id("de.fayard.refreshVersions")
 }
 
-include("authentication")
-include("registry")
-include("dal")
-include("device")
-
 include(":bco.authentication.test")
 include(":bco.authentication.lib")
 include(":bco.authentication.core")

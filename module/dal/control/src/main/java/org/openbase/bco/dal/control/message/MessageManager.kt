@@ -41,6 +41,7 @@ class MessageManager : Launchable<Void>, VoidInitializable {
     fun removeOutdatedMessages(auth: AuthToken? = null) {
         logger.trace("removeOutdatedMessages")
         Registries.getMessageRegistry().userMessages
+            .toList()
             .filterNot { message ->
                 message.conditionList.any { condition ->
                     Units.getUnit<Message>(condition.unitId, true).let { unit ->
