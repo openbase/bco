@@ -115,15 +115,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList, baseUnitConfigRegistryList;
 
-    private final SyncObject aliasIdMapLock;
-    private final TreeMap<String, String> aliasIdMap;
+    private final SyncObject aliasIdMapLock = new SyncObject("AliasIdMapLock");
+    private final TreeMap<String, String> aliasIdMap = new TreeMap<>();
 
     public UnitRegistryController() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.newBuilder());
         try {
-            this.aliasIdMap = new TreeMap<>();
-            this.aliasIdMapLock = new SyncObject("AliasIdMapLock");
-
             this.unitConfigRegistryList = new ArrayList<>();
             this.baseUnitConfigRegistryList = new ArrayList<>();
 
@@ -185,14 +182,19 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         // initially fill the alias to id map afterwards
         // the {@code AliasMapUpdatePlugin} will manage changes on registering, removing or updating of units
-        synchronized (aliasIdMapLock) {
-            try {
-                for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
-                    registry.getMessages().forEach((unitConfig) -> unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias.toLowerCase(), unitConfig.getId())));
-                }
-            } catch (CouldNotPerformException ex) {
-                throw new InitializationException(this, ex);
+
+        TreeMap<String, String> tempAliasIdMap = new TreeMap<>();
+
+        try {
+            for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
+                registry.getMessages().forEach((unitConfig) -> unitConfig.getAliasList().forEach(alias -> tempAliasIdMap.put(alias.toLowerCase(), unitConfig.getId())));
             }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+
+        synchronized (aliasIdMapLock){
+            aliasIdMap.putAll(tempAliasIdMap);
         }
     }
 
@@ -585,12 +587,15 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public UnitConfig getUnitConfigByAlias(final String unitAlias) throws NotAvailableException {
         try {
+            String unitId;
             synchronized (aliasIdMapLock) {
                 if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
-                    return getUnitConfigById(aliasIdMap.get(unitAlias.toLowerCase()));
+                    unitId = aliasIdMap.get(unitAlias.toLowerCase());
+                } else {
+                    throw new NotAvailableException("Alias", unitAlias);
                 }
             }
-            throw new NotAvailableException("Alias", unitAlias);
+            return getUnitConfigById(unitId);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitConfig with Alias", unitAlias, ex);
         }
@@ -609,12 +614,15 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public UnitConfig getUnitConfigByAliasAndUnitType(final String unitAlias, final UnitType unitType) throws NotAvailableException {
         try {
+            String unitId;
             synchronized (aliasIdMapLock) {
                 if (aliasIdMap.containsKey(unitAlias.toLowerCase())) {
-                    return getUnitConfigByIdAndUnitType(aliasIdMap.get(unitAlias.toLowerCase()), unitType);
+                    unitId = aliasIdMap.get(unitAlias.toLowerCase());
+                } else {
+                    throw new NotAvailableException("Alias", unitAlias);
                 }
             }
-            throw new NotAvailableException("Alias", unitAlias);
+            return getUnitConfigByIdAndUnitType(unitId, unitType);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitConfig of UnitType[" + unitType.name() + "] with Alias", unitAlias, ex);
         }

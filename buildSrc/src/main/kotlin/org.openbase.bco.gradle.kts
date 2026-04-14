@@ -53,7 +53,6 @@ tasks.withType<Test> {
     logging.captureStandardOutput(LogLevel.WARN)
     maxHeapSize = "7G"
     failFast = false
-    setForkEvery(1)
 }
 
 publishing {

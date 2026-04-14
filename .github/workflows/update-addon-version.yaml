@@ -95,7 +95,7 @@ jobs:
           git config user.name "$GIT_USERNAME"
           git config user.email "$GIT_EMAIL"
           git add config.yaml
-          git commit -m "Update add-on $ADDONS_DIR version to $VERSION" || {
+          git commit -m "Update add-on $ADDON_DIR version to $VERSION" || {
             echo "No changes to commit"
             exit 0
           }

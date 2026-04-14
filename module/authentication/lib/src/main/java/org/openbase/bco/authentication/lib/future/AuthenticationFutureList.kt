@@ -81,4 +81,13 @@ object AuthenticationFutureList {
             notificationCondition.await()
         }
     }
+
+    fun reset() {
+        synchronized(authenticatedFuturesLock) {
+            synchronized(incomingFuturesLock) {
+                incomingFutures.clear()
+                authenticatedFutures.clear()
+            }
+        }
+    }
 }

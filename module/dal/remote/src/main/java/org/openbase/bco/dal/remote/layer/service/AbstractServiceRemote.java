@@ -75,6 +75,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.*;
 
@@ -107,7 +108,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
     private final Observer connectionStateObserver;
     protected final ObservableImpl<DataProvider<ST>, ST> serviceStateObservable = new ObservableImpl<>();
     private final ObservableImpl<ServiceStateProvider<ST>, ST> serviceStateProviderObservable = new ObservableImpl<>();
-    private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
+    private final ReentrantLock lock = new ReentrantLock();
     private final SyncObject maintainerLock = new SyncObject("MaintainerLock");
     private final SyncObject connectionStateLock = new SyncObject("ConnectionStateLock");
     protected Object maintainer;
@@ -181,8 +182,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     private void updateServiceState() throws CouldNotPerformException {
         final ST serviceState;
-        synchronized (syncObject) {
+        lock.lock();
+        try {
             serviceState = computeServiceState();
+        } finally {
+            lock.unlock();
         }
         serviceStateObservable.notifyObservers(serviceState);
         serviceStateProviderObservable.notifyObservers(serviceState);
@@ -197,12 +201,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Messag
      */
     @Override
     public ST getData() throws NotAvailableException {
-//        synchronized (syncObject) {
         if (!serviceStateObservable.isValueAvailable()) {
             throw new NotAvailableException("Data");
         }
         return serviceStateObservable.getValue();
-//        }
     }
 
     @Override

@@ -619,7 +619,7 @@ public class RemoteAction implements Action {
 
             try {
                 if (getActionDescription().getIntermediary()) {
-                    for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                    for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                         if (impactedRemoteAction.isRunning()) {
                             return true;
                         }
@@ -650,7 +650,7 @@ public class RemoteAction implements Action {
 
         try {
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     if (!impactedRemoteAction.isDone()) {
                         return false;
                     }
@@ -854,7 +854,7 @@ public class RemoteAction implements Action {
 
         // cleanup synchronisation and observation tasks
         actionDescriptionObservable.reset();
-        for (RemoteAction impactedRemoteAction : impactedRemoteActions) {
+        for (RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
             impactedRemoteAction.removeActionDescriptionObserver(impactActionObserver);
         }
         impactedRemoteActions.clear();
@@ -955,7 +955,7 @@ public class RemoteAction implements Action {
 
         try {
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitUntilDone();
                 }
                 return;
@@ -1006,7 +1006,7 @@ public class RemoteAction implements Action {
 
         try {
             if (actionDescription.getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitForActionState(actionState, timeSplit.getTime(), timeSplit.getTimeUnit());
                 }
                 return;
@@ -1027,7 +1027,9 @@ public class RemoteAction implements Action {
             while (actionDescription == null || (actionDescription.getActionState().getValue() != actionState) && !checkIfStateWasPassed(actionState, timeSplit.getTimestamp(), actionDescription)) {
                 // Waiting makes no sense if the action is done but the state is still not reached.
                 if (actionDescription != null && isDone()) {
-                    throw new CouldNotPerformException(targetUnit.getLabel() + " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + actionDescription.getActionState().getValue().name() + "]");
+                    final State currentState = actionDescription.getActionState().getValue();
+                    LOGGER.warn(getTargetUnit().getLabel() + " - Action [" + this + "] reached terminal state [" + currentState.name() + "] instead of target state [" + actionState.name() + "]");
+                    throw new CouldNotPerformException(targetUnit.getLabel() + " - stop waiting because state[" + actionState.name() + "] cannot be reached from state[" + currentState.name() + "]");
                 }
                 LOGGER.trace(getTargetUnit().getLabel() + " - wait for action [" + this + "] to be in state [" + actionState + "] ");
                 executionSync.wait(timeSplit.getTime());
@@ -1091,7 +1093,7 @@ public class RemoteAction implements Action {
             }
 
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitForRegistration();
                 }
             }
@@ -1130,7 +1132,7 @@ public class RemoteAction implements Action {
             }
 
             if (getActionDescription().getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     impactedRemoteAction.waitForRegistration(timeSplit.getTime(), timeSplit.getTimeUnit());
                 }
             }
@@ -1147,7 +1149,7 @@ public class RemoteAction implements Action {
             }
 
             if (actionDescription.getIntermediary()) {
-                for (final RemoteAction impactedRemoteAction : impactedRemoteActions) {
+                for (final RemoteAction impactedRemoteAction : new ArrayList<>(impactedRemoteActions)) {
                     if (!impactedRemoteAction.isRegistrationDone()) {
                         return false;
                     }
