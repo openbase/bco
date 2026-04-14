@@ -317,9 +317,21 @@ public abstract class AbstractUnitRemote<D extends Message> extends AbstractAuth
      */
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+
         if (unitConfig == null) {
             throw new NotAvailableException("UnitConfig");
         }
+
+        String tScope = "N/a";
+        try {
+            tScope = ScopeProcessor.generateStringRep(scope);
+        } catch(Exception ex) {
+            //
+        }
+
+        logger.debug("Apply config update for unit remote {} with scope {}", tScope, ScopeProcessor.generateStringRep(unitConfig.getScope()));
+
+
 
         // non change filter
         try {

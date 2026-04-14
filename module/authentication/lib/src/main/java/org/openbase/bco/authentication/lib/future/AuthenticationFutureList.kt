@@ -16,7 +16,7 @@ object AuthenticationFutureList {
 
     private val SCHEDULE_RATE_IN_S = if (JPService.testMode()) 1L else 5L
     private const val INITIAL_DELAY_IN_S = 1L
-    private const val FUTURE_TIMEOUT_IN_MS = 1L
+    private const val FUTURE_TIMEOUT_IN_MS = 5L
 
     private val authenticatedFuturesLock = SyncObject("AuthenticatedFutureListSync")
     private val incomingFuturesLock = SyncObject("IncomingFuturesLock")

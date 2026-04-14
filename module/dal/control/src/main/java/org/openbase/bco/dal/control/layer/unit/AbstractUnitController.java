@@ -79,6 +79,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.*;
 import org.openbase.type.communication.ScopeType;
+import org.openbase.type.communication.ScopeType.Scope;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription;
 import org.openbase.type.domotic.action.ActionDescriptionType.ActionDescription.Builder;
 import org.openbase.type.domotic.action.ActionEmphasisType.ActionEmphasis.Category;
@@ -363,6 +364,22 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
 
+        var tid = -9L;
+        try {
+            tid = getTransactionId();
+        } catch(Exception ex) {
+            //
+        }
+
+        String tScope = "N/a";
+        try {
+            tScope = ScopeProcessor.generateStringRep(scope);
+        } catch(Exception ex) {
+            //
+        }
+
+        logger.debug("Apply config update " + tScope + " in transaction [" + tid+ "]");
+
         try (final CloseableWriteLockWrapper ignored = getManageWriteLockInterruptible(this)) {
 
             if (config == null) {
@@ -439,6 +456,19 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                 infrastructure = false;
             }
 
+            try {
+                tid = getTransactionId();
+            } catch(Exception ex) {
+                //
+            }
+
+            try {
+                tScope = ScopeProcessor.generateStringRep(scope);
+            } catch(Exception ex) {
+                //
+            }
+
+            logger.debug("Applied config update " + tScope + " in transaction [" + tid+ "]");
             return result;
         }
     }
@@ -1099,7 +1129,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
                     try {
                         // setup timer only if action needs to be removed or the current action provides a limited execution time.
                         if (atLeastOneDoneActionOnList || currentAction.getExecutionTimePeriod(TimeUnit.MICROSECONDS) != 0) {
-                            final long rescheduleTimeout = atLeastOneDoneActionOnList ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, currentAction.getExecutionTime()) : Math.min(currentAction.getExecutionTime(), Action.MAX_EXECUTION_TIME_PERIOD);
+                            final long rescheduleTimeout = atLeastOneDoneActionOnList
+                                    ? Math.min(FINISHED_ACTION_REMOVAL_TIMEOUT, currentAction.getExecutionTime())
+                                    : Math.min(
+                                            currentAction.getExecutionTime(),
+                                            (currentAction.isTerminationAction() ? currentAction.getExecutionTime() : Action.MAX_EXECUTION_TIME_PERIOD));
                             logger.debug("Reschedule scheduled in {} ms.", rescheduleTimeout);
                             // since the execution time of an action can be zero, we should wait at least a bit before reschedule via timer.
                             // this should not cause any latency because new incoming actions are scheduled anyway.
@@ -1933,7 +1967,11 @@ public abstract class AbstractUnitController<D extends AbstractMessage & Seriali
         if (JPService.testMode()) {
             try {
                 if (!terminatingActionId.equals(TERMINATION_ACTION_NOT_AVAILABLE)) {
-                    getActionById(terminatingActionId, getClass().getSimpleName()).execute().get(3, TimeUnit.SECONDS);
+                    Action terminationAction = getActionById(terminatingActionId, getClass().getSimpleName());
+                    // handle reactivation
+                    if(!terminationAction.isProcessing()) {
+                        terminationAction.execute().get(3, TimeUnit.SECONDS);
+                    }
                 }
             } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
                 ExceptionPrinter.printHistory("Could not reschedule termination action!", ex, logger);

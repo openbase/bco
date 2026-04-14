@@ -39,6 +39,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.type.iface.TransactionIdProvider;
 import org.openbase.type.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import org.openbase.type.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import org.openbase.type.domotic.authentication.UserClientPairType.UserClientPair;
@@ -73,9 +74,10 @@ public abstract class AbstractAuthenticatedConfigurableController<M extends Abst
     @RPCMethod
     @Override
     public M requestStatus() throws CouldNotPerformException {
-        logger.trace("requestStatus of {}", this);
+        logger.debug("requestStatus of {}", this);
+        M dataToSend;
         try {
-            return updateDataToPublish(cloneDataBuilder());
+            dataToSend =  updateDataToPublish(cloneDataBuilder());
         } catch (RuntimeException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -85,6 +87,17 @@ public abstract class AbstractAuthenticatedConfigurableController<M extends Abst
             }
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not request status update.", ex), logger, LogLevel.ERROR);
         }
+
+        long tid = -9L;
+        try {
+            tid = (Long) getDataField(TransactionIdProvider.TRANSACTION_ID_FIELD_NAME, dataToSend);
+        } catch (CouldNotPerformException ex) {
+            //
+        }
+
+        logger.debug("1 return requested status of transaction {} == {}", tid, getTransactionId());
+
+        return dataToSend;
     }
 
     @Override

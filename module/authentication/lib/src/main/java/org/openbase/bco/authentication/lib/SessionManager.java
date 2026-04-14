@@ -613,6 +613,7 @@ public class SessionManager implements Shutdownable, Session {
      */
     @Override
     public synchronized void reLogin() throws CouldNotPerformException {
+        LOGGER.debug("trigger relogin.");
         // skip notifications
         skipNotification = true;
         try {

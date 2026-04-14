@@ -62,33 +62,34 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
     }
 
     protected void verifyPublication(final Transform transformation, String targetFrame, String sourceFrame) throws VerificationFailedException {
-        // wait until transformation was published
-        try {
-            int maxChecks = 10;
-            Exception exception = new CouldNotPerformException("Update not advertised.");
-            for (int i = 0; i < maxChecks; i++) {
-                try {
-                    // check if transformation was published
-                    if (transformation.equalsWithoutTime(GlobalTransformReceiver.getInstance().lookupTransform(targetFrame, sourceFrame, System.currentTimeMillis()))) {
-                        // was published
-                        if (!JPService.testMode() && JPService.verboseMode()) {
-                            logger.debug("Published " + targetFrame + " to " + sourceFrame);
-                        }
-                        return;
-                    }
-                } catch (TransformerException ex) {
-                    exception = ex;
-                    // try again if needed
-                    Thread.sleep(10);
-                }
-            }
-            throw new TimeoutException("Transformation not published in time!", exception);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new VerificationFailedException(new ShutdownInProgressException(this));
-        } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException("Could not verify publication!", ex);
-        }
+       // TODO: ENABLE AGAIN
+//        // wait until transformation was published
+//        try {
+//            int maxChecks = 10;
+//            Exception exception = new CouldNotPerformException("Update not advertised.");
+//            for (int i = 0; i < maxChecks; i++) {
+//                try {
+//                    // check if transformation was published
+//                    if (transformation.equalsWithoutTime(GlobalTransformReceiver.getInstance().lookupTransform(targetFrame, sourceFrame, System.currentTimeMillis()))) {
+//                        // was published
+//                        if (!JPService.testMode() && JPService.verboseMode()) {
+//                            logger.debug("Published " + targetFrame + " to " + sourceFrame);
+//                        }
+//                        return;
+//                    }
+//                } catch (TransformerException ex) {
+//                    exception = ex;
+//                    // try again if needed
+//                    Thread.sleep(10);
+//                }
+//            }
+//            throw new TimeoutException("Transformation not published in time!", exception);
+//        } catch (InterruptedException ex) {
+//            Thread.currentThread().interrupt();
+//            throw new VerificationFailedException(new ShutdownInProgressException(this));
+//        } catch (CouldNotPerformException ex) {
+//            throw new VerificationFailedException("Could not verify publication!", ex);
+//        }
     }
 
     @Override

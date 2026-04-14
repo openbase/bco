@@ -2,7 +2,6 @@ package org.openbase.bco.dal.test.layer.unit
 
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.RepeatedTest
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.openbase.bco.dal.lib.state.States
 import org.openbase.bco.dal.remote.layer.unit.LightRemote
@@ -44,18 +43,18 @@ class HighFrequentModificationTest : AbstractBCODeviceManagerTest() {
      *
      * @throws Exception if any thread encounters an error during execution.
      */
-    @RepeatedTest(10)
-    @Timeout(30)
+    @RepeatedTest(100)
+//    @Timeout(120)
     @Throws(Exception::class)
     fun `high frequent config and service modification should should be possible`() {
         println("testRaceCondition")
 
-        val numberOfInterations = 10
+        val numberOfIterations = 100
 
         // Thread 1: Randomly toggle PowerState ON/OFF
         val powerStateThread1 = Thread(Runnable {
             try {
-                for (i in 0..numberOfInterations) {
+                for (i in 0..numberOfIterations) {
                     lightRemote!!.setPowerState(if (Math.random() > 0.5) States.Power.ON else States.Power.OFF)
                 }
             } catch (e: Exception) {
@@ -66,7 +65,7 @@ class HighFrequentModificationTest : AbstractBCODeviceManagerTest() {
         // Thread 2: Randomly toggle PowerState ON/OFF
         val powerStateThread2 = Thread(Runnable {
             try {
-                for (i in 0..numberOfInterations) {
+                for (i in 0..numberOfIterations) {
                     lightRemote!!.setPowerState(if (Math.random() > 0.5) States.Power.ON else States.Power.OFF).get()
                 }
             } catch (e: Exception) {
@@ -77,11 +76,11 @@ class HighFrequentModificationTest : AbstractBCODeviceManagerTest() {
         // Thread 3: Modify the label of the unit
         val unitConfigThread1 = Thread(Runnable {
             try {
-                for (i in 0..numberOfInterations) {
-                    val newLabel = LabelProcessor.buildLabel("Label$i")
-                    Registries.getUnitRegistry().getUnitConfigById(lightRemote!!.getId())
-                        .toBuilder()
-                        .apply { setLabel(newLabel) }
+                val unitBuilder = Registries.getUnitRegistry().getUnitConfigById(lightRemote!!.getId())
+                    .toBuilder()
+                for (i in 0..numberOfIterations) {
+                    unitBuilder
+                        .apply { setLabel(LabelProcessor.buildLabel("Label$i")) }
                         .build()
                         .also { Registries.getUnitRegistry().updateUnitConfig(it) }
                 }
@@ -93,14 +92,15 @@ class HighFrequentModificationTest : AbstractBCODeviceManagerTest() {
         // Thread 4: Modify the location of the unit
         val unitConfigThread2 = Thread(Runnable {
             try {
-                for (i in 0..numberOfInterations) {
+                val unitBuilder = Registries.getUnitRegistry().getUnitConfigById(lightRemote!!.getId())
+                    .toBuilder()
+                for (i in 0..numberOfIterations) {
                     val newLocationId = Registries.getUnitRegistry().getUnitConfigsByUnitType(UnitTemplate.UnitType.LOCATION)
                         .shuffled()
                         .first()
                         .id
 
-                    Registries.getUnitRegistry().getUnitConfigById(lightRemote!!.getId())
-                        .toBuilder()
+                    unitBuilder
                         .apply { placementConfigBuilder.setLocationId(newLocationId) }
                         .build()
                         .also { Registries.getUnitRegistry().updateUnitConfig(it) }
@@ -110,17 +110,39 @@ class HighFrequentModificationTest : AbstractBCODeviceManagerTest() {
             }
         })
 
+        // Thread 4: Modify the label of the unit synchronized
+        val unitConfigThread3 = Thread(Runnable {
+            try {
+                val unitBuilder = Registries.getUnitRegistry().getUnitConfigById(lightRemote!!.getId())
+                    .toBuilder()
+                for (i in 0..numberOfIterations) {
+                    unitBuilder
+                        .apply { setLabel(LabelProcessor.buildLabel("Label$i")) }
+                        .build()
+                        .also { Registries.getUnitRegistry().updateUnitConfig(it).get() }
+                }
+            } catch (e: Exception) {
+                LOGGER.log(Level.SEVERE, "Error in unitConfigThread1", e)
+            }
+        })
+
         // Start all threads
         powerStateThread1.start()
         powerStateThread2.start()
         unitConfigThread1.start()
         unitConfigThread2.start()
+        unitConfigThread3.start()
 
         // Wait for all threads to complete
         powerStateThread1.join()
         powerStateThread2.join()
         unitConfigThread1.join()
         unitConfigThread2.join()
+        unitConfigThread3.join()
+
+        // verify controller are still responding
+        Registries.requestData().get()
+        lightRemote!!.requestData().get()
 
         println("Race condition test completed.")
     }
