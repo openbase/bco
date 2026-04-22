@@ -67,18 +67,20 @@ jobs:
       - name: Update add-on versions
         env:
           ADDON: "${{ inputs.addon }}"
-          TRACK: "${{ inputs.track }}" 
+          TRACK: "${{ inputs.track }}"
+          INPUT_VERSION: "${{ inputs.version }}" 
           GIT_USERNAME: "Minou [bot]"
           GIT_EMAIL: "minou[bot]@users.noreply.github.com"
         run: |
 
           if [ -z $TRACK ]; then
             echo "No track specified, using default folder."
-            if [ -z "${{ inputs.version }}" ]; then
+            if [ -z "$INPUT_VERSION" ]; then
               echo "No version specified, exiting with error."
               exit 1
             fi
-            VERSION="${{ inputs.version }}"
+            # Remove leading 'v' if present
+            VERSION="${INPUT_VERSION#v}"
             ADDON_DIR="${ADDON}"
           else
             echo "Track specified: ${TRACK}, using ${TRACK} folder."
