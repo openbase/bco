@@ -1,26 +1,25 @@
 # Base Cube One
 
-[![Dev](https://github.com/openbase/bco/actions/workflows/build-and-test.yml/badge.svg?branch=dev)](https://github.com/openbase/jul/actions/workflows/build-and-test.yml)
-[![Maven Central](https://img.shields.io/maven-central/v/org.openbase/bco.svg?label=Latest%20Version)](https://search.maven.org/artifact/org.openbase/bco)
+[![Dev](https://github.com/openbase/bco/actions/workflows/build-and-test.yml/badge.svg?branch=dev)](https://github.com/openbase/bco/actions/workflows/build-and-test.yml)
+[![Latest Version](https://img.shields.io/maven-central/v/org.openbase/bco.dal.remote?label=Latest%20Version)](https://central.sonatype.com/artifact/org.openbase/bco.dal.remote)
 
-A smart environment framework featured by [openbase.org](https://openbase.org).
+Smart environment automation featured by [openbase.org](https://openbase.org).
 
 ## Features
-* Smart home Apps that can be easily installed at your rooms to apply new smart home functions.
-* A revolutionary Multi-Agent-Automation approach to replace conventional Rule-Automation.
-  * Goal - Driven Behavior based controlling
-  * Priority Management
-* Automated conflict resolution policies to always serve inhabitants' needs.
-* Semantic representation of the smart environment
-* Individual configurable access - right management
+- Install smart home apps in your rooms with just a few clicks to add new features
+- A next-generation automation system that goes beyond traditional rules
+  - Adapts to your goals and preferences
+  - Smart priority handling for smooth interactions
+- Automatic conflict resolution so your smart home always behaves the way you expect
+- Understands your home environment to enable more intuitive automation
 
-## Supported Third Party Frameworks
-* [openHAB](https://www.openhab.org)
+## Integrate BCO into your Home Assistant instance with our add-on collection:
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fopenbase%2Fhomeassistant.addons.bco)
 
 ## Hands on
 
 * [Documentation](https://basecubeone.org)
-* [Installation](https://basecubeone.org/user/installation.html)
+* [Installation](https://basecubeone.org/docs/user/installatio)
 
 ## Contribution
 
@@ -32,7 +31,7 @@ Feel free to report feature requests and discovered bugs via [github](https://gi
 
 ### How to build BCO
 
-* [Please follow our developer tool chain setup guide.](https://basecubeone.org/developer/)
+* [Please follow our developer tool chain setup guide.](https://basecubeone.org/docs/developer)
 
 ### Update Gradle Dependencies
 

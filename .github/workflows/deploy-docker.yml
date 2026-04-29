@@ -3,15 +3,12 @@ name: Build and Deploy Dockerimage
 on:
   push:
     branches:
-      - stable
-      - beta
       - dev
     tags:
       - "v*.*.*"
   pull_request:
     branches:
       - dev
-      - beta
     types: [opened, labeled, synchronize, reopened, ready_for_review]
 
 jobs:
